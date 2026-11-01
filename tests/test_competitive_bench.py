@@ -186,6 +186,116 @@ class TestLedgerStructure:
         assert cb.render_report(ledger) == cb.render_report(ledger)
 
 
+# ------------------------------------------------- differentiator tasks (W3.4)
+
+DIFF_DRIVER_PATH = REPO_ROOT / "bench" / "competitive" / "diff_tasks.py"
+
+
+def _load_diff_driver() -> Any:
+    spec = importlib.util.spec_from_file_location("kys_competitive_diff_tasks", DIFF_DRIVER_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+class TestDifferentiatorStructure:
+    def test_harness_and_driver_agree_on_task_set(self):
+        driver = _load_diff_driver()
+        assert set(cb.DIFF_TASK_ORDER) == set(driver.TASKS)
+        assert len(cb.DIFF_TASK_ORDER) == len(set(cb.DIFF_TASK_ORDER))
+        for task in cb.DIFF_TASK_ORDER:
+            assert task in driver._DISPATCH, task
+
+    def test_every_task_carries_both_opponent_evidence(self):
+        for task in cb.DIFF_TASK_ORDER:
+            for opp in ("codegraph", "graphify"):
+                evidence = cb.DIFF_TASK_EVIDENCE[task][opp]
+                assert evidence, (task, opp)
+                assert ":" in evidence.split(" — ")[0], evidence  # path:line prefix
+
+    def test_diff_targets_are_principal_targets(self):
+        assert cb.DIFF_TARGETS == ("fixture", "requests", "chalk")
+
+    @pytest.mark.parametrize("opp,repo", [("codegraph", "/root/src/codegraph"), ("graphify", "/root/src/graphify")])
+    def test_opponent_evidence_paths_exist(self, opp, repo):
+        root = Path(repo)
+        if not root.is_dir():
+            pytest.skip(f"opponent repo not present: {repo}")
+        for task in cb.DIFF_TASK_ORDER:
+            prefix = cb.DIFF_TASK_EVIDENCE[task][opp].split(" — ")[0]
+            path, _, line = prefix.rpartition(":")
+            target = root / path
+            assert target.exists(), f"{task}/{opp}: missing {prefix}"
+            if target.is_file() and target.stat().st_size < 2_000_000:
+                lines = target.read_text(encoding="utf-8", errors="replace").count("\n") + 1
+                assert 1 <= int(line) <= lines, f"{task}/{opp}: line out of range: {prefix}"
+
+
+@requires_dataset
+class TestDifferentiatorLive:
+    """Live probes of the driver on the fixture store (skip-safe)."""
+
+    def _seeded_store(self, tmp_path):
+        tree = tmp_path / "tree"
+        cb.prepare_tree("fixture", tree)
+        store = tmp_path / "diff.db"
+        ingest = cb._ingest_kys(tree, store)
+        assert ingest["exit_code"] == 0
+        return tree, store
+
+    def _run_task(self, task: str, store: Path, work: Path, tree: Path):
+        argv = [sys.executable, str(cb.DIFF_DRIVER), task, str(store), str(work), str(tree)]
+        res = cb.run_cmd(argv, timeout=300)
+        return res, argv
+
+    def test_audit_chain_verify_fixture(self, tmp_path):
+        tree, store = self._seeded_store(tmp_path)
+        res, argv = self._run_task("audit-chain-verify", store, tmp_path / "w", tree)
+        assert res["exit_code"] == 0, cb._tail(res["stderr"])
+        result = cb._kys_result(res["stdout"])
+        assert result["chain_ok"] is True
+        assert result["domain_events_added"] == 20
+        assert result["audit_events_added"] == 20
+
+    def test_review_decision_policy_fixture(self, tmp_path):
+        tree, store = self._seeded_store(tmp_path)
+        res, _ = self._run_task("review-decision-policy", store, tmp_path / "w", tree)
+        assert res["exit_code"] == 0, cb._tail(res["stderr"])
+        result = cb._kys_result(res["stdout"])
+        assert result["deterministic"] is True
+        assert result["policy_version"].startswith("review-policy-")
+
+    def test_contract_digest_verify_fixture(self, tmp_path):
+        tree, store = self._seeded_store(tmp_path)
+        res, _ = self._run_task("contract-digest-verify", store, tmp_path / "w", tree)
+        assert res["exit_code"] == 0, cb._tail(res["stderr"])
+        result = cb._kys_result(res["stdout"])
+        assert result["mismatches"] == 0
+        assert result["pinned_files"] >= 5
+
+    def test_driver_rejects_unknown_task(self, tmp_path):
+        argv = [
+            sys.executable,
+            str(cb.DIFF_DRIVER),
+            "no-such-task",
+            str(tmp_path / "s.db"),
+            str(tmp_path),
+            str(tmp_path),
+        ]
+        res = cb.run_cmd(argv, timeout=60)
+        assert res["exit_code"] == 2
+
+    def test_driver_failure_is_nonzero_not_hidden(self, tmp_path):
+        """A task against a corrupt store must exit non-zero (FAILED), never
+        be edited into an OK by the harness."""
+        store = tmp_path / "corrupt.db"
+        store.write_bytes(b"not a sqlite database")
+        res, _ = self._run_task("audit-chain-verify", store, tmp_path / "w", tmp_path)
+        assert res["exit_code"] != 0
+
+
 # ------------------------------------------------------------- query sets
 
 

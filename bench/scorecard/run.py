@@ -50,8 +50,12 @@ EXPECTED_CATEGORIES = (
     "determinism",
     "extensibility",
 )
+# Suite v1.1.0 (WAVE3-PLAN §0.1): ceiling raised 80 -> 160 so the catalog can
+# measure the whole shipped surface. Formula, status points, weight range,
+# categories and the pass rule are unchanged; the v1.0.0 document is frozen
+# as capabilities-v1.0.0.json and stays reproducible.
 MIN_CAPABILITIES = 60
-MAX_CAPABILITIES = 80
+MAX_CAPABILITIES = 160
 WEIGHT_RANGE = (1, 3)
 
 
@@ -84,6 +88,11 @@ def validate(doc: dict) -> list[str]:
     caps = doc.get("capabilities", [])
     if not (MIN_CAPABILITIES <= len(caps) <= MAX_CAPABILITIES):
         problems.append(f"capability count {len(caps)} outside [{MIN_CAPABILITIES}, {MAX_CAPABILITIES}]")
+    declared = doc.get("capability_limits")
+    if declared is not None and declared != {"min": MIN_CAPABILITIES, "max": MAX_CAPABILITIES}:
+        problems.append(
+            f"capability_limits {declared!r} drifted from the runner ({MIN_CAPABILITIES}/{MAX_CAPABILITIES})"
+        )
     ids = [c.get("id") for c in caps]
     if len(ids) != len(set(ids)):
         problems.append("duplicate capability ids")

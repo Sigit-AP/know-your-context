@@ -1,0 +1,3630 @@
+{
+  "config": {
+    "clients": 8,
+    "cold_repeats": 3,
+    "kill_fraction": 0.4,
+    "queries_per_client": 5
+  },
+  "entries": [
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/tree"
+      ],
+      "counts": {
+        "dump_sha256": "fba6ee26c2424eca542982ea2c5378c4c220182f936ecb46f09d362924e4a6f7",
+        "edges": 18,
+        "files_failed": 0,
+        "files_proposed": 5,
+        "refs_resolved": 8,
+        "refs_total": 10,
+        "symbols": 10
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "ingest",
+      "wall_ms": 543.916
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 292.101,
+      "queries": [
+        {
+          "answer_tokens": 24,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store.db",
+            "Worker"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 297.39,
+          "p50_ms": 303.362,
+          "payload_bytes": 93,
+          "query": "Worker",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 26,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store.db",
+            "base_helper"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 289.938,
+          "p50_ms": 292.101,
+          "payload_bytes": 101,
+          "query": "base_helper",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 24,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store.db",
+            "handle"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 291.606,
+          "p50_ms": 299.023,
+          "payload_bytes": 95,
+          "query": "handle",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 24,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store.db",
+            "shout"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 276.583,
+          "p50_ms": 280.828,
+          "payload_bytes": 95,
+          "query": "shout",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 25,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store.db",
+            "formatName"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 277.981,
+          "p50_ms": 286.64,
+          "payload_bytes": 100,
+          "query": "formatName",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store.db",
+            "zzz_no_such_symbol"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 279.924,
+          "p50_ms": 305.26,
+          "payload_bytes": 3,
+          "query": "zzz_no_such_symbol",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 24,
+          "query": "Worker"
+        },
+        {
+          "answer_tokens": 26,
+          "query": "base_helper"
+        },
+        {
+          "answer_tokens": 24,
+          "query": "handle"
+        },
+        {
+          "answer_tokens": 24,
+          "query": "shout"
+        },
+        {
+          "answer_tokens": 25,
+          "query": "formatName"
+        },
+        {
+          "answer_tokens": 1,
+          "query": "zzz_no_such_symbol"
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "tokens",
+      "total_answer_tokens": 124
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store.db",
+        "Worker"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 1356.634,
+      "latency_p95_ms": 1672.923,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "concurrent",
+      "throughput_qps": 5.571,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 7.18
+    },
+    {
+      "artifact": "canonical_ingestion_dump",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/store-b.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/fixture/tree"
+      ],
+      "run_a_sha256": "fba6ee26c2424eca542982ea2c5378c4c220182f936ecb46f09d362924e4a6f7",
+      "run_b_sha256": "fba6ee26c2424eca542982ea2c5378c4c220182f936ecb46f09d362924e4a6f7",
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/tree"
+      ],
+      "counts": {
+        "dump_sha256": "917e35d0b988b157731abe229e7d62aabd111386c15a5398d152cff67aea9c27",
+        "edges": 2832,
+        "files_failed": 79,
+        "files_proposed": 50,
+        "refs_resolved": 1163,
+        "refs_total": 2887,
+        "symbols": 1804
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "ingest",
+      "wall_ms": 7565.209
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 333.708,
+      "queries": [
+        {
+          "answer_tokens": 315,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store.db",
+            "Session"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 290.686,
+          "p50_ms": 293.167,
+          "payload_bytes": 1258,
+          "query": "Session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 315,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store.db",
+            "session"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 315.223,
+          "p50_ms": 316.312,
+          "payload_bytes": 1258,
+          "query": "session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 29,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store.db",
+            "PreparedRequest"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 346.805,
+          "p50_ms": 357.894,
+          "payload_bytes": 113,
+          "query": "PreparedRequest",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 32,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store.db",
+            "merge_environment_settings"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 342.546,
+          "p50_ms": 373.861,
+          "payload_bytes": 127,
+          "query": "merge_environment_settings",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 28,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store.db",
+            "HTTPAdapter"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 330.468,
+          "p50_ms": 333.708,
+          "payload_bytes": 111,
+          "query": "HTTPAdapter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 30,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store.db",
+            "SessionRedirectMixin"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 333.969,
+          "p50_ms": 334.36,
+          "payload_bytes": 120,
+          "query": "SessionRedirectMixin",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 315,
+          "query": "Session"
+        },
+        {
+          "answer_tokens": 315,
+          "query": "session"
+        },
+        {
+          "answer_tokens": 29,
+          "query": "PreparedRequest"
+        },
+        {
+          "answer_tokens": 32,
+          "query": "merge_environment_settings"
+        },
+        {
+          "answer_tokens": 28,
+          "query": "HTTPAdapter"
+        },
+        {
+          "answer_tokens": 30,
+          "query": "SessionRedirectMixin"
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "tokens",
+      "total_answer_tokens": 749
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store.db",
+        "Session"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 1535.917,
+      "latency_p95_ms": 1643.939,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "concurrent",
+      "throughput_qps": 5.203,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 7.688
+    },
+    {
+      "artifact": "canonical_ingestion_dump",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/store-b.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/tree"
+      ],
+      "run_a_sha256": "917e35d0b988b157731abe229e7d62aabd111386c15a5398d152cff67aea9c27",
+      "run_b_sha256": "917e35d0b988b157731abe229e7d62aabd111386c15a5398d152cff67aea9c27",
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/chalk/store.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/chalk/tree"
+      ],
+      "counts": {
+        "dump_sha256": "5de80fef95365de11ad89914d8b281896d426a7be3284b104533d4292d2d2992",
+        "edges": 321,
+        "files_failed": 11,
+        "files_proposed": 23,
+        "refs_resolved": 90,
+        "refs_total": 622,
+        "symbols": 252
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "ingest",
+      "wall_ms": 1295.193
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 298.02,
+      "queries": [
+        {
+          "answer_tokens": 26,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/chalk/store.db",
+            "createChalk"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 328.785,
+          "p50_ms": 345.194,
+          "payload_bytes": 104,
+          "query": "createChalk",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 27,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/chalk/store.db",
+            "applyOptions"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 282.856,
+          "p50_ms": 298.02,
+          "payload_bytes": 105,
+          "query": "applyOptions",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 26,
+          "query": "createChalk"
+        },
+        {
+          "answer_tokens": 27,
+          "query": "applyOptions"
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "tokens",
+      "total_answer_tokens": 53
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/chalk/store.db",
+        "createChalk"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 1504.805,
+      "latency_p95_ms": 2630.399,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "concurrent",
+      "throughput_qps": 4.24,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 9.434
+    },
+    {
+      "artifact": "canonical_ingestion_dump",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/chalk/store-b.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/chalk/tree"
+      ],
+      "run_a_sha256": "5de80fef95365de11ad89914d8b281896d426a7be3284b104533d4292d2d2992",
+      "run_b_sha256": "5de80fef95365de11ad89914d8b281896d426a7be3284b104533d4292d2d2992",
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/tree-sitter-python/store.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/tree-sitter-python/tree"
+      ],
+      "counts": {
+        "dump_sha256": "b4e22987a5e905170b435b4600cd8e6cc06717df8ff5cd453ddfae46f84d069c",
+        "edges": 1557,
+        "files_failed": 30,
+        "files_proposed": 45,
+        "refs_resolved": 292,
+        "refs_total": 2678,
+        "symbols": 1445
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "tree-sitter-python",
+      "task": "ingest",
+      "wall_ms": 6630.382
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 345.693,
+      "queries": [
+        {
+          "answer_tokens": 26,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/tree-sitter-python/store.db",
+            "new_delimiter"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 326.175,
+          "p50_ms": 345.693,
+          "payload_bytes": 104,
+          "query": "new_delimiter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 34,
+          "command": [
+            "/root/know-your-context/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/tree-sitter-python/store.db",
+            "_get_query"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 344.323,
+          "p50_ms": 365.526,
+          "payload_bytes": 133,
+          "query": "_get_query",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "tree-sitter-python",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 26,
+          "query": "new_delimiter"
+        },
+        {
+          "answer_tokens": 34,
+          "query": "_get_query"
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "tree-sitter-python",
+      "task": "tokens",
+      "total_answer_tokens": 60
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/tree-sitter-python/store.db",
+        "new_delimiter"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 1611.497,
+      "latency_p95_ms": 1702.809,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "tree-sitter-python",
+      "task": "concurrent",
+      "throughput_qps": 4.959,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 8.067
+    },
+    {
+      "artifact": "canonical_ingestion_dump",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/tree-sitter-python/store-b.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/tree-sitter-python/tree"
+      ],
+      "run_a_sha256": "b4e22987a5e905170b435b4600cd8e6cc06717df8ff5cd453ddfae46f84d069c",
+      "run_b_sha256": "b4e22987a5e905170b435b4600cd8e6cc06717df8ff5cd453ddfae46f84d069c",
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "tree-sitter-python",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "data_loss": {},
+      "kill": {
+        "command": [
+          "/root/know-your-context/.venv/bin/python",
+          "-c",
+          "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/crash.db",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/tree"
+        ],
+        "exit_code": -9,
+        "kill_after_s": 3.0260835999999998,
+        "kill_elapsed_ms": 3038.857,
+        "stderr_tail": "quests/help.py' (('EXTRACTION_ERROR', 'name must be a non-empty string', {})); falling back to the python walker\nrust kernel failed on 'src/requests/utils.py' (('EXTRACTION_ERROR', 'name must be a non-empty string', {})); falling back to the python walker\nrust kernel failed on 'tests/test_requests.py' (('EXTRACTION_ERROR', 'name must be a non-empty string', {})); falling back to the python walker\n",
+        "stdout_tail": ""
+      },
+      "post_kill": {
+        "command": [
+          "/root/know-your-context/.venv/bin/python",
+          "-c",
+          "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nwith store.read() as conn:\n    out = {\n        \"integrity\": conn.execute(\"PRAGMA integrity_check\").fetchone()[0],\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/crash.db"
+        ],
+        "exit_code": 0,
+        "state": {
+          "edges": 1804,
+          "integrity": "ok",
+          "refs_total": 2887,
+          "symbols": 1804
+        }
+      },
+      "recovered_ok": true,
+      "recovery": {
+        "command": [
+          "/root/know-your-context/.venv/bin/python",
+          "-c",
+          "\nimport json, sys\nsys.path.insert(0, '/root/know-your-context/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/crash.db",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/requests/tree"
+        ],
+        "counts": {
+          "dump_sha256": "917e35d0b988b157731abe229e7d62aabd111386c15a5398d152cff67aea9c27",
+          "edges": 2832,
+          "files_failed": 79,
+          "files_proposed": 0,
+          "refs_resolved": 1163,
+          "refs_total": 2887,
+          "symbols": 1804
+        },
+        "exit_code": 0,
+        "wall_ms": 2480.585
+      },
+      "recovery_ran": true,
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "crash",
+      "verdict": "recovered"
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "artifact_bytes": 176128,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree"
+      ],
+      "counts": {
+        "edges": 21,
+        "files": 5,
+        "nodes": 15
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "ingest",
+      "wall_ms": 2548.407
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 525.541,
+      "queries": [
+        {
+          "answer_tokens": 751,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "Worker",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 513.888,
+          "p50_ms": 570.382,
+          "payload_bytes": 3004,
+          "query": "Worker",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 613,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "base_helper",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 498.112,
+          "p50_ms": 510.942,
+          "payload_bytes": 2449,
+          "query": "base_helper",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 161,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "handle",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 488.222,
+          "p50_ms": 532.979,
+          "payload_bytes": 642,
+          "query": "handle",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 441,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "shout",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 524.036,
+          "p50_ms": 525.541,
+          "payload_bytes": 1761,
+          "query": "shout",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 159,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "formatName",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 461.826,
+          "p50_ms": 479.254,
+          "payload_bytes": 636,
+          "query": "formatName",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "zzz_no_such_symbol",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 482.978,
+          "p50_ms": 563.017,
+          "payload_bytes": 3,
+          "query": "zzz_no_such_symbol",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 751,
+          "query": "Worker"
+        },
+        {
+          "answer_tokens": 613,
+          "query": "base_helper"
+        },
+        {
+          "answer_tokens": 161,
+          "query": "handle"
+        },
+        {
+          "answer_tokens": 441,
+          "query": "shout"
+        },
+        {
+          "answer_tokens": 159,
+          "query": "formatName"
+        },
+        {
+          "answer_tokens": 1,
+          "query": "zzz_no_such_symbol"
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "tokens",
+      "total_answer_tokens": 2126
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "query",
+        "Worker",
+        "-p",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree",
+        "-j"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2508.23,
+      "latency_p95_ms": 2795.025,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "concurrent",
+      "throughput_qps": 3.105,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 12.881
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "byte_identical": false,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/fixture/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "c2de2afc63a2cd51a6d49d0415a0db53f52ff9cd91bc4ebce40043336fda95bc",
+      "run_b_sha256": "ad159990f2a20d158463e0eb419474a7997f066f7ece7b22920c2d973cc817f1",
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "determinism",
+      "verdict": "not_byte_identical"
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "artifact_bytes": 3186688,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree"
+      ],
+      "counts": {
+        "edges": 2685,
+        "files": 45,
+        "nodes": 1169
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "ingest",
+      "wall_ms": 2862.152
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 624.983,
+      "queries": [
+        {
+          "answer_tokens": 1644,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "Session",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 622.926,
+          "p50_ms": 645.155,
+          "payload_bytes": 6575,
+          "query": "Session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1644,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "session",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 635.622,
+          "p50_ms": 673.627,
+          "payload_bytes": 6575,
+          "query": "session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1660,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "PreparedRequest",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 604.875,
+          "p50_ms": 624.983,
+          "payload_bytes": 6639,
+          "query": "PreparedRequest",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 184,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "merge_environment_settings",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 598.118,
+          "p50_ms": 617.762,
+          "payload_bytes": 736,
+          "query": "merge_environment_settings",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 2439,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "HTTPAdapter",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 594.206,
+          "p50_ms": 670.854,
+          "payload_bytes": 9753,
+          "query": "HTTPAdapter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1527,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "SessionRedirectMixin",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 610.631,
+          "p50_ms": 617.599,
+          "payload_bytes": 6107,
+          "query": "SessionRedirectMixin",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 1644,
+          "query": "Session"
+        },
+        {
+          "answer_tokens": 1644,
+          "query": "session"
+        },
+        {
+          "answer_tokens": 1660,
+          "query": "PreparedRequest"
+        },
+        {
+          "answer_tokens": 184,
+          "query": "merge_environment_settings"
+        },
+        {
+          "answer_tokens": 2439,
+          "query": "HTTPAdapter"
+        },
+        {
+          "answer_tokens": 1527,
+          "query": "SessionRedirectMixin"
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "tokens",
+      "total_answer_tokens": 9098
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "query",
+        "Session",
+        "-p",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree",
+        "-j"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2453.1,
+      "latency_p95_ms": 3720.04,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "concurrent",
+      "throughput_qps": 2.973,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 13.454
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "byte_identical": false,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "a0190c5c9e656afe4739176975f8e5048a7d21e37d5350a02e6eb7a4b9d7631a",
+      "run_b_sha256": "9e960b31cde84341ed17a7fcc40401740f735fb8053e487775481630c494f0e7",
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "determinism",
+      "verdict": "not_byte_identical"
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "artifact_bytes": 544768,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/chalk/tree"
+      ],
+      "counts": {
+        "edges": 348,
+        "files": 15,
+        "nodes": 138
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "ingest",
+      "wall_ms": 1459.536
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 481.465,
+      "queries": [
+        {
+          "answer_tokens": 436,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "createChalk",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/chalk/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 471.417,
+          "p50_ms": 481.465,
+          "payload_bytes": 1743,
+          "query": "createChalk",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 146,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "applyOptions",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/chalk/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 467.864,
+          "p50_ms": 484.55,
+          "payload_bytes": 583,
+          "query": "applyOptions",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 436,
+          "query": "createChalk"
+        },
+        {
+          "answer_tokens": 146,
+          "query": "applyOptions"
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "tokens",
+      "total_answer_tokens": 582
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "query",
+        "createChalk",
+        "-p",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/chalk/tree",
+        "-j"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2368.741,
+      "latency_p95_ms": 2566.748,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "concurrent",
+      "throughput_qps": 3.334,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 11.996
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "byte_identical": false,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/chalk/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "3b9277eb95e9d23de4fb1ba8a8dfed192ced2ea4dbe8f528d4fe25e8c1c248a2",
+      "run_b_sha256": "8c0809eb44ddede3800d8e895a40dcc65116eab7ab6c0288e37aa909c9da5ee0",
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "determinism",
+      "verdict": "not_byte_identical"
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "artifact_bytes": 2199552,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/tree-sitter-python/tree"
+      ],
+      "counts": {
+        "edges": 1686,
+        "files": 46,
+        "nodes": 924
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "ingest",
+      "wall_ms": 2842.611
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 479.21,
+      "queries": [
+        {
+          "answer_tokens": 141,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "new_delimiter",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/tree-sitter-python/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 494.915,
+          "p50_ms": 497.568,
+          "payload_bytes": 563,
+          "query": "new_delimiter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 149,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "_get_query",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/tree-sitter-python/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 464.447,
+          "p50_ms": 479.21,
+          "payload_bytes": 595,
+          "query": "_get_query",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 141,
+          "query": "new_delimiter"
+        },
+        {
+          "answer_tokens": 149,
+          "query": "_get_query"
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "tokens",
+      "total_answer_tokens": 290
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "query",
+        "new_delimiter",
+        "-p",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/tree-sitter-python/tree",
+        "-j"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2358.365,
+      "latency_p95_ms": 2524.826,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "concurrent",
+      "throughput_qps": 3.316,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 12.063
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "byte_identical": false,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/tree-sitter-python/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "df740fa52913ebf940197f314fde4fd588b4dabbd442291e8371bcf50e93a02e",
+      "run_b_sha256": "b285ecc82935c1048901823a06f8267b983bd2a3ee8b1f6f62e6f8559f00f888",
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "determinism",
+      "verdict": "not_byte_identical"
+    },
+    {
+      "data_loss": {},
+      "kill": {
+        "command": [
+          "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+          "init",
+          "-y",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree"
+        ],
+        "exit_code": -9,
+        "kill_after_s": 1.1448608,
+        "kill_elapsed_ms": 1179.678,
+        "stderr_tail": "",
+        "stdout_tail": "\u250c  Initializing CodeGraph\n\u2502\n\u25c6  Initialized in /root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree\n\u2502\nScanning files...\nParsing code...\n"
+      },
+      "post_kill": {
+        "artifacts": [
+          ".gitignore",
+          "codegraph.db",
+          "codegraph.lock"
+        ],
+        "command": [
+          "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+          "status",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree"
+        ],
+        "counts": {
+          "edges": 665,
+          "files": 38,
+          "nodes": 659
+        },
+        "detects_interruption": true,
+        "evidence": "ics:\n  Files:     38\n  Nodes:     659\n  Edges:     665\n  DB Size:   0.66 MB\n  WAL Size:  0.94 MB\n  Backend:   node:sqlite \u2014 built-in (full WAL)\n  Journal:   wal\n\nNodes by Kind:\n  import          193\n  method          159\n  function        120\n  variable        112\n  class           46\n  file            29\n\nFiles by Language:\n  python          29\n  yaml            9\n\nPending Changes:\n  Added:     7 files\n\u2139 Run \"codegraph sync\" to update the index\n\n\u26a0 Index was built by an earlier version; re-index to pick up this engine's improvements.\n\u2139 Run \"codegraph index\" (full rebuild) or \"codegraph sync\"\n\n",
+        "exit_code": 0
+      },
+      "recovered_ok": true,
+      "recovery": {
+        "reindex": {
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "index",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree"
+          ],
+          "counts": {
+            "edges": 2685,
+            "files": 45,
+            "nodes": 1169
+          },
+          "exit_code": 0,
+          "wall_ms": 2588.895
+        },
+        "reinit_refused": {
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "init",
+            "-y",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree"
+          ],
+          "evidence": "\u250c  Initializing CodeGraph\n\u2502\n\u25b2  Already initialized in /root/.hermes/cache/scratch/kys-competitive-kith7gfr/codegraph/requests/tree\n\u2502\n\u25cf  Use \"codegraph index\" to re-index or \"codegraph sync\" to update\n\u2502\n\u2514  \n\n",
+          "exit_code": 0
+        }
+      },
+      "recovery_ran": true,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "crash",
+      "verdict": "recovered"
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "artifact_bytes": 10674,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree"
+      ],
+      "counts": {
+        "hyperedges": 0,
+        "links": 26,
+        "nodes": 20
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "ingest",
+      "wall_ms": 713.467
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 446.244,
+      "queries": [
+        {
+          "answer_tokens": 600,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "Worker",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 474.105,
+          "p50_ms": 482.828,
+          "payload_bytes": 2397,
+          "query": "Worker",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 612,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "base_helper",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 437.046,
+          "p50_ms": 446.964,
+          "payload_bytes": 2447,
+          "query": "base_helper",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 535,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "handle",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 432.772,
+          "p50_ms": 446.244,
+          "payload_bytes": 2138,
+          "query": "handle",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 249,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "shout",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 428.289,
+          "p50_ms": 439.375,
+          "payload_bytes": 994,
+          "query": "shout",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 250,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "formatName",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 446.71,
+          "p50_ms": 452.368,
+          "payload_bytes": 999,
+          "query": "formatName",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 7,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "zzz_no_such_symbol",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            4,
+            4,
+            4
+          ],
+          "min_ms": 422.377,
+          "p50_ms": 429.865,
+          "payload_bytes": 25,
+          "query": "zzz_no_such_symbol",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 600,
+          "query": "Worker"
+        },
+        {
+          "answer_tokens": 612,
+          "query": "base_helper"
+        },
+        {
+          "answer_tokens": 535,
+          "query": "handle"
+        },
+        {
+          "answer_tokens": 249,
+          "query": "shout"
+        },
+        {
+          "answer_tokens": 250,
+          "query": "formatName"
+        },
+        {
+          "answer_tokens": 7,
+          "query": "zzz_no_such_symbol"
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "tokens",
+      "total_answer_tokens": 2253
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "query",
+        "Worker",
+        "--graph",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree/graphify-out/graph.json"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 1995.934,
+      "latency_p95_ms": 2364.36,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "concurrent",
+      "throughput_qps": 3.871,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 10.333
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/fixture/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "1375fbeab10ec4ecd32e24acd3b0fe7f7802b94414e3da0ff4f1a88166f3d289",
+      "run_b_sha256": "1375fbeab10ec4ecd32e24acd3b0fe7f7802b94414e3da0ff4f1a88166f3d289",
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "artifact_bytes": 1060107,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree"
+      ],
+      "counts": {
+        "hyperedges": 0,
+        "links": 2397,
+        "nodes": 1347
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "ingest",
+      "wall_ms": 3944.653
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 563.903,
+      "queries": [
+        {
+          "answer_tokens": 50,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "Session",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            3,
+            3,
+            3
+          ],
+          "min_ms": 577.668,
+          "p50_ms": 579.176,
+          "payload_bytes": 199,
+          "query": "Session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 50,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "session",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            3,
+            3,
+            3
+          ],
+          "min_ms": 558.85,
+          "p50_ms": 565.784,
+          "payload_bytes": 199,
+          "query": "session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1648,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "PreparedRequest",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 557.45,
+          "p50_ms": 563.903,
+          "payload_bytes": 6589,
+          "query": "PreparedRequest",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1670,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "merge_environment_settings",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 558.415,
+          "p50_ms": 560.382,
+          "payload_bytes": 6677,
+          "query": "merge_environment_settings",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1650,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "HTTPAdapter",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 575.39,
+          "p50_ms": 578.623,
+          "payload_bytes": 6597,
+          "query": "HTTPAdapter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1651,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "SessionRedirectMixin",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 548.801,
+          "p50_ms": 557.592,
+          "payload_bytes": 6604,
+          "query": "SessionRedirectMixin",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 50,
+          "query": "Session"
+        },
+        {
+          "answer_tokens": 50,
+          "query": "session"
+        },
+        {
+          "answer_tokens": 1648,
+          "query": "PreparedRequest"
+        },
+        {
+          "answer_tokens": 1670,
+          "query": "merge_environment_settings"
+        },
+        {
+          "answer_tokens": 1650,
+          "query": "HTTPAdapter"
+        },
+        {
+          "answer_tokens": 1651,
+          "query": "SessionRedirectMixin"
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "tokens",
+      "total_answer_tokens": 6719
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "query",
+        "Session",
+        "--graph",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree/graphify-out/graph.json"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2656.904,
+      "latency_p95_ms": 2803.538,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "concurrent",
+      "throughput_qps": 3.011,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 13.284
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "73e485185d941340de23d4155559f6c5efb8c1ee3653747f9cd349fac766915b",
+      "run_b_sha256": "73e485185d941340de23d4155559f6c5efb8c1ee3653747f9cd349fac766915b",
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "artifact_bytes": 127337,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/chalk/tree"
+      ],
+      "counts": {
+        "hyperedges": 0,
+        "links": 279,
+        "nodes": 241
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "ingest",
+      "wall_ms": 1699.486
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 484.848,
+      "queries": [
+        {
+          "answer_tokens": 2431,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "createChalk",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/chalk/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 454.641,
+          "p50_ms": 484.848,
+          "payload_bytes": 9724,
+          "query": "createChalk",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 2432,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "applyOptions",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/chalk/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 467.974,
+          "p50_ms": 491.68,
+          "payload_bytes": 9725,
+          "query": "applyOptions",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 2431,
+          "query": "createChalk"
+        },
+        {
+          "answer_tokens": 2432,
+          "query": "applyOptions"
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "tokens",
+      "total_answer_tokens": 4863
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "query",
+        "createChalk",
+        "--graph",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/chalk/tree/graphify-out/graph.json"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2177.668,
+      "latency_p95_ms": 2304.118,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "concurrent",
+      "throughput_qps": 3.611,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 11.077
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/chalk/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "1c2dffd8a03bf3054bfdd1a055362010aea9a3613ce29ed4d021114d6e5fd6b1",
+      "run_b_sha256": "1c2dffd8a03bf3054bfdd1a055362010aea9a3613ce29ed4d021114d6e5fd6b1",
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "artifact_bytes": 717762,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/tree-sitter-python/tree"
+      ],
+      "counts": {
+        "hyperedges": 0,
+        "links": 1430,
+        "nodes": 1312
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "ingest",
+      "wall_ms": 6513.782
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 533.657,
+      "queries": [
+        {
+          "answer_tokens": 2012,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "new_delimiter",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/tree-sitter-python/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 525.039,
+          "p50_ms": 533.657,
+          "payload_bytes": 8047,
+          "query": "new_delimiter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 425,
+          "command": [
+            "/root/know-your-context/.venv/bin/graphify",
+            "query",
+            "_get_query",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/tree-sitter-python/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 572.987,
+          "p50_ms": 621.696,
+          "payload_bytes": 1698,
+          "query": "_get_query",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 2012,
+          "query": "new_delimiter"
+        },
+        {
+          "answer_tokens": 425,
+          "query": "_get_query"
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "tokens",
+      "total_answer_tokens": 2437
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "query",
+        "new_delimiter",
+        "--graph",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/tree-sitter-python/tree/graphify-out/graph.json"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2447.889,
+      "latency_p95_ms": 2687.664,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "concurrent",
+      "throughput_qps": 3.201,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 12.497
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-context/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/tree-sitter-python/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "89b6a32187f61deffcda2f6869cb7258f1ae7e36d9d705eb27504fda95e3769a",
+      "run_b_sha256": "89b6a32187f61deffcda2f6869cb7258f1ae7e36d9d705eb27504fda95e3769a",
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "data_loss": {},
+      "kill": {
+        "command": [
+          "/root/know-your-context/.venv/bin/graphify",
+          "update",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree"
+        ],
+        "exit_code": -9,
+        "kill_after_s": 1.5778612,
+        "kill_elapsed_ms": 1596.087,
+        "stderr_tail": "",
+        "stdout_tail": "Re-extracting code files in /root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree (no LLM needed)...\n[graphify watch] 31 file(s) not classified (no supported extension or shebang), skipped: .coveragerc, .git-blame-ignore-revs, .gitignore, .nojekyll, LICENSE, MANIFEST.in (+25 more)\n"
+      },
+      "post_kill": {
+        "artifacts": [
+          ".rebuild.lock",
+          "cache"
+        ],
+        "graph_json": {
+          "counts": null,
+          "exists": false,
+          "parses": null
+        }
+      },
+      "recovered_ok": true,
+      "recovery": {
+        "command": [
+          "/root/know-your-context/.venv/bin/graphify",
+          "update",
+          "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/graphify/requests/tree"
+        ],
+        "counts": {
+          "hyperedges": 0,
+          "links": 2397,
+          "nodes": 1347
+        },
+        "exit_code": 0,
+        "wall_ms": 3620.696
+      },
+      "recovery_ran": true,
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "crash",
+      "verdict": "recovered"
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "gated-extraction-submit",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/gated-extraction-submit",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "applied_node": "agent:a81c78349b00a857fb58be7bc64ff671",
+        "audit_approve": 1,
+        "audit_submit": 1,
+        "final_status": "applied",
+        "receipt_id": "ext-d2b9e422da11428f6a0c79f318b141a4",
+        "task": "gated-extraction-submit"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "gated-extraction-submit",
+      "wall_ms": 722.355
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "audit-chain-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/audit-chain-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "audit_events_added": 20,
+        "chain_ok": true,
+        "domain_events_added": 20,
+        "mutations": 20,
+        "task": "audit-chain-verify"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "audit-chain-verify",
+      "wall_ms": 813.554
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "rollback-byte-exact",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/rollback-byte-exact",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "content_byte_exact": true,
+        "node": "agent:47f7031ac78dd73ff1c4b88196a3901f",
+        "task": "rollback-byte-exact",
+        "version_after_rollback": 3
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "rollback-byte-exact",
+      "wall_ms": 1323.706
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "operator-gated-apply",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/operator-gated-apply",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "offer_emitted": true,
+        "pending_apply_refusal": "UpdatePipelineError: a relearn offer is pending: the update pipeline may not apply changes before the operator's RESET/ACCUMULATE decision (spec 13.3)",
+        "relearn_pending": true,
+        "task": "operator-gated-apply"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "operator-gated-apply",
+      "wall_ms": 834.232
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "watermark-ryw",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/watermark-ryw",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "read_your_writes": true,
+        "reads": 5,
+        "task": "watermark-ryw",
+        "writes": 1
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "watermark-ryw",
+      "wall_ms": 3891.426
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "group-commit-burst",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/group-commit-burst",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "acked": 100,
+        "acked_per_s": 30.7,
+        "chain_ok": true,
+        "lost": 0,
+        "task": "group-commit-burst",
+        "wall_s": 3.262,
+        "writes": 100
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "group-commit-burst",
+      "wall_ms": 5691.055
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "retention-policy-audited",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/retention-policy-audited",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "audit_lines": 2,
+        "deleted": 2,
+        "generations_built": 5,
+        "pinned_kept": "ca72c2b2560891bbe80f348ae7aa45c8f2c3f15e14b95440a0962971f943d94f",
+        "task": "retention-policy-audited"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "retention-policy-audited",
+      "wall_ms": 1094.691
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "contract-digest-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/contract-digest-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "digests": {
+          "access-policy.md": "68cdbaf88ef5e85dfc868bb35452c8f4b431b577fd69ff3bd3eac422e654d24e",
+          "ingestion-contract-v3.md": "952a0f6dd0344374d299237ce1236e0c228b574a291bafe83ee02c0c27ea1467",
+          "recommendation-contract.md": "811800cad1233ce14031f6a1e54220477bbda097aeea5e3e8d5b8827b2b1fe82",
+          "relearn-contract.md": "24b6223eb4be813a9a4809147dce8dc30af17717ca3137727cae7194e58e6579",
+          "retrieval-verbs-v2.md": "51541fa68e029a4b9c2130188e862cd11a5e27b31db30e596b378718af76d6da"
+        },
+        "mismatches": 0,
+        "pinned_files": 5,
+        "task": "contract-digest-verify",
+        "v4_digest": "6276ec6f11bbdeea087195339330bc21779f160f4fca424b688adbdb912bf627"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "contract-digest-verify",
+      "wall_ms": 317.943
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "relearn-quarantine-flow",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/relearn-quarantine-flow",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "mode": "RESET",
+        "quarantine_equals_receipt": true,
+        "quarantined": 3,
+        "scores_after_zero_vector": true,
+        "task": "relearn-quarantine-flow"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "relearn-quarantine-flow",
+      "wall_ms": 416.247
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "secret-quarantine-scan",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/secret-quarantine-scan",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "clean_generation_ok": true,
+        "poisoned_generation_ok": false,
+        "secret_errors": [
+          "artifact graph.json contains a secret-shaped string (category: openai-style key); node(s): alpha"
+        ],
+        "task": "secret-quarantine-scan"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "secret-quarantine-scan",
+      "wall_ms": 842.298
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "review-decision-policy",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tasks/review-decision-policy",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/fixture/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "deterministic": true,
+        "policy_version": "review-policy-1.0.0",
+        "signals": 3,
+        "task": "review-decision-policy"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "fixture",
+      "task": "review-decision-policy",
+      "wall_ms": 434.376
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "gated-extraction-submit",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/gated-extraction-submit",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "applied_node": "agent:a81c78349b00a857fb58be7bc64ff671",
+        "audit_approve": 1,
+        "audit_submit": 1,
+        "final_status": "applied",
+        "receipt_id": "ext-d2b9e422da11428f6a0c79f318b141a4",
+        "task": "gated-extraction-submit"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "gated-extraction-submit",
+      "wall_ms": 791.5
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "audit-chain-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/audit-chain-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "audit_events_added": 20,
+        "chain_ok": true,
+        "domain_events_added": 20,
+        "mutations": 20,
+        "task": "audit-chain-verify"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "audit-chain-verify",
+      "wall_ms": 799.692
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "rollback-byte-exact",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/rollback-byte-exact",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "content_byte_exact": true,
+        "node": "agent:47f7031ac78dd73ff1c4b88196a3901f",
+        "task": "rollback-byte-exact",
+        "version_after_rollback": 3
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "rollback-byte-exact",
+      "wall_ms": 1273.079
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "operator-gated-apply",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/operator-gated-apply",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "offer_emitted": true,
+        "pending_apply_refusal": "UpdatePipelineError: a relearn offer is pending: the update pipeline may not apply changes before the operator's RESET/ACCUMULATE decision (spec 13.3)",
+        "relearn_pending": true,
+        "task": "operator-gated-apply"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "operator-gated-apply",
+      "wall_ms": 846.044
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "watermark-ryw",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/watermark-ryw",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "read_your_writes": true,
+        "reads": 5,
+        "task": "watermark-ryw",
+        "writes": 1
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "watermark-ryw",
+      "wall_ms": 2885.177
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "group-commit-burst",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/group-commit-burst",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "acked": 100,
+        "acked_per_s": 35.0,
+        "chain_ok": true,
+        "lost": 0,
+        "task": "group-commit-burst",
+        "wall_s": 2.859,
+        "writes": 100
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "group-commit-burst",
+      "wall_ms": 5049.827
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "retention-policy-audited",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/retention-policy-audited",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "audit_lines": 2,
+        "deleted": 2,
+        "generations_built": 5,
+        "pinned_kept": "ca72c2b2560891bbe80f348ae7aa45c8f2c3f15e14b95440a0962971f943d94f",
+        "task": "retention-policy-audited"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "retention-policy-audited",
+      "wall_ms": 1006.364
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "contract-digest-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/contract-digest-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "digests": {
+          "access-policy.md": "68cdbaf88ef5e85dfc868bb35452c8f4b431b577fd69ff3bd3eac422e654d24e",
+          "ingestion-contract-v3.md": "952a0f6dd0344374d299237ce1236e0c228b574a291bafe83ee02c0c27ea1467",
+          "recommendation-contract.md": "811800cad1233ce14031f6a1e54220477bbda097aeea5e3e8d5b8827b2b1fe82",
+          "relearn-contract.md": "24b6223eb4be813a9a4809147dce8dc30af17717ca3137727cae7194e58e6579",
+          "retrieval-verbs-v2.md": "51541fa68e029a4b9c2130188e862cd11a5e27b31db30e596b378718af76d6da"
+        },
+        "mismatches": 0,
+        "pinned_files": 5,
+        "task": "contract-digest-verify",
+        "v4_digest": "6276ec6f11bbdeea087195339330bc21779f160f4fca424b688adbdb912bf627"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "contract-digest-verify",
+      "wall_ms": 270.025
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "relearn-quarantine-flow",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/relearn-quarantine-flow",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "mode": "RESET",
+        "quarantine_equals_receipt": true,
+        "quarantined": 3,
+        "scores_after_zero_vector": true,
+        "task": "relearn-quarantine-flow"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "relearn-quarantine-flow",
+      "wall_ms": 394.759
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "secret-quarantine-scan",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/secret-quarantine-scan",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "clean_generation_ok": true,
+        "poisoned_generation_ok": false,
+        "secret_errors": [
+          "artifact graph.json contains a secret-shaped string (category: openai-style key); node(s): alpha"
+        ],
+        "task": "secret-quarantine-scan"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "secret-quarantine-scan",
+      "wall_ms": 752.644
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "review-decision-policy",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tasks/review-decision-policy",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/requests/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "deterministic": true,
+        "policy_version": "review-policy-1.0.0",
+        "signals": 3,
+        "task": "review-decision-policy"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "requests",
+      "task": "review-decision-policy",
+      "wall_ms": 292.44
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "gated-extraction-submit",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/gated-extraction-submit",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "applied_node": "agent:a81c78349b00a857fb58be7bc64ff671",
+        "audit_approve": 1,
+        "audit_submit": 1,
+        "final_status": "applied",
+        "receipt_id": "ext-d2b9e422da11428f6a0c79f318b141a4",
+        "task": "gated-extraction-submit"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "gated-extraction-submit",
+      "wall_ms": 697.424
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "audit-chain-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/audit-chain-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "audit_events_added": 20,
+        "chain_ok": true,
+        "domain_events_added": 20,
+        "mutations": 20,
+        "task": "audit-chain-verify"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "audit-chain-verify",
+      "wall_ms": 747.183
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "rollback-byte-exact",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/rollback-byte-exact",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "content_byte_exact": true,
+        "node": "agent:47f7031ac78dd73ff1c4b88196a3901f",
+        "task": "rollback-byte-exact",
+        "version_after_rollback": 3
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "rollback-byte-exact",
+      "wall_ms": 1299.747
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "operator-gated-apply",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/operator-gated-apply",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "offer_emitted": true,
+        "pending_apply_refusal": "UpdatePipelineError: a relearn offer is pending: the update pipeline may not apply changes before the operator's RESET/ACCUMULATE decision (spec 13.3)",
+        "relearn_pending": true,
+        "task": "operator-gated-apply"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "operator-gated-apply",
+      "wall_ms": 830.124
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "watermark-ryw",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/watermark-ryw",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "read_your_writes": true,
+        "reads": 5,
+        "task": "watermark-ryw",
+        "writes": 1
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "watermark-ryw",
+      "wall_ms": 3515.449
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "group-commit-burst",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/group-commit-burst",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "acked": 100,
+        "acked_per_s": 34.8,
+        "chain_ok": true,
+        "lost": 0,
+        "task": "group-commit-burst",
+        "wall_s": 2.871,
+        "writes": 100
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "group-commit-burst",
+      "wall_ms": 4933.025
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "retention-policy-audited",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/retention-policy-audited",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "audit_lines": 2,
+        "deleted": 2,
+        "generations_built": 5,
+        "pinned_kept": "ca72c2b2560891bbe80f348ae7aa45c8f2c3f15e14b95440a0962971f943d94f",
+        "task": "retention-policy-audited"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "retention-policy-audited",
+      "wall_ms": 931.788
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "contract-digest-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/contract-digest-verify",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "digests": {
+          "access-policy.md": "68cdbaf88ef5e85dfc868bb35452c8f4b431b577fd69ff3bd3eac422e654d24e",
+          "ingestion-contract-v3.md": "952a0f6dd0344374d299237ce1236e0c228b574a291bafe83ee02c0c27ea1467",
+          "recommendation-contract.md": "811800cad1233ce14031f6a1e54220477bbda097aeea5e3e8d5b8827b2b1fe82",
+          "relearn-contract.md": "24b6223eb4be813a9a4809147dce8dc30af17717ca3137727cae7194e58e6579",
+          "retrieval-verbs-v2.md": "51541fa68e029a4b9c2130188e862cd11a5e27b31db30e596b378718af76d6da"
+        },
+        "mismatches": 0,
+        "pinned_files": 5,
+        "task": "contract-digest-verify",
+        "v4_digest": "6276ec6f11bbdeea087195339330bc21779f160f4fca424b688adbdb912bf627"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "contract-digest-verify",
+      "wall_ms": 317.953
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "relearn-quarantine-flow",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/relearn-quarantine-flow",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "mode": "RESET",
+        "quarantine_equals_receipt": true,
+        "quarantined": 3,
+        "scores_after_zero_vector": true,
+        "task": "relearn-quarantine-flow"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "relearn-quarantine-flow",
+      "wall_ms": 411.103
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "secret-quarantine-scan",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/secret-quarantine-scan",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "clean_generation_ok": true,
+        "poisoned_generation_ok": false,
+        "secret_errors": [
+          "artifact graph.json contains a secret-shaped string (category: openai-style key); node(s): alpha"
+        ],
+        "task": "secret-quarantine-scan"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "secret-quarantine-scan",
+      "wall_ms": 798.911
+    },
+    {
+      "command": [
+        "/root/know-your-context/.venv/bin/python",
+        "/root/know-your-context/bench/competitive/diff_tasks.py",
+        "review-decision-policy",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/diff.db",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tasks/review-decision-policy",
+        "/root/.hermes/cache/scratch/kys-competitive-kith7gfr/know_your_context/diff/chalk/tree"
+      ],
+      "exit_code": 0,
+      "result": {
+        "deterministic": true,
+        "policy_version": "review-policy-1.0.0",
+        "signals": 3,
+        "task": "review-decision-policy"
+      },
+      "status": "OK",
+      "system": "know_your_context",
+      "target": "chalk",
+      "task": "review-decision-policy",
+      "wall_ms": 318.906
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tool surface tanpa extraction proposal/review/approve",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "gated-extraction-submit"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 grep 'audit': 2 hit insidental; tanpa audit log hash-chained",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "audit-chain-verify"
+    },
+    {
+      "evidence": "src/db/index.ts:1 \u2014 tanpa rollback vocabulary",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "rollback-byte-exact"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa offer/decision gate pada apply",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "operator-gated-apply"
+    },
+    {
+      "evidence": "src/mcp/query-pool.ts:60 \u2014 tanpa watermark vocabulary pada read path",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "watermark-ryw"
+    },
+    {
+      "evidence": "src/mcp/writer-lock.ts:1 \u2014 single writer lockfile; tanpa group commit",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "group-commit-burst"
+    },
+    {
+      "evidence": "src/db/wal-valve.ts:79 \u2014 WAL valve ukuran; tanpa retention keep-N teraudit",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "retention-policy-audited"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa kontrak beku yang ter-pin digest",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "contract-digest-verify"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa vocabulary relearn/quarantine",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "relearn-quarantine-flow"
+    },
+    {
+      "evidence": "src/db/schema.sql:1 \u2014 tanpa read-model validator gate",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "secret-quarantine-scan"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa review policy ter-pin versi",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "review-decision-policy"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tool surface tanpa extraction proposal/review/approve",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "gated-extraction-submit"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 grep 'audit': 2 hit insidental; tanpa audit log hash-chained",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "audit-chain-verify"
+    },
+    {
+      "evidence": "src/db/index.ts:1 \u2014 tanpa rollback vocabulary",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "rollback-byte-exact"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa offer/decision gate pada apply",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "operator-gated-apply"
+    },
+    {
+      "evidence": "src/mcp/query-pool.ts:60 \u2014 tanpa watermark vocabulary pada read path",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "watermark-ryw"
+    },
+    {
+      "evidence": "src/mcp/writer-lock.ts:1 \u2014 single writer lockfile; tanpa group commit",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "group-commit-burst"
+    },
+    {
+      "evidence": "src/db/wal-valve.ts:79 \u2014 WAL valve ukuran; tanpa retention keep-N teraudit",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "retention-policy-audited"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa kontrak beku yang ter-pin digest",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "contract-digest-verify"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa vocabulary relearn/quarantine",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "relearn-quarantine-flow"
+    },
+    {
+      "evidence": "src/db/schema.sql:1 \u2014 tanpa read-model validator gate",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "secret-quarantine-scan"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa review policy ter-pin versi",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "review-decision-policy"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tool surface tanpa extraction proposal/review/approve",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "gated-extraction-submit"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 grep 'audit': 2 hit insidental; tanpa audit log hash-chained",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "audit-chain-verify"
+    },
+    {
+      "evidence": "src/db/index.ts:1 \u2014 tanpa rollback vocabulary",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "rollback-byte-exact"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa offer/decision gate pada apply",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "operator-gated-apply"
+    },
+    {
+      "evidence": "src/mcp/query-pool.ts:60 \u2014 tanpa watermark vocabulary pada read path",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "watermark-ryw"
+    },
+    {
+      "evidence": "src/mcp/writer-lock.ts:1 \u2014 single writer lockfile; tanpa group commit",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "group-commit-burst"
+    },
+    {
+      "evidence": "src/db/wal-valve.ts:79 \u2014 WAL valve ukuran; tanpa retention keep-N teraudit",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "retention-policy-audited"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa kontrak beku yang ter-pin digest",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "contract-digest-verify"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa vocabulary relearn/quarantine",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "relearn-quarantine-flow"
+    },
+    {
+      "evidence": "src/db/schema.sql:1 \u2014 tanpa read-model validator gate",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "secret-quarantine-scan"
+    },
+    {
+      "evidence": "src/mcp/tools.ts:1 \u2014 tanpa review policy ter-pin versi",
+      "status": "NOT_SUPPORTED",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "review-decision-policy"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 build menulis langsung; tanpa antrian proposal",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "gated-extraction-submit"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 tanpa audit log sama sekali",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "audit-chain-verify"
+    },
+    {
+      "evidence": "graphify/__main__.py:880 \u2014 --previous me-restore community ids, bukan rollback konten",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "rollback-byte-exact"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 build menulis langsung tanpa operator gate",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "operator-gated-apply"
+    },
+    {
+      "evidence": "graphify/serve.py:140 \u2014 satu lock threading tunggal; tanpa watermark lintas lane",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "watermark-ryw"
+    },
+    {
+      "evidence": "graphify/serve.py:140 \u2014 satu lock tunggal; tanpa batch commit",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "group-commit-burst"
+    },
+    {
+      "evidence": "graphify/cache.py:1 \u2014 cache tumbuh selamanya; tanpa retention policy",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "retention-policy-audited"
+    },
+    {
+      "evidence": "graphify/llm.py:502 \u2014 prompt contract tak berversi",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "contract-digest-verify"
+    },
+    {
+      "evidence": "graphify/__main__.py:880 \u2014 --previous bukan relearn berkuarantina",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "relearn-quarantine-flow"
+    },
+    {
+      "evidence": "graphify/security.py:394 \u2014 sanitize label exporter saja; tanpa generasi-gate fail-closed",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "secret-quarantine-scan"
+    },
+    {
+      "evidence": "graphify/analyze.py:112 \u2014 analitik satu-tembak; tanpa review policy",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "review-decision-policy"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 build menulis langsung; tanpa antrian proposal",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "gated-extraction-submit"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 tanpa audit log sama sekali",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "audit-chain-verify"
+    },
+    {
+      "evidence": "graphify/__main__.py:880 \u2014 --previous me-restore community ids, bukan rollback konten",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "rollback-byte-exact"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 build menulis langsung tanpa operator gate",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "operator-gated-apply"
+    },
+    {
+      "evidence": "graphify/serve.py:140 \u2014 satu lock threading tunggal; tanpa watermark lintas lane",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "watermark-ryw"
+    },
+    {
+      "evidence": "graphify/serve.py:140 \u2014 satu lock tunggal; tanpa batch commit",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "group-commit-burst"
+    },
+    {
+      "evidence": "graphify/cache.py:1 \u2014 cache tumbuh selamanya; tanpa retention policy",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "retention-policy-audited"
+    },
+    {
+      "evidence": "graphify/llm.py:502 \u2014 prompt contract tak berversi",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "contract-digest-verify"
+    },
+    {
+      "evidence": "graphify/__main__.py:880 \u2014 --previous bukan relearn berkuarantina",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "relearn-quarantine-flow"
+    },
+    {
+      "evidence": "graphify/security.py:394 \u2014 sanitize label exporter saja; tanpa generasi-gate fail-closed",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "secret-quarantine-scan"
+    },
+    {
+      "evidence": "graphify/analyze.py:112 \u2014 analitik satu-tembak; tanpa review policy",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "requests",
+      "task": "review-decision-policy"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 build menulis langsung; tanpa antrian proposal",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "gated-extraction-submit"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 tanpa audit log sama sekali",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "audit-chain-verify"
+    },
+    {
+      "evidence": "graphify/__main__.py:880 \u2014 --previous me-restore community ids, bukan rollback konten",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "rollback-byte-exact"
+    },
+    {
+      "evidence": "graphify/build.py:1 \u2014 build menulis langsung tanpa operator gate",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "operator-gated-apply"
+    },
+    {
+      "evidence": "graphify/serve.py:140 \u2014 satu lock threading tunggal; tanpa watermark lintas lane",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "watermark-ryw"
+    },
+    {
+      "evidence": "graphify/serve.py:140 \u2014 satu lock tunggal; tanpa batch commit",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "group-commit-burst"
+    },
+    {
+      "evidence": "graphify/cache.py:1 \u2014 cache tumbuh selamanya; tanpa retention policy",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "retention-policy-audited"
+    },
+    {
+      "evidence": "graphify/llm.py:502 \u2014 prompt contract tak berversi",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "contract-digest-verify"
+    },
+    {
+      "evidence": "graphify/__main__.py:880 \u2014 --previous bukan relearn berkuarantina",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "relearn-quarantine-flow"
+    },
+    {
+      "evidence": "graphify/security.py:394 \u2014 sanitize label exporter saja; tanpa generasi-gate fail-closed",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "secret-quarantine-scan"
+    },
+    {
+      "evidence": "graphify/analyze.py:112 \u2014 analitik satu-tembak; tanpa review policy",
+      "status": "NOT_SUPPORTED",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "review-decision-policy"
+    }
+  ],
+  "finished_utc": "20261101T175254Z",
+  "harness": "bench/competitive",
+  "harness_version": 2,
+  "reproduce": "uv run python bench/competitive/run.py run",
+  "started_utc": "20261101T174703Z",
+  "summary": {
+    "entries": 162,
+    "per_system": {
+      "codegraph": {
+        "FAILED": 0,
+        "NOT_SUPPORTED": 33,
+        "OK": 21
+      },
+      "graphify": {
+        "FAILED": 0,
+        "NOT_SUPPORTED": 33,
+        "OK": 21
+      },
+      "know_your_context": {
+        "FAILED": 0,
+        "NOT_SUPPORTED": 0,
+        "OK": 54
+      }
+    }
+  },
+  "systems": {
+    "codegraph": {
+      "available": true,
+      "cli": "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+      "evidence": "`codegraph version` exit=0 -> '1.6.2'",
+      "version": "1.6.2"
+    },
+    "graphify": {
+      "available": true,
+      "cli": "/root/know-your-context/.venv/bin/graphify",
+      "evidence": "`graphify --version` exit=0 -> 'graphify 0.9.95'",
+      "version": "graphify 0.9.95"
+    },
+    "know_your_context": {
+      "available": true,
+      "driver_python": "/root/know-your-context/.venv/bin/python",
+      "interface": "in-repo python (EventStore + IngestionPipeline + SymbolLookup)",
+      "module": "know_your_context"
+    }
+  },
+  "work_dir": "/root/.hermes/cache/scratch/kys-competitive-kith7gfr"
+}

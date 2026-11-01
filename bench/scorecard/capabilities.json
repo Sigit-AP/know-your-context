@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "suite": "capability-scorecard",
   "description": "Machine-measured architecture/engineering capability scorecard: Know Your Soul vs codegraph vs graphify. Our side is proven by real pytest proofs executed by bench/scorecard/run.py; opponent sides are documented manual evidence (repo path + line) with status supported/partial/absent.",
   "subjects": {
@@ -2485,6 +2485,1783 @@
           ]
         }
       }
+    },
+    {
+      "id": "concurrency.write_group_commit",
+      "category": "concurrency",
+      "weight": 3,
+      "title": "Burst tulis digabung satu transaksi (group commit ≥3×, ack setelah COMMIT)",
+      "ours": {
+        "proof_tests": [
+          "tests/test_serve_gates.py::TestGroupCommit::test_group_commit_ab_benchmark"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/writer-lock.ts",
+              "line": 1,
+              "note": "single writer lockfile; tanpa group commit / deadline / watermark vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 140,
+              "note": "satu lock threading tunggal; tanpa lane/backpressure/watermark"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "concurrency.deadline_propagation",
+      "category": "concurrency",
+      "weight": 2,
+      "title": "Request kedaluwarsa di antrian → DEADLINE_EXCEEDED typed, tak membuang kerja",
+      "ours": {
+        "proof_tests": [
+          "tests/test_serve_gates.py::TestDeadlinePropagation::test_write_expiring_in_queue_is_deadline_exceeded"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/writer-lock.ts",
+              "line": 1,
+              "note": "single writer lockfile; tanpa group commit / deadline / watermark vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 2732,
+              "note": "tanpa drain/deadline protocol"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "concurrency.storm_all_verbs_gate",
+      "category": "concurrency",
+      "weight": 3,
+      "title": "Badai 50 agent × 16 verb: nol gagal, p95 per-lane di bawah target tertulis",
+      "ours": {
+        "proof_tests": [
+          "tests/test_serve_gates.py::TestStormAllVerbs::test_sixteen_ops_fifty_agents_with_latency_per_lane"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/writer-lock.ts",
+              "line": 1,
+              "note": "single writer lockfile; tanpa group commit / deadline / watermark vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 140,
+              "note": "satu lock threading tunggal; tanpa lane/backpressure/watermark"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "concurrency.read_your_writes",
+      "category": "concurrency",
+      "weight": 2,
+      "title": "Tulis→baca dengan min_watermark selalu melihat tulisan sendiri lintas lane",
+      "ours": {
+        "proof_tests": [
+          "tests/test_serve_concurrency.py::TestFiftyAgentStorm::test_read_your_writes_across_lanes"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/writer-lock.ts",
+              "line": 1,
+              "note": "single writer lockfile; tanpa group commit / deadline / watermark vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 140,
+              "note": "satu lock threading tunggal; tanpa lane/backpressure/watermark"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "concurrency.dense_mixed_zero_corruption",
+      "category": "concurrency",
+      "weight": 3,
+      "title": "Lalu lintas campuran padat 50 agent: nol korupsi, chain valid setelahnya",
+      "ours": {
+        "proof_tests": [
+          "tests/test_serve_concurrency.py::TestFiftyAgentStorm::test_dense_mixed_traffic_zero_corruption"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/writer-lock.ts",
+              "line": 1,
+              "note": "single writer lockfile; tanpa group commit / deadline / watermark vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 140,
+              "note": "satu lock threading tunggal; tanpa lane/backpressure/watermark"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "observability.per_actor_audit_journal",
+      "category": "observability",
+      "weight": 2,
+      "title": "Setiap invokasi ter-jurnal tepat sekali dengan actor per-agent",
+      "ours": {
+        "proof_tests": [
+          "tests/test_serve_arbiter.py::TestAuditLane::test_actor_is_recorded_per_agent",
+          "tests/test_serve_arbiter.py::TestAuditLane::test_every_invocation_is_journaled_once"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "grep 'audit' 2 hit insidental; tanpa jurnal audit per-actor"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "extensibility.protocol_version_handshake",
+      "category": "extensibility",
+      "weight": 2,
+      "title": "Handshake versi protokol: versi tak dikenal jatuh ke handshake terbaru, typed",
+      "ours": {
+        "proof_tests": [
+          "tests/test_serve_protocol.py::TestHandshake::test_unknown_version_falls_back_to_latest_handshake",
+          "tests/test_serve_protocol.py::TestHandshake::test_known_version_is_echoed"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "partial",
+          "evidence": [
+            {
+              "path": "src/mcp/proxy.ts",
+              "line": 418,
+              "note": "MCP initialize menjawab satu PROTOCOL_VERSION konstan (fallback implisit); tanpa multi-versi echo typed"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/llm.py",
+              "line": 502,
+              "note": "prompt contract tak berversi"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "determinism.extraction_queue_byte_stable",
+      "category": "determinism",
+      "weight": 2,
+      "title": "Dump antrian ekstraksi byte-identik lintas run; field volatil ter-mask",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_queue.py::TestCanonicalDump::test_dump_is_byte_identical_across_runs",
+          "tests/test_extraction_queue.py::TestCanonicalDump::test_dump_masks_volatile_fields"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "contracts/governance.extraction_truth_tier",
+      "category": "contracts/governance",
+      "weight": 2,
+      "title": "Truth tier: self-report ter-cap intake; confidence tak pernah melewati cap tier meski terkoroborasi",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_engine.py::TestTruthTier::test_self_report_is_capped_at_the_intake_cap",
+          "tests/test_extraction_engine.py::TestTruthTier::test_confidence_never_exceeds_the_tier_cap_even_corroborated"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/llm.py",
+              "line": 502,
+              "note": "prompt contract tak berversi"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.extraction_corroboration",
+      "category": "integrity",
+      "weight": 3,
+      "title": "Koroborasi multi-actor menaikkan confidence; actor+method sama tidak mengoroborasi; kontradiksi ter-penalti",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_corroboration.py::TestGroupRecompute::test_two_distinct_agents_corroborate_each_other",
+          "tests/test_extraction_corroboration.py::TestGroupRecompute::test_same_actor_and_method_does_not_corroborate",
+          "tests/test_extraction_corroboration.py::TestEffectiveConfidence::test_contradiction_penalty"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.extraction_provenance_binding",
+      "category": "integrity",
+      "weight": 3,
+      "title": "Sumber proposal terikat hash file nyata; hash tertamper ditolak; path escape typed",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_engine.py::TestProvenanceBinding::test_tampered_hash_is_rejected",
+          "tests/test_extraction_engine.py::TestProvenanceBinding::test_path_escape_is_typed"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "contracts/governance.extraction_sidecar_isolation",
+      "category": "contracts/governance",
+      "weight": 2,
+      "title": "Antrian ekstraksi di sidecar; skema store beku tak bertambah tabel",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_queue.py::TestPlacement::test_frozen_store_schema_gains_no_tables",
+          "tests/test_extraction_queue.py::TestPlacement::test_sidecar_path_is_derived_from_the_store"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/db/index.ts",
+              "line": 1,
+              "note": "tanpa rollback/restore vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "extensibility.extraction_surface_parity",
+      "category": "extensibility",
+      "weight": 2,
+      "title": "Identitas receipt ekstraksi identik di ketiga permukaan (CLI/HTTP/MCP)",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_adapters.py::TestAdapterParity::test_all_three_surfaces_agree_on_receipt_identity"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "recovery.extraction_rollback_byte_exact",
+      "category": "recovery",
+      "weight": 2,
+      "title": "Rollback ekstraksi yang sudah ter-apply mengembalikan byte persis pra-apply",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_engine.py::TestRollback::test_applied_extraction_rolls_back_byte_exact"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/db/index.ts",
+              "line": 1,
+              "note": "tanpa rollback/restore vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "concurrency.extraction_admission_quota",
+      "category": "concurrency",
+      "weight": 2,
+      "title": "submit_extraction lewat daemon ter-throttle admission bucket per-agent",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_serve.py::TestPerAgentQuota::test_the_admission_bucket_throttles_submit_extraction"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 140,
+              "note": "satu lock threading tunggal; tanpa lane/backpressure/watermark"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "security.extraction_schema_sanitization",
+      "category": "security",
+      "weight": 2,
+      "title": "Skema ekstraksi closed: kontrol/bidi ter-strip; float biner ditolak",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_schema.py::TestSanitization::test_control_and_bidi_characters_are_stripped",
+          "tests/test_extraction_schema.py::TestConfidence::test_binary_floats_rejected"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "security.pdf_fail_closed",
+      "category": "security",
+      "weight": 2,
+      "title": "PDF tanpa text-layer / terenkripsi → typed error, nol OCR, nol tebakan",
+      "ours": {
+        "proof_tests": [
+          "tests/test_ingest_documents.py::TestPdf::test_no_text_layer",
+          "tests/test_ingest_documents.py::TestPdf::test_encrypted_pdf_typed_error"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/extraction/tree-sitter.ts",
+              "line": 1,
+              "note": "ekstraksi kode saja; tanpa dokumen/PDF"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/extract.py",
+              "line": 1,
+              "note": "ekstraksi kode; tanpa PDF text-layer gate"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "determinism.document_chunking_canonical",
+      "category": "determinism",
+      "weight": 2,
+      "title": "Chunking dokumen ber-offset global kanonik; heading markdown bersarang ke H1 terdekat",
+      "ours": {
+        "proof_tests": [
+          "tests/test_ingest_documents.py::TestChunkText::test_chunk_offsets_global",
+          "tests/test_ingest_documents.py::TestMarkdownStructure::test_h2_nests_under_nearest_h1"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/extraction/tree-sitter.ts",
+              "line": 1,
+              "note": "ekstraksi kode saja; tanpa dokumen/PDF"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/extract.py",
+              "line": 1,
+              "note": "ekstraksi kode; tanpa PDF text-layer gate"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "contracts/governance.primary_split_proposals",
+      "category": "contracts/governance",
+      "weight": 2,
+      "title": "Split primary = proposal-only; root non-primary fail-closed; graf tak berubah",
+      "ours": {
+        "proof_tests": [
+          "tests/test_graph_model.py::TestSplitProposals::test_proposal_only_graph_unchanged",
+          "tests/test_graph_model.py::TestSplitProposals::test_non_primary_root_fails_closed"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/db/schema.sql",
+              "line": 1,
+              "note": "tanpa primary/containment model"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.primary_containment_invariant",
+      "category": "integrity",
+      "weight": 2,
+      "title": "Primary-tak-di-contain-primary ditegakkan eager DAN via validate()",
+      "ours": {
+        "proof_tests": [
+          "tests/test_graph_model.py::TestPrimaryContainmentInvariant::test_primary_contained_by_primary_is_rejected",
+          "tests/test_graph_model.py::TestPrimaryContainmentInvariant::test_validate_reproves_the_invariant"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/db/schema.sql",
+              "line": 1,
+              "note": "tanpa primary/containment model"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.injective_id_escaping",
+      "category": "integrity",
+      "weight": 2,
+      "title": "Escape id injektif: input berbeda tak pernah berkolisi; file id stabil hanya pada normalisasi terdeklarasi",
+      "ours": {
+        "proof_tests": [
+          "tests/test_property_injective_ids.py::test_escape_never_collides_on_distinct_inputs",
+          "tests/test_property_injective_ids.py::test_file_id_never_collides_outside_declared_normalization"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/extraction/tree-sitter.ts",
+              "line": 1,
+              "note": "ekstraksi kode saja; tanpa dokumen/PDF"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/extract.py",
+              "line": 1,
+              "note": "ekstraksi kode; tanpa PDF text-layer gate"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "security.importer_manifest_anchor",
+      "category": "security",
+      "weight": 2,
+      "title": "Manifest ter-anchor ke root lain / korup → fail-closed",
+      "ours": {
+        "proof_tests": [
+          "tests/test_property_importer_e2e.py::test_a_manifest_anchored_to_another_root_fails_closed",
+          "tests/test_property_importer_e2e.py::test_a_corrupt_manifest_fails_closed"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "determinism.importer_replay_idempotent",
+      "category": "determinism",
+      "weight": 2,
+      "title": "Re-import konten sama = nol append; import deterministik lintas store segar",
+      "ours": {
+        "proof_tests": [
+          "tests/test_property_importer_e2e.py::test_import_file_replay_is_idempotent_and_keeps_node_ids",
+          "tests/test_property_importer_e2e.py::test_import_is_deterministic_across_fresh_stores"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.generation_diff_accounting",
+      "category": "integrity",
+      "weight": 2,
+      "title": "Diff generasi antisimetris dengan invariant akuntansi penuh (tanpa double-count)",
+      "ours": {
+        "proof_tests": [
+          "tests/test_analytics_generation_diff.py::test_diff_is_antisymmetric",
+          "tests/test_analytics_generation_diff.py::TestSummary::test_full_accounting_invariant"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/db/schema.sql",
+              "line": 1,
+              "note": "tanpa primary/containment model"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 112,
+              "note": "fungsi analitik satu-tembak; tanpa timeline/review-signal catalog"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "observability.evidence_timeline",
+      "category": "observability",
+      "weight": 2,
+      "title": "Timeline evidence deterministik lintas shuffle; rekomputasi tanpa evidence baru tak pernah menurunkan uncertainty",
+      "ours": {
+        "proof_tests": [
+          "tests/test_analytics_timeline.py::test_timeline_is_deterministic_under_shuffle",
+          "tests/test_analytics_timeline.py::test_recomputing_without_new_evidence_never_lowers_uncertainty"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/explore-diagnostics.ts",
+              "line": 1,
+              "note": "diagnostik read-side; bukan validator gate fail-closed"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 112,
+              "note": "fungsi analitik satu-tembak; tanpa timeline/review-signal catalog"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "observability.review_signal_catalog",
+      "category": "observability",
+      "weight": 2,
+      "title": "Katalog sinyal review berurutan tetap; kuota round-robin antar tipe sinyal",
+      "ours": {
+        "proof_tests": [
+          "tests/test_analytics_review_signals.py::TestSignalCatalog::test_catalog_order_fixed",
+          "tests/test_analytics_review_signals.py::TestRoundRobin::test_quota_interleaves_signal_types"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 112,
+              "note": "fungsi analitik satu-tembak; tanpa timeline/review-signal catalog"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "operability.subgraph_export_bounded",
+      "category": "operability",
+      "weight": 2,
+      "title": "Ekspor subgraph terbatas budget dengan tanda truncated; ego-net memilih terdekat lalu id kanonik",
+      "ours": {
+        "proof_tests": [
+          "tests/test_ops_subgraph_export.py::test_domain_selection_respects_max_nodes_with_marked_truncation",
+          "tests/test_ops_subgraph_export.py::test_ego_net_budget_prefers_nearest_then_canonical_id"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/ui",
+              "line": 1,
+              "note": "viewer graf; tanpa ekspor subgraph berbudget bertanda truncated"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 112,
+              "note": "fungsi analitik satu-tembak; tanpa timeline/review-signal catalog"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.read_model_validator_gate",
+      "category": "integrity",
+      "weight": 2,
+      "title": "Validator read model: hash mismatch & bentuk secret fail-closed",
+      "ours": {
+        "proof_tests": [
+          "tests/test_read_model_validator.py::test_hash_mismatch_fails_closed",
+          "tests/test_read_model_validator.py::test_secret_shapes_fail_closed"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/explore-diagnostics.ts",
+              "line": 1,
+              "note": "diagnostik read-side; bukan validator gate fail-closed"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "contracts/governance.update_pipeline_offer_gate",
+      "category": "contracts/governance",
+      "weight": 2,
+      "title": "Sumber hilang = offer-gated bukan retire; apply tanpa keputusan pending ditolak",
+      "ours": {
+        "proof_tests": [
+          "tests/test_update_pipeline.py::test_removed_source_is_offer_gated_not_retired",
+          "tests/test_update_pipeline.py::test_apply_approved_update_refused_while_decision_pending"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/build.py",
+              "line": 1,
+              "note": "build menimpa langsung; tanpa queue/proposal/koroborasi/audit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "recovery.restore_over_live_coherence",
+      "category": "recovery",
+      "weight": 2,
+      "title": "Restore di atas store hidup koheren; destinasi dipegang proses lain ditolak",
+      "ours": {
+        "proof_tests": [
+          "tests/test_audit_final_flow.py::test_restore_over_live_store_is_coherent",
+          "tests/test_audit_final_flow.py::test_restore_refuses_destination_held_by_another_process"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/db/index.ts",
+              "line": 1,
+              "note": "tanpa rollback/restore vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/__main__.py",
+              "line": 361,
+              "note": ".bak saja; tanpa restore terverifikasi / offer pipeline"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "security.ops_path_toctou_recheck",
+      "category": "security",
+      "weight": 2,
+      "title": "Backup/restore: swap parent terdeteksi (TOCTOU re-check); hardlink ditolak",
+      "ours": {
+        "proof_tests": [
+          "tests/test_audit_wave3_ops_boundary.py::TestOpsPathToctouRecheck::test_backup_parent_swap_detected",
+          "tests/test_audit_wave3_ops_boundary.py::TestOpsPathHardlinkRefused::test_restore_from_hardlink_refused"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/db/index.ts",
+              "line": 1,
+              "note": "tanpa rollback/restore vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/cache.py",
+              "line": 1,
+              "note": "cache tumbuh; tanpa TOCTOU re-check"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "determinism.pme_scoring_frozen_cases",
+      "category": "determinism",
+      "weight": 2,
+      "title": "Semua kasus scoring beku me-reproduce persis; skor deterministik di replay",
+      "ours": {
+        "proof_tests": [
+          "tests/test_scoring.py::test_all_frozen_scoring_cases_reproduce_exactly",
+          "tests/test_scoring.py::test_score_node_is_deterministic_under_replay"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/resolution/name-matcher.ts",
+              "line": 60,
+              "note": "confidence float ladder; tanpa invariant skor terbukti"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 246,
+              "note": "surprise score float aditif; tanpa scoring P/M/E beku"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.scoring_evidence_invariants",
+      "category": "integrity",
+      "weight": 2,
+      "title": "Grup berkorelasi diminishing returns; kontradiksi menurunkan p",
+      "ours": {
+        "proof_tests": [
+          "tests/test_scoring_properties.py::test_correlated_group_has_diminishing_returns",
+          "tests/test_scoring_properties.py::test_contradiction_lowers_p"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/resolution/name-matcher.ts",
+              "line": 60,
+              "note": "confidence float ladder; tanpa invariant skor terbukti"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 246,
+              "note": "surprise score float aditif; tanpa scoring P/M/E beku"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "contracts/governance.review_policy_pinned",
+      "category": "contracts/governance",
+      "weight": 2,
+      "title": "Versi policy ter-pin ke policy; keputusan terblokir tak pernah bertransisi",
+      "ours": {
+        "proof_tests": [
+          "tests/test_property_review_improvement.py::test_policy_version_is_pinned_to_the_policy",
+          "tests/test_property_review_improvement.py::test_a_blocked_decision_never_transitions"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/__main__.py",
+              "line": 880,
+              "note": "--previous me-restore community ids; bukan relearn berkuarantina"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "operability.service_budget_envelope",
+      "category": "operability",
+      "weight": 2,
+      "title": "Respons sukses tak pernah melebihi budget; budget di luar rentang = typed error",
+      "ours": {
+        "proof_tests": [
+          "tests/test_property_service_budget.py::test_a_successful_response_never_exceeds_its_budget",
+          "tests/test_property_service_budget.py::test_budget_below_minimum_is_a_typed_error"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "budget heuristik token konteks; tanpa envelope budget fail-closed typed di service boundary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 1,
+              "note": "server tanpa budget envelope per query / watcher receipt typed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "operability.relearn_preview_readonly",
+      "category": "operability",
+      "weight": 2,
+      "title": "Preview relearn read-only; apply tak pernah menggerakkan watermark knowledge",
+      "ours": {
+        "proof_tests": [
+          "tests/test_property_relearn.py::test_preview_is_read_only",
+          "tests/test_property_relearn.py::test_apply_never_moves_the_knowledge_watermark"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/__main__.py",
+              "line": 880,
+              "note": "--previous me-restore community ids; bukan relearn berkuarantina"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.relearn_quarantine_accounting",
+      "category": "integrity",
+      "weight": 3,
+      "title": "Reset+apply menyatakan zero vector dan mengkuarantina semua evidence lama; state kuarantina = receipt",
+      "ours": {
+        "proof_tests": [
+          "tests/test_property_relearn.py::test_reset_apply_states_the_zero_vector_and_quarantines_every_old_evidence",
+          "tests/test_property_relearn.py::test_accumulate_apply_quarantine_state_equals_the_receipt"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/__main__.py",
+              "line": 880,
+              "note": "--previous me-restore community ids; bukan relearn berkuarantina"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "determinism.improvement_propose_replay",
+      "category": "determinism",
+      "weight": 2,
+      "title": "Propose deterministik per request; base_version basi ditolak",
+      "ours": {
+        "proof_tests": [
+          "tests/test_improvement.py::test_propose_is_deterministic_per_request",
+          "tests/test_improvement.py::test_propose_stale_base_version_rejected"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/__main__.py",
+              "line": 880,
+              "note": "--previous me-restore community ids; bukan relearn berkuarantina"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "determinism.fragment_generator",
+      "category": "determinism",
+      "weight": 1,
+      "title": "Fragment generator deterministik, id file-scoped; truncasi ter-stempel partial",
+      "ours": {
+        "proof_tests": [
+          "tests/test_fragment_generator.py::test_generation_is_deterministic_and_ids_are_file_scoped",
+          "tests/test_fragment_generator.py::test_truncation_is_stamped_partial"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 1,
+              "note": "server tanpa budget envelope per query / watcher receipt typed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.retrieval_rank_invariants",
+      "category": "integrity",
+      "weight": 2,
+      "title": "Rank invariant terhadap permutasi input; IDF dalam rentang tertutup",
+      "ours": {
+        "proof_tests": [
+          "tests/test_property_retrieval.py::test_rank_is_invariant_under_input_permutation",
+          "tests/test_property_retrieval.py::test_idf_stays_within_closed_bounds"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/resolution/name-matcher.ts",
+              "line": 60,
+              "note": "confidence float ladder; tanpa invariant skor terbukti"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 246,
+              "note": "surprise score float aditif; tanpa scoring P/M/E beku"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "testing.pinned_corpus_manifest",
+      "category": "testing rigor",
+      "weight": 2,
+      "title": "Korpus bench ter-pin manifest sha256 per file; ground truth gate hijau",
+      "ours": {
+        "proof_tests": [
+          "tests/test_codebase_bench.py::TestDatasetIntegrity::test_archives_match_manifest",
+          "tests/test_codebase_bench.py::TestCorrectnessGate::test_all_ground_truth_holds"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "package.json",
+              "line": 1,
+              "note": "tanpa pinned-corpus bench manifest / ground-truth gate"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/benchmark.py",
+              "line": 1,
+              "note": "benchmark tanpa pinned manifest / ground-truth gate"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "testing.tokens_bench_quality_gate",
+      "category": "testing rigor",
+      "weight": 2,
+      "title": "Bench token: recall gate + dua pass pengukuran identik",
+      "ours": {
+        "proof_tests": [
+          "tests/test_tokens_bench.py::TestQualityGate::test_retrieval_recall",
+          "tests/test_tokens_bench.py::TestDeterminism::test_two_measure_passes_identical"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "package.json",
+              "line": 1,
+              "note": "tanpa pinned-corpus bench manifest / ground-truth gate"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/benchmark.py",
+              "line": 1,
+              "note": "benchmark tanpa pinned manifest / ground-truth gate"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "testing.competitive_harness_semantics",
+      "category": "testing rigor",
+      "weight": 2,
+      "title": "Harness kompetitif: NOT_SUPPORTED membawa evidence; summary counts konsisten",
+      "ours": {
+        "proof_tests": [
+          "tests/test_competitive_bench.py::TestNotSupported::test_not_supported_entry_carries_evidence",
+          "tests/test_competitive_bench.py::TestLedgerStructure::test_summary_counts"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "package.json",
+              "line": 1,
+              "note": "tanpa pinned-corpus bench manifest / ground-truth gate"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/benchmark.py",
+              "line": 1,
+              "note": "benchmark tanpa pinned manifest / ground-truth gate"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "testing.kernel_registry_byte_stable",
+      "category": "testing rigor",
+      "weight": 2,
+      "title": "registry.json repo == dump segar; dump stabil lintas hash seed",
+      "ours": {
+        "proof_tests": [
+          "tests/test_kernel_rust_registry.py::test_repo_registry_json_matches_fresh_dump",
+          "tests/test_kernel_rust_registry.py::test_dump_is_stable_across_hash_seeds"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "package.json",
+              "line": 1,
+              "note": "tanpa pinned-corpus bench manifest / ground-truth gate"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/cache.py",
+              "line": 40,
+              "note": "tanpa registry byte-stable gate"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.exporter_caps_and_roundtrip",
+      "category": "integrity",
+      "weight": 2,
+      "title": "Exporter: cap byte fail-closed typed; input terpermutasi byte-identik",
+      "ours": {
+        "proof_tests": [
+          "tests/test_exporters_gexf.py::TestCaps::test_byte_cap_breach_fails_closed_typed",
+          "tests/test_exporters_gexf.py::TestOrdering::test_permuted_input_is_byte_identical"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/ui",
+              "line": 1,
+              "note": "viewer graf; tanpa ekspor subgraph berbudget bertanda truncated"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "partial",
+          "evidence": [
+            {
+              "path": "graphify/exporters/html.py",
+              "line": 521,
+              "note": "ValueError pada node-limit viz default (degradasi aggregated bila eksplisit); tanpa byte-cap typed, tanpa gate determinisme permutasi"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "operability.analytics_query_aggregation",
+      "category": "operability",
+      "weight": 2,
+      "title": "Agregasi analytics: mean terkuantisasi half-even; paginasi bisa jalan sampai habis",
+      "ours": {
+        "proof_tests": [
+          "tests/test_analytics_query_tools.py::TestAggregation::test_mean_quantized_half_even",
+          "tests/test_analytics_query_tools.py::TestPagination::test_walk_to_end"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/telemetry",
+              "line": 1,
+              "note": "telemetry worker; tanpa agregasi terkuantisasi half-even"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 246,
+              "note": "surprise score float aditif; tanpa scoring P/M/E beku"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "integrity.centrality_exact_known_graphs",
+      "category": "integrity",
+      "weight": 2,
+      "title": "Centrality/PageRank eksak pada graf yang diketahui (betweenness path, pagerank triangle uniform)",
+      "ours": {
+        "proof_tests": [
+          "tests/test_analytics_centrality.py::test_path_betweenness_exact_when_unsampled",
+          "tests/test_analytics_centrality.py::test_triangle_pagerank_is_uniform"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/analyze.py",
+              "line": 246,
+              "note": "surprise score float aditif; tanpa scoring P/M/E beku"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "security.mcp_strict_rejection_matrix",
+      "category": "security",
+      "weight": 2,
+      "title": "Matriks penolakan strict MCP; containment root tetap menolak project_path",
+      "ours": {
+        "proof_tests": [
+          "tests/test_mcp_server.py::test_strict_rejection_matrix",
+          "tests/test_mcp_server.py::test_fixed_root_containment_rejects_project_path"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 1,
+              "note": "server tanpa budget envelope per query / watcher receipt typed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "operability.service_domain_routing",
+      "category": "operability",
+      "weight": 2,
+      "title": "Query domain ambigu ditolak; ranked route menghormati allowlist relasi",
+      "ours": {
+        "proof_tests": [
+          "tests/test_service.py::test_query_ambiguous_domain_rejected",
+          "tests/test_service.py::test_query_ranked_route_and_respects_relation_allowlist"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/tools.ts",
+              "line": 1,
+              "note": "tool surface tanpa capability ini (grep memastikan)"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 1,
+              "note": "server tanpa budget envelope per query / watcher receipt typed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "recovery.serve_watcher_typed_receipts",
+      "category": "recovery",
+      "weight": 2,
+      "title": "Watcher serve: kegagalan callback/state = receipt typed, bukan crash; batch lewat gate",
+      "ours": {
+        "proof_tests": [
+          "tests/test_serve_watcher.py::test_poll_once_callback_failure_is_a_typed_receipt_not_a_crash",
+          "tests/test_serve_watcher.py::test_poll_once_routes_a_change_batch_through_the_gate_callback"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/mcp/writer-lock.ts",
+              "line": 1,
+              "note": "single writer lockfile; tanpa group commit / deadline / watermark vocabulary"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 1,
+              "note": "server tanpa budget envelope per query / watcher receipt typed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "observability.extraction_webview_surface",
+      "category": "observability",
+      "weight": 1,
+      "title": "Antrian ekstraksi tersaji di webview mengikuti urutan kontrak; route terdaftar",
+      "ours": {
+        "proof_tests": [
+          "tests/test_extraction_webview.py::TestExtractionsPayload::test_rows_follow_the_contract_order",
+          "tests/test_extraction_webview.py::TestRoute::test_api_route_is_registered"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "src/ui",
+              "line": 1,
+              "note": "viewer graf; tanpa ekspor subgraph berbudget bertanda truncated"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 1,
+              "note": "server tanpa budget envelope per query / watcher receipt typed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "operability.watch_cli_policy_gates",
+      "category": "operability",
+      "weight": 1,
+      "title": "Watch CLI: env NO_WATCH menonaktifkan; interval di bawah floor = usage error",
+      "ours": {
+        "proof_tests": [
+          "tests/test_ingest_watcher_cli.py::TestWatchCliPolicy::test_no_watch_env_disables",
+          "tests/test_ingest_watcher_cli.py::TestWatchCliUsage::test_interval_below_floor_usage_error"
+        ]
+      },
+      "opponents": {
+        "codegraph": {
+          "status": "partial",
+          "evidence": [
+            {
+              "path": "src/bin/codegraph.ts",
+              "line": 2243,
+              "note": "--no-watch flag + CODEGRAPH_NO_WATCHDOG env ada; tanpa interval floor = usage error gate"
+            }
+          ]
+        },
+        "graphify": {
+          "status": "absent",
+          "evidence": [
+            {
+              "path": "graphify/serve.py",
+              "line": 1,
+              "note": "server tanpa budget envelope per query / watcher receipt typed"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "capability_limits": {
+    "min": 60,
+    "max": 160
+  },
+  "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-11-01",
+      "change": "Instrument amendment (WAVE3-PLAN §0.1): capability ceiling raised 80 -> 160 (MIN stays 60). Scoring formula, status_points, weight range 1-3, the 10 categories and the pass rule are UNCHANGED. The v1.0.0 document is frozen as capabilities-v1.0.0.json; ledger 20261101T105612Z (composite 242.5236) reproduces from it. 52 capabilities added (batches A/B/C of WAVE3-PLAN §1): all are already-shipped behavior with green proof tests; selection restricted to capabilities absent for both opponents, with three honest downgrades vs the plan (protocol_version_handshake codegraph=partial, exporter_caps_and_roundtrip graphify=partial, watch_cli_policy_gates codegraph=partial) after line-level evidence verification found related opponent mechanisms."
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-11-01",
+      "change": "Initial suite: 72 capabilities, 123 proofs (SUB-114)."
     }
   ]
 }

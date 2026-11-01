@@ -37,7 +37,32 @@ OPPONENT_REPOS = {
 
 # ------------------------------------------------------------------ document
 def test_capability_count_in_range():
-    assert 60 <= len(DOC["capabilities"]) <= 80
+    assert scorecard.MIN_CAPABILITIES <= len(DOC["capabilities"]) <= scorecard.MAX_CAPABILITIES
+
+
+def test_declared_limits_match_the_runner():
+    """Suite v1.1.0 records the instrument limits in the document; a silent
+    drift between document and runner is a structural cheat and must fail."""
+    assert DOC["capability_limits"] == {"min": scorecard.MIN_CAPABILITIES, "max": scorecard.MAX_CAPABILITIES}
+    bad = json.loads(json.dumps(DOC))
+    bad["capability_limits"] = {"min": 1, "max": 999}
+    assert any("capability_limits" in p for p in scorecard.validate(bad))
+
+
+def test_frozen_v1_document_reproduces_baseline():
+    """The frozen v1.0.0 document must still score the ledger 20261101T105612Z
+    baseline exactly (T=165, codegraph 53.5, graphify 45.0) — the amendment
+    changed the ceiling, not the old numbers."""
+    frozen = REPO_ROOT / "bench" / "scorecard" / "capabilities-v1.0.0.json"
+    old = scorecard.load_capabilities(frozen)
+    assert old["version"] == "1.0.0"
+    assert len(old["capabilities"]) == 72
+    passed = {n for c in old["capabilities"] for n in c["ours"]["proof_tests"]}
+    scores = scorecard.compute_capability_scores(old, passed)
+    assert scores["total_weight"] == 165
+    assert scores["points"]["codegraph"] == 53.5
+    assert scores["points"]["graphify"] == 45.0
+    assert scores["percent"]["ours"] == 100.0
 
 
 def test_all_ten_categories_present():

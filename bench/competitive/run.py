@@ -12,6 +12,12 @@ tree-sitter-python, vendored archives pinned by commit + per-file sha256):
 * ``determinism``   — two fresh ingests → byte-identical index artifact?
 * ``tokens``        — estimated tokens (ceil(utf8 bytes / 4), the frozen
                       contract estimator) per answer to the same queries
+* differentiator tasks (harness v2) — knowledge-server capabilities the
+  opponents do not implement (gated extraction, audit chain verify, rollback,
+  operator-gated apply, watermark RYW, group commit, retention, contract
+  digests, relearn quarantine, secret scan, review policy); our side executes
+  ``diff_tasks.py`` per (task, target), opponents are NOT_SUPPORTED with
+  repo evidence.
 
 A system that cannot perform a task is recorded ``NOT_SUPPORTED`` with the
 evidence (e.g. a missing CLI) — that absence is itself the score. Every
@@ -64,7 +70,78 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 RESULTS_DIR = BENCH_DIR / "results"
 CODEBASE_BENCH = REPO_ROOT / "bench" / "codebase" / "run.py"
 
-HARNESS_VERSION = 1
+HARNESS_VERSION = 2
+
+# ------------------------------------------------- differentiator tasks (W3.4)
+# Wave-3 addition: knowledge-server capabilities the opponents do not have.
+# Each task runs on the three principal targets (fixture, requests, chalk)
+# against a store seeded from the target's own ingest; our side executes the
+# real driver (bench/competitive/diff_tasks.py), the opponents are recorded
+# NOT_SUPPORTED with repo evidence — the absence is itself the score.
+DIFF_DRIVER = BENCH_DIR / "diff_tasks.py"
+DIFF_TARGETS = ("fixture", "requests", "chalk")
+DIFF_TASK_ORDER = (
+    "gated-extraction-submit",
+    "audit-chain-verify",
+    "rollback-byte-exact",
+    "operator-gated-apply",
+    "watermark-ryw",
+    "group-commit-burst",
+    "retention-policy-audited",
+    "contract-digest-verify",
+    "relearn-quarantine-flow",
+    "secret-quarantine-scan",
+    "review-decision-policy",
+)
+
+#: Per-task NOT_SUPPORTED evidence for the opponents (path:line — note),
+#: verified against /root/src/codegraph (ref c306967) and /root/src/graphify.
+DIFF_TASK_EVIDENCE: dict[str, dict[str, str]] = {
+    "gated-extraction-submit": {
+        "codegraph": "src/mcp/tools.ts:1 — tool surface tanpa extraction proposal/review/approve",
+        "graphify": "graphify/build.py:1 — build menulis langsung; tanpa antrian proposal",
+    },
+    "audit-chain-verify": {
+        "codegraph": "src/mcp/tools.ts:1 — grep 'audit': 2 hit insidental; tanpa audit log hash-chained",
+        "graphify": "graphify/build.py:1 — tanpa audit log sama sekali",
+    },
+    "rollback-byte-exact": {
+        "codegraph": "src/db/index.ts:1 — tanpa rollback vocabulary",
+        "graphify": "graphify/__main__.py:880 — --previous me-restore community ids, bukan rollback konten",
+    },
+    "operator-gated-apply": {
+        "codegraph": "src/mcp/tools.ts:1 — tanpa offer/decision gate pada apply",
+        "graphify": "graphify/build.py:1 — build menulis langsung tanpa operator gate",
+    },
+    "watermark-ryw": {
+        "codegraph": "src/mcp/query-pool.ts:60 — tanpa watermark vocabulary pada read path",
+        "graphify": "graphify/serve.py:140 — satu lock threading tunggal; tanpa watermark lintas lane",
+    },
+    "group-commit-burst": {
+        "codegraph": "src/mcp/writer-lock.ts:1 — single writer lockfile; tanpa group commit",
+        "graphify": "graphify/serve.py:140 — satu lock tunggal; tanpa batch commit",
+    },
+    "retention-policy-audited": {
+        "codegraph": "src/db/wal-valve.ts:79 — WAL valve ukuran; tanpa retention keep-N teraudit",
+        "graphify": "graphify/cache.py:1 — cache tumbuh selamanya; tanpa retention policy",
+    },
+    "contract-digest-verify": {
+        "codegraph": "src/mcp/tools.ts:1 — tanpa kontrak beku yang ter-pin digest",
+        "graphify": "graphify/llm.py:502 — prompt contract tak berversi",
+    },
+    "relearn-quarantine-flow": {
+        "codegraph": "src/mcp/tools.ts:1 — tanpa vocabulary relearn/quarantine",
+        "graphify": "graphify/__main__.py:880 — --previous bukan relearn berkuarantina",
+    },
+    "secret-quarantine-scan": {
+        "codegraph": "src/db/schema.sql:1 — tanpa read-model validator gate",
+        "graphify": "graphify/security.py:394 — sanitize label exporter saja; tanpa generasi-gate fail-closed",
+    },
+    "review-decision-policy": {
+        "codegraph": "src/mcp/tools.ts:1 — tanpa review policy ter-pin versi",
+        "graphify": "graphify/analyze.py:112 — analitik satu-tembak; tanpa review policy",
+    },
+}
 
 #: Competitor CLI discovery: env var first (pinned installs), then PATH.
 CODEGRAPH_ENV = "CODEGRAPH_BIN"
@@ -943,6 +1020,77 @@ def measure(
                 )
             )
 
+        # ---- differentiator tasks (W3.4): knowledge-server capabilities that
+        # the opponents do not implement. Our side runs the real driver per
+        # (task, target) against a store seeded from the target's own ingest;
+        # opponents are NOT_SUPPORTED with repo evidence (see
+        # DIFF_TASK_EVIDENCE) — the absence is itself the score.
+        diff_targets = [t for t in DIFF_TARGETS if t in wanted_targets]
+        for system in wanted_systems:
+            info = discovered.get(system, {"available": False, "evidence": "unknown system"})
+            for target in diff_targets:
+                if not info.get("available"):
+                    for task in DIFF_TASK_ORDER:
+                        entries.append(not_supported(system, task, target, info.get("evidence", "unavailable")))
+                    continue
+                if system != "know_your_context":
+                    for task in DIFF_TASK_ORDER:
+                        entries.append(not_supported(system, task, target, DIFF_TASK_EVIDENCE[task][system]))
+                    continue
+                diff_work = work_root / system / "diff" / target
+                tree = diff_work / "tree"
+                prepare_tree(target, tree)
+                store = diff_work / "diff.db"
+                seed = _ingest_kys(tree, store)
+                if seed["exit_code"] != 0:
+                    for task in DIFF_TASK_ORDER:
+                        entries.append(
+                            entry(
+                                system,
+                                task,
+                                target,
+                                "FAILED",
+                                evidence=f"differentiator seed ingest failed (exit {seed['exit_code']})",
+                            )
+                        )
+                    continue
+                for task in DIFF_TASK_ORDER:
+                    argv = [
+                        sys.executable,
+                        str(DIFF_DRIVER),
+                        task,
+                        str(store),
+                        str(diff_work / "tasks" / task),
+                        str(tree),
+                    ]
+                    res = run_cmd(argv, timeout=600)
+                    if res["exit_code"] == 0:
+                        entries.append(
+                            entry(
+                                system,
+                                task,
+                                target,
+                                "OK",
+                                command=argv,
+                                exit_code=0,
+                                wall_ms=res["wall_ms"],
+                                result=_kys_result(res["stdout"]),
+                            )
+                        )
+                    else:
+                        entries.append(
+                            entry(
+                                system,
+                                task,
+                                target,
+                                "FAILED",
+                                command=argv,
+                                exit_code=res["exit_code"],
+                                wall_ms=res["wall_ms"],
+                                evidence=_tail(res["stdout"] + res["stderr"]),
+                            )
+                        )
+
         ledger["finished_utc"] = utc_stamp()
         ledger["summary"] = summarize(entries)
         return ledger
@@ -1123,6 +1271,28 @@ def render_report(ledger: dict[str, Any]) -> str:
 
     lines += [
         "",
+        "## Differentiator tasks (knowledge-server capabilities; harness v2)",
+        "",
+        "| Task | Target | know_your_context | codegraph | graphify |",
+        "|------|--------|-------------------|-----------|----------|",
+    ]
+    for task in DIFF_TASK_ORDER:
+        for target in sorted({e["target"] for e in entries if e["task"] == task}):
+            row = [task, target]
+            for system in SYSTEM_ORDER:
+                e = find(system, task, target)
+                if e is None:
+                    row.append("—")
+                elif e["status"] == "OK":
+                    row.append("OK")
+                elif e["status"] == "NOT_SUPPORTED":
+                    row.append("NOT_SUPPORTED")
+                else:
+                    row.append(f"FAILED (exit {e.get('exit_code')})")
+            lines.append("| " + " | ".join(row) + " |")
+
+    lines += [
+        "",
         "## Scoreboard",
         "",
         "| System | OK | FAILED | NOT_SUPPORTED |",
@@ -1182,6 +1352,13 @@ def cmd_check() -> int:
         print(f"[check] dataset: present, {sum(len(q) for q in query_sets.values())} frozen queries")
     else:
         print("[check] dataset: NOT vendored — run/verify will refuse; tests skip honestly")
+
+    if not DIFF_DRIVER.is_file():
+        failures.append(f"differentiator driver missing: {DIFF_DRIVER}")
+    for task in DIFF_TASK_ORDER:
+        for opp in ("codegraph", "graphify"):
+            if not DIFF_TASK_EVIDENCE.get(task, {}).get(opp):
+                failures.append(f"differentiator task {task}: missing {opp} evidence")
 
     if failures:
         for failure in failures:
