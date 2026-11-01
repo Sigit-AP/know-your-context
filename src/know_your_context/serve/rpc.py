@@ -23,6 +23,7 @@ from typing import Any, BinaryIO
 
 __all__ = [
     "ACTOR_REQUIRED",
+    "CAPABILITY_DENIED",
     "DAEMON_UNAVAILABLE",
     "HANDSHAKE_PROTOCOL_VERSIONS",
     "INTERNAL_ERROR",
@@ -77,6 +78,10 @@ DAEMON_UNAVAILABLE = -32005
 PAYLOAD_TOO_LARGE = -32006
 DEADLINE_EXCEEDED = -32007
 SHUTTING_DOWN = -32008
+# W10 capability security (SUB-117): a request's capability token is missing
+# (for a non-public verb), forged, expired, revoked, actor-mismatched, or
+# outside its verb allowlist/scope.
+CAPABILITY_DENIED = -32009
 
 _ENVELOPE_KEYS = frozenset({"jsonrpc", "id", "method", "params"})
 

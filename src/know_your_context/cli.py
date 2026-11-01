@@ -174,6 +174,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=300.0,
         help="superpower: seconds with no clients before the daemon exits (default 300)",
     )
+    serve_parser.add_argument(
+        "--capability-mode",
+        choices=("off", "enforce"),
+        default="off",
+        help="superpower: 'off' (default) is legacy behavior; 'enforce' requires operator-issued "
+        "capability tokens for every non-public verb (W10)",
+    )
 
     daemon_parser = subparsers.add_parser("daemon", help="superpower: inspect or stop the daemon bound to --store")
     daemon_parser.add_argument("daemon_action", choices=("status", "stop"))
@@ -182,6 +189,39 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="with stop: skip the drain window (queued work fails typed, daemon exits 2)",
     )
+
+    # W10 (SUB-117): operator capability management. OPS surface only — never
+    # a knowledge operation, never dispatched over MCP or HTTP.
+    capability_parser = subparsers.add_parser(
+        "capability",
+        help="ops: issue, revoke and list per-agent capability tokens for the superpower daemon",
+    )
+    capability_sub = capability_parser.add_subparsers(dest="capability_action", required=True)
+    capability_issue = capability_sub.add_parser("issue", help="issue a signed capability token for one actor")
+    capability_issue_args = capability_issue  # alias for readability
+    capability_issue_args.add_argument("--actor", required=True, help="the agent this token is bound to")
+    capability_issue_args.add_argument(
+        "--scope",
+        choices=("read", "write", "admin"),
+        default="read",
+        help="read = public read verbs; write = read+write+ingest; admin = everything incl. daemon.* (default read)",
+    )
+    capability_issue_args.add_argument(
+        "--verbs",
+        default=None,
+        help="comma-separated verb allowlist (default: every verb the scope grants)",
+    )
+    capability_issue_args.add_argument(
+        "--ttl-seconds", type=float, default=3600.0, help="lifetime in seconds (default 3600)"
+    )
+    capability_issue_args.add_argument(
+        "--expires-at", type=float, default=None, help="absolute expiry epoch seconds (overrides --ttl-seconds)"
+    )
+    capability_revoke = capability_sub.add_parser("revoke", help="revoke one issued capability immediately")
+    revoke_selector = capability_revoke.add_mutually_exclusive_group(required=True)
+    revoke_selector.add_argument("--nonce", default=None, help="the capability nonce (from 'capability list')")
+    revoke_selector.add_argument("--token", default=None, help="a full token whose nonce should be revoked")
+    capability_sub.add_parser("list", help="list issued and revoked capabilities (never prints tokens)")
 
     # ATM F-D1: operational export commands. These are OPS surface only —
     # they are NOT knowledge operations, never join KNOWLEDGE_OPERATIONS /
@@ -727,6 +767,7 @@ def _serve_superpower_command(args: argparse.Namespace) -> int:
             max_agents=args.max_agents,
             read_pool_size=args.read_pool_size,
             idle_timeout_seconds=args.idle_timeout,
+            capability_mode=args.capability_mode,
         )
     except ConfigError as error:
         _print_usage_error(f"invalid superpower configuration: {error}")
@@ -766,11 +807,73 @@ def _daemon_command(args: argparse.Namespace) -> int:
         print(_json.dumps(daemon_status(config), indent=2, sort_keys=True))
         return 0
     try:
-        print(_json.dumps(stop_daemon(config, force=args.force), indent=2, sort_keys=True))
+        # W10: under capability enforcement the graceful shutdown needs an
+        # admin token; the operator holds the local secret (root of trust),
+        # so one is minted on the fly. Without a secret the daemon's own
+        # escalation ladder (drain -> force -> SIGKILL) still stops it.
+        from know_your_context.security.capabilities import CapabilityStore, mint_local_admin_token
+
+        capability = mint_local_admin_token(CapabilityStore(config.paths.root), actor=args.actor)
+        print(_json.dumps(stop_daemon(config, force=args.force, capability=capability), indent=2, sort_keys=True))
     except DaemonUnavailable as error:
         print(f"know-your-context daemon stop: {error}", file=sys.stderr)
         return 1
     return 0
+
+
+def _capability_command(args: argparse.Namespace) -> int:
+    """W10 (SUB-117): `capability issue|revoke|list` against the daemon store."""
+    import json as _json
+
+    from know_your_context.security.capabilities import (
+        CapabilityError,
+        CapabilityStore,
+        CapabilityStoreError,
+    )
+    from know_your_context.serve.daemon_config import ConfigError, DaemonConfig
+
+    try:
+        config = DaemonConfig(db_path=args.store, graph_root=args.output_root)
+    except ConfigError as error:
+        _print_usage_error(f"invalid capability configuration: {error}")
+        return 2
+    store = CapabilityStore(config.paths.root)
+    action = str(args.capability_action)
+    try:
+        if action == "issue":
+            config.paths.ensure()
+            store.ensure_secret()
+            verbs = (
+                [verb.strip() for verb in str(args.verbs).split(",") if verb.strip()]
+                if args.verbs is not None
+                else None
+            )
+            token, capability = store.issue(
+                actor=str(args.actor),
+                scope=str(args.scope),
+                verbs=verbs,
+                ttl_seconds=float(args.ttl_seconds),
+                expires_at=float(args.expires_at) if args.expires_at is not None else None,
+            )
+            print(_json.dumps({"token": token, "capability": capability.record()}, indent=2, sort_keys=True))
+            return 0
+        if action == "revoke":
+            store.load_secret()  # fail closed when no capability store exists
+            if args.nonce is not None:
+                report = store.revoke(str(args.nonce))
+            else:
+                report = store.revoke_token(str(args.token))
+            print(_json.dumps(report, indent=2, sort_keys=True))
+            return 0
+        store.load_secret()  # list: the store must exist
+        print(_json.dumps(store.list_registry(), indent=2, sort_keys=True))
+        return 0
+    except CapabilityStoreError as error:
+        print(f"know-your-context capability {action}: {error}", file=sys.stderr)
+        return 1
+    except CapabilityError as error:
+        _print_usage_error(str(error))
+        return 2
 
 
 def _serve_command(args: argparse.Namespace) -> int:
@@ -825,6 +928,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _serve_command(args)
     if command == "daemon":
         return _daemon_command(args)
+    if command == "capability":
+        return _capability_command(args)
     if command in ("export", "analytics"):
         from know_your_context.ops.export_cli import run_export_command
 

@@ -821,17 +821,33 @@ RUNTIME_SURFACE_MODULES = (
     "scheduler",
     "relearn",
     "security",
+    # W10 (SUB-117): the capability store/token module joined the runtime
+    # surface when security grew from a module into a package.
+    "security.capabilities",
     "observability",
     "backup",
 )
+
+
+def _runtime_module_file(module: str) -> Path:
+    """Resolve a dotted runtime module to its source file (module or package).
+
+    ``security`` is a package since W10 (``security/__init__.py`` +
+    ``security/capabilities.py``); the scan must follow layout changes
+    instead of pinning one file name.
+    """
+    import importlib.util
+
+    spec = importlib.util.find_spec(f"know_your_context.{module}")
+    assert spec is not None and spec.origin is not None, f"{module} missing — the runtime surface changed"
+    return Path(spec.origin)
 
 
 def test_forbidden_import_scan_covers_the_full_runtime_surface() -> None:
     """Every named runtime module exists and imports no forbidden module."""
     offenders: list[str] = []
     for module in RUNTIME_SURFACE_MODULES:
-        path = SRC / "know_your_context" / f"{module}.py"
-        assert path.is_file(), f"{module}.py missing — the runtime surface changed"
+        path = _runtime_module_file(module)
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

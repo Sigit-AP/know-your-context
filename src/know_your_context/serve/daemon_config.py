@@ -133,6 +133,11 @@ class DaemonConfig:
     # Heavy lane (ingest v3): single preemptible worker, small queue.
     heavy_queue_size: int = 16
     per_actor_heavy_cap: int = 4
+    # Audit lane (Tiger Style static budget): the read lanes forward their
+    # journal appends through this bounded queue on the single writer. The
+    # bound must absorb one begin+complete burst per read worker; overflow
+    # is blocking backpressure (the writer drains audit first every loop).
+    audit_queue_size: int = 2048
     # Session lease: a session with no heartbeat/request within this window is
     # closed and its slot released (the stdio proxy heartbeats transparently).
     session_lease_seconds: float = 30.0
@@ -161,6 +166,10 @@ class DaemonConfig:
     # The actor the stdio proxy stamps onto host requests that carry no
     # ``_meta.actor`` of their own (audit requirement: every request has one).
     proxy_actor: str = "mcp-proxy"
+    # W10 capability security (SUB-117): "off" (default) is the exact legacy
+    # behavior; "enforce" requires an operator-issued capability token for
+    # every non-public verb (see security/capabilities.py).
+    capability_mode: str = "off"
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "db_path", Path(self.db_path))
@@ -198,6 +207,11 @@ class DaemonConfig:
             raise ConfigError("agent_burst must be >= 1")
         if int(self.heavy_queue_size) < 1 or not 1 <= int(self.per_actor_heavy_cap) <= int(self.heavy_queue_size):
             raise ConfigError("heavy queue caps out of range")
+        if int(self.audit_queue_size) < 2 * int(self.read_pool_size):
+            raise ConfigError(
+                f"audit_queue_size ({self.audit_queue_size}) must absorb a begin+complete burst "
+                f"from every read worker (>= 2 * read_pool_size={self.read_pool_size})"
+            )
         if float(self.session_lease_seconds) <= 0:
             raise ConfigError("session_lease_seconds must be positive")
         if int(self.group_commit_batch) < 1:
@@ -229,6 +243,8 @@ class DaemonConfig:
             raise ConfigError("mutation_delay_seconds must be >= 0")
         if not str(self.proxy_actor).strip():
             raise ConfigError("proxy_actor must be a non-empty string")
+        if self.capability_mode not in ("off", "enforce"):
+            raise ConfigError(f"capability_mode must be 'off' or 'enforce', got {self.capability_mode!r}")
 
     @property
     def paths(self) -> DaemonPaths:

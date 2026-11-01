@@ -52,7 +52,7 @@ from concurrent.futures import Future
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 from know_your_context.audit import AuditLog
 from know_your_context.mcp_server import (
@@ -62,7 +62,26 @@ from know_your_context.mcp_server import (
 )
 from know_your_context.projection import GraphProjector, ProjectorBusy
 from know_your_context.security import resolve_within_root
+from know_your_context.security.capabilities import (
+    CapabilityActorMismatchError,
+    CapabilityError,
+    CapabilityExpiredError,
+    CapabilityForgedError,
+    CapabilityMalformedError,
+    CapabilityRevokedError,
+    CapabilityStore,
+    CapabilityStoreError,
+    decode_token,
+)
 from know_your_context.serve import rpc
+from know_your_context.serve.budgets import (
+    ADAPTER_CACHE_CAP,
+    BUCKET_CACHE_CAP,
+    LATENCY_RESERVOIR_CAP,
+    LISTENER_BACKLOG,
+    STATS_ACTOR_CAP,
+    assert_static_budgets,
+)
 from know_your_context.serve.daemon_config import DaemonConfig, DaemonPaths
 from know_your_context.service import KnowledgeService
 from know_your_context.store import EventStore, StoreError
@@ -71,6 +90,7 @@ __all__ = [
     "READ_TOOLS",
     "WRITE_TOOLS",
     "ActorRequired",
+    "CapabilityDenied",
     "DaemonUnavailable",
     "LivenessWatchdog",
     "ReadOnlyEventStore",
@@ -179,6 +199,14 @@ class ShuttingDown(ServeError):
 
 class DeadlineExceeded(ServeError):
     rpc_code = rpc.DEADLINE_EXCEEDED
+
+
+class CapabilityDenied(ServeError):
+    """W10 (SUB-117): the request's capability token is missing (on a
+    non-public verb), malformed, forged, expired, revoked, actor-mismatched,
+    or outside its scope/verb allowlist. Every denial is audit-chained."""
+
+    rpc_code = rpc.CAPABILITY_DENIED
 
 
 def classify_tool(name: str) -> str:
@@ -381,24 +409,58 @@ class _FairQueue:
     receives typed ``SERVER_BUSY`` while every other actor's items still
     schedule. The consumer rotates over non-empty lanes, so no actor waits
     behind another actor's backlog longer than one item per live actor.
+
+    Tiger Style (W10): the accounting invariants — lane total == counter,
+    rotation mirrors exactly the non-empty lanes, no lane past its cap —
+    are asserted on every mutation (``_check_invariants_locked``). A
+    violation is a programmer error and crashes loudly in dev/test instead
+    of silently breaking the capacity contract. ``now`` is the DST seam:
+    production passes the default ``time.monotonic``; the simulation
+    harness injects virtual time.
     """
 
-    def __init__(self, *, total_cap: int, per_actor_cap: int, retry_after_ms: int) -> None:
+    def __init__(
+        self,
+        *,
+        total_cap: int,
+        per_actor_cap: int,
+        retry_after_ms: int,
+        now: Callable[[], float] = time.monotonic,
+    ) -> None:
+        assert int(total_cap) >= 1, f"total_cap must be >= 1, got {total_cap}"
+        assert 1 <= int(per_actor_cap) <= int(total_cap), (
+            f"per_actor_cap must be in [1, total_cap={total_cap}], got {per_actor_cap}"
+        )
+        assert int(retry_after_ms) >= 0, f"retry_after_ms must be >= 0, got {retry_after_ms}"
         self._total_cap = int(total_cap)
         self._per_actor_cap = int(per_actor_cap)
         self._retry_after_ms = int(retry_after_ms)
+        self._now = now
         self._cond = threading.Condition()
         self._lanes: dict[str, collections.deque[Any]] = {}
         self._rotation: collections.deque[str] = collections.deque()
         self._total = 0
 
+    def _check_invariants_locked(self) -> None:
+        """Re-prove the queue's accounting (caller holds ``self._cond``)."""
+        lane_total = sum(len(lane) for lane in self._lanes.values())
+        assert lane_total == self._total, f"queue accounting drift: lanes hold {lane_total}, counter says {self._total}"
+        assert self._total <= self._total_cap, f"queue holds {self._total} beyond its static budget {self._total_cap}"
+        non_empty = {actor for actor, lane in self._lanes.items() if lane}
+        assert set(self._rotation) == non_empty, (
+            f"rotation {sorted(self._rotation)} does not mirror the non-empty lanes {sorted(non_empty)}"
+        )
+        assert len(self._rotation) == len(set(self._rotation)), "an actor sits twice in the rotation"
+        for actor, lane in self._lanes.items():
+            assert 0 < len(lane) <= self._per_actor_cap, (
+                f"lane {actor!r} holds {len(lane)} items (cap {self._per_actor_cap})"
+            )
+
     def put(self, actor: str, item: Any) -> None:
         with self._cond:
             lane = self._lanes.get(actor)
-            if lane is None:
-                lane = collections.deque()
-                self._lanes[actor] = lane
-            if len(lane) >= self._per_actor_cap:
+            lane_len = len(lane) if lane is not None else 0
+            if lane_len >= self._per_actor_cap:
                 raise ServerBusy(
                     f"per-agent quota exhausted for {actor!r} ({self._per_actor_cap} queued); retry after the hint",
                     retry_after_ms=self._retry_after_ms,
@@ -408,18 +470,25 @@ class _FairQueue:
                     "the queue is full; retry after the hint",
                     retry_after_ms=self._retry_after_ms,
                 )
-            was_empty = not lane
+            # Create the lane only after every refusal: a refused put must
+            # leave no empty orphan lane behind (W10 finding — the orphan
+            # poisoned the rotation-mirror invariant and leaked one deque
+            # per capped actor).
+            if lane is None:
+                lane = collections.deque()
+                self._lanes[actor] = lane
             lane.append(item)
             self._total += 1
-            if was_empty:
+            if lane_len == 0:
                 self._rotation.append(actor)
+            self._check_invariants_locked()
             self._cond.notify()
 
     def get(self, timeout: float, *, exclude: frozenset[str] = frozenset()) -> Any | None:
-        deadline = time.monotonic() + timeout
+        deadline = self._now() + timeout
         with self._cond:
             while not self._rotation:
-                remaining = deadline - time.monotonic()
+                remaining = deadline - self._now()
                 if remaining <= 0:
                     return None
                 self._cond.wait(timeout=remaining)
@@ -435,7 +504,11 @@ class _FairQueue:
                     self._rotation.rotate(-1)
                 else:
                     break
-            actor = self._rotation.popleft()
+            actor = self._rotation[0]
+            assert actor not in exclude or all(member in exclude for member in self._rotation), (
+                f"fairness breach: excluded lane {actor!r} chosen while a non-excluded lane holds work"
+            )
+            self._rotation.popleft()
             lane = self._lanes[actor]
             item = lane.popleft()
             self._total -= 1
@@ -443,6 +516,7 @@ class _FairQueue:
                 self._rotation.append(actor)  # still has items: back of the rotation
             else:
                 del self._lanes[actor]
+            self._check_invariants_locked()
             return item
 
     @property
@@ -464,6 +538,7 @@ class _FairQueue:
             self._lanes.clear()
             self._rotation.clear()
             self._total = 0
+            self._check_invariants_locked()
             return items
 
 
@@ -511,19 +586,30 @@ async def _read_resource(adapter: _Adapter, uri: str) -> dict[str, Any]:
 
 
 class _TokenBucket:
-    """Per-agent admission bucket: sustained rate + burst, typed refusal."""
+    """Per-agent admission bucket: sustained rate + burst, typed refusal.
 
-    def __init__(self, *, rate_per_second: float, burst: int) -> None:
+    Tiger Style (W10): the token level is asserted inside its static
+    envelope ``[0, burst]`` on every call; ``now`` is the DST seam
+    (production: ``time.monotonic``; simulation: virtual time).
+    """
+
+    def __init__(self, *, rate_per_second: float, burst: int, now: Callable[[], float] = time.monotonic) -> None:
+        assert float(rate_per_second) > 0.0, f"rate_per_second must be > 0, got {rate_per_second}"
+        assert int(burst) >= 1, f"burst must be >= 1, got {burst}"
         self._rate = float(rate_per_second)
         self._capacity = float(burst)
         self._tokens = float(burst)
-        self._updated = time.monotonic()
+        self._now = now
+        self._updated = self._now()
 
     def retry_after_seconds(self) -> float | None:
         """Consume one token; None when admitted, else seconds until one refills."""
-        now = time.monotonic()
+        now = self._now()
         self._tokens = min(self._capacity, self._tokens + (now - self._updated) * self._rate)
         self._updated = now
+        assert 0.0 <= self._tokens <= self._capacity, (
+            f"token level {self._tokens} escaped its static envelope [0, {self._capacity}]"
+        )
         if self._tokens >= 1.0:
             self._tokens -= 1.0
             return None
@@ -531,17 +617,23 @@ class _TokenBucket:
 
 
 class _SessionToken:
-    """Liveness handle shared by a session thread and its queued work."""
+    """Liveness handle shared by a session thread and its queued work.
 
-    __slots__ = ("alive", "last_seen", "session_id")
+    ``now`` is the DST seam (production: ``time.monotonic``; simulation:
+    virtual time), so the lease can be replayed deterministically.
+    """
 
-    def __init__(self, session_id: str) -> None:
+    __slots__ = ("_now", "alive", "last_seen", "session_id")
+
+    def __init__(self, session_id: str, *, now: Callable[[], float] = time.monotonic) -> None:
+        assert str(session_id), "session_id must be a non-empty string"
         self.alive = True
-        self.last_seen = time.monotonic()
+        self._now = now
+        self.last_seen = self._now()
         self.session_id = session_id
 
     def beat(self) -> None:
-        self.last_seen = time.monotonic()
+        self.last_seen = self._now()
 
 
 @dataclass
@@ -598,9 +690,18 @@ class _WriteArbiter:
             per_actor_cap=config.per_actor_write_cap,
             retry_after_ms=config.retry_after_ms,
         )
-        self._audit_q: queue.Queue[tuple[Callable[[], Any], Future] | None] = queue.Queue()
+        # Bounded audit lane (Tiger Style static budget): overflow is
+        # blocking backpressure on the read lanes — never an unbounded
+        # queue. Deadlock-free because this writer drains the audit lane
+        # FIRST on every loop iteration.
+        self._audit_q: queue.Queue[tuple[Callable[[], Any], Future] | None] = queue.Queue(
+            maxsize=config.audit_queue_size
+        )
         self._in_flight: dict[tuple[str, str, str], Future] = {}
         self._in_flight_lock = threading.Lock()
+        # Static bound: queued deduped writes (≤ write_queue_size) plus the
+        # executing batch (≤ group_commit_batch); asserted on submit.
+        self._in_flight_bound = int(config.write_queue_size) + int(config.group_commit_batch)
         self._publish = threading.Condition()
         self._publish_requested = False
         self._dirty = False
@@ -609,6 +710,10 @@ class _WriteArbiter:
         self._thread = threading.Thread(target=self._run, name="superpower-writer", daemon=True)
         self._started = False
         self._executing = 0  # batch members in flight right now (drain watches this)
+        # SUB-104 regression guard (Tiger Style): True exactly while the
+        # outer group-commit transaction is open; _resolve_mutation asserts
+        # against it so a client ack can never be delivered pre-COMMIT.
+        self._batch_transaction_open = False
         self._group_commit_enabled = bool(config.group_commit) and os.environ.get(_NO_GROUP_COMMIT_ENV) != "1"
 
     # ------------------------------------------------------------ lifecycle
@@ -625,6 +730,11 @@ class _WriteArbiter:
         for item in self._write_q.drain():
             if not item.future.done():
                 item.future.set_exception(ShuttingDown("the daemon is shutting down"))
+            # The drained item leaves the dedup map too: a stopped arbiter
+            # must not hold entries for work that will never execute.
+            if item.dedup_key is not None:
+                with self._in_flight_lock:
+                    self._in_flight.pop(item.dedup_key, None)
         while True:
             try:
                 audit_item = self._audit_q.get_nowait()
@@ -662,6 +772,10 @@ class _WriteArbiter:
                 if existing is not None:
                     return _await(existing)
                 self._in_flight[dedup_key] = future
+                assert len(self._in_flight) <= self._in_flight_bound, (
+                    f"dedup map holds {len(self._in_flight)} entries beyond its static bound "
+                    f"{self._in_flight_bound} (queued + executing batch)"
+                )
         try:
             self._write_q.put(actor, _Mutation(tool_name, arguments, actor, future, dedup_key, deadline, session))
         except ServerBusy:
@@ -672,9 +786,24 @@ class _WriteArbiter:
         return _await(future)
 
     def run_audit(self, fn: Callable[[], Any]) -> Any:
-        """Run one journal append on the writer thread, blocking for it."""
+        """Run one journal append on the writer thread, blocking for it.
+
+        The lane is bounded: a full lane applies blocking backpressure to
+        the calling read worker (the writer drains audit first every loop,
+        so the wait is one writer iteration at most). During shutdown the
+        put retries short-circuit into a typed ``ShuttingDown`` instead of
+        ever hanging the caller.
+        """
+        if self._stop.is_set():
+            raise ShuttingDown("the daemon is shutting down")
         future: Future = Future()
-        self._audit_q.put((fn, future))
+        while True:
+            try:
+                self._audit_q.put((fn, future), timeout=0.05)
+                break
+            except queue.Full:
+                if self._stop.is_set():
+                    raise ShuttingDown("the daemon is shutting down") from None
         return _await(future)
 
     def request_publish(self) -> None:
@@ -718,27 +847,16 @@ class _WriteArbiter:
             self._drain_audit()
             item = self._write_q.get(timeout=0.05)
             if item is not None:
-                batch = [item]
-                if self._group_commit_enabled:
-                    # Group commit: gather the burst (batch cap or window,
-                    # whichever first) so N mutations share ONE transaction.
-                    # One item per actor per batch while other lanes hold
-                    # work — batch-level fairness survives phased arrivals.
-                    deadline = time.monotonic() + self._config.group_commit_window_seconds
-                    while len(batch) < self._config.group_commit_batch:
-                        remaining = deadline - time.monotonic()
-                        if remaining <= 0:
-                            break
-                        nxt = self._write_q.get(timeout=remaining, exclude=frozenset(item.actor for item in batch))
-                        if nxt is None:
-                            break
-                        batch.append(nxt)
+                batch = [item, *self._gather_batch(item)]
                 if self._group_commit_enabled and len(batch) > 1:
                     # One outer transaction; every per-mutation journal,
                     # domain append and audit joins it via savepoints
                     # (EventStore.transaction reentrancy). A failing member
                     # rolls back only its own savepoint — the batch survives.
+                    assert not self._batch_transaction_open
+                    assert self._executing == 0
                     self._executing = len(batch)
+                    self._batch_transaction_open = True
                     try:
                         with self._store.transaction():
                             for member in batch:
@@ -749,11 +867,13 @@ class _WriteArbiter:
                             if member.error is None:
                                 member.error = error
                     finally:
+                        self._batch_transaction_open = False
                         self._executing = 0
                     # Resolve only after COMMIT: an ack implies durability.
                     for member in batch:
                         self._resolve_mutation(member)
                 else:
+                    assert self._executing == 0
                     self._executing = len(batch)
                     try:
                         for member in batch:
@@ -765,6 +885,32 @@ class _WriteArbiter:
             if self._dirty or self._publish_requested:
                 self._publish_now()
         self._drain_audit()
+
+    def _gather_batch(self, first: _Mutation) -> list[_Mutation]:
+        """Pull the rest of a group-commit burst from the write queue.
+
+        Batch cap or window, whichever first; at most one item per actor
+        while any other lane holds work (the queue enforces the fallback).
+        Returns the items AFTER ``first``.
+        """
+        if not self._group_commit_enabled:
+            return []
+        batch: list[_Mutation] = []
+        deadline = time.monotonic() + self._config.group_commit_window_seconds
+        exclude: frozenset[str] = frozenset({first.actor})
+        while len(batch) + 1 < self._config.group_commit_batch:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            nxt = self._write_q.get(timeout=remaining, exclude=exclude)
+            if nxt is None:
+                break
+            batch.append(nxt)
+            exclude = frozenset({*exclude, nxt.actor})
+        assert len(batch) + 1 <= self._config.group_commit_batch, (
+            f"batch of {len(batch) + 1} exceeds the static group-commit budget {self._config.group_commit_batch}"
+        )
+        return batch
 
     def _execute_mutation(self, item: _Mutation) -> None:
         """Run one mutation, capturing the outcome — never delivering it.
@@ -785,6 +931,11 @@ class _WriteArbiter:
             # Documented backpressure test hook: per-mutation delay, so the
             # bounded write queue provably fills under a flood.
             time.sleep(self._config.mutation_delay_seconds)
+        assert (item.outcome is not None) != (item.error is not None), (
+            f"mutation {item.tool_name} must capture exactly one of outcome/error "
+            f"(outcome={'set' if item.outcome is not None else 'unset'}, "
+            f"error={'set' if item.error is not None else 'unset'})"
+        )
 
     def _resolve_mutation(self, item: _Mutation) -> None:
         """Deliver the captured outcome to the waiting caller (post-commit).
@@ -795,14 +946,22 @@ class _WriteArbiter:
         a same-key submitter arriving in that gap simply lands a store-level
         idempotent replay of the committed write.
         """
+        # SUB-104 regression guard: an acknowledged write is a durable
+        # write. Resolving while the group-commit transaction is open would
+        # ack data that kill -9 can still erase — programmer error, crash.
+        assert not self._batch_transaction_open, (
+            f"ack for {item.tool_name} would be delivered inside the group-commit transaction"
+        )
         if not item.future.done():
             if item.error is not None:
                 item.future.set_exception(item.error)
             else:
                 item.future.set_result(item.outcome)
+        assert item.future.done(), f"mutation {item.tool_name} left resolve without a verdict"
         if item.dedup_key is not None:
             with self._in_flight_lock:
                 self._in_flight.pop(item.dedup_key, None)
+                assert item.dedup_key not in self._in_flight
 
     def mark_dirty(self) -> None:
         """The heavy lane moved the store watermark: publish on this thread."""
@@ -833,9 +992,16 @@ class _WriteArbiter:
         except ProjectorBusy:
             pass  # a concurrent repair already ran; the watermark re-check decides
         with self._publish:
+            watermark = self._store.knowledge_high_watermark()
+            # The event log is append-only: the published watermark can move
+            # forward or hold, never backwards (a regression would let the
+            # read lanes observe the past — programmer error, crash).
+            assert watermark >= self._published_watermark, (
+                f"published watermark would regress {self._published_watermark} -> {watermark}"
+            )
             self._dirty = False
             self._publish_requested = False
-            self._published_watermark = self._store.knowledge_high_watermark()
+            self._published_watermark = watermark
             self._publish.notify_all()
 
 
@@ -940,7 +1106,7 @@ class _ReadPool:
     ) -> _Adapter:
         adapter = adapters.get(actor)
         if adapter is None:
-            if len(adapters) >= 256:
+            if len(adapters) >= ADAPTER_CACHE_CAP:
                 adapters.clear()  # bounded cache; actors are cheap to rebind
             adapter = _Adapter(
                 service,
@@ -1066,7 +1232,7 @@ class _HeavyLane:
                     raise ShuttingDown("the owning session is gone")
                 adapter = adapters.get(item.actor)
                 if adapter is None:
-                    if len(adapters) >= 256:
+                    if len(adapters) >= ADAPTER_CACHE_CAP:
                         adapters.clear()
                     adapter = _Adapter(
                         self._service,
@@ -1158,11 +1324,21 @@ class SuperpowerDaemon:
         self._inflight = 0
         self._inflight_cond = threading.Condition()
         self._forced = False
+        # W10 capability security (SUB-117): in "enforce" mode the verifier
+        # reads the operator store under the runtime dir; "off" keeps the
+        # exact legacy behavior (no capability is even parsed).
+        self._capability_store: CapabilityStore | None = (
+            CapabilityStore(self._paths.root) if config.capability_mode == "enforce" else None
+        )
 
     # ------------------------------------------------------------ lifecycle
 
     def start(self) -> None:
         """Acquire the lock, build the lanes, bind the socket, start threads."""
+        # Tiger Style: re-prove the static-budget soundness rules before any
+        # side effect (config validation is the typed gate; this is the
+        # second lock on the door against future edits).
+        assert_static_budgets(self._config)
         self._paths.ensure()
         self._acquire_lock()
         try:
@@ -1275,7 +1451,7 @@ class SuperpowerDaemon:
         def writer_adapter_factory(actor: str) -> _Adapter:
             adapter = self._writer_adapters.get(actor)
             if adapter is None:
-                if len(self._writer_adapters) >= 256:
+                if len(self._writer_adapters) >= ADAPTER_CACHE_CAP:
                     self._writer_adapters.clear()
                 adapter = _Adapter(
                     service,
@@ -1321,7 +1497,7 @@ class SuperpowerDaemon:
             listener.close()
             raise
         os.chmod(self._paths.socket, 0o600)
-        listener.listen(128)
+        listener.listen(LISTENER_BACKLOG)
         self._listener = listener
 
     # -------------------------------------------------------------- acceptor
@@ -1351,7 +1527,15 @@ class SuperpowerDaemon:
             if not overflow:
                 with self._sessions_lock:
                     self._sessions.add(session)
+                    self._assert_session_capacity_locked()
             session.start()
+
+    def _assert_session_capacity_locked(self) -> None:
+        """Accept invariant (caller holds ``_sessions_lock``): the session
+        registry never exceeds the static ``max_agents`` budget."""
+        assert len(self._sessions) <= self._config.max_agents, (
+            f"{len(self._sessions)} sessions exceed the static budget {self._config.max_agents}"
+        )
 
     def _reap_loop(self) -> None:
         while not self._stop.wait(min(1.0, self._config.idle_timeout_seconds / 2)):
@@ -1381,6 +1565,16 @@ class SuperpowerDaemon:
                 connection.close()
             except OSError:
                 pass
+        with self._sessions_lock:
+            self._assert_no_expired_sessions_locked(now)
+
+    def _assert_no_expired_sessions_locked(self, now: float) -> None:
+        """Post-reap invariant (caller holds ``_sessions_lock``): no live
+        token in the registry may be past its lease."""
+        for token in self._session_sockets.values():
+            assert not token.alive or now - token.last_seen <= self._config.session_lease_seconds, (
+                f"session {token.session_id} survived the reaper past its lease {self._config.session_lease_seconds}s"
+            )
 
     def _unregister(self, session: threading.Thread) -> None:
         with self._sessions_lock:
@@ -1515,9 +1709,33 @@ class SuperpowerDaemon:
             return
         elapsed_ms = (time.monotonic() - started) * 1000.0
         with self._stats_lock:
-            lanes = self._latencies.setdefault(actor, {})
-            reservoir = lanes.setdefault(lane, collections.deque(maxlen=256))
+            lanes = self._latencies.get(actor)
+            if lanes is None:
+                if len(self._latencies) >= STATS_ACTOR_CAP:
+                    # Static budget: observability only — beyond the cap new
+                    # actors go untracked; tracked actors are never evicted.
+                    return
+                lanes = {}
+                self._latencies[actor] = lanes
+            reservoir = lanes.setdefault(lane, collections.deque(maxlen=LATENCY_RESERVOIR_CAP))
             reservoir.append(elapsed_ms)
+
+    def _note_actor_request(self, actor: str) -> None:
+        """Count one request under the static stats budget (see budgets.py)."""
+        with self._stats_lock:
+            counts = self._per_actor.get(actor)
+            if counts is None:
+                if len(self._per_actor) >= STATS_ACTOR_CAP:
+                    return  # new actors beyond the cap go untracked
+                counts = {"requests": 0, "errors": 0}
+                self._per_actor[actor] = counts
+            counts["requests"] += 1
+
+    def _note_actor_error(self, actor: str) -> None:
+        with self._stats_lock:
+            counts = self._per_actor.get(actor)
+            if counts is not None:
+                counts["errors"] += 1
 
     def _route(self, envelope: rpc.RequestEnvelope, token: _SessionToken | None) -> dict[str, Any]:
         method = envelope.method
@@ -1536,17 +1754,136 @@ class SuperpowerDaemon:
         if method == "daemon.status":
             return self.stats()
         if method == "daemon.shutdown":
+            self._authorize_admin(params)
             force = bool(params.get("force", False))
             self.shutdown("operator", force=force)
             return {"stopping": True, "force": force}
         raise rpc.ProtocolError(rpc.METHOD_NOT_FOUND, f"method not found: {method!r}")
+
+    # ---------------------------------------------------- capability gate (W10)
+
+    _DENIAL_REASONS: tuple[tuple[type[CapabilityError], str], ...] = (
+        (CapabilityActorMismatchError, "actor_mismatch"),
+        (CapabilityRevokedError, "revoked"),
+        (CapabilityExpiredError, "expired"),
+        (CapabilityForgedError, "forged"),
+        (CapabilityMalformedError, "malformed"),
+        (CapabilityStoreError, "store_unavailable"),
+    )
+
+    @staticmethod
+    def _capability_of(params: Mapping[str, Any]) -> Any:
+        meta = params.get("_meta")
+        if isinstance(meta, Mapping):
+            return meta.get("capability")
+        return None
+
+    @staticmethod
+    def _peek_nonce(token: Any) -> str | None:
+        if not isinstance(token, str):
+            return None
+        try:
+            return decode_token(token).nonce
+        except CapabilityError:
+            return None
+
+    def _deny_capability(
+        self,
+        *,
+        actor: str,
+        verb: str,
+        lane: str,
+        reason: str,
+        nonce: str | None,
+    ) -> NoReturn:
+        """Audit the denial, then raise the typed refusal (fail closed)."""
+        assert self._capability_store is not None
+        event: dict[str, Any] = {
+            "event": "capability_denied",
+            "actor": actor,
+            "verb": verb,
+            "lane": lane,
+            "reason": reason,
+        }
+        if nonce is not None:
+            event["nonce"] = nonce
+        try:
+            self._capability_store.audit(event)
+        except CapabilityStoreError:
+            # The denial still stands; the caller sees the audit failure.
+            raise CapabilityDenied(
+                f"capability denied ({reason}) for verb {verb!r}; the audit log is unavailable",
+                data={"reason": reason, "verb": verb, "audit": "failed"},
+            ) from None
+        raise CapabilityDenied(
+            f"capability denied ({reason}) for verb {verb!r}",
+            data={"reason": reason, "verb": verb},
+        )
+
+    def _authorize_capability(self, name: str, lane: str, actor: str, params: Mapping[str, Any]) -> None:
+        """Enforce mode gate: public reads need no token; everything else does."""
+        store = self._capability_store
+        if store is None:
+            return  # "off": exact legacy behavior
+        token = self._capability_of(params)
+        if token is None:
+            if lane == "read":
+                return  # public read verbs stay open without a token
+            self._deny_capability(actor=actor, verb=name, lane=lane, reason="capability_required", nonce=None)
+        if not isinstance(token, str):
+            self._deny_capability(actor=actor, verb=name, lane=lane, reason="malformed", nonce=None)
+        try:
+            capability = store.verify(token, actor=actor)
+        except CapabilityError as error:
+            reason = "invalid"
+            for error_type, mapped in self._DENIAL_REASONS:
+                if isinstance(error, error_type):
+                    reason = mapped
+                    break
+            self._deny_capability(actor=actor, verb=name, lane=lane, reason=reason, nonce=self._peek_nonce(token))
+        if not capability.allows_lane(lane):
+            self._deny_capability(
+                actor=actor, verb=name, lane=lane, reason="scope_insufficient", nonce=capability.nonce
+            )
+        if not capability.allows_verb(name):
+            self._deny_capability(actor=actor, verb=name, lane=lane, reason="verb_not_allowed", nonce=capability.nonce)
+
+    def _authorize_admin(self, params: Mapping[str, Any]) -> None:
+        """daemon.shutdown in enforce mode requires an admin-scope capability."""
+        store = self._capability_store
+        if store is None:
+            return
+        meta = params.get("_meta")
+        actor = "operator"
+        if isinstance(meta, Mapping) and isinstance(meta.get("actor"), str) and str(meta.get("actor")).strip():
+            actor = str(meta.get("actor")).strip()
+        token = self._capability_of(params)
+        if not isinstance(token, str):
+            self._deny_capability(
+                actor=actor, verb="daemon.shutdown", lane="admin", reason="capability_required", nonce=None
+            )
+        try:
+            capability = store.verify(token, actor=actor)
+        except CapabilityError as error:
+            reason = "invalid"
+            for error_type, mapped in self._DENIAL_REASONS:
+                if isinstance(error, error_type):
+                    reason = mapped
+                    break
+            self._deny_capability(
+                actor=actor, verb="daemon.shutdown", lane="admin", reason=reason, nonce=self._peek_nonce(token)
+            )
+        if not capability.allows_lane("admin"):
+            self._deny_capability(
+                actor=actor, verb="daemon.shutdown", lane="admin", reason="scope_insufficient", nonce=capability.nonce
+            )
 
     def _admit(self, actor: str) -> None:
         """Per-agent token bucket (W7 #1): over-rate agents get typed busy."""
         with self._buckets_lock:
             bucket = self._buckets.get(actor)
             if bucket is None:
-                if len(self._buckets) >= 512:
+                if len(self._buckets) >= BUCKET_CACHE_CAP:
                     self._buckets.clear()  # bounded; buckets are cheap to rebuild
                 bucket = _TokenBucket(
                     rate_per_second=self._config.agent_rate_per_second,
@@ -1570,13 +1907,12 @@ class SuperpowerDaemon:
             raise rpc.ProtocolError(rpc.INVALID_PARAMS, "tools/call params.arguments must be an object")
         actor = self._extract_actor(params)
         lane = classify_tool(name)  # UnknownVerb for anything outside the frozen 16
+        self._authorize_capability(name, lane, actor, params)
         if self._draining or self._stop.is_set():
             raise ShuttingDown("the daemon is draining; new work is refused typed")
         self._admit(actor)
         deadline = self._extract_deadline(params)
-        with self._stats_lock:
-            bucket = self._per_actor.setdefault(actor, {"requests": 0, "errors": 0})
-            bucket["requests"] += 1
+        self._note_actor_request(actor)
         assert self._arbiter is not None and self._read_pool is not None and self._heavy is not None
         if lane == "write":
             result = self._arbiter.submit_mutation(name, dict(arguments), actor=actor, deadline=deadline, session=token)
@@ -1585,8 +1921,7 @@ class SuperpowerDaemon:
         else:
             result = self._read_pool.submit(name, dict(arguments), actor=actor, deadline=deadline, session=token)
         if result.get("isError"):
-            with self._stats_lock:
-                self._per_actor[actor]["errors"] += 1
+            self._note_actor_error(actor)
         return result
 
     def _extract_deadline(self, params: Mapping[str, Any]) -> float | None:
@@ -1683,6 +2018,7 @@ class SuperpowerDaemon:
 
     def _inflight_end(self) -> None:
         with self._inflight_cond:
+            assert self._inflight > 0, "inflight dispatch ended without a matching begin"
             self._inflight -= 1
             if self._inflight <= 0:
                 self._inflight_cond.notify_all()
@@ -1946,7 +2282,13 @@ def daemon_status(config: DaemonConfig) -> dict[str, Any]:
     return report
 
 
-def stop_daemon(config: DaemonConfig, *, timeout_seconds: float = 10.0, force: bool = False) -> dict[str, Any]:
+def stop_daemon(
+    config: DaemonConfig,
+    *,
+    timeout_seconds: float = 10.0,
+    force: bool = False,
+    capability: str | None = None,
+) -> dict[str, Any]:
     """Ask the daemon to shut down and wait for its clean exit.
 
     Escalation ladder (operator stop must always work): graceful drain for the
@@ -1954,6 +2296,11 @@ def stop_daemon(config: DaemonConfig, *, timeout_seconds: float = 10.0, force: b
     direct SIGKILL on the pidfile's process plus stale-artifact recovery. A
     daemon that ignores a graceful shutdown (wedged drain, race residue) is
     still stopped — never left answering the socket.
+
+    W10: under ``capability_mode="enforce"`` the graceful/forced shutdown
+    requests need an admin-scope capability; the operator CLI mints a
+    short-lived one from the local secret (the root of trust) and passes it
+    here. Without a token the escalation ladder still stops the daemon.
     """
     paths = config.paths
     if not _socket_live(paths.socket):
@@ -1968,7 +2315,10 @@ def stop_daemon(config: DaemonConfig, *, timeout_seconds: float = 10.0, force: b
         return not paths.lock.exists() and not _socket_live(paths.socket)
 
     pid = _read_pid(paths)
-    _admin_roundtrip(paths.socket, "daemon.shutdown", {"force": force})
+    shutdown_params: dict[str, Any] = {"force": force}
+    if capability is not None:
+        shutdown_params["_meta"] = {"actor": "operator", "capability": capability}
+    _admin_roundtrip(paths.socket, "daemon.shutdown", shutdown_params)
     graceful_deadline = time.monotonic() + (timeout_seconds * 0.5 if not force else 0.0)
     while time.monotonic() < graceful_deadline:
         if _stopped():
@@ -1976,7 +2326,10 @@ def stop_daemon(config: DaemonConfig, *, timeout_seconds: float = 10.0, force: b
         time.sleep(0.05)
 
     if not force:
-        _admin_roundtrip(paths.socket, "daemon.shutdown", {"force": True})
+        force_params: dict[str, Any] = {"force": True}
+        if capability is not None:
+            force_params["_meta"] = {"actor": "operator", "capability": capability}
+        _admin_roundtrip(paths.socket, "daemon.shutdown", force_params)
         force_deadline = time.monotonic() + timeout_seconds * 0.25
         while time.monotonic() < force_deadline:
             if _stopped():
