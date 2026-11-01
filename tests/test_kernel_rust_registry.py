@@ -2,7 +2,7 @@
 
 ``kernel-rust/registry.json`` is the shared source of truth consumed by the
 Rust kernel; it must be a byte-exact, deterministic dump of
-:mod:`know_your_soul.ingest.languages`. The tool runs as a subprocess so these
+:mod:`know_your_context.ingest.languages`. The tool runs as a subprocess so these
 tests exercise the exact CLI contract (``--stdout`` / ``--check``).
 """
 

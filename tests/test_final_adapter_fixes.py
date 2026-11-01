@@ -21,7 +21,7 @@ adapter halves of F-1/F-2/F-4).
 * F-4 (adapter half): the relearn lifecycle is operator-reachable through
   ``ops/relearn_scan`` / ``ops/relearn_status`` / ``ops/relearn_preview`` /
   ``ops/relearn_apply`` (CLI + HTTP) and the read-only MCP resource
-  ``soul://relearn/status``. The ten knowledge operations are unchanged.
+  ``context://relearn/status``. The ten knowledge operations are unchanged.
 """
 
 from __future__ import annotations
@@ -36,9 +36,9 @@ from typing import Any
 import pytest
 from mcp import types
 
-from know_your_soul import cli, http_api, mcp_server
-from know_your_soul.backup import BackupError
-from know_your_soul.domain import (
+from know_your_context import cli, http_api, mcp_server
+from know_your_context.backup import BackupError
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -47,7 +47,7 @@ from know_your_soul.domain import (
     Relation,
     RelationKind,
 )
-from know_your_soul.http_api import (
+from know_your_context.http_api import (
     KNOWLEDGE_OPERATIONS,
     OPS_OPERATIONS,
     BoundaryDenialRecorder,
@@ -56,16 +56,16 @@ from know_your_soul.http_api import (
     error_envelope,
     status_for_error,
 )
-from know_your_soul.projection import (
+from know_your_context.projection import (
     OversizedArtifactError,
     ProjectionValidationError,
     ProjectorBusy,
     ShrinkGuardError,
     StalePublicationError,
 )
-from know_your_soul.security import BindPolicyError, UnauthorizedError
-from know_your_soul.source_registry import RELEARN_PENDING, SourceKind
-from know_your_soul.store import EventStore
+from know_your_context.security import BindPolicyError, UnauthorizedError
+from know_your_context.source_registry import RELEARN_PENDING, SourceKind
+from know_your_context.store import EventStore
 from test_http_api import _post, asgi_call
 from test_mcp_server import _run, _session
 
@@ -93,7 +93,7 @@ def _seed_store(store: EventStore) -> None:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -106,7 +106,7 @@ def _seed_store(store: EventStore) -> None:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -119,7 +119,7 @@ def _seed_store(store: EventStore) -> None:
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
             context_tags=("gates",),
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
     )
@@ -452,7 +452,7 @@ def test_ops_health_post_maps_unhealthy_to_503(tmp_path: Path) -> None:
             kind=NodeKind.CHILD,
             domain=PrimaryDomain.P1,
             summary="Written after the last rebuild",
-            provenance=("soul://corpus/late.md",),
+            provenance=("context://corpus/late.md",),
             source_version_id="sv-test",
         ),
     )
@@ -631,7 +631,7 @@ def test_mcp_relearn_status_resource(tmp_path: Path) -> None:
     offer = service.offer_relearn(corpus, SourceKind.SOUL_CORPUS)
     assert offer is not None
 
-    from know_your_soul.mcp_server import build_server
+    from know_your_context.mcp_server import build_server
 
     server = build_server(service, graph_root=tmp_path / "graph")
     domain_before = store.execute_raw("SELECT COUNT(*) AS n FROM event_log WHERE kind = 'domain'").fetchone()["n"]
@@ -640,8 +640,8 @@ def test_mcp_relearn_status_resource(tmp_path: Path) -> None:
         async with _session(server) as session:
             listed = await session.list_resources()
             uris = {str(resource.uri) for resource in listed.resources}
-            assert "soul://relearn/status" in uris
-            read = await session.read_resource("soul://relearn/status")
+            assert "context://relearn/status" in uris
+            read = await session.read_resource("context://relearn/status")
             assert read.contents
             contents = read.contents[0]
             assert isinstance(contents, types.TextResourceContents)
@@ -661,13 +661,13 @@ def test_mcp_relearn_status_resource_without_pending_offer(tmp_path: Path) -> No
     from test_mcp_server import _seeded
 
     _, _, service = _seeded(tmp_path)
-    from know_your_soul.mcp_server import build_server
+    from know_your_context.mcp_server import build_server
 
     server = build_server(service, graph_root=tmp_path / "graph")
 
     async def scenario() -> None:
         async with _session(server) as session:
-            read = await session.read_resource("soul://relearn/status")
+            read = await session.read_resource("context://relearn/status")
             contents = read.contents[0]
             assert isinstance(contents, types.TextResourceContents)
             payload = json.loads(contents.text)

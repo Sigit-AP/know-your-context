@@ -19,9 +19,9 @@ from pathlib import Path
 import pytest
 
 from _serve_helpers import SocketClient, make_config, tool_error_code, tool_payload
-from know_your_soul.serve import rpc
-from know_your_soul.serve.superpower import SuperpowerDaemon
-from know_your_soul.store import EventStore
+from know_your_context.serve import rpc
+from know_your_context.serve.superpower import SuperpowerDaemon
+from know_your_context.store import EventStore
 
 AGENTS = 50
 POOL_NODES = 20  # agents rewrite a shared pool — dense writes, bounded graph
@@ -35,7 +35,7 @@ def _node(node_id: str, summary: str) -> dict:
         "kind": "leaf",
         "domain": "P1",
         "summary": summary,
-        "provenance": ["soul://storm"],
+        "provenance": ["context://storm"],
         "source_version_id": "sv-test",
     }
 

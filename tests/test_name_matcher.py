@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.resolve.name_matcher import (
+from know_your_context.resolve.name_matcher import (
     NAME_MATCHER_VERSION,
     PROVENANCE_NAME_MATCH,
     NameMatch,
@@ -33,8 +33,8 @@ from know_your_soul.resolve.name_matcher import (
     score_name_pair,
     split_identifier,
 )
-from know_your_soul.resolve.resolver import ReferenceResolver
-from know_your_soul.store import EventStore
+from know_your_context.resolve.resolver import ReferenceResolver
+from know_your_context.store import EventStore
 
 SEEN = "2026-10-28T00:00:00+00:00"
 BASE = "function:base"

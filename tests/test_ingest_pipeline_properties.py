@@ -21,12 +21,12 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from _ingest_fakes import ToyExtractor, ToyResolver, write_fixture
-from know_your_soul.ingest.pipeline import (
+from know_your_context.ingest.pipeline import (
     IngestionPipeline,
     canonical_ingestion_dump,
     detect_language,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 
 def _pipeline(store):
@@ -126,8 +126,8 @@ from pathlib import Path
 sys.path.insert(0, {src!r})
 sys.path.insert(0, {tests!r})
 from _ingest_fakes import ToyExtractor, ToyResolver, write_fixture
-from know_your_soul.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
-from know_your_soul.store import EventStore
+from know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
+from know_your_context.store import EventStore
 root = Path({root!r})
 db = root / "sub.sqlite3"
 for sidecar in (db, Path(str(db) + "-wal"), Path(str(db) + "-shm")):

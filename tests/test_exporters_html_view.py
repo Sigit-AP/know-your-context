@@ -16,7 +16,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.html_view import (
+from know_your_context.exporters.html_view import (
     HTML_VIEW_MAX_BYTES,
     MAX_NODES_FOR_VIEW,
     HtmlViewError,
@@ -24,7 +24,7 @@ from know_your_soul.exporters.html_view import (
     register_html_view,
     render_html_view,
 )
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportRegistry,
     manifest_entries,
@@ -61,7 +61,7 @@ def _node(
         },
         "confidence": "0.500000000000",
         "professional_level": 2,
-        "provenance": provenance if provenance is not None else ["soul://store"],
+        "provenance": provenance if provenance is not None else ["context://store"],
     }
 
 
@@ -139,7 +139,7 @@ def test_payload_carries_node_panel_fields() -> None:
     assert alpha["scores"]["m"] == "0.200000000000"
     assert alpha["scores"]["e"] == "0.300000000000"
     assert alpha["version"] == 2
-    assert alpha["provenance"] == ["soul://store"]
+    assert alpha["provenance"] == ["context://store"]
     neighbours = {(n["id"], n["relation"], n["direction"]) for n in alpha["neighbors"]}
     assert neighbours == {("b-node", "depends_on", "out"), ("c-node", "parent_of", "in")}
     assert [node["id"] for node in payload["nodes"]] == sorted(nodes)

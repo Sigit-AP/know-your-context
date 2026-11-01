@@ -2,7 +2,7 @@
 """Codebase benchmark: ingestion + retrieval over REAL open-source codebases.
 
 SUB-94 (wave 5). Deterministic, no-AI measurement of the product's code
-ingestion pipeline (``know_your_soul.ingest.pipeline``, the real tree-sitter
+ingestion pipeline (``know_your_context.ingest.pipeline``, the real tree-sitter
 extractor and the two-phase resolver, used as-is) and retrieval v2
 (``SymbolLookup`` + ``CallHierarchy``) against real OSS codebases pinned by
 commit and vendored under ``data/``.
@@ -427,13 +427,13 @@ class TargetResult:
 class _TimedExtractor:
     """Instrumentation proxy around the real extractor module.
 
-    Delegates every attribute to ``know_your_soul.ingest.extractor`` (the
+    Delegates every attribute to ``know_your_context.ingest.extractor`` (the
     product extractor runs as-is); only the wall time of each
     ``extract_source`` call is recorded.
     """
 
     def __init__(self) -> None:
-        from know_your_soul.ingest import extractor
+        from know_your_context.ingest import extractor
 
         self._real = extractor
         self.EXTRACTION_VERSION = extractor.EXTRACTION_VERSION
@@ -457,8 +457,8 @@ def _percentile(values: list[float], q: float) -> float:
 
 
 def _ingest_once(root: Path, *, timed: bool) -> tuple[Any, Any, dict[str, Any]]:
-    from know_your_soul.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
-    from know_your_soul.store import EventStore
+    from know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
+    from know_your_context.store import EventStore
 
     store = EventStore()
     extractor = _TimedExtractor() if timed else None
@@ -530,7 +530,7 @@ def expect_of(query: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _run_lookups(store: Any, lookups: list[dict[str, Any]], *, repeats: int) -> dict[str, Any]:
-    from know_your_soul.retrieval_v2 import SymbolLookup
+    from know_your_context.retrieval_v2 import SymbolLookup
 
     lookup = SymbolLookup()
     results = []
@@ -570,7 +570,7 @@ def _run_lookups(store: Any, lookups: list[dict[str, Any]], *, repeats: int) -> 
 
 
 def _run_hierarchy(store: Any, queries: list[dict[str, Any]]) -> dict[str, Any]:
-    from know_your_soul.retrieval_v2 import CallHierarchy
+    from know_your_context.retrieval_v2 import CallHierarchy
 
     hierarchy = CallHierarchy()
     results = []

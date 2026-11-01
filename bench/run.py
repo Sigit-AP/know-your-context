@@ -131,7 +131,7 @@ FILE_DOMAIN_MAP: dict[str, str] = {
 # three access paths (Task 7 CLI/API, Task 8 MCP) exist on top of the service.
 # The gate opens automatically when these modules land; the coordinator does
 # not need to edit this file. Until then `run` exits 3 with a skipped ledger.
-INTEGRATION_MODULES = ("know_your_soul.cli", "know_your_soul.http_api", "know_your_soul.mcp_server")
+INTEGRATION_MODULES = ("know_your_context.cli", "know_your_context.http_api", "know_your_context.mcp_server")
 
 
 class SystemUnavailable(RuntimeError):
@@ -313,7 +313,7 @@ def rubric_scoring_text(payload: dict[str, Any]) -> str:
 
     Wave-3 W3-8(a): provenance is routing metadata — per the spec it
     contributes zero relevance, yet it rides the payload, so a rubric term
-    could be satisfied by a corpus *filename* inside a ``soul://`` URI alone
+    could be satisfied by a corpus *filename* inside a ``context://`` URI alone
     (e.g. q16's ``steelman`` via ``09-premortem-steelman.md``) with no
     delivered knowledge. Excluding the field on BOTH sides (system response
     and compliant ceiling) keeps the signal honest and the comparison
@@ -338,7 +338,7 @@ def _ceiling_payload(nodes: list[dict[str, Any]], source_files: list[str]) -> di
     """A synthetic ``QueryResponse.canonical_payload`` for *nodes*.
 
     Keys and value shapes mirror the frozen response contract exactly
-    (``know_your_soul.contracts.QueryResponse.canonical_payload``), with
+    (``know_your_context.contracts.QueryResponse.canonical_payload``), with
     fixed dummy metadata. The rubric is scored over the JSON of this object
     minus ``provenance`` (``rubric_scoring_text``) — the same way the harness
     scores a real response — so payload keys (e.g. ``estimated_tokens``)
@@ -355,7 +355,7 @@ def _ceiling_payload(nodes: list[dict[str, Any]], source_files: list[str]) -> di
         "knowledge_payload_tokens": 0,
         "node_versions": {node["id"]: 1 for node in nodes},
         "projection_version": "0" * 64,
-        "provenance": [f"soul://corpus/{name}" for name in source_files],
+        "provenance": [f"context://corpus/{name}" for name in source_files],
         "recommendations": {"best_actions": [], "recommendations": [], "unnecessary_actions": []},
         "required_knowledge_watermark": 0,
         "results": [
@@ -559,12 +559,12 @@ def build_service(workdir: Path) -> Any:
     caller turns that into a ``skipped`` ledger, never a fake result.
     """
     try:
-        from know_your_soul.domain import PrimaryDomain
-        from know_your_soul.importer import DEFAULT_PARSER_VERSIONS, SeedImporter
-        from know_your_soul.projection import GraphProjector
-        from know_your_soul.service import KnowledgeService
-        from know_your_soul.source_registry import SourceKind, SourceRegistry
-        from know_your_soul.store import EventStore
+        from know_your_context.domain import PrimaryDomain
+        from know_your_context.importer import DEFAULT_PARSER_VERSIONS, SeedImporter
+        from know_your_context.projection import GraphProjector
+        from know_your_context.service import KnowledgeService
+        from know_your_context.source_registry import SourceKind, SourceRegistry
+        from know_your_context.store import EventStore
     except Exception as exc:  # noqa: BLE001 — any failure means "not integrated yet"
         raise SystemUnavailable(f"system import failed: {exc}") from exc
     try:
@@ -575,7 +575,7 @@ def build_service(workdir: Path) -> Any:
         importer.ensure_roots(version.source_version_id)
         for entry in sorted(CORPUS_DIR.glob("*.md")):
             domain = PrimaryDomain(FILE_DOMAIN_MAP[entry.name])
-            importer.import_file(entry, domain=domain, source_uri=f"soul://corpus/{entry.name}")
+            importer.import_file(entry, domain=domain, source_uri=f"context://corpus/{entry.name}")
         projector = GraphProjector(store, output_root=workdir / "graph")
         projector.rebuild()
         return KnowledgeService(store, projector)
@@ -587,7 +587,7 @@ def build_service(workdir: Path) -> Any:
 
 def query_once(service: Any, case: dict[str, Any]) -> tuple[Any, float]:
     """Run one timed query; returns (response, latency_ms)."""
-    from know_your_soul.contracts import QueryRequest
+    from know_your_context.contracts import QueryRequest
 
     request = QueryRequest(
         purpose=case["question"],
@@ -636,7 +636,7 @@ def run_benchmark(repeats: int) -> int:
             "rubric_scope": (
                 "rubric terms are scored over the response/ceiling payload JSON minus the "
                 "provenance field (wave-3 W3-8(a)): provenance is routing metadata with zero "
-                "relevance per spec, so a term appearing only in a soul:// URI filename cannot "
+                "relevance per spec, so a term appearing only in a context:// URI filename cannot "
                 "count as delivered knowledge; provenance still counts toward token estimation "
                 "on both sides"
             ),
@@ -804,7 +804,7 @@ def check_estimator_parity() -> list[str]:
         if got != expected:
             problems.append(f"{case['id']}: estimator {got} != frozen expected {expected}")
     try:
-        from know_your_soul.contracts import estimated_tokens_of_payload as reference
+        from know_your_context.contracts import estimated_tokens_of_payload as reference
     except Exception:  # noqa: BLE001 — library parity is best-effort pre-integration
         return problems
     for case in fixtures["cases"]:
@@ -812,7 +812,7 @@ def check_estimator_parity() -> list[str]:
         if payload is None:
             continue
         if estimate_tokens_of_payload(payload) != reference(payload):
-            problems.append(f"{case['id']}: local estimator diverges from know_your_soul.contracts")
+            problems.append(f"{case['id']}: local estimator diverges from know_your_context.contracts")
     return problems
 
 

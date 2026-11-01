@@ -1,5 +1,5 @@
 //! The language registry: deserialized from `registry.json`, the byte-exact
-//! dump of `know_your_soul.ingest.languages` produced by
+//! dump of `know_your_context.ingest.languages` produced by
 //! `tools/dump_language_registry.py`. One source of truth, two implementations.
 
 use std::collections::BTreeMap;

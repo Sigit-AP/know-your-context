@@ -44,11 +44,11 @@ def main() -> int:
     point = sys.argv[2]
     extra = sys.argv[3] if len(sys.argv) > 3 else ""
 
-    from know_your_soul.backup import backup_protected_artifacts
-    from know_your_soul.domain import PrimaryDomain
-    from know_your_soul.importer import SeedImporter
-    from know_your_soul.projection import GraphProjector
-    from know_your_soul.store import EventStore
+    from know_your_context.backup import backup_protected_artifacts
+    from know_your_context.domain import PrimaryDomain
+    from know_your_context.importer import SeedImporter
+    from know_your_context.projection import GraphProjector
+    from know_your_context.store import EventStore
 
     store = EventStore(workdir / "soul.sqlite3")
     corpus = workdir / "corpus"
@@ -87,7 +87,7 @@ def main() -> int:
     # Every remaining point publishes a second, different generation.
     if point != "baseline":
         (corpus / "gamma.md").write_bytes(GAMMA)
-        importer.import_file(corpus / "gamma.md", domain=PrimaryDomain.P2, source_uri="soul://corpus/gamma.md")
+        importer.import_file(corpus / "gamma.md", domain=PrimaryDomain.P2, source_uri="context://corpus/gamma.md")
 
     if point == "mid-artifact-write":
         real_replace = os.replace

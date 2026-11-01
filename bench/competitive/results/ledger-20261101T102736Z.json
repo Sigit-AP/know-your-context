@@ -1,0 +1,2391 @@
+{
+  "config": {
+    "clients": 8,
+    "cold_repeats": 3,
+    "kill_fraction": 0.4,
+    "queries_per_client": 5
+  },
+  "entries": [
+    {
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store.db",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/tree"
+      ],
+      "counts": {
+        "dump_sha256": "fba6ee26c2424eca542982ea2c5378c4c220182f936ecb46f09d362924e4a6f7",
+        "edges": 18,
+        "files_failed": 0,
+        "files_proposed": 5,
+        "refs_resolved": 8,
+        "refs_total": 10,
+        "symbols": 10
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "fixture",
+      "task": "ingest",
+      "wall_ms": 828.631
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 397.57,
+      "queries": [
+        {
+          "answer_tokens": 24,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store.db",
+            "Worker"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 387.01,
+          "p50_ms": 457.153,
+          "payload_bytes": 93,
+          "query": "Worker",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 26,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store.db",
+            "base_helper"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 369.79,
+          "p50_ms": 396.964,
+          "payload_bytes": 101,
+          "query": "base_helper",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 24,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store.db",
+            "handle"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 390.542,
+          "p50_ms": 397.599,
+          "payload_bytes": 95,
+          "query": "handle",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 24,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store.db",
+            "shout"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 347.818,
+          "p50_ms": 367.033,
+          "payload_bytes": 95,
+          "query": "shout",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 25,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store.db",
+            "formatName"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 407.802,
+          "p50_ms": 449.702,
+          "payload_bytes": 100,
+          "query": "formatName",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store.db",
+            "zzz_no_such_symbol"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 370.974,
+          "p50_ms": 397.57,
+          "payload_bytes": 3,
+          "query": "zzz_no_such_symbol",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "fixture",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 24,
+          "query": "Worker"
+        },
+        {
+          "answer_tokens": 26,
+          "query": "base_helper"
+        },
+        {
+          "answer_tokens": 24,
+          "query": "handle"
+        },
+        {
+          "answer_tokens": 24,
+          "query": "shout"
+        },
+        {
+          "answer_tokens": 25,
+          "query": "formatName"
+        },
+        {
+          "answer_tokens": 1,
+          "query": "zzz_no_such_symbol"
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "fixture",
+      "task": "tokens",
+      "total_answer_tokens": 124
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store.db",
+        "Worker"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 1986.542,
+      "latency_p95_ms": 2426.767,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "fixture",
+      "task": "concurrent",
+      "throughput_qps": 4.06,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 9.852
+    },
+    {
+      "artifact": "canonical_ingestion_dump",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/store-b.db",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/fixture/tree"
+      ],
+      "run_a_sha256": "fba6ee26c2424eca542982ea2c5378c4c220182f936ecb46f09d362924e4a6f7",
+      "run_b_sha256": "fba6ee26c2424eca542982ea2c5378c4c220182f936ecb46f09d362924e4a6f7",
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "fixture",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store.db",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/tree"
+      ],
+      "counts": {
+        "dump_sha256": "6653b3dc495b1baf39ccc58b89a254810db1492883360670b25b64c50dcb7433",
+        "edges": 2832,
+        "files_failed": 79,
+        "files_proposed": 50,
+        "refs_resolved": 1163,
+        "refs_total": 2887,
+        "symbols": 1804
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "requests",
+      "task": "ingest",
+      "wall_ms": 15083.714
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 451.031,
+      "queries": [
+        {
+          "answer_tokens": 315,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store.db",
+            "Session"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 334.49,
+          "p50_ms": 367.504,
+          "payload_bytes": 1258,
+          "query": "Session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 315,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store.db",
+            "session"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 388.853,
+          "p50_ms": 408.305,
+          "payload_bytes": 1258,
+          "query": "session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 29,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store.db",
+            "PreparedRequest"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 419.755,
+          "p50_ms": 451.031,
+          "payload_bytes": 113,
+          "query": "PreparedRequest",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 32,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store.db",
+            "merge_environment_settings"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 395.738,
+          "p50_ms": 457.051,
+          "payload_bytes": 127,
+          "query": "merge_environment_settings",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 28,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store.db",
+            "HTTPAdapter"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 383.021,
+          "p50_ms": 483.651,
+          "payload_bytes": 111,
+          "query": "HTTPAdapter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 30,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store.db",
+            "SessionRedirectMixin"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 356.604,
+          "p50_ms": 460.696,
+          "payload_bytes": 120,
+          "query": "SessionRedirectMixin",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "requests",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 315,
+          "query": "Session"
+        },
+        {
+          "answer_tokens": 315,
+          "query": "session"
+        },
+        {
+          "answer_tokens": 29,
+          "query": "PreparedRequest"
+        },
+        {
+          "answer_tokens": 32,
+          "query": "merge_environment_settings"
+        },
+        {
+          "answer_tokens": 28,
+          "query": "HTTPAdapter"
+        },
+        {
+          "answer_tokens": 30,
+          "query": "SessionRedirectMixin"
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "requests",
+      "task": "tokens",
+      "total_answer_tokens": 749
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store.db",
+        "Session"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2162.607,
+      "latency_p95_ms": 3171.476,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "requests",
+      "task": "concurrent",
+      "throughput_qps": 3.291,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 12.155
+    },
+    {
+      "artifact": "canonical_ingestion_dump",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/store-b.db",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/tree"
+      ],
+      "run_a_sha256": "6653b3dc495b1baf39ccc58b89a254810db1492883360670b25b64c50dcb7433",
+      "run_b_sha256": "6653b3dc495b1baf39ccc58b89a254810db1492883360670b25b64c50dcb7433",
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "requests",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/chalk/store.db",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/chalk/tree"
+      ],
+      "counts": {
+        "dump_sha256": "775241a4ea8a0a59c608f31fe51fae15c754abb4d19d8f9e2fd3f57fce998027",
+        "edges": 321,
+        "files_failed": 11,
+        "files_proposed": 23,
+        "refs_resolved": 90,
+        "refs_total": 622,
+        "symbols": 252
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "chalk",
+      "task": "ingest",
+      "wall_ms": 2422.834
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 441.474,
+      "queries": [
+        {
+          "answer_tokens": 26,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/chalk/store.db",
+            "createChalk"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 453.185,
+          "p50_ms": 489.451,
+          "payload_bytes": 104,
+          "query": "createChalk",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 27,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/chalk/store.db",
+            "applyOptions"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 438.866,
+          "p50_ms": 441.474,
+          "payload_bytes": 105,
+          "query": "applyOptions",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "chalk",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 26,
+          "query": "createChalk"
+        },
+        {
+          "answer_tokens": 27,
+          "query": "applyOptions"
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "chalk",
+      "task": "tokens",
+      "total_answer_tokens": 53
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/chalk/store.db",
+        "createChalk"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2805.074,
+      "latency_p95_ms": 3228.749,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "chalk",
+      "task": "concurrent",
+      "throughput_qps": 2.917,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 13.715
+    },
+    {
+      "artifact": "canonical_ingestion_dump",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/chalk/store-b.db",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/chalk/tree"
+      ],
+      "run_a_sha256": "775241a4ea8a0a59c608f31fe51fae15c754abb4d19d8f9e2fd3f57fce998027",
+      "run_b_sha256": "775241a4ea8a0a59c608f31fe51fae15c754abb4d19d8f9e2fd3f57fce998027",
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "chalk",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/tree-sitter-python/store.db",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/tree-sitter-python/tree"
+      ],
+      "counts": {
+        "dump_sha256": "ff077378e83c461f5789d19eabcd821b4c22ee532714b995adcd71bc5f60c076",
+        "edges": 1557,
+        "files_failed": 30,
+        "files_proposed": 45,
+        "refs_resolved": 292,
+        "refs_total": 2678,
+        "symbols": 1445
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "tree-sitter-python",
+      "task": "ingest",
+      "wall_ms": 9192.693
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 495.381,
+      "queries": [
+        {
+          "answer_tokens": 26,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/tree-sitter-python/store.db",
+            "new_delimiter"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 469.501,
+          "p50_ms": 495.381,
+          "payload_bytes": 104,
+          "query": "new_delimiter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 34,
+          "command": [
+            "/root/know-your-soul/.venv/bin/python",
+            "-c",
+            "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/tree-sitter-python/store.db",
+            "_get_query"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 476.154,
+          "p50_ms": 520.066,
+          "payload_bytes": 133,
+          "query": "_get_query",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "tree-sitter-python",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 26,
+          "query": "new_delimiter"
+        },
+        {
+          "answer_tokens": 34,
+          "query": "_get_query"
+        }
+      ],
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "tree-sitter-python",
+      "task": "tokens",
+      "total_answer_tokens": 60
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.retrieval_v2 import SymbolLookup\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nhits = SymbolLookup().search(store, sys.argv[2], limit=10)\npayload = [{\"name\": h.name, \"kind\": h.kind, \"path\": h.path, \"line\": h.line, \"source\": h.source} for h in hits]\nstore.close()\nprint(json.dumps(payload, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/tree-sitter-python/store.db",
+        "new_delimiter"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 2719.35,
+      "latency_p95_ms": 4390.872,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "tree-sitter-python",
+      "task": "concurrent",
+      "throughput_qps": 2.591,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 15.435
+    },
+    {
+      "artifact": "canonical_ingestion_dump",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-soul/.venv/bin/python",
+        "-c",
+        "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/tree-sitter-python/store-b.db",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/tree-sitter-python/tree"
+      ],
+      "run_a_sha256": "ff077378e83c461f5789d19eabcd821b4c22ee532714b995adcd71bc5f60c076",
+      "run_b_sha256": "ff077378e83c461f5789d19eabcd821b4c22ee532714b995adcd71bc5f60c076",
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "tree-sitter-python",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "data_loss": {},
+      "kill": {
+        "command": [
+          "/root/know-your-soul/.venv/bin/python",
+          "-c",
+          "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/crash.db",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/tree"
+        ],
+        "exit_code": -9,
+        "kill_after_s": 5.0,
+        "kill_elapsed_ms": 5016.069,
+        "stderr_tail": "quests/help.py' (('EXTRACTION_ERROR', 'name must be a non-empty string', {})); falling back to the python walker\nrust kernel failed on 'src/requests/utils.py' (('EXTRACTION_ERROR', 'name must be a non-empty string', {})); falling back to the python walker\nrust kernel failed on 'tests/test_requests.py' (('EXTRACTION_ERROR', 'name must be a non-empty string', {})); falling back to the python walker\n",
+        "stdout_tail": ""
+      },
+      "post_kill": {
+        "command": [
+          "/root/know-your-soul/.venv/bin/python",
+          "-c",
+          "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\nwith store.read() as conn:\n    out = {\n        \"integrity\": conn.execute(\"PRAGMA integrity_check\").fetchone()[0],\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/crash.db"
+        ],
+        "exit_code": 0,
+        "state": {
+          "edges": 1804,
+          "integrity": "ok",
+          "refs_total": 2887,
+          "symbols": 1804
+        }
+      },
+      "recovered_ok": true,
+      "recovery": {
+        "command": [
+          "/root/know-your-soul/.venv/bin/python",
+          "-c",
+          "\nimport json, sys\nsys.path.insert(0, '/root/know-your-soul/src')\nfrom know_your_context.ingest import extractor\nfrom know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\nfrom know_your_context.store import EventStore\nstore = EventStore(sys.argv[1])\npipeline = IngestionPipeline(store, extractor=extractor)\nreport = pipeline.ingest_path(sys.argv[2], resolve=False)\npipeline.resolve_pending()\nwith store.read() as conn:\n    out = {\n        \"symbols\": conn.execute(\"SELECT COUNT(*) c FROM symbols\").fetchone()[\"c\"],\n        \"edges\": conn.execute(\"SELECT COUNT(*) c FROM graph_edges\").fetchone()[\"c\"],\n        \"refs_total\": conn.execute(\"SELECT COUNT(*) c FROM unresolved_refs\").fetchone()[\"c\"],\n        \"refs_resolved\": conn.execute(\n            \"SELECT COUNT(*) c FROM unresolved_refs WHERE status = 'resolved'\").fetchone()[\"c\"],\n        \"files_proposed\": report.stats[\"proposed\"],\n        \"files_failed\": report.stats[\"failed\"],\n        \"dump_sha256\": __import__(\"hashlib\").sha256(\n            canonical_ingestion_dump(store).encode(\"utf-8\")).hexdigest(),\n    }\nstore.close()\nprint(\"KYS_RESULT \" + json.dumps(out, sort_keys=True))\n",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/crash.db",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/know_your_soul/requests/tree"
+        ],
+        "counts": {
+          "dump_sha256": "6653b3dc495b1baf39ccc58b89a254810db1492883360670b25b64c50dcb7433",
+          "edges": 2832,
+          "files_failed": 79,
+          "files_proposed": 0,
+          "refs_resolved": 1163,
+          "refs_total": 2887,
+          "symbols": 1804
+        },
+        "exit_code": 0,
+        "wall_ms": 3712.236
+      },
+      "recovery_ran": true,
+      "status": "OK",
+      "system": "know_your_soul",
+      "target": "requests",
+      "task": "crash",
+      "verdict": "recovered"
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "artifact_bytes": 176128,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree"
+      ],
+      "counts": {
+        "edges": 21,
+        "files": 5,
+        "nodes": 15
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "ingest",
+      "wall_ms": 2309.342
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 786.041,
+      "queries": [
+        {
+          "answer_tokens": 751,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "Worker",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 783.163,
+          "p50_ms": 786.395,
+          "payload_bytes": 3004,
+          "query": "Worker",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 613,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "base_helper",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 841.16,
+          "p50_ms": 844.042,
+          "payload_bytes": 2449,
+          "query": "base_helper",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 161,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "handle",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 690.189,
+          "p50_ms": 712.38,
+          "payload_bytes": 642,
+          "query": "handle",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 441,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "shout",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 742.495,
+          "p50_ms": 746.302,
+          "payload_bytes": 1761,
+          "query": "shout",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 159,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "formatName",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 781.404,
+          "p50_ms": 786.041,
+          "payload_bytes": 636,
+          "query": "formatName",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "zzz_no_such_symbol",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 739.192,
+          "p50_ms": 796.032,
+          "payload_bytes": 3,
+          "query": "zzz_no_such_symbol",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 751,
+          "query": "Worker"
+        },
+        {
+          "answer_tokens": 613,
+          "query": "base_helper"
+        },
+        {
+          "answer_tokens": 161,
+          "query": "handle"
+        },
+        {
+          "answer_tokens": 441,
+          "query": "shout"
+        },
+        {
+          "answer_tokens": 159,
+          "query": "formatName"
+        },
+        {
+          "answer_tokens": 1,
+          "query": "zzz_no_such_symbol"
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "tokens",
+      "total_answer_tokens": 2126
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "query",
+        "Worker",
+        "-p",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree",
+        "-j"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 4460.994,
+      "latency_p95_ms": 6134.892,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "concurrent",
+      "throughput_qps": 1.735,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 23.06
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "byte_identical": false,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/fixture/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "c1cffa6cf31ff29b872c151a115cbcab9408e4f302fbff1f785675d94b1b10e8",
+      "run_b_sha256": "6dca8122d7563a146702227b947070a69ea3f8611871ee741014e42cc1c19938",
+      "status": "OK",
+      "system": "codegraph",
+      "target": "fixture",
+      "task": "determinism",
+      "verdict": "not_byte_identical"
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "artifact_bytes": 3186688,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree"
+      ],
+      "counts": {
+        "edges": 2685,
+        "files": 45,
+        "nodes": 1169
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "ingest",
+      "wall_ms": 4152.087
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 831.47,
+      "queries": [
+        {
+          "answer_tokens": 1644,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "Session",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 764.439,
+          "p50_ms": 766.067,
+          "payload_bytes": 6575,
+          "query": "Session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1644,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "session",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 803.394,
+          "p50_ms": 848.038,
+          "payload_bytes": 6575,
+          "query": "session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1660,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "PreparedRequest",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 765.347,
+          "p50_ms": 802.213,
+          "payload_bytes": 6639,
+          "query": "PreparedRequest",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 184,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "merge_environment_settings",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 879.459,
+          "p50_ms": 904.301,
+          "payload_bytes": 736,
+          "query": "merge_environment_settings",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 2439,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "HTTPAdapter",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 864.633,
+          "p50_ms": 974.918,
+          "payload_bytes": 9753,
+          "query": "HTTPAdapter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1527,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "SessionRedirectMixin",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 725.865,
+          "p50_ms": 831.47,
+          "payload_bytes": 6107,
+          "query": "SessionRedirectMixin",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 1644,
+          "query": "Session"
+        },
+        {
+          "answer_tokens": 1644,
+          "query": "session"
+        },
+        {
+          "answer_tokens": 1660,
+          "query": "PreparedRequest"
+        },
+        {
+          "answer_tokens": 184,
+          "query": "merge_environment_settings"
+        },
+        {
+          "answer_tokens": 2439,
+          "query": "HTTPAdapter"
+        },
+        {
+          "answer_tokens": 1527,
+          "query": "SessionRedirectMixin"
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "tokens",
+      "total_answer_tokens": 9098
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "query",
+        "Session",
+        "-p",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree",
+        "-j"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 5466.294,
+      "latency_p95_ms": 7869.396,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "concurrent",
+      "throughput_qps": 1.372,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 29.159
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "byte_identical": false,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "d07249e95c32b1ec31bd70bf535017d5d8fdba57d462dee116143e46903d7a48",
+      "run_b_sha256": "233b18f2be966713212029eaf4e182556ac56a9e0a9a603f1f942c9f01eaea66",
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "determinism",
+      "verdict": "not_byte_identical"
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "artifact_bytes": 544768,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/chalk/tree"
+      ],
+      "counts": {
+        "edges": 348,
+        "files": 15,
+        "nodes": 138
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "ingest",
+      "wall_ms": 5548.312
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 1642.872,
+      "queries": [
+        {
+          "answer_tokens": 436,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "createChalk",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/chalk/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 1551.912,
+          "p50_ms": 1763.149,
+          "payload_bytes": 1743,
+          "query": "createChalk",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 146,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "applyOptions",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/chalk/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 1593.188,
+          "p50_ms": 1642.872,
+          "payload_bytes": 583,
+          "query": "applyOptions",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 436,
+          "query": "createChalk"
+        },
+        {
+          "answer_tokens": 146,
+          "query": "applyOptions"
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "tokens",
+      "total_answer_tokens": 582
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "query",
+        "createChalk",
+        "-p",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/chalk/tree",
+        "-j"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 4485.621,
+      "latency_p95_ms": 7434.183,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "concurrent",
+      "throughput_qps": 1.513,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 26.439
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "byte_identical": false,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/chalk/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "e79e5ee813de726065c759fe9419c94d0c1c829e00c9633cd58cf7309105a7d6",
+      "run_b_sha256": "918655689d56f3350082912dd2b1bea509e7a196d14ec21eaf5ba2aa5161a3b7",
+      "status": "OK",
+      "system": "codegraph",
+      "target": "chalk",
+      "task": "determinism",
+      "verdict": "not_byte_identical"
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "artifact_bytes": 2199552,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/tree-sitter-python/tree"
+      ],
+      "counts": {
+        "edges": 1686,
+        "files": 46,
+        "nodes": 924
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "ingest",
+      "wall_ms": 5100.017
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 946.604,
+      "queries": [
+        {
+          "answer_tokens": 141,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "new_delimiter",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/tree-sitter-python/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 787.702,
+          "p50_ms": 1090.806,
+          "payload_bytes": 563,
+          "query": "new_delimiter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 149,
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "query",
+            "_get_query",
+            "-p",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/tree-sitter-python/tree",
+            "-j"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 706.652,
+          "p50_ms": 946.604,
+          "payload_bytes": 595,
+          "query": "_get_query",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 141,
+          "query": "new_delimiter"
+        },
+        {
+          "answer_tokens": 149,
+          "query": "_get_query"
+        }
+      ],
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "tokens",
+      "total_answer_tokens": 290
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "query",
+        "new_delimiter",
+        "-p",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/tree-sitter-python/tree",
+        "-j"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 6648.76,
+      "latency_p95_ms": 7211.989,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "concurrent",
+      "throughput_qps": 1.223,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 32.712
+    },
+    {
+      "artifact": ".codegraph/codegraph.db",
+      "byte_identical": false,
+      "command": [
+        "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+        "init",
+        "-y",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/tree-sitter-python/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "d96712ba34cbbba9b366b9a8322bcc0ec4657a531996f0428d99c5b23fcb30d0",
+      "run_b_sha256": "9116ac5ddf02a3fc964ee30db7ec3c82949dbd2289beebe47efe1d3cde6521cd",
+      "status": "OK",
+      "system": "codegraph",
+      "target": "tree-sitter-python",
+      "task": "determinism",
+      "verdict": "not_byte_identical"
+    },
+    {
+      "data_loss": {},
+      "kill": {
+        "command": [
+          "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+          "init",
+          "-y",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree"
+        ],
+        "exit_code": -9,
+        "kill_after_s": 1.6608348000000004,
+        "kill_elapsed_ms": 1704.554,
+        "stderr_tail": "",
+        "stdout_tail": "\u250c  Initializing CodeGraph\n\u2502\n\u25c6  Initialized in /root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree\n\u2502\nScanning files...\nParsing code...\n"
+      },
+      "post_kill": {
+        "artifacts": [
+          ".gitignore",
+          "codegraph.db",
+          "codegraph.lock"
+        ],
+        "command": [
+          "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+          "status",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree"
+        ],
+        "counts": {
+          "edges": 0,
+          "files": 0,
+          "nodes": 0
+        },
+        "detects_interruption": true,
+        "evidence": "\nCodeGraph Status\n\nProject: /root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree\n\u26a0 The last index run never finished (killed mid-index?) \u2014 the index is truncated. Re-run \"codegraph index\".\n\nIndex Statistics:\n  Files:     0\n  Nodes:     0\n  Edges:     0\n  DB Size:   0.16 MB\n  WAL Size:  0.35 MB\n  Backend:   node:sqlite \u2014 built-in (full WAL)\n  Journal:   wal\n\nNodes by Kind:\n\nFiles by Language:\n\nPending Changes:\n  Added:     45 files\n\u2139 Run \"codegraph sync\" to update the index\n\n",
+        "exit_code": 0
+      },
+      "recovered_ok": true,
+      "recovery": {
+        "reindex": {
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "index",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree"
+          ],
+          "counts": {
+            "edges": 2685,
+            "files": 45,
+            "nodes": 1169
+          },
+          "exit_code": 0,
+          "wall_ms": 4803.091
+        },
+        "reinit_refused": {
+          "command": [
+            "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+            "init",
+            "-y",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree"
+          ],
+          "evidence": "\u250c  Initializing CodeGraph\n\u2502\n\u25b2  Already initialized in /root/.hermes/cache/scratch/kys-competitive-hcuotb31/codegraph/requests/tree\n\u2502\n\u25cf  Use \"codegraph index\" to re-index or \"codegraph sync\" to update\n\u2502\n\u2514  \n\n",
+          "exit_code": 0
+        }
+      },
+      "recovery_ran": true,
+      "status": "OK",
+      "system": "codegraph",
+      "target": "requests",
+      "task": "crash",
+      "verdict": "recovered"
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "artifact_bytes": 10674,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree"
+      ],
+      "counts": {
+        "hyperedges": 0,
+        "links": 26,
+        "nodes": 20
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "ingest",
+      "wall_ms": 1105.371
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 706.071,
+      "queries": [
+        {
+          "answer_tokens": 600,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "Worker",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 567.832,
+          "p50_ms": 852.703,
+          "payload_bytes": 2397,
+          "query": "Worker",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 612,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "base_helper",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 646.42,
+          "p50_ms": 653.769,
+          "payload_bytes": 2447,
+          "query": "base_helper",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 535,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "handle",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 621.486,
+          "p50_ms": 650.226,
+          "payload_bytes": 2138,
+          "query": "handle",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 249,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "shout",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 718.882,
+          "p50_ms": 753.787,
+          "payload_bytes": 994,
+          "query": "shout",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 250,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "formatName",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 710.696,
+          "p50_ms": 794.469,
+          "payload_bytes": 999,
+          "query": "formatName",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 7,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "zzz_no_such_symbol",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            4,
+            4,
+            4
+          ],
+          "min_ms": 644.918,
+          "p50_ms": 706.071,
+          "payload_bytes": 25,
+          "query": "zzz_no_such_symbol",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 600,
+          "query": "Worker"
+        },
+        {
+          "answer_tokens": 612,
+          "query": "base_helper"
+        },
+        {
+          "answer_tokens": 535,
+          "query": "handle"
+        },
+        {
+          "answer_tokens": 249,
+          "query": "shout"
+        },
+        {
+          "answer_tokens": 250,
+          "query": "formatName"
+        },
+        {
+          "answer_tokens": 7,
+          "query": "zzz_no_such_symbol"
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "tokens",
+      "total_answer_tokens": 2253
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "query",
+        "Worker",
+        "--graph",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree/graphify-out/graph.json"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 4701.044,
+      "latency_p95_ms": 7457.036,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "concurrent",
+      "throughput_qps": 1.558,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 25.676
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/fixture/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "1375fbeab10ec4ecd32e24acd3b0fe7f7802b94414e3da0ff4f1a88166f3d289",
+      "run_b_sha256": "1375fbeab10ec4ecd32e24acd3b0fe7f7802b94414e3da0ff4f1a88166f3d289",
+      "status": "OK",
+      "system": "graphify",
+      "target": "fixture",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "artifact_bytes": 1060107,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree"
+      ],
+      "counts": {
+        "hyperedges": 0,
+        "links": 2397,
+        "nodes": 1347
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "ingest",
+      "wall_ms": 5918.549
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 784.007,
+      "queries": [
+        {
+          "answer_tokens": 50,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "Session",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            3,
+            3,
+            3
+          ],
+          "min_ms": 699.351,
+          "p50_ms": 825.155,
+          "payload_bytes": 199,
+          "query": "Session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 50,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "session",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            3,
+            3,
+            3
+          ],
+          "min_ms": 779.765,
+          "p50_ms": 784.007,
+          "payload_bytes": 199,
+          "query": "session",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1648,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "PreparedRequest",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 758.014,
+          "p50_ms": 776.739,
+          "payload_bytes": 6589,
+          "query": "PreparedRequest",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1670,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "merge_environment_settings",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 860.798,
+          "p50_ms": 909.694,
+          "payload_bytes": 6677,
+          "query": "merge_environment_settings",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1650,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "HTTPAdapter",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 700.794,
+          "p50_ms": 771.704,
+          "payload_bytes": 6597,
+          "query": "HTTPAdapter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 1651,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "SessionRedirectMixin",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 785.88,
+          "p50_ms": 1030.884,
+          "payload_bytes": 6604,
+          "query": "SessionRedirectMixin",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 50,
+          "query": "Session"
+        },
+        {
+          "answer_tokens": 50,
+          "query": "session"
+        },
+        {
+          "answer_tokens": 1648,
+          "query": "PreparedRequest"
+        },
+        {
+          "answer_tokens": 1670,
+          "query": "merge_environment_settings"
+        },
+        {
+          "answer_tokens": 1650,
+          "query": "HTTPAdapter"
+        },
+        {
+          "answer_tokens": 1651,
+          "query": "SessionRedirectMixin"
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "tokens",
+      "total_answer_tokens": 6719
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "query",
+        "Session",
+        "--graph",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree/graphify-out/graph.json"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 4271.076,
+      "latency_p95_ms": 4817.241,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "concurrent",
+      "throughput_qps": 1.806,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 22.148
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "73e485185d941340de23d4155559f6c5efb8c1ee3653747f9cd349fac766915b",
+      "run_b_sha256": "73e485185d941340de23d4155559f6c5efb8c1ee3653747f9cd349fac766915b",
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "artifact_bytes": 127337,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/chalk/tree"
+      ],
+      "counts": {
+        "hyperedges": 0,
+        "links": 279,
+        "nodes": 241
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "ingest",
+      "wall_ms": 2570.126
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 713.541,
+      "queries": [
+        {
+          "answer_tokens": 2431,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "createChalk",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/chalk/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 709.934,
+          "p50_ms": 713.541,
+          "payload_bytes": 9724,
+          "query": "createChalk",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 2432,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "applyOptions",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/chalk/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 751.25,
+          "p50_ms": 827.714,
+          "payload_bytes": 9725,
+          "query": "applyOptions",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 2431,
+          "query": "createChalk"
+        },
+        {
+          "answer_tokens": 2432,
+          "query": "applyOptions"
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "tokens",
+      "total_answer_tokens": 4863
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "query",
+        "createChalk",
+        "--graph",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/chalk/tree/graphify-out/graph.json"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 3447.795,
+      "latency_p95_ms": 3878.124,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "concurrent",
+      "throughput_qps": 2.317,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 17.264
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/chalk/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "1c2dffd8a03bf3054bfdd1a055362010aea9a3613ce29ed4d021114d6e5fd6b1",
+      "run_b_sha256": "1c2dffd8a03bf3054bfdd1a055362010aea9a3613ce29ed4d021114d6e5fd6b1",
+      "status": "OK",
+      "system": "graphify",
+      "target": "chalk",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "artifact_bytes": 717762,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/tree-sitter-python/tree"
+      ],
+      "counts": {
+        "hyperedges": 0,
+        "links": 1430,
+        "nodes": 1312
+      },
+      "exit_code": 0,
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "ingest",
+      "wall_ms": 12098.604
+    },
+    {
+      "interface": "fresh process per query",
+      "p50_ms": 830.194,
+      "queries": [
+        {
+          "answer_tokens": 2012,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "new_delimiter",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/tree-sitter-python/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 825.101,
+          "p50_ms": 830.194,
+          "payload_bytes": 8047,
+          "query": "new_delimiter",
+          "repeats": 3
+        },
+        {
+          "answer_tokens": 425,
+          "command": [
+            "/root/know-your-soul/.venv/bin/graphify",
+            "query",
+            "_get_query",
+            "--graph",
+            "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/tree-sitter-python/tree/graphify-out/graph.json"
+          ],
+          "exit_codes": [
+            0,
+            0,
+            0
+          ],
+          "min_ms": 799.251,
+          "p50_ms": 845.355,
+          "payload_bytes": 1698,
+          "query": "_get_query",
+          "repeats": 3
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "cold-start"
+    },
+    {
+      "estimator": "ceil(utf8_bytes/4)",
+      "per_query": [
+        {
+          "answer_tokens": 2012,
+          "query": "new_delimiter"
+        },
+        {
+          "answer_tokens": 425,
+          "query": "_get_query"
+        }
+      ],
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "tokens",
+      "total_answer_tokens": 2437
+    },
+    {
+      "clients": 8,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "query",
+        "new_delimiter",
+        "--graph",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/tree-sitter-python/tree/graphify-out/graph.json"
+      ],
+      "errors": 0,
+      "interface": "parallel client processes (one fresh process per query)",
+      "latency_p50_ms": 3391.724,
+      "latency_p95_ms": 3665.064,
+      "queries_per_client": 5,
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "concurrent",
+      "throughput_qps": 2.322,
+      "total_queries": 40,
+      "verdict": "0/40 errors",
+      "wall_s": 17.23
+    },
+    {
+      "artifact": "graphify-out/graph.json",
+      "byte_identical": true,
+      "command": [
+        "/root/know-your-soul/.venv/bin/graphify",
+        "update",
+        "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/tree-sitter-python/tree"
+      ],
+      "counts_stable": true,
+      "run_a_sha256": "89b6a32187f61deffcda2f6869cb7258f1ae7e36d9d705eb27504fda95e3769a",
+      "run_b_sha256": "89b6a32187f61deffcda2f6869cb7258f1ae7e36d9d705eb27504fda95e3769a",
+      "status": "OK",
+      "system": "graphify",
+      "target": "tree-sitter-python",
+      "task": "determinism",
+      "verdict": "byte_identical"
+    },
+    {
+      "data_loss": {},
+      "kill": {
+        "command": [
+          "/root/know-your-soul/.venv/bin/graphify",
+          "update",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree"
+        ],
+        "exit_code": -9,
+        "kill_after_s": 2.3674196,
+        "kill_elapsed_ms": 2442.197,
+        "stderr_tail": "",
+        "stdout_tail": "Re-extracting code files in /root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree (no LLM needed)...\n[graphify watch] 31 file(s) not classified (no supported extension or shebang), skipped: .coveragerc, .git-blame-ignore-revs, .gitignore, .nojekyll, LICENSE, MANIFEST.in (+25 more)\n"
+      },
+      "post_kill": {
+        "artifacts": [
+          ".rebuild.lock",
+          "cache"
+        ],
+        "graph_json": {
+          "counts": null,
+          "exists": false,
+          "parses": null
+        }
+      },
+      "recovered_ok": true,
+      "recovery": {
+        "command": [
+          "/root/know-your-soul/.venv/bin/graphify",
+          "update",
+          "/root/.hermes/cache/scratch/kys-competitive-hcuotb31/graphify/requests/tree"
+        ],
+        "counts": {
+          "hyperedges": 0,
+          "links": 2397,
+          "nodes": 1347
+        },
+        "exit_code": 0,
+        "wall_ms": 5264.829
+      },
+      "recovery_ran": true,
+      "status": "OK",
+      "system": "graphify",
+      "target": "requests",
+      "task": "crash",
+      "verdict": "recovered"
+    }
+  ],
+  "finished_utc": "20261101T103626Z",
+  "harness": "bench/competitive",
+  "harness_version": 1,
+  "reproduce": "uv run python bench/competitive/run.py run",
+  "started_utc": "20261101T102736Z",
+  "summary": {
+    "entries": 63,
+    "per_system": {
+      "codegraph": {
+        "FAILED": 0,
+        "NOT_SUPPORTED": 0,
+        "OK": 21
+      },
+      "graphify": {
+        "FAILED": 0,
+        "NOT_SUPPORTED": 0,
+        "OK": 21
+      },
+      "know_your_soul": {
+        "FAILED": 0,
+        "NOT_SUPPORTED": 0,
+        "OK": 21
+      }
+    }
+  },
+  "systems": {
+    "codegraph": {
+      "available": true,
+      "cli": "/root/.hermes/tools/codegraph-env/node_modules/.bin/codegraph",
+      "evidence": "`codegraph version` exit=0 -> '1.6.2'",
+      "version": "1.6.2"
+    },
+    "graphify": {
+      "available": true,
+      "cli": "/root/know-your-soul/.venv/bin/graphify",
+      "evidence": "`graphify --version` exit=0 -> 'graphify 0.9.95'",
+      "version": "graphify 0.9.95"
+    },
+    "know_your_soul": {
+      "available": true,
+      "driver_python": "/root/know-your-soul/.venv/bin/python",
+      "interface": "in-repo python (EventStore + IngestionPipeline + SymbolLookup)",
+      "module": "know_your_context"
+    }
+  },
+  "work_dir": "/root/.hermes/cache/scratch/kys-competitive-hcuotb31"
+}

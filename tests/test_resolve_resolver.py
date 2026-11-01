@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.resolve import (
+from know_your_context.resolve import (
     RESOLVER_VERSION,
     BatchReport,
     ReferenceResolver,
@@ -29,7 +29,7 @@ from know_your_soul.resolve import (
     ResolverError,
     resolve_pending,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 SEEN = "2026-10-26T00:00:00+00:00"
 BASE = "function:base"

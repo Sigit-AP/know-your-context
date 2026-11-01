@@ -34,7 +34,7 @@ PARSER_NOTICE = (
     "Copyright the pypdf contributors, licensed under BSD-3-Clause.\n"
 )
 
-NOTICE_OK = "Know Your Soul\nCopyright 2026 Know Your Soul contributors\n\n" + GRAPHIFY_NOTICE + PARSER_NOTICE
+NOTICE_OK = "Know Your Context\nCopyright 2026 Know Your Context contributors\n\n" + GRAPHIFY_NOTICE + PARSER_NOTICE
 
 PYPROJECT_OK = (
     "[project]\n"
@@ -141,7 +141,7 @@ def test_notice_without_pypdf_license_fails(tmp_path: Path) -> None:
 
 def test_notice_missing_both_parser_attributions_reports_both(tmp_path: Path) -> None:
     guard = _load_guard()
-    notice = "Know Your Soul\nCopyright 2026 Know Your Soul contributors\n\n" + GRAPHIFY_NOTICE
+    notice = "Know Your Context\nCopyright 2026 Know Your Context contributors\n\n" + GRAPHIFY_NOTICE
     root = _make_root(tmp_path, notice=notice)
     failures = guard.run_guard(root)
     assert any("tree-sitter" in failure for failure in failures), failures

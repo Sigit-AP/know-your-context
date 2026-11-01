@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.exporters.graphml_svg import (
+from know_your_context.exporters.graphml_svg import (
     GRAPHML_MAX_BYTES,
     GRAPHML_NAMESPACE,
     SVG_MAX_BYTES,

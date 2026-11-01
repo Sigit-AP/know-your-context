@@ -22,14 +22,14 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.contracts import LifecycleError, OperatorDecisionRequiredError
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, ScoreVector
-from know_your_soul.importer import DEFAULT_PARSER_VERSIONS
-from know_your_soul.projection import GraphProjector
-from know_your_soul.relearn import RelearnApproval, RelearnReceipt
-from know_your_soul.service import KnowledgeService
-from know_your_soul.source_registry import RELEARN_PENDING, RelearnOffer, SourceKind
-from know_your_soul.store import EventStore
+from know_your_context.contracts import LifecycleError, OperatorDecisionRequiredError
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, ScoreVector
+from know_your_context.importer import DEFAULT_PARSER_VERSIONS
+from know_your_context.projection import GraphProjector
+from know_your_context.relearn import RelearnApproval, RelearnReceipt
+from know_your_context.service import KnowledgeService
+from know_your_context.source_registry import RELEARN_PENDING, RelearnOffer, SourceKind
+from know_your_context.store import EventStore
 
 NOW = datetime(2026, 10, 26, 12, 0, tzinfo=UTC)
 
@@ -57,7 +57,7 @@ def _service(tmp_path: Path) -> tuple[EventStore, KnowledgeService, Path]:
                 kind=NodeKind.CHILD,
                 domain=PrimaryDomain.P1,
                 summary="lesson one",
-                provenance=("soul://corpus/a.md",),
+                provenance=("context://corpus/a.md",),
                 source_version_id="sv-test",
                 scores=ScoreVector.zero(),
             ),

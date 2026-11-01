@@ -33,19 +33,19 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.contracts import QueryRequest
-from know_your_soul.domain import EventKind, PrimaryDomain
-from know_your_soul.fragment_generator import file_scoped_id
-from know_your_soul.importer import (
+from know_your_context.contracts import QueryRequest
+from know_your_context.domain import EventKind, PrimaryDomain
+from know_your_context.fragment_generator import file_scoped_id
+from know_your_context.importer import (
     ImportManifestError,
     SeedImporter,
     _read_contained_file,
     injective_file_id,
 )
-from know_your_soul.projection import GraphProjector
-from know_your_soul.security import OversizedPayloadError, PathEscapeError
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.projection import GraphProjector
+from know_your_context.security import OversizedPayloadError, PathEscapeError
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 
 _VALIDATOR_ID_RE = re.compile(r"^[\w.:-]+$", re.UNICODE)
 
@@ -203,14 +203,14 @@ def test_import_file_replay_is_idempotent_and_keeps_node_ids(files: dict[str, tu
     first = importer.import_file(
         corpus.root / relative,
         domain=PrimaryDomain.P1,
-        source_uri=f"soul://corpus/{relative}",
+        source_uri=f"context://corpus/{relative}",
         source_scope=relative,
         import_root=corpus.root,
     )
     second = importer.import_file(
         corpus.root / relative,
         domain=PrimaryDomain.P1,
-        source_uri=f"soul://corpus/{relative}",
+        source_uri=f"context://corpus/{relative}",
         source_scope=relative,
         import_root=corpus.root,
     )
@@ -341,7 +341,7 @@ def test_roots_are_materialized_exactly_once_across_imports(files: dict[str, tup
     importer.import_file(
         corpus.root / corpus.relative_names[0],
         domain=PrimaryDomain.P1,
-        source_uri="soul://corpus/extra",
+        source_uri="context://corpus/extra",
         source_scope=corpus.relative_names[0],
         import_root=corpus.root,
     )
@@ -484,7 +484,7 @@ def test_a_path_outside_the_import_root_is_refused(tmp_path: Path) -> None:
     store = EventStore(tmp_path / "soul.sqlite3")
     importer = _importer(store, tmp_path)
     with pytest.raises(PathEscapeError):
-        importer.import_file(outside, domain=PrimaryDomain.P1, source_uri="soul://x", import_root=corpus)
+        importer.import_file(outside, domain=PrimaryDomain.P1, source_uri="context://x", import_root=corpus)
 
 
 # ------------------------------------------------------------- receipt shape
@@ -532,7 +532,7 @@ def test_an_empty_file_still_imports_its_file_node(tmp_path: Path) -> None:
 )
 @settings(derandomize=True, max_examples=25, deadline=None)
 def test_remap_fragment_ids_covers_every_old_id(labels: list[str], scope: str) -> None:
-    from know_your_soul.importer import _remap_fragment_ids
+    from know_your_context.importer import _remap_fragment_ids
 
     nodes = [{"id": f"old{index}", "label": label} for index, label in enumerate(labels)]
     edges = [{"source": "old0", "target": f"old{index}", "relation": "contains"} for index in range(1, len(labels))]
@@ -552,7 +552,7 @@ def test_remap_fragment_ids_covers_every_old_id(labels: list[str], scope: str) -
 )
 @settings(derandomize=True, max_examples=15, deadline=None)
 def test_remap_fragment_ids_never_rewrites_reference_targets(target: str) -> None:
-    from know_your_soul.importer import _remap_fragment_ids
+    from know_your_context.importer import _remap_fragment_ids
 
     nodes = [{"id": "old0", "label": "doc"}]
     edges = [{"source": "old0", "target": target, "relation": "references"}]
@@ -637,7 +637,7 @@ def test_every_imported_node_carries_the_source_uri_as_provenance(
         for node_id in receipt.node_ids:
             node = nodes[node_id]
             assert node is not None
-            assert node.provenance == (f"soul://corpus/{name}",)
+            assert node.provenance == (f"context://corpus/{name}",)
             assert node.payload["source_file"] == name
 
 
@@ -658,5 +658,5 @@ def test_a_string_domain_is_refused_before_any_write(tmp_path: Path) -> None:
     store = EventStore(tmp_path / "soul.sqlite3")
     importer = _importer(store, tmp_path)
     with pytest.raises(TypeError, match="PrimaryDomain"):
-        importer.import_file(corpus / "a.md", domain="P1", source_uri="soul://x")  # type: ignore[arg-type]
+        importer.import_file(corpus / "a.md", domain="P1", source_uri="context://x")  # type: ignore[arg-type]
     assert list(store.replay_domain()) == []

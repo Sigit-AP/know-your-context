@@ -38,9 +38,9 @@ from typing import Any
 import anyio
 import pytest
 
-from know_your_soul import runtime_guard
-from know_your_soul.cli import build_parser
-from know_your_soul.contracts import (
+from know_your_context import runtime_guard
+from know_your_context.cli import build_parser
+from know_your_context.contracts import (
     ACCESS_ONLY_TOKEN_CAP,
     ACCESS_POLICY_PATH,
     AccessDecision,
@@ -52,8 +52,8 @@ from know_your_soul.contracts import (
     RecommendationItem,
     attempt_promotion,
 )
-from know_your_soul.domain import canonical_json
-from know_your_soul.events import Invocation
+from know_your_context.domain import canonical_json
+from know_your_context.events import Invocation
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BENCH_DIR = REPO_ROOT / "bench"
@@ -129,12 +129,12 @@ def _imported_roots(path: Path) -> set[str]:
 
 def _corpus_stack(workdir: Path) -> Any:
     """A KnowledgeService seeded from the frozen corpus (mirrors bench.run)."""
-    from know_your_soul.domain import PrimaryDomain
-    from know_your_soul.importer import DEFAULT_PARSER_VERSIONS, SeedImporter
-    from know_your_soul.projection import GraphProjector
-    from know_your_soul.service import KnowledgeService
-    from know_your_soul.source_registry import SourceKind, SourceRegistry
-    from know_your_soul.store import EventStore
+    from know_your_context.domain import PrimaryDomain
+    from know_your_context.importer import DEFAULT_PARSER_VERSIONS, SeedImporter
+    from know_your_context.projection import GraphProjector
+    from know_your_context.service import KnowledgeService
+    from know_your_context.source_registry import SourceKind, SourceRegistry
+    from know_your_context.store import EventStore
 
     store = EventStore(workdir / "bench.sqlite3")
     registry = SourceRegistry(store)
@@ -143,7 +143,7 @@ def _corpus_stack(workdir: Path) -> Any:
     importer.ensure_roots(version.source_version_id)
     for entry in sorted((BENCH_DIR / "corpus").glob("*.md")):
         domain = PrimaryDomain(bench.FILE_DOMAIN_MAP[entry.name])
-        importer.import_file(entry, domain=domain, source_uri=f"soul://corpus/{entry.name}")
+        importer.import_file(entry, domain=domain, source_uri=f"context://corpus/{entry.name}")
     projector = GraphProjector(store, output_root=workdir / "graph")
     projector.rebuild()
     return store, projector, KnowledgeService(store, projector)
@@ -275,7 +275,7 @@ class TestTokenEstimatorParity:
         assert checked == 7, f"expected the 7 payload fixtures with estimated_tokens, saw {checked}"
 
     def test_bench_estimator_matches_library(self) -> None:
-        from know_your_soul.contracts import estimated_tokens_of_payload
+        from know_your_context.contracts import estimated_tokens_of_payload
 
         fixtures = json.loads(TOKEN_FIXTURES.read_text(encoding="utf-8"))
         for case in fixtures["cases"]:
@@ -344,7 +344,7 @@ class TestSevenDomainsEndToEnd:
     """Acceptance bullet: all seven primary domains route and answer."""
 
     def test_all_seven_primary_domains_route_and_answer(self, corpus_service: Any) -> None:
-        from know_your_soul.domain import PrimaryDomain
+        from know_your_context.domain import PrimaryDomain
 
         assert len(list(PrimaryDomain)) == 7
         for domain in PrimaryDomain:
@@ -368,8 +368,8 @@ class TestAuditedTools:
     """
 
     def test_exactly_fourteen_audited_tools_exposed(self) -> None:
-        from know_your_soul import http_api, mcp_server
-        from know_your_soul.service import KnowledgeService
+        from know_your_context import http_api, mcp_server
+        from know_your_context.service import KnowledgeService
 
         assert tuple(sorted(http_api.KNOWLEDGE_OPERATIONS)) == tuple(sorted(KNOWLEDGE_OPERATIONS_V2))
         # The frozen fourteen are exactly the KNOWLEDGE_OPERATIONS mapping;
@@ -396,7 +396,7 @@ class TestAuditedTools:
         assert set(KNOWLEDGE_OPERATIONS_V2) <= subcommands
 
     def test_every_tool_action_returns_an_audit_event_id(self, tmp_path: Path) -> None:
-        from know_your_soul.contracts import (
+        from know_your_context.contracts import (
             ApplyImprovementRequest,
             EvaluateRequest,
             NodeNotFound,
@@ -404,7 +404,7 @@ class TestAuditedTools:
             ReviewRequest,
             RollbackRequest,
         )
-        from know_your_soul.improvement import DiffOp, DiffOperation
+        from know_your_context.improvement import DiffOp, DiffOperation
         from test_service import _child, _evidence, _seeded
 
         store, _, service = _seeded(tmp_path)
@@ -464,8 +464,8 @@ class TestThreeAccessPaths:
     """Acceptance bullet: CLI, local API and MCP share one service contract."""
 
     def _payloads(self, tmp_path: Path) -> dict[str, dict[str, Any]]:
-        from know_your_soul.http_api import build_stack, dispatch_text, to_jsonable
-        from know_your_soul.mcp_server import build_server
+        from know_your_context.http_api import build_stack, dispatch_text, to_jsonable
+        from know_your_context.mcp_server import build_server
         from test_mcp_server import _call_tool, _result_text, _session
         from test_service import _seeded
 
@@ -484,7 +484,7 @@ class TestThreeAccessPaths:
             [
                 sys.executable,
                 "-m",
-                "know_your_soul",
+                "know_your_context",
                 "--store",
                 str(tmp_path / "soul.sqlite3"),
                 "--output-root",
@@ -549,7 +549,7 @@ class TestExactlyOneFinalAudit:
     including recovered failures."""
 
     def test_one_final_audit_per_valid_invocation(self, tmp_path: Path) -> None:
-        from know_your_soul.contracts import EvaluateRequest
+        from know_your_context.contracts import EvaluateRequest
         from test_service import _evidence, _seeded
 
         store, _, service = _seeded(tmp_path)
@@ -562,8 +562,8 @@ class TestExactlyOneFinalAudit:
         assert store.audit_event_count() == audits_before + 3
 
     def test_one_final_audit_per_recovered_failure(self, tmp_path: Path) -> None:
-        from know_your_soul.audit import AuditLog
-        from know_your_soul.contracts import NodeNotFound
+        from know_your_context.audit import AuditLog
+        from know_your_context.contracts import NodeNotFound
         from test_service import _seeded
 
         store, _, service = _seeded(tmp_path)
@@ -617,7 +617,7 @@ class TestDeterministicScoring:
     """Acceptance bullet: deterministic scoring under evidence permutation."""
 
     def test_scoring_replay_is_deterministic_under_evidence_permutation(self, tmp_path: Path) -> None:
-        from know_your_soul.contracts import EvaluateRequest
+        from know_your_context.contracts import EvaluateRequest
         from test_service import _evidence, _seeded
 
         _, _, service_a = _seeded(tmp_path / "a")
@@ -643,14 +643,14 @@ class TestRollback:
     """Acceptance bullet: rollback restores byte-exact prior state."""
 
     def test_rollback_restores_byte_exact_prior_state(self, tmp_path: Path) -> None:
-        from know_your_soul.contracts import (
+        from know_your_context.contracts import (
             ApplyImprovementRequest,
             ProposeImprovementRequest,
             RollbackRequest,
         )
-        from know_your_soul.domain import canonical_json as canonical
-        from know_your_soul.improvement import DiffOp, DiffOperation
-        from know_your_soul.store import EventStore
+        from know_your_context.domain import canonical_json as canonical
+        from know_your_context.improvement import DiffOp, DiffOperation
+        from know_your_context.store import EventStore
         from test_relearn import NOW, RelearnFixture, approve
         from test_service import _seeded
 
@@ -720,7 +720,7 @@ class TestScrubbedRuntime:
             "ANTHROPIC_API_KEY": "sk-injected",
         }
         refused = subprocess.run(
-            [sys.executable, "-m", "know_your_soul.mcp_server", "--graph-root", str(graph_root), "--db", str(db)],
+            [sys.executable, "-m", "know_your_context.mcp_server", "--graph-root", str(graph_root), "--db", str(db)],
             env=dirty,
             capture_output=True,
             text=True,
@@ -751,7 +751,7 @@ class TestDeniedOutboundSockets:
         import socket
         import urllib.request
 
-        from know_your_soul.contracts import EvaluateRequest
+        from know_your_context.contracts import EvaluateRequest
         from test_service import _evidence, _seeded
 
         _, _, service = _seeded(tmp_path)
@@ -771,7 +771,7 @@ class TestAbsentSampling:
     """Acceptance bullet: no sampling handlers or capabilities."""
 
     def test_no_sampling_handlers_or_capabilities(self, tmp_path: Path) -> None:
-        from know_your_soul.mcp_server import build_server
+        from know_your_context.mcp_server import build_server
         from test_service import _seeded
 
         _, _, service = _seeded(tmp_path)
@@ -783,7 +783,7 @@ class TestAbsentSampling:
         runtime_guard.assert_mcp_capabilities(observed)
 
     def test_sampling_configuration_is_neither_advertised_nor_used(self, tmp_path: Path) -> None:
-        from know_your_soul.mcp_server import build_server
+        from know_your_context.mcp_server import build_server
         from test_mcp_server import _session
         from test_service import _seeded
 
@@ -808,7 +808,7 @@ class TestMcpContract:
     """Acceptance bullet: strict MCP root/schema/range/capability contract."""
 
     def _server(self, tmp_path: Path) -> Any:
-        from know_your_soul.mcp_server import build_server
+        from know_your_context.mcp_server import build_server
         from test_service import _seeded
 
         _, _, service = _seeded(tmp_path)
@@ -838,7 +838,7 @@ class TestMcpContract:
                 with pytest.raises(MCPError):
                     await session.read_resource("file:///etc/passwd")
                 with pytest.raises(MCPError):
-                    await session.read_resource("soul://projection/../../etc/passwd")
+                    await session.read_resource("context://projection/../../etc/passwd")
 
         anyio.run(scenario)
 
@@ -861,7 +861,7 @@ class TestMcpContract:
         anyio.run(scenario)
 
     def test_range_contract_depth_1_6_budget_128_max(self, tmp_path: Path) -> None:
-        from know_your_soul.contracts import DEFAULT_MAX_TOKEN_BUDGET, MINIMUM_TOKEN_BUDGET
+        from know_your_context.contracts import DEFAULT_MAX_TOKEN_BUDGET, MINIMUM_TOKEN_BUDGET
         from test_mcp_server import _call_tool, _error_payload, _session
 
         server = self._server(tmp_path)
@@ -967,7 +967,7 @@ class TestRecommendationShape:
     def test_exactly_best_actions_recommendations_unnecessary_actions(self, tmp_path: Path) -> None:
         from pydantic import ValidationError
 
-        from know_your_soul.contracts import ReviewRequest
+        from know_your_context.contracts import ReviewRequest
         from test_service import _evidence, _seeded
 
         assert set(RecommendationBlock.model_fields) == {
@@ -995,7 +995,7 @@ class TestRecommendationShape:
         }
 
     def test_no_raw_soul_text_and_no_one_observation_promotion(self, tmp_path: Path) -> None:
-        from know_your_soul.contracts import ReviewRequest
+        from know_your_context.contracts import ReviewRequest
         from test_service import _evidence, _seeded
 
         _, _, service = _seeded(tmp_path)
@@ -1012,7 +1012,7 @@ class TestRecommendationShape:
             assert item.promoted is False
             serialized = canonical_json(item.model_dump(mode="json"))
             # Structured references only: no raw SOUL/corpus text, no provenance.
-            assert "soul://" not in serialized
+            assert "context://" not in serialized
             assert "Run the gates before commit" not in serialized
             if len(item.evidence_ids) < 2:
                 verdict = attempt_promotion(item)
@@ -1028,7 +1028,7 @@ class TestRelearn:
     """Acceptance bullet: RESET/ACCUMULATE/rollback operator gating, zero weight."""
 
     def test_reset_accumulate_and_rollback_are_operator_gated(self, tmp_path: Path) -> None:
-        from know_your_soul.relearn import (
+        from know_your_context.relearn import (
             NoPendingRelearn,
             OperatorDecisionRequired,
             RelearnError,
@@ -1057,8 +1057,8 @@ class TestRelearn:
             fx.engine.rollback(receipt.relearn_id)
 
     def test_relearn_events_carry_zero_evidence_weight(self, tmp_path: Path) -> None:
-        from know_your_soul.projection import GraphProjector
-        from know_your_soul.service import KnowledgeService
+        from know_your_context.projection import GraphProjector
+        from know_your_context.service import KnowledgeService
         from test_relearn import NOW, RelearnFixture, approve
 
         fx = RelearnFixture(tmp_path)
@@ -1086,8 +1086,8 @@ class TestNoStaleMixing:
     """Acceptance bullet: default reads never mix incompatible source versions."""
 
     def test_default_reads_never_mix_incompatible_source_versions(self, tmp_path: Path) -> None:
-        from know_your_soul.projection import GraphProjector
-        from know_your_soul.service import KnowledgeService
+        from know_your_context.projection import GraphProjector
+        from know_your_context.service import KnowledgeService
         from test_relearn import NOW, RelearnFixture, approve
 
         # ACCUMULATE: only anchor-mapped evidence from the old version carries;

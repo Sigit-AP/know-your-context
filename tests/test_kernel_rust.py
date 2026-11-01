@@ -1,9 +1,9 @@
 """Byte-identity tests: Rust extraction kernel vs the pure-Python extractor (W5, SUB-93).
 
-The Rust kernel (``know_your_soul_kernel`` via PyO3 / ``kys-kernel`` CLI) must
+The Rust kernel (``know_your_context_kernel`` via PyO3 / ``kys-kernel`` CLI) must
 produce canonical JSON artifacts that are **byte-identical** to the reference
 Python walker for every phase-1 fixture, and stable ids must match
-:func:`know_your_soul.graph_model.make_node_id` exactly.
+:func:`know_your_context.graph_model.make_node_id` exactly.
 
 F1 (audit-final-v020, fixed W6/SUB-97): the Python side of every parity check
 below is the **pure-Python walker invoked directly**
@@ -31,11 +31,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.domain import canonical_json
-from know_your_soul.graph_model import make_node_id
-from know_your_soul.ingest import kernel_bridge
-from know_your_soul.ingest.extractor import TreeSitterExtractor
-from know_your_soul.ingest.languages import get_spec, supported_languages
+from know_your_context.domain import canonical_json
+from know_your_context.graph_model import make_node_id
+from know_your_context.ingest import kernel_bridge
+from know_your_context.ingest.extractor import TreeSitterExtractor
+from know_your_context.ingest.languages import get_spec, supported_languages
 
 FIXTURES = Path(__file__).parent / "fixtures" / "ingest"
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -189,7 +189,7 @@ def test_python_fallback_language_routes_to_reference(language: str) -> None:
     _kernel_required()
     relative = _fixture_rel(language)
     expected = _python_walker_reference(relative)
-    from know_your_soul.ingest.extractor import extract_source
+    from know_your_context.ingest.extractor import extract_source
 
     source = (FIXTURES / relative).read_text(encoding="utf-8")
     result = extract_source(relative, source, language=language)
@@ -297,7 +297,7 @@ GENERATED_CASES = [
 @pytest.mark.parametrize(("path", "source"), GENERATED_CASES)
 def test_detect_generated_matches_python(path: str, source: str) -> None:
     _kernel_required()
-    from know_your_soul.ingest.extractor import detect_generated as python_detect
+    from know_your_context.ingest.extractor import detect_generated as python_detect
 
     kernel = kernel_bridge.kernel_module()
     assert kernel.detect_generated(path, source) == python_detect(path, source)
@@ -305,8 +305,8 @@ def test_detect_generated_matches_python(path: str, source: str) -> None:
 
 def _ingest_fixtures_dump(tmp_path: Path, name: str) -> str:
     """Ingest the full 12-language fixture tree into a fresh store; dump it."""
-    from know_your_soul.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
-    from know_your_soul.store import EventStore
+    from know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
+    from know_your_context.store import EventStore
 
     with EventStore(str(tmp_path / name)) as store:
         IngestionPipeline(store).ingest_path(FIXTURES)

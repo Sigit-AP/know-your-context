@@ -1,5 +1,5 @@
 //! Generated/minified detection — a byte-faithful port of the Python
-//! reference (`know_your_soul.ingest.extractor.detect_generated`), which is
+//! reference (`know_your_context.ingest.extractor.detect_generated`), which is
 //! itself a port of codegraph `generated-detection.ts`. Relevance hint only.
 
 use regex::Regex;

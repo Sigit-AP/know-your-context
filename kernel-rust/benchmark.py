@@ -6,7 +6,7 @@ Measures in-process extraction time (parse + walk + artifact) for:
 * every phase-1 fixture (12 languages), median of N runs;
 * one large deterministic source file (~1 MiB Python), median of N runs.
 
-The Rust side runs through ``know_your_soul_kernel`` (loaded by
+The Rust side runs through ``know_your_context_kernel`` (loaded by
 ``kernel_bridge``); the Python side runs ``TreeSitterExtractor`` directly.
 Both sides are verified byte-identical before timing — a faster but divergent
 kernel would be a bug, not a win.
@@ -26,9 +26,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from know_your_soul.ingest import kernel_bridge  # noqa: E402
-from know_your_soul.ingest.extractor import TreeSitterExtractor  # noqa: E402
-from know_your_soul.ingest.languages import get_spec, supported_languages  # noqa: E402
+from know_your_context.ingest import kernel_bridge  # noqa: E402
+from know_your_context.ingest.extractor import TreeSitterExtractor  # noqa: E402
+from know_your_context.ingest.languages import get_spec, supported_languages  # noqa: E402
 
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "ingest"
 

@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.analytics.health`` (ATM plan F-C4).
+"""Tests for ``know_your_context.analytics.health`` (ATM plan F-C4).
 
 Audit-style corpus health: deterministic findings with severity and evidence,
 a quantized health score, and fail-closed semantics on critical findings.
@@ -7,8 +7,8 @@ Junk classification reuses the read-model validator's own junk reasons.
 
 from __future__ import annotations
 
-from know_your_soul.analytics.health import SEVERITY_DEDUCTION, analyze_corpus_health
-from know_your_soul.domain import canonical_json
+from know_your_context.analytics.health import SEVERITY_DEDUCTION, analyze_corpus_health
+from know_your_context.domain import canonical_json
 
 
 def _node(
@@ -63,7 +63,7 @@ def _graph(nodes: list[dict], links: list[dict] | None = None) -> dict:
     return {
         "directed": True,
         "multigraph": False,
-        "graph": {"schema_version": 1, "generator": "know-your-soul", "partitioner": "test"},
+        "graph": {"schema_version": 1, "generator": "know-your-context", "partitioner": "test"},
         "nodes": nodes,
         "links": links or [],
         "hyperedges": [],

@@ -19,13 +19,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.store import EventStore
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.store import EventStore
 
 WRITER = r"""
 import sys
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, ScoreVector
-from know_your_soul.store import EventStore, IdempotencyConflict
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, ScoreVector
+from know_your_context.store import EventStore, IdempotencyConflict
 
 db_path, prefix = sys.argv[1], sys.argv[2]
 n_unique, n_shared, conflict = int(sys.argv[3]), int(sys.argv[4]), sys.argv[5] == "1"
@@ -37,7 +37,7 @@ def node(node_id):
         kind=NodeKind.CHILD,
         domain=PrimaryDomain.P1,
         summary=f"node {node_id}",
-        provenance=("soul://probe",),
+        provenance=("context://probe",),
         source_version_id="sv-probe",
         scores=ScoreVector.zero(),
     )
@@ -74,7 +74,7 @@ def _node(node_id: str, note: str) -> Node:
         kind=NodeKind.CHILD,
         domain=PrimaryDomain.P1,
         summary=f"node {node_id}",
-        provenance=("soul://probe",),
+        provenance=("context://probe",),
         source_version_id="sv-probe",
         payload={"note": note},
     )

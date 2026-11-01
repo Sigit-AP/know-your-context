@@ -1,12 +1,12 @@
-//! know_your_soul_kernel — the Rust extraction kernel (wave W5, SUB-93).
+//! know_your_context_kernel — the Rust extraction kernel (wave W5, SUB-93).
 //!
 //! Two surfaces from one codebase:
 //! * the `kys-kernel` CLI (bin) for the standalone/server path;
-//! * the `know_your_soul_kernel` Python module (PyO3, feature `pyo3`) for the
-//!   agent-harness path, loaded through `know_your_soul.ingest.kernel_bridge`.
+//! * the `know_your_context_kernel` Python module (PyO3, feature `pyo3`) for the
+//!   agent-harness path, loaded through `know_your_context.ingest.kernel_bridge`.
 //!
 //! Both produce canonical JSON byte-identical to the Python reference
-//! extractor (`know_your_soul.ingest.extractor`).
+//! extractor (`know_your_context.ingest.extractor`).
 
 pub mod canon;
 pub mod generated;
@@ -31,7 +31,7 @@ mod pyo3_bridge {
     use crate::registry;
     use crate::walker::{self};
 
-    create_exception!(know_your_soul_kernel, KernelError, PyException);
+    create_exception!(know_your_context_kernel, KernelError, PyException);
 
     fn to_py_err(error: walker::KernelError) -> PyErr {
         // args carry the machine-readable code plus structured context so the
@@ -146,7 +146,7 @@ mod pyo3_bridge {
     }
 
     #[pymodule]
-    fn know_your_soul_kernel(module: &Bound<'_, PyModule>) -> PyResult<()> {
+    fn know_your_context_kernel(module: &Bound<'_, PyModule>) -> PyResult<()> {
         module.add_function(wrap_pyfunction!(extract_source, module)?)?;
         module.add_function(wrap_pyfunction!(extract_file, module)?)?;
         module.add_function(wrap_pyfunction!(make_node_id, module)?)?;

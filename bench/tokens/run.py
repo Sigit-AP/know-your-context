@@ -18,7 +18,7 @@ estimator and a different retrieval product; see GRAPHIFY_REFERENCE and
 bench/tokens/README.md). The reference is context, never a gate.
 
 Estimator: the frozen contract formula ``ceil(utf8_bytes / 4)``
-(``know_your_soul.contracts.estimated_tokens_of_payload``), applied to raw
+(``know_your_context.contracts.estimated_tokens_of_payload``), applied to raw
 file bytes for the corpus and to the rendered context + question for the
 per-query cost. Unlike Graphify's harness, negative-control questions
 (no match) are INCLUDED in the mean query cost — excluding them flatters
@@ -648,8 +648,8 @@ def _materialize_tier(tier: str, pool_root: Path, dest: Path) -> None:
 
 
 def _ingest_tier(root: Path) -> tuple[Any, str]:
-    from know_your_soul.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
-    from know_your_soul.store import EventStore
+    from know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
+    from know_your_context.store import EventStore
 
     store = EventStore()
     pipeline = IngestionPipeline(store)
@@ -667,7 +667,7 @@ def _rubric_coverage(rendered: str, terms: list[str]) -> tuple[int, float | None
 
 
 def _answer_questions(store: Any, specs: list[dict[str, Any]], *, repeats: int) -> list[QuestionResult]:
-    from know_your_soul.retrieval_v2 import (
+    from know_your_context.retrieval_v2 import (
         ContextConfig,
         ContextItem,
         SymbolLookup,

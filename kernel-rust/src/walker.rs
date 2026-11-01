@@ -1,5 +1,5 @@
 //! The AST walker — a byte-faithful Rust port of
-//! `know_your_soul.ingest.extractor.TreeSitterExtractor` (wave W2 reference).
+//! `know_your_context.ingest.extractor.TreeSitterExtractor` (wave W2 reference).
 //!
 //! Every rule is mirrored exactly: canonical child order, scope stack,
 //! id allocation with `:col` suffix on collision, import/call/variable rules,

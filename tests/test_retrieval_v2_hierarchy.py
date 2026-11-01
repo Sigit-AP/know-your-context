@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from _retrieval_v2_helpers import add_edge, add_symbol
-from know_your_soul.retrieval_v2 import (
+from know_your_context.retrieval_v2 import (
     DEFAULT_EDGE_KINDS,
     CallHierarchy,
     HierarchyEntry,
@@ -22,7 +22,7 @@ from know_your_soul.retrieval_v2 import (
     callees,
     callers,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 
 @pytest.fixture

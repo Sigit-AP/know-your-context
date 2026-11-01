@@ -27,20 +27,20 @@ from pathlib import Path
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.resolve.name_matcher import (
+from know_your_context.resolve.name_matcher import (
     NameMatchResolver,
     match_name,
     score_name_pair,
     split_identifier,
 )
-from know_your_soul.resolve.resolver import PROVENANCE, ReferenceResolver
-from know_your_soul.resolve.synthesis import (
+from know_your_context.resolve.resolver import PROVENANCE, ReferenceResolver
+from know_your_context.resolve.synthesis import (
     PASS_CALLBACK_EDGES,
     PASS_METHOD_CLASS_CONTAINMENT,
     SynthesisConfig,
     run_synthesis,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 SEEN = "2026-10-28T00:00:00+00:00"
 PARSE = "ingest:0123456789abcdef"

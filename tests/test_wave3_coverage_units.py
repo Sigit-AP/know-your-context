@@ -1,7 +1,7 @@
 """Coverage wave 3 (SUB-51): unit-level pins for uncovered guard/error branches.
 
 Every test targets a branch the existing suite leaves red in
-``pytest --cov=know_your_soul``: typed error paths, boundary guards and
+``pytest --cov=know_your_context``: typed error paths, boundary guards and
 fail-closed sentinels discovered by reading ``src/`` at HEAD 2f5e711. No
 trivial getter tests; property-style tests stay deterministic (hypothesis
 ``derandomize=True`` where used — this file is pure example-based).
@@ -19,10 +19,10 @@ from typing import Any
 import pytest
 from pydantic import TypeAdapter
 
-from know_your_soul import runtime_guard
-from know_your_soul.audit import AuditLog
-from know_your_soul.contracts import RecommendationItem, attempt_promotion
-from know_your_soul.domain import (
+from know_your_context import runtime_guard
+from know_your_context.audit import AuditLog
+from know_your_context.contracts import RecommendationItem, attempt_promotion
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -31,7 +31,7 @@ from know_your_soul.domain import (
     ScoreVector,
     StrictDecimal,
 )
-from know_your_soul.improvement import (
+from know_your_context.improvement import (
     DiffOp,
     DiffOperation,
     ImprovementProposal,
@@ -45,23 +45,23 @@ from know_your_soul.improvement import (
     rollback_improvement,
     validate_proposal,
 )
-from know_your_soul.observability import (
+from know_your_context.observability import (
     MetricsRegistry,
     StructuredLogger,
     check_health,
     export_query_audit,
 )
-from know_your_soul.review import (
+from know_your_context.review import (
     DEFAULT_REVIEW_POLICY,
     LifecycleStatus,
     ReviewSignal,
     decide,
 )
-from know_your_soul.scoring import ScoringConfig, ScoringConfigError, _jaccard  # type: ignore[attr-defined]
-from know_your_soul.security import PathEscapeError, host_allowed, resolve_within_root
-from know_your_soul.source_registry import SourceKind, SourceRegistry
-from know_your_soul.source_watcher import SourceWatcher, WatcherStateError
-from know_your_soul.store import EventStore, InvalidRelation, StoreError
+from know_your_context.scoring import ScoringConfig, ScoringConfigError, _jaccard  # type: ignore[attr-defined]
+from know_your_context.security import PathEscapeError, host_allowed, resolve_within_root
+from know_your_context.source_registry import SourceKind, SourceRegistry
+from know_your_context.source_watcher import SourceWatcher, WatcherStateError
+from know_your_context.store import EventStore, InvalidRelation, StoreError
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 
@@ -108,7 +108,7 @@ def test_event_rejects_evidence_of_a_different_node() -> None:
         "evidence_id": "e-1",
         "node_id": "n-other",
         "source_version_id": "sv-test",
-        "source_uri": "soul://corpus/a.md",
+        "source_uri": "context://corpus/a.md",
         "observed_at": NOW,
         "independence_key": "grp",
         "outcome": "0.5",
@@ -162,7 +162,7 @@ def test_attempt_promotion_accepts_two_or_more_observations() -> None:
 
 
 def _config_toml() -> str:
-    return (Path(__file__).resolve().parent.parent / "src" / "know_your_soul" / "scoring_config.toml").read_text(
+    return (Path(__file__).resolve().parent.parent / "src" / "know_your_context" / "scoring_config.toml").read_text(
         encoding="utf-8"
     )
 
@@ -281,7 +281,7 @@ def _e_evidence(item_overrides: dict[str, object]) -> dict[str, object]:
         "evidence_id": "e-1",
         "node_id": "n-1",
         "source_version_id": "sv-test",
-        "source_uri": "soul://corpus/a.md",
+        "source_uri": "context://corpus/a.md",
         "observed_at": "2026-10-20T00:00:00+00:00",
         "independence_key": "grp",
         "outcome": "0.5",
@@ -303,28 +303,28 @@ def _e_evidence(item_overrides: dict[str, object]) -> dict[str, object]:
 
 
 def test_e_evidence_task_coverage_outside_unit_interval_is_excluded() -> None:
-    from know_your_soul.scoring import _classify
+    from know_your_context.scoring import _classify
 
     reason = _classify(_e_evidence({"task_coverage": "1.5"}), datetime(2026, 10, 25, tzinfo=UTC), frozenset())
     assert reason == "other_exclusions"
 
 
 def test_e_evidence_non_positive_latency_is_excluded() -> None:
-    from know_your_soul.scoring import _classify
+    from know_your_context.scoring import _classify
 
     reason = _classify(_e_evidence({"latency_ms": 0}), datetime(2026, 10, 25, tzinfo=UTC), frozenset())
     assert reason == "other_exclusions"
 
 
 def test_e_evidence_non_positive_compute_is_excluded() -> None:
-    from know_your_soul.scoring import _classify
+    from know_your_context.scoring import _classify
 
     reason = _classify(_e_evidence({"compute_ms": 0}), datetime(2026, 10, 25, tzinfo=UTC), frozenset())
     assert reason == "other_exclusions"
 
 
 def test_e_evidence_negative_output_chars_is_excluded() -> None:
-    from know_your_soul.scoring import _classify
+    from know_your_context.scoring import _classify
 
     reason = _classify(_e_evidence({"output_chars": -1}), datetime(2026, 10, 25, tzinfo=UTC), frozenset())
     assert reason == "other_exclusions"
@@ -541,7 +541,7 @@ def test_retain_improvement_unknown_node_raises(tmp_path: Path) -> None:
 
 
 def _approval_for(proposal_id: str):  # type: ignore[no-untyped-def]
-    from know_your_soul.improvement import ApprovalRecord
+    from know_your_context.improvement import ApprovalRecord
 
     return ApprovalRecord(proposal_id=proposal_id, approved_by="ops", decision="approved", decided_at=NOW, note="")
 
@@ -814,7 +814,7 @@ def test_verify_chain_detects_a_tampered_anchor_head(tmp_path: Path) -> None:
 
 
 def test_relation_event_for_unknown_node_is_an_invalid_relation(tmp_path: Path) -> None:
-    from know_your_soul.domain import Relation, RelationKind
+    from know_your_context.domain import Relation, RelationKind
 
     store = EventStore(tmp_path / "soul.sqlite3")
     try:
@@ -833,9 +833,9 @@ def test_relation_event_for_unknown_node_is_an_invalid_relation(tmp_path: Path) 
 def test_commit_reports_a_combined_error_when_the_failure_audit_also_fails(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from know_your_soul import audit as audit_module
-    from know_your_soul.domain import Relation, RelationKind
-    from know_your_soul.events import Invocation
+    from know_your_context import audit as audit_module
+    from know_your_context.domain import Relation, RelationKind
+    from know_your_context.events import Invocation
 
     store = EventStore(tmp_path / "soul.sqlite3")
     try:
@@ -858,7 +858,7 @@ def test_commit_reports_a_combined_error_when_the_failure_audit_also_fails(
 
 
 def test_journal_outcome_json_is_none_for_an_incomplete_invocation(tmp_path: Path) -> None:
-    from know_your_soul.events import Invocation
+    from know_your_context.events import Invocation
 
     store = EventStore(tmp_path / "soul.sqlite3")
     try:
@@ -878,7 +878,7 @@ def test_heal_lying_projection_watermark_without_marker_is_false(tmp_path: Path)
 
 
 def test_duplicate_journal_begin_is_a_typed_store_error(tmp_path: Path) -> None:
-    from know_your_soul.events import Invocation
+    from know_your_context.events import Invocation
 
     store = EventStore(tmp_path / "soul.sqlite3")
     try:
@@ -955,8 +955,8 @@ def test_registry_scan_skips_directories_matching_the_pattern(tmp_path: Path) ->
 
 
 def test_scheduler_defaults_to_utc_now(tmp_path: Path) -> None:
-    from know_your_soul.review import ReviewEngine
-    from know_your_soul.scheduler import DueReviewScheduler
+    from know_your_context.review import ReviewEngine
+    from know_your_context.scheduler import DueReviewScheduler
 
     store = EventStore(tmp_path / "soul.sqlite3")
     try:
@@ -970,13 +970,13 @@ def test_score_items_with_zero_quality_evidence_selects_no_m_bin() -> None:
     # NOTE: the ``local_total == 0`` guard inside the M-bin loop is
     # structurally unreachable (bins only collect entries with q["m"] > 0);
     # this pins the observable behavior for zero-quality evidence instead.
-    from know_your_soul.scoring import score_items
+    from know_your_context.scoring import score_items
 
     item = {
         "evidence_id": "e-1",
         "node_id": "n-1",
         "source_version_id": "sv-test",
-        "source_uri": "soul://corpus/a.md",
+        "source_uri": "context://corpus/a.md",
         "observed_at": "2026-10-20T00:00:00+00:00",
         "context_tags": (),
         "independence_key": "grp",
@@ -999,7 +999,7 @@ def test_score_items_with_zero_quality_evidence_selects_no_m_bin() -> None:
 
 
 def test_score_engine_exposes_its_config(tmp_path: Path) -> None:
-    from know_your_soul.scoring import ScoreEngine
+    from know_your_context.scoring import ScoreEngine
 
     store = EventStore(tmp_path / "soul.sqlite3")
     try:

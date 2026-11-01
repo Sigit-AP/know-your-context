@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.analytics.query_tools`` (ATM F-E1/F-E2).
+"""Tests for ``know_your_context.analytics.query_tools`` (ATM F-E1/F-E2).
 
 Structured query depth over the read model: strict filters, deterministic
 multi-key sort, stable cursor pagination, P/M/E aggregation, faceting,
@@ -15,7 +15,7 @@ from typing import Any, cast
 
 import pytest
 
-from know_your_soul.analytics.query_tools import (
+from know_your_context.analytics.query_tools import (
     AGGREGATE_DIMENSIONS,
     DEFAULT_JACCARD_THRESHOLD,
     DEFAULT_PAGE_LIMIT,
@@ -38,8 +38,8 @@ from know_your_soul.analytics.query_tools import (
     validate_filter,
     validate_sort,
 )
-from know_your_soul.domain import canonical_json
-from know_your_soul.retrieval import LexicalIndex
+from know_your_context.domain import canonical_json
+from know_your_context.retrieval import LexicalIndex
 
 
 def _node(
@@ -1250,15 +1250,15 @@ class TestQueryNodes:
 
 class TestContractDistance:
     def test_module_imports_no_service_or_contracts(self) -> None:
-        import know_your_soul.analytics.query_tools as module
+        import know_your_context.analytics.query_tools as module
 
         with open(module.__file__, encoding="utf-8") as handle:
             source = handle.read()
-        assert "know_your_soul.service" not in source
-        assert "know_your_soul.contracts" not in source
+        assert "know_your_context.service" not in source
+        assert "know_your_context.contracts" not in source
 
     def test_no_clock_no_randomness(self) -> None:
-        import know_your_soul.analytics.query_tools as module
+        import know_your_context.analytics.query_tools as module
 
         with open(module.__file__, encoding="utf-8") as handle:
             source = handle.read()

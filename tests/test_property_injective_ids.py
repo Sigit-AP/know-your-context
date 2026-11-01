@@ -25,7 +25,7 @@ import pytest
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.importer import _escape_id_text, _section_node_id, injective_file_id, injective_section_key
+from know_your_context.importer import _escape_id_text, _section_node_id, injective_file_id, injective_section_key
 
 _hostile_char = st.sampled_from(
     [

@@ -17,7 +17,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.scoring import score_items
+from know_your_context.scoring import score_items
 
 AT = datetime(2026, 10, 24, tzinfo=UTC)
 
@@ -27,7 +27,7 @@ def make_item(evidence_id: str, **overrides: Any) -> dict[str, Any]:
     item: dict[str, Any] = {
         "evidence_id": evidence_id,
         "node_id": "n1",
-        "source_uri": f"soul://corpus/{evidence_id}",
+        "source_uri": f"context://corpus/{evidence_id}",
         "observed_at": AT.isoformat(),
         "context_tags": ["python"],
         "independence_key": f"ik-{evidence_id}",

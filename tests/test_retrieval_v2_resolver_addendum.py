@@ -16,8 +16,8 @@ from pathlib import Path
 import pytest
 
 from _retrieval_v2_helpers import add_file, add_ref, add_symbol
-from know_your_soul.resolve import REF_KIND_TO_EDGE_KIND, ReferenceResolver, resolve_pending
-from know_your_soul.store import EventStore
+from know_your_context.resolve import REF_KIND_TO_EDGE_KIND, ReferenceResolver, resolve_pending
+from know_your_context.store import EventStore
 
 
 @pytest.fixture

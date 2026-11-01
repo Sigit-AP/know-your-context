@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.ops.retention`` (ATM F-D2).
+"""Tests for ``know_your_context.ops.retention`` (ATM F-D2).
 
 Pins the retention contract: keep-N newest generations plus pinned ones,
 never the CURRENT generation, never a generation referenced by any backup,
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.ops.retention import (
+from know_your_context.ops.retention import (
     DEFAULT_AUDIT_FILENAME,
     RetentionError,
     RetentionPolicy,

@@ -26,7 +26,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.security import (
+from know_your_context.security import (
     SECRET_PATTERNS,
     HostNotAllowedError,
     OversizedPayloadError,

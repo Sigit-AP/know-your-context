@@ -15,14 +15,14 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.cli import main
-from know_your_soul.exporters.builtin import (
+from know_your_context.cli import main
+from know_your_context.exporters.builtin import (
     ANALYTICS_ALIASES,
     FORMAT_ALIASES,
     build_registry,
     resolve_selection,
 )
-from know_your_soul.exporters.orchestrator import produce_exports
+from know_your_context.exporters.orchestrator import produce_exports
 from test_builtin_integration import _invoke, _read_model, _rebuilt
 
 NEW_FORMAT_ARTIFACTS = {
@@ -233,7 +233,7 @@ def test_cli_config_describe_effective_dump(tmp_path: Path, capsys: pytest.Captu
 def test_cli_config_env_layer_wins_over_defaults(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("KNOW_YOUR_SOUL_STALE_AFTER_SECONDS", "42")
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_STALE_AFTER_SECONDS", "42")
     code, out, err = _invoke(["config", "dump"], capsys)
     assert code == 0, err
     assert out is not None

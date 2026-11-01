@@ -21,8 +21,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "license_guard.py"
 
 NOTICE_OK = (
-    "Know Your Soul\n"
-    "Copyright 2026 Know Your Soul contributors\n"
+    "Know Your Context\n"
+    "Copyright 2026 Know Your Context contributors\n"
     "\n"
     "This product includes a design inspired by and a runtime dependency on\n"
     "Graphify (https://github.com/Graphlet-AI/graphify), Copyright 2026\n"

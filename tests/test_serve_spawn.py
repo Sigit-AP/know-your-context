@@ -17,8 +17,8 @@ from pathlib import Path
 import pytest
 
 from _serve_helpers import SocketClient, make_config, wait_for
-from know_your_soul.serve.daemon_config import DaemonConfig
-from know_your_soul.serve.superpower import (
+from know_your_context.serve.daemon_config import DaemonConfig
+from know_your_context.serve.superpower import (
     DaemonUnavailable,
     daemon_status,
     spawn_daemon,
@@ -170,7 +170,7 @@ class TestDetachedSpawn:
             stop_daemon(config, timeout_seconds=30.0)
 
     def test_recursive_spawn_refused(self, config: DaemonConfig) -> None:
-        """KNOW_YOUR_SOUL_DAEMON_INTERNAL blocks daemon-in-daemon spawning."""
+        """KNOW_YOUR_CONTEXT_DAEMON_INTERNAL blocks daemon-in-daemon spawning."""
         import subprocess
         import sys
 
@@ -178,14 +178,14 @@ class TestDetachedSpawn:
             [
                 sys.executable,
                 "-m",
-                "know_your_soul.serve",
+                "know_your_context.serve",
                 "--daemon",
                 "--db",
                 str(config.db_path),
                 "--graph-root",
                 str(config.graph_root),
             ],
-            env={**os.environ, "KNOW_YOUR_SOUL_DAEMON_INTERNAL": "1"},
+            env={**os.environ, "KNOW_YOUR_CONTEXT_DAEMON_INTERNAL": "1"},
             capture_output=True,
             timeout=30,
         )

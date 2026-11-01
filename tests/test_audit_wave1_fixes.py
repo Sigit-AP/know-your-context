@@ -24,8 +24,8 @@ from typing import Literal
 
 import pytest
 
-from know_your_soul.contracts import EvaluateRequest, ReviewRequest
-from know_your_soul.domain import (
+from know_your_context.contracts import EvaluateRequest, ReviewRequest
+from know_your_context.domain import (
     Event,
     EventKind,
     Evidence,
@@ -34,11 +34,11 @@ from know_your_soul.domain import (
     PrimaryDomain,
     ScoreVector,
 )
-from know_your_soul.projection import GraphProjector
-from know_your_soul.relearn import RelearnApproval, RelearnEngine
-from know_your_soul.service import KnowledgeService
-from know_your_soul.source_registry import ParserVersions, SourceKind, SourceRegistry
-from know_your_soul.store import EventStore, IdempotencyConflict
+from know_your_context.projection import GraphProjector
+from know_your_context.relearn import RelearnApproval, RelearnEngine
+from know_your_context.service import KnowledgeService
+from know_your_context.source_registry import ParserVersions, SourceKind, SourceRegistry
+from know_your_context.store import EventStore, IdempotencyConflict
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 
@@ -126,7 +126,7 @@ def test_f3_reused_key_with_different_payload_fails_loud() -> None:
 
     with pytest.raises(IdempotencyConflict):
         store.append_domain(
-            evidence_event(build_evidence("ev-1", "n-1", "sv-test", "soul://corpus/a.md")),
+            evidence_event(build_evidence("ev-1", "n-1", "sv-test", "context://corpus/a.md")),
             idempotency_key="shared-key",
         )
     # The conflicting write was refused loud — nothing was silently dropped or replayed.

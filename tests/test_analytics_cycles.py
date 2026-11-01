@@ -14,7 +14,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.cycles import find_cycles
+from know_your_context.analytics.cycles import find_cycles
 
 _IDS = ["a", "b", "c", "d", "e", "f"]
 _RELATIONS = ["depends_on", "contradicts", "supersedes", "supports", "parent_of"]

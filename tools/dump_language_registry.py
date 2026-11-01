@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Dump the declarative language registry to ``kernel-rust/registry.json`` (wave W5, SUB-93).
 
-:mod:`know_your_soul.ingest.languages` is the single source of truth for the
+:mod:`know_your_context.ingest.languages` is the single source of truth for the
 extraction tables; the Rust kernel (``kernel-rust/``) consumes this JSON dump
 so both implementations read identical data. The dump is fully deterministic:
 canonical JSON (sorted keys, ``,``/``:`` separators, ``ensure_ascii=False``)
@@ -24,8 +24,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from know_your_soul.domain import canonical_json  # noqa: E402
-from know_your_soul.ingest.languages import EXTENSION_MAP, LANGUAGES  # noqa: E402
+from know_your_context.domain import canonical_json  # noqa: E402
+from know_your_context.ingest.languages import EXTENSION_MAP, LANGUAGES  # noqa: E402
 
 REGISTRY_PATH = REPO_ROOT / "kernel-rust" / "registry.json"
 REGISTRY_FORMAT_VERSION = 1

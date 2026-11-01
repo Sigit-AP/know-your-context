@@ -28,14 +28,14 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.backup import backup_protected_artifacts
-from know_your_soul.contracts import (
+from know_your_context.backup import backup_protected_artifacts
+from know_your_context.contracts import (
     EvaluateRequest,
     ImprovementResponse,
     ProposalResponse,
     RollbackResponse,
 )
-from know_your_soul.domain import (
+from know_your_context.domain import (
     Event,
     EventKind,
     Evidence,
@@ -44,7 +44,7 @@ from know_your_soul.domain import (
     PrimaryDomain,
     ScoreVector,
 )
-from know_your_soul.improvement import (
+from know_your_context.improvement import (
     ApprovalRecord,
     ApprovalRequired,
     DiffOp,
@@ -53,16 +53,16 @@ from know_your_soul.improvement import (
     apply_improvement,
     propose,
 )
-from know_your_soul.projection import GraphProjector
-from know_your_soul.relearn import RelearnApproval, RelearnEngine
-from know_your_soul.service import KnowledgeService
-from know_your_soul.source_registry import (
+from know_your_context.projection import GraphProjector
+from know_your_context.relearn import RelearnApproval, RelearnEngine
+from know_your_context.service import KnowledgeService
+from know_your_context.source_registry import (
     RELEARN_PENDING,
     ParserVersions,
     SourceKind,
     SourceRegistry,
 )
-from know_your_soul.store import EventStore, VersionConflict
+from know_your_context.store import EventStore, VersionConflict
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 PARSER_VERSIONS = ParserVersions(
@@ -112,7 +112,7 @@ def _node(node_id: str, source_version_id: str, *, summary: str = "probe node") 
         domain=PrimaryDomain.P1,
         summary=summary,
         context_tags=("probe",),
-        provenance=("soul://corpus/lesson.md",),
+        provenance=("context://corpus/lesson.md",),
         source_version_id=source_version_id,
         scores=ScoreVector.zero(),
     )
@@ -123,7 +123,7 @@ def _evidence(evidence_id: str, node_id: str, source_version_id: str) -> Evidenc
         evidence_id=evidence_id,
         node_id=node_id,
         source_version_id=source_version_id,
-        source_uri="soul://corpus/lesson.md",
+        source_uri="context://corpus/lesson.md",
         observed_at=NOW,
         context_tags=("probe",),
         independence_key=evidence_id,
@@ -162,7 +162,7 @@ def _seed_roots(store: EventStore, source_version_id: str = "sv-test") -> None:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id=source_version_id,
         ),
         "seed:kroot",
@@ -175,7 +175,7 @@ def _seed_roots(store: EventStore, source_version_id: str = "sv-test") -> None:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id=source_version_id,
             ),
             f"seed:{domain.value}",

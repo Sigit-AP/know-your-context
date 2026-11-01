@@ -25,10 +25,10 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.projection import GraphProjector, enriched_summary
-from know_your_soul.security import redact_text
-from know_your_soul.store import EventStore
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.projection import GraphProjector, enriched_summary
+from know_your_context.security import redact_text
+from know_your_context.store import EventStore
 
 AWS_KEY_TAIL = "IOSFODNN7EXAMPLE"  # the canonical AWS docs example key tail
 
@@ -102,8 +102,8 @@ def _clean_node(node_id: str = "n-clean") -> Node:
         kind=NodeKind.LEAF,
         domain=PrimaryDomain.P1,
         summary="ordinary operator notes with no secret material",
-        payload={"source_file": "soul://ops"},
-        provenance=("soul://ops",),
+        payload={"source_file": "context://ops"},
+        provenance=("context://ops",),
         context_tags=("ops", "rotation"),
         source_version_id="sv-test",
     )
@@ -132,8 +132,8 @@ def test_zl_zp_split_secret_node_is_quarantined_from_published_graph(tmp_path: P
             kind=NodeKind.LEAF,
             domain=PrimaryDomain.P1,
             summary=f"operator notes AKIA{separator}{AWS_KEY_TAIL} inside",
-            payload={"source_file": "soul://ops"},
-            provenance=("soul://ops",),
+            payload={"source_file": "context://ops"},
+            provenance=("context://ops",),
             source_version_id="sv-test",
         ),
         "k-zlzp-evil",
@@ -164,8 +164,8 @@ def test_cross_field_split_secret_node_is_quarantined(tmp_path: Path) -> None:
             kind=NodeKind.LEAF,
             domain=PrimaryDomain.P1,
             summary="note about AKIAIOSFOD",
-            payload={"source_file": "soul://ops"},
-            provenance=("soul://ops",),
+            payload={"source_file": "context://ops"},
+            provenance=("context://ops",),
             context_tags=("NN7EXAMPLE",),
             source_version_id="sv-test",
         ),
@@ -200,7 +200,7 @@ def test_joined_view_catches_split_across_every_publish_field_pair(tmp_path: Pat
     them and in either field order (pairwise both-orders join)."""
     store = EventStore(tmp_path / "soul.sqlite3")
     projector = GraphProjector(store, output_root=tmp_path / "out")
-    fields = ["note about AKIAIOSFOD", "soul://ops", "NN7EXAMPLE"]
+    fields = ["note about AKIAIOSFOD", "context://ops", "NN7EXAMPLE"]
     assert projector._joined_secret_category(fields) is not None
     assert projector._joined_secret_category(list(reversed(fields))) is not None
     # Adjacent two-field join via the plain category scan (no helper needed).
@@ -220,8 +220,8 @@ def test_legit_multi_field_node_still_publishes(tmp_path: Path) -> None:
             kind=NodeKind.LEAF,
             domain=PrimaryDomain.P1,
             summary="deploy key rotation policy, version 2.0 draft",
-            payload={"source_file": "soul://ops"},
-            provenance=("soul://ops", "git:abc123"),
+            payload={"source_file": "context://ops"},
+            provenance=("context://ops", "git:abc123"),
             context_tags=("ops", "security", "rotation-2026"),
             source_version_id="sv-test",
         ),
@@ -244,8 +244,8 @@ def test_legit_zl_zp_node_still_publishes_with_collapsed_separator(tmp_path: Pat
             kind=NodeKind.LEAF,
             domain=PrimaryDomain.P1,
             summary="first visual line\u2028second visual line",
-            payload={"source_file": "soul://ops"},
-            provenance=("soul://ops",),
+            payload={"source_file": "context://ops"},
+            provenance=("context://ops",),
             source_version_id="sv-test",
         ),
         "k-zl-clean",

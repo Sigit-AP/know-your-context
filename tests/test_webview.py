@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.serve.webview`` (W7 SUB-101).
+"""Tests for ``know_your_context.serve.webview`` (W7 SUB-101).
 
 Pins the contract of the loopback-only, token-authenticated, read-only web
 viewer:
@@ -30,8 +30,8 @@ from urllib.parse import quote
 
 import pytest
 
-from know_your_soul import runtime_guard
-from know_your_soul.domain import (
+from know_your_context import runtime_guard
+from know_your_context.domain import (
     Event,
     EventKind,
     Evidence,
@@ -42,7 +42,7 @@ from know_your_soul.domain import (
     RelationKind,
     ScoreVector,
 )
-from know_your_soul.serve.webview import (
+from know_your_context.serve.webview import (
     ANALYTICS_MAX_NODES,
     DEFAULT_HOST_ALLOWLIST,
     MAX_GRAPH_NODES,
@@ -56,7 +56,7 @@ from know_your_soul.serve.webview import (
     main,
     origin_allowed,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 NOW = datetime(2026, 1, 1, 0, 0, tzinfo=UTC)
 XSS_LABEL = "<script>alert(1)</script>"
@@ -125,7 +125,7 @@ def _node(
     domain: PrimaryDomain = PrimaryDomain.P1,
     parent: str | None = None,
     summary: str | None = None,
-    provenance: tuple[str, ...] = ("soul://corpus/lesson.md",),
+    provenance: tuple[str, ...] = ("context://corpus/lesson.md",),
     scores: ScoreVector | None = None,
 ) -> Node:
     return Node(
@@ -186,7 +186,7 @@ def _seed(store: EventStore) -> None:
                     "evidence_id": "ev-alpha-1",
                     "node_id": "n-alpha",
                     "source_version_id": "sv-webview",
-                    "source_uri": "soul://corpus/lesson.md",
+                    "source_uri": "context://corpus/lesson.md",
                     "observed_at": NOW,
                     "independence_key": "indep-1",
                     "outcome": "0.5",
@@ -539,7 +539,7 @@ class TestAssets:
         asset = (
             Path(__file__).resolve().parent.parent
             / "src"
-            / "know_your_soul"
+            / "know_your_context"
             / "serve"
             / "webview_assets"
             / "index.html"
@@ -679,7 +679,7 @@ class TestNodeEndpoint:
         assert detail["scores"]["p"] == "0.500000000000"
         assert detail["scores"]["confidence"] == "0.600000000000"
         assert detail["professional_level"] == 1
-        assert detail["provenance"] == ["soul://corpus/lesson.md"]
+        assert detail["provenance"] == ["context://corpus/lesson.md"]
         assert detail["lifecycle_status"] == "active"
         assert detail["version"] >= 1
         assert detail["evidence_ids"] == ["ev-alpha-1"]
@@ -1114,7 +1114,7 @@ class TestCli:
         assert "token=cli-token-0000000000000000" in out
 
     def test_cli_parser_has_webview_subcommand(self) -> None:
-        from know_your_soul.cli import build_parser
+        from know_your_context.cli import build_parser
 
         args = build_parser().parse_args(["webview", "--port", "8123", "--no-open"])
         assert args.command == "webview"
@@ -1122,7 +1122,7 @@ class TestCli:
         assert args.no_open is True
 
     def test_cli_parser_defaults(self) -> None:
-        from know_your_soul.cli import build_parser
+        from know_your_context.cli import build_parser
 
         args = build_parser().parse_args(["webview"])
         assert args.port == 0

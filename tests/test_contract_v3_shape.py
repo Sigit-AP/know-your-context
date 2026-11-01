@@ -248,10 +248,10 @@ def test_primary_may_root_arbitrary_depth_contains(text: str) -> None:
 @pytest.mark.parametrize(
     "fragment",
     [
-        "know-your-soul ingest-file",
+        "know-your-soul ingest-file",  # frozen v3 doc records the pre-rename CLI name
         "POST /v1/knowledge/ingest/file",
         "knowledge_ingest_file",
-        "know-your-soul ingest-directory",
+        "know-your-soul ingest-directory",  # frozen v3 doc
         "POST /v1/knowledge/ingest/directory",
         "knowledge_ingest_directory",
     ],

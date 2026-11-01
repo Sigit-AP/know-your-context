@@ -22,7 +22,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from _retrieval_v2_helpers import add_file, add_symbol
-from know_your_soul.retrieval_v2 import (
+from know_your_context.retrieval_v2 import (
     ContextConfig,
     ContextItem,
     SymbolLookup,
@@ -32,7 +32,7 @@ from know_your_soul.retrieval_v2 import (
     estimate_tokens,
     parse_query,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 _EXAMPLE_COUNTER = itertools.count()
 

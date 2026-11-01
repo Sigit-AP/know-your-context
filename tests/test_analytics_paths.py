@@ -20,8 +20,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.algorithms import AlgorithmError
-from know_your_soul.analytics.paths import PathQueryError, find_k_shortest_paths
+from know_your_context.analytics.algorithms import AlgorithmError
+from know_your_context.analytics.paths import PathQueryError, find_k_shortest_paths
 
 
 def _node(node_id: str, domain: str = "P1") -> dict[str, Any]:
@@ -372,7 +372,7 @@ def test_bottleneck_graph_single_route() -> None:
 
 
 def test_k_default_is_bounded() -> None:
-    from know_your_soul.analytics.paths import DEFAULT_K, DEFAULT_MAX_EXPANSIONS
+    from know_your_context.analytics.paths import DEFAULT_K, DEFAULT_MAX_EXPANSIONS
 
     assert DEFAULT_K >= 1
     assert DEFAULT_MAX_EXPANSIONS >= 1

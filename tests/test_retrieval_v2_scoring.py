@@ -9,7 +9,7 @@ substring, −15 test path unless the query is about tests).
 
 from __future__ import annotations
 
-from know_your_soul.retrieval_v2 import (
+from know_your_context.retrieval_v2 import (
     CHARS_PER_TOKEN,
     KIND_BONUSES,
     bounded_levenshtein,

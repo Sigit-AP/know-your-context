@@ -1,4 +1,4 @@
-"""Contract tests for the ``know-your-soul`` CLI (Task 7).
+"""Contract tests for the ``know-your-context`` CLI (Task 7).
 
 The CLI is a thin adapter over the ten-operation ``KnowledgeService`` plus the
 operational commands (rebuild, backup, restore, health). Every valid
@@ -16,8 +16,8 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.cli import build_parser, main  # noqa: E402  (RED until cli.py lands)
-from know_your_soul.domain import (
+from know_your_context.cli import build_parser, main  # noqa: E402  (RED until cli.py lands)
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -26,8 +26,8 @@ from know_your_soul.domain import (
     Relation,
     RelationKind,
 )
-from know_your_soul.projection import GraphProjector
-from know_your_soul.store import EventStore
+from know_your_context.projection import GraphProjector
+from know_your_context.store import EventStore
 
 # --------------------------------------------------------------------- setup
 
@@ -57,7 +57,7 @@ def _seeded_paths(tmp_path: Path) -> tuple[Path, Path]:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -70,7 +70,7 @@ def _seeded_paths(tmp_path: Path) -> tuple[Path, Path]:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -83,7 +83,7 @@ def _seeded_paths(tmp_path: Path) -> tuple[Path, Path]:
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
             context_tags=("gates", "discipline"),
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
     )
@@ -182,7 +182,7 @@ def test_cli_log_event_and_record_outcome(tmp_path: Path, capsys: pytest.Capture
         "kind": "child",
         "domain": "P1",
         "summary": "Added through the CLI",
-        "provenance": ["soul://corpus/cli.md"],
+        "provenance": ["context://corpus/cli.md"],
         "source_version_id": "sv-test",
     }
     code, out, err = _invoke(_base(db_path, out_path) + ["log-event", json.dumps(node_payload := node_payload)], capsys)
@@ -196,7 +196,7 @@ def test_cli_log_event_and_record_outcome(tmp_path: Path, capsys: pytest.Capture
         "evidence_id": "ev-cli-1",
         "node_id": "n-cli",
         "source_version_id": "sv-test",
-        "source_uri": "soul://corpus/cli.md",
+        "source_uri": "context://corpus/cli.md",
         "observed_at": "2026-10-20T00:00:00+00:00",
         "context_tags": ["gates"],
         "independence_key": "ev-cli-1",
@@ -418,7 +418,7 @@ def test_cli_serve_api_key_env_avoids_argv(
     def fake_serve(stack: object, **kwargs: object) -> None:
         captured_kwargs.update(kwargs)
 
-    monkeypatch.setattr("know_your_soul.cli.serve", fake_serve)
+    monkeypatch.setattr("know_your_context.cli.serve", fake_serve)
     code = main(
         _base(db_path, out_path) + ["serve", "--socket", str(tmp_path / "s.sock"), "--api-key-env", "SOUL_TEST_API_KEY"]
     )
@@ -476,31 +476,28 @@ def test_cli_ops_root_option_allows_a_configured_root(tmp_path: Path, capsys: py
     assert out["sha256"]
 
 
-# ------------------------------ rename: store env resolution (KNOW_YOUR_SOUL_STORE)
+# ------------------------------ rename: store env resolution (KNOW_YOUR_CONTEXT_STORE)
 
 
-def test_cli_store_default_prefers_know_your_soul_store(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("KNOW_YOUR_SOUL_STORE", "/tmp/kys.sqlite3")
-    monkeypatch.setenv("SOUL_STORE", "/tmp/legacy.sqlite3")
+def test_cli_store_default_prefers_know_your_context_store(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_STORE", "/tmp/kyc.sqlite3")
     parser = build_parser()
     args = parser.parse_args(["health", "{}"])
-    assert args.store == "/tmp/kys.sqlite3"
-
-
-def test_cli_store_default_honors_deprecated_soul_store(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    monkeypatch.delenv("KNOW_YOUR_SOUL_STORE", raising=False)
-    monkeypatch.setenv("SOUL_STORE", "/tmp/legacy.sqlite3")
-    parser = build_parser()
-    args = parser.parse_args(["health", "{}"])
-    assert args.store == "/tmp/legacy.sqlite3"
-    assert "SOUL_STORE is deprecated" in capsys.readouterr().err
+    assert args.store == "/tmp/kyc.sqlite3"
 
 
 def test_cli_store_default_without_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("KNOW_YOUR_SOUL_STORE", raising=False)
-    monkeypatch.delenv("SOUL_STORE", raising=False)
+    monkeypatch.delenv("KNOW_YOUR_CONTEXT_STORE", raising=False)
     parser = build_parser()
     args = parser.parse_args(["health", "{}"])
-    assert args.store == "know-your-soul.sqlite3"
+    assert args.store == "know-your-context.sqlite3"
+
+
+def test_cli_version_flag(capsys: pytest.CaptureFixture[str]) -> None:
+    from know_your_context import __version__
+
+    parser = build_parser()
+    with pytest.raises(SystemExit) as excinfo:
+        parser.parse_args(["--version"])
+    assert excinfo.value.code == 0
+    assert f"know-your-context {__version__}" in capsys.readouterr().out

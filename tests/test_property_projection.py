@@ -33,9 +33,9 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from pydantic import ValidationError as ValidationErrorOnFrozen
 
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.importer import injective_file_id, injective_section_key
-from know_your_soul.projection import (
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.importer import injective_file_id, injective_section_key
+from know_your_context.projection import (
     ARTIFACT_NAMES,
     ENRICHED_SUMMARY_MAX_LENGTH,
     FragmentCache,
@@ -49,7 +49,7 @@ from know_your_soul.projection import (
     _truncate_at_word_boundary,
     enriched_summary,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 
@@ -75,7 +75,7 @@ def _node(node_id: str, summary: str = "summary", **overrides: Any) -> Node:
         "kind": NodeKind.LEAF,
         "domain": PrimaryDomain.P1,
         "summary": summary,
-        "provenance": ("soul://corpus/x.md",),
+        "provenance": ("context://corpus/x.md",),
         "source_version_id": "sv-1",
         "created_at": NOW,
         "updated_at": NOW,
@@ -332,10 +332,10 @@ def _node_dict(node_id: str, summary: str = "plain summary") -> dict[str, Any]:
         "id": node_id,
         "label": summary or node_id,
         "file_type": "document",
-        "source_file": "soul://corpus/x.md",
+        "source_file": "context://corpus/x.md",
         "domain": "P1",
         "kind": "leaf",
-        "provenance": ["soul://corpus/x.md"],
+        "provenance": ["context://corpus/x.md"],
         "context_tags": ["P1"],
     }
 
@@ -770,7 +770,7 @@ def test_knowledge_events_respect_the_watermark(affecting: list[bool]) -> None:
 )
 @settings(derandomize=True, max_examples=20, deadline=None)
 def test_source_section_fragments_replicate_the_importer_id_walk(headings: list[str]) -> None:
-    from know_your_soul.projection import _HEADING_RE, _source_section_fragments
+    from know_your_context.projection import _HEADING_RE, _source_section_fragments
 
     lines = ["# Title", ""]
     for heading in headings:
@@ -850,7 +850,7 @@ def test_joined_secret_category_needs_at_least_two_fields() -> None:
 @given(specs=st.lists(st.tuples(st.just("n-a"), _PROSE), min_size=1, max_size=1))
 @settings(derandomize=True, max_examples=2, deadline=None)
 def test_manifest_records_the_pinned_build_identity(specs: list[tuple[str, str]]) -> None:
-    from know_your_soul.graphify_adapter import ADAPTER_VERSION, GRAPHIFY_PARTITIONER, PINNED_HUB_POLICY
+    from know_your_context.graphify_adapter import ADAPTER_VERSION, GRAPHIFY_PARTITIONER, PINNED_HUB_POLICY
 
     store = _populated_store(specs)
     receipt = _projector(store, _scratch("out")).rebuild()

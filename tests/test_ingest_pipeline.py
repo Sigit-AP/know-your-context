@@ -14,9 +14,9 @@ from pathlib import Path
 import pytest
 
 from _ingest_fakes import FailingExtractor, ToyExtractor, ToyResolver, write_fixture
-from know_your_soul.audit import AuditLog
-from know_your_soul.graph_model import file_node_id, make_node_id
-from know_your_soul.ingest.pipeline import (
+from know_your_context.audit import AuditLog
+from know_your_context.graph_model import file_node_id, make_node_id
+from know_your_context.ingest.pipeline import (
     IngestionBudget,
     IngestionPipeline,
     PathNotFoundError,
@@ -124,7 +124,7 @@ class TestGeneratedHint:
 
 class TestPathDiscipline:
     def test_missing_path_typed(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         with EventStore() as store:
             pipeline = make_pipeline(store)
@@ -133,7 +133,7 @@ class TestPathDiscipline:
             assert excinfo.value.code == "PATH_NOT_FOUND"
 
     def test_missing_path_still_audits(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
             pipeline = make_pipeline(store)
@@ -146,7 +146,7 @@ class TestPathDiscipline:
             assert payload["status"] == "failure"
 
     def test_single_file_mode(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -156,7 +156,7 @@ class TestPathDiscipline:
             assert report.totals["nodes"] == 1 + 2  # file node + alpha + beta
 
     def test_symlink_escape_per_file_failure(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         outside = tmp_path / "outside"
         outside.mkdir()
@@ -175,7 +175,7 @@ class TestPathDiscipline:
 
     def test_single_file_outside_nothing(self, tmp_path):
         """A directly-named file is its own root scope: it can always be read."""
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"solo.py": "def solo():\n    pass\n"})
         with EventStore() as store:
@@ -188,7 +188,7 @@ class TestPathDiscipline:
         assert PathNotReadableError("x").code == "PATH_NOT_READABLE"
 
     def test_unreadable_file_typed(self, tmp_path, monkeypatch):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         original = Path.read_bytes
@@ -207,7 +207,7 @@ class TestPathDiscipline:
             assert by_rel["b.py"].status == "proposed"
 
     def test_directory_itself_not_readable(self, tmp_path, monkeypatch):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         monkeypatch.setattr(Path, "is_dir", lambda self: (_ for _ in ()).throw(PermissionError("denied")))
@@ -221,7 +221,7 @@ class TestPathDiscipline:
 
 class TestFullIngest:
     def test_proposals_written(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -237,7 +237,7 @@ class TestFullIngest:
             assert names == {"alpha", "Gamma"}
 
     def test_symbols_have_stable_ids(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -249,7 +249,7 @@ class TestFullIngest:
             assert symbol.line == 1
 
     def test_contains_edges_rooted_at_file(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -259,7 +259,7 @@ class TestFullIngest:
             assert all(e.source == file_node_id("a.py") for e in edges)
 
     def test_refs_parked_pending(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> Gamma\n"})
         with EventStore() as store:
@@ -272,7 +272,7 @@ class TestFullIngest:
             assert report.totals["refs_parked"] == 1
 
     def test_resolver_runs_and_counts(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(
             tmp_path,
@@ -288,7 +288,7 @@ class TestFullIngest:
             assert pending == []
 
     def test_resolution_creates_edge(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(
             tmp_path,
@@ -303,7 +303,7 @@ class TestFullIngest:
             assert edges[0].target == target
 
     def test_unsupported_media_type_per_file(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {**SIMPLE, "blob.bin": "\x00\x01"})
         with EventStore() as store:
@@ -315,7 +315,7 @@ class TestFullIngest:
             assert report.stats["failed"] == 1
 
     def test_file_too_large_per_file(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {**SIMPLE, "big.py": "def b():\n    pass\n" * 5})
         budget = IngestionBudget(max_file_bytes=64)
@@ -327,7 +327,7 @@ class TestFullIngest:
             assert by_rel["a.py"].status == "proposed"
 
     def test_extractor_crash_is_per_file_failure(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {**SIMPLE, "boom.py": "def z():\n    pass\n"})
         with EventStore() as store:
@@ -338,7 +338,7 @@ class TestFullIngest:
             assert report.stats["proposed"] == 2
 
     def test_traversal_order_bytewise(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(
             tmp_path,
@@ -350,7 +350,7 @@ class TestFullIngest:
             assert order == sorted(order, key=lambda s: s.encode("utf-8"))
 
     def test_skip_dirs(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(
             tmp_path,
@@ -361,7 +361,7 @@ class TestFullIngest:
             assert report.stats["scanned"] == 2
 
     def test_non_recursive(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {**SIMPLE, "sub/deep.py": "def d():\n    pass\n"})
         with EventStore() as store:
@@ -369,7 +369,7 @@ class TestFullIngest:
             assert report.stats["scanned"] == 2
 
     def test_max_files_guard(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {f"f{i:02d}.py": f"def f{i}():\n    pass\n" for i in range(5)})
         with EventStore() as store:
@@ -389,7 +389,7 @@ class TestFullIngest:
             IngestionBudget(max_file_bytes=0)
 
     def test_extraction_version_recorded(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -399,7 +399,7 @@ class TestFullIngest:
             assert tracked is not None and tracked.extraction_version == 7
 
     def test_generated_hint_recorded(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"src/gen.py": "# Code generated by tool. DO NOT EDIT.\ndef g():\n    pass\n"})
         with EventStore() as store:
@@ -409,7 +409,7 @@ class TestFullIngest:
             assert row.generated_hint is True
 
     def test_empty_directory(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         with EventStore() as store:
             report = make_pipeline(store).ingest_path(tmp_path)
@@ -418,7 +418,7 @@ class TestFullIngest:
             assert report.totals["nodes"] == 0
 
     def test_input_sha256_deterministic(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -430,7 +430,7 @@ class TestFullIngest:
 
     def test_no_knowledge_domain_writes(self, tmp_path):
         """Proposal-only: the knowledge domain tables stay untouched."""
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -447,7 +447,7 @@ class TestFullIngest:
 
 class TestIncremental:
     def test_second_run_skips_all(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -458,7 +458,7 @@ class TestIncremental:
             assert report.stats["proposed"] == 0
 
     def test_skip_leaves_rows_intact(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -470,7 +470,7 @@ class TestIncremental:
             assert before == after
 
     def test_content_change_reingests_only_that_file(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -486,7 +486,7 @@ class TestIncremental:
             assert names == ["alpha", "beta2", "gamma"]
 
     def test_size_mtime_prefilter_skips_read(self, tmp_path, monkeypatch):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -504,7 +504,7 @@ class TestIncremental:
             assert reads == []
 
     def test_same_hash_new_mtime_not_reextracted(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -522,7 +522,7 @@ class TestIncremental:
             assert row.mtime == int(stat.st_mtime)
 
     def test_deleted_file_cascades(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -537,7 +537,7 @@ class TestIncremental:
             assert store.incoming_edges(gamma) == []
 
     def test_force_full_reingest(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -548,7 +548,7 @@ class TestIncremental:
             assert report.stats["skipped"] == 0
 
     def test_extraction_version_bump_reingests(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -564,7 +564,7 @@ class TestIncremental:
 
 class TestCascadeResurrect:
     def test_removed_node_edges_deleted(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n", "b.py": "def beta():\n    pass\n"})
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -578,7 +578,7 @@ class TestCascadeResurrect:
             assert store.symbol_by_node(beta) is None
 
     def test_ref_resurrected_when_target_vanishes(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n", "b.py": "def beta():\n    pass\n"})
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -594,7 +594,7 @@ class TestCascadeResurrect:
             assert pending[0].source_node_id == alpha
 
     def test_resurrected_ref_rebinds_on_next_pass(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n", "b.py": "def beta():\n    pass\n"})
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -611,7 +611,7 @@ class TestCascadeResurrect:
             assert [e.target for e in edges] == [beta_c]
 
     def test_refs_of_changed_file_replaced(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> gone\n"})
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -625,7 +625,7 @@ class TestCascadeResurrect:
             assert store.pending_unresolved_refs() == []
 
     def test_contains_edges_never_resurrected(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -636,8 +636,8 @@ class TestCascadeResurrect:
             assert store.pending_unresolved_refs() == []
 
     def test_cascade_atomic_when_budget_trips(self, tmp_path):
-        from know_your_soul.ingest.pipeline import IngestionBudgetError
-        from know_your_soul.store import EventStore
+        from know_your_context.ingest.pipeline import IngestionBudgetError
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -661,8 +661,8 @@ class TestCascadeResurrect:
 
 class TestBudget:
     def test_node_cap_fail_closed(self, tmp_path):
-        from know_your_soul.ingest.pipeline import IngestionBudgetError
-        from know_your_soul.store import EventStore
+        from know_your_context.ingest.pipeline import IngestionBudgetError
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -672,8 +672,8 @@ class TestBudget:
             assert "nodes" in str(excinfo.value)
 
     def test_edge_cap_fail_closed(self, tmp_path):
-        from know_your_soul.ingest.pipeline import IngestionBudgetError
-        from know_your_soul.store import EventStore
+        from know_your_context.ingest.pipeline import IngestionBudgetError
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -681,8 +681,8 @@ class TestBudget:
                 make_pipeline(store, budget=IngestionBudget(max_edges=1)).ingest_path(tmp_path)
 
     def test_ref_cap_fail_closed(self, tmp_path):
-        from know_your_soul.ingest.pipeline import IngestionBudgetError
-        from know_your_soul.store import EventStore
+        from know_your_context.ingest.pipeline import IngestionBudgetError
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> x\n-> y\n"})
         with EventStore() as store:
@@ -690,8 +690,8 @@ class TestBudget:
                 make_pipeline(store, budget=IngestionBudget(max_refs=1)).ingest_path(tmp_path)
 
     def test_budget_failure_audited(self, tmp_path):
-        from know_your_soul.ingest.pipeline import IngestionBudgetError
-        from know_your_soul.store import EventStore
+        from know_your_context.ingest.pipeline import IngestionBudgetError
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -705,7 +705,7 @@ class TestBudget:
             assert "INGESTION_BUDGET_EXCEEDED" in str(payload["error"])
 
     def test_budget_exact_boundary_ok(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n"})
         with EventStore() as store:
@@ -723,7 +723,7 @@ class TestAudit:
             return conn.execute("SELECT * FROM event_log WHERE kind='audit' ORDER BY event_seq").fetchall()
 
     def test_exactly_one_audit_event(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -733,7 +733,7 @@ class TestAudit:
             assert str(rows[0]["event_type"]) == "knowledge.ingest_directory"
 
     def test_single_file_operation_name(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -742,7 +742,7 @@ class TestAudit:
             assert str(rows[0]["event_type"]) == "knowledge.ingest_file"
 
     def test_audit_carries_sha_and_version(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -755,7 +755,7 @@ class TestAudit:
             assert refs["proposed"] == 2
 
     def test_audit_never_carries_content(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha_secret_name():\n    pass\n"})
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -764,7 +764,7 @@ class TestAudit:
             assert "alpha_secret_name" not in str(rows[0]["payload_json"])
 
     def test_two_invocations_two_events(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -774,7 +774,7 @@ class TestAudit:
             assert len(self._audit_rows(store)) == 2
 
     def test_audit_log_reuse(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -787,7 +787,7 @@ class TestAudit:
 
 class TestProposalSummary:
     def test_summary_counts(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -797,8 +797,8 @@ class TestProposalSummary:
             assert report.proposal["refs_parked"] == 0
 
     def test_primary_splits_suggested_when_oversized(self, tmp_path):
-        from know_your_soul.graph_model import SplitThresholds
-        from know_your_soul.store import EventStore
+        from know_your_context.graph_model import SplitThresholds
+        from know_your_context.store import EventStore
 
         files = {f"m{i}.py": f"def f{i}a():\n    pass\n\ndef f{i}b():\n    pass\n" for i in range(6)}
         write_fixture(tmp_path, files)
@@ -811,7 +811,7 @@ class TestProposalSummary:
             assert all(name.startswith("ingest-root:") for name in names)
 
     def test_no_splits_when_small(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -819,8 +819,8 @@ class TestProposalSummary:
             assert report.primary_suggestions == ()
 
     def test_kind_heterogeneity_triggers(self, tmp_path):
-        from know_your_soul.graph_model import SplitThresholds
-        from know_your_soul.store import EventStore
+        from know_your_context.graph_model import SplitThresholds
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n\nclass Beta:\n    pass\n"})
         with EventStore() as store:
@@ -835,8 +835,8 @@ class TestProposalSummary:
 
 class TestResolverDependency:
     def test_explicit_resolve_pending_without_resolver_typed(self, tmp_path, monkeypatch):
-        import know_your_soul.ingest.pipeline as pipeline_mod
-        from know_your_soul.store import EventStore
+        import know_your_context.ingest.pipeline as pipeline_mod
+        from know_your_context.store import EventStore
 
         monkeypatch.setattr(pipeline_mod, "_default_resolver", lambda: None)
         write_fixture(tmp_path, SIMPLE)
@@ -848,8 +848,8 @@ class TestResolverDependency:
             assert issubclass(ResolverUnavailableError, NotImplementedError)
 
     def test_ingest_resolve_true_without_resolver_marks_unavailable(self, tmp_path, monkeypatch):
-        import know_your_soul.ingest.pipeline as pipeline_mod
-        from know_your_soul.store import EventStore
+        import know_your_context.ingest.pipeline as pipeline_mod
+        from know_your_context.store import EventStore
 
         monkeypatch.setattr(pipeline_mod, "_default_resolver", lambda: None)
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n"})
@@ -861,7 +861,7 @@ class TestResolverDependency:
             assert len(store.pending_unresolved_refs()) == 1
 
     def test_resolve_false_keeps_pending(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n"})
         with EventStore() as store:
@@ -870,7 +870,7 @@ class TestResolverDependency:
             assert len(store.pending_unresolved_refs()) == 1
 
     def test_failed_ref_retry_via_resolver(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n"})
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -897,13 +897,13 @@ class TestRealSiblingIntegration:
     """
 
     def _pipeline(self, store):
-        from know_your_soul.ingest import extractor as real_extractor
-        from know_your_soul.resolve.resolver import ReferenceResolver
+        from know_your_context.ingest import extractor as real_extractor
+        from know_your_context.resolve.resolver import ReferenceResolver
 
         return IngestionPipeline(store, extractor=real_extractor, resolver=ReferenceResolver())
 
     def test_real_extraction_writes_symbols(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n\nclass Beta:\n    pass\n"})
         with EventStore() as store:
@@ -914,7 +914,7 @@ class TestRealSiblingIntegration:
             assert "alpha" in names and "Beta" in names
 
     def test_real_cross_file_import_resolves(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(
             tmp_path,
@@ -928,7 +928,7 @@ class TestRealSiblingIntegration:
             assert store.pending_unresolved_refs() == []
 
     def test_real_unresolvable_ref_fails_typed(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    ghost_xyz_undefined()\n"})
         with EventStore() as store:
@@ -940,7 +940,7 @@ class TestRealSiblingIntegration:
             assert failed[0].target_name == "ghost_xyz_undefined"
 
     def test_real_incremental_and_resurrect(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    beta()\n", "b.py": "def beta():\n    pass\n"})
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -955,7 +955,7 @@ class TestRealSiblingIntegration:
             assert len(store.failed_unresolved_refs()) >= 1
 
     def test_real_determinism_two_stores(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(
             tmp_path,
@@ -969,7 +969,7 @@ class TestRealSiblingIntegration:
         assert dumps[0] == dumps[1]
 
     def test_real_file_node_not_in_symbols(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n"})
         with EventStore() as store:
@@ -983,7 +983,7 @@ class TestRealSiblingIntegration:
 
 class TestReportShape:
     def test_to_dict_json_roundtrip(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {**SIMPLE, "x.bin": "\x00"})
         with EventStore() as store:
@@ -996,7 +996,7 @@ class TestReportShape:
             assert failed_entry["error_code"] == "UNSUPPORTED_MEDIA_TYPE"
 
     def test_file_report_skipped_shape(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -1010,8 +1010,8 @@ class TestReportShape:
             assert data["sha256"] is not None
 
     def test_render_summary_line(self, tmp_path):
-        from know_your_soul.ops.ingest_cli import render_summary
-        from know_your_soul.store import EventStore
+        from know_your_context.ops.ingest_cli import render_summary
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n", "b.py": "def beta():\n    pass\n"})
         with EventStore() as store:
@@ -1023,9 +1023,9 @@ class TestReportShape:
             assert "duration" in line
 
     def test_render_summary_guards_and_suggestions(self, tmp_path):
-        from know_your_soul.graph_model import SplitThresholds
-        from know_your_soul.ops.ingest_cli import render_summary
-        from know_your_soul.store import EventStore
+        from know_your_context.graph_model import SplitThresholds
+        from know_your_context.ops.ingest_cli import render_summary
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {f"f{i}.py": f"def f{i}():\n    pass\n" for i in range(4)})
         with EventStore() as store:
@@ -1038,7 +1038,7 @@ class TestReportShape:
             assert "primary_suggestions" in line
 
     def test_canonical_dump_logical_form_excludes_rowids(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n"})
         with EventStore() as store:
@@ -1050,7 +1050,7 @@ class TestReportShape:
             assert all("edge_id" in edge for edge in physical["graph_edges"])
 
     def test_normalize_resolution_mapping_and_attrs(self):
-        from know_your_soul.ingest.pipeline import _normalize_resolution
+        from know_your_context.ingest.pipeline import _normalize_resolution
 
         assert _normalize_resolution({"resolved": 1, "failed": 2, "pending": 3}) == {
             "resolved": 1,
@@ -1066,7 +1066,7 @@ class TestReportShape:
         assert _normalize_resolution(Batch()) == {"resolved": 4, "failed": 5, "pending": 6}
 
     def test_empty_file_proposed_with_file_node(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"empty.py": ""})
         with EventStore() as store:
@@ -1075,7 +1075,7 @@ class TestReportShape:
             assert report.totals["nodes"] == 1  # file node only
 
     def test_refs_only_file(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"a.py": "-> orphan\n"})
         with EventStore() as store:
@@ -1086,7 +1086,7 @@ class TestReportShape:
 
     def test_store_file_inside_root_excluded(self, tmp_path):
         """The store living inside the walked root is never ingested."""
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -1095,7 +1095,7 @@ class TestReportShape:
             assert store.get_file("s.sqlite3") is None
 
     def test_deeply_nested_ordering(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(
             tmp_path,
@@ -1106,7 +1106,7 @@ class TestReportShape:
             assert [e.relpath for e in report.files] == ["a.py", "z/b.py", "z/y/x/deep.py"]
 
     def test_deleted_stats_zero_when_not_incremental(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -1119,7 +1119,7 @@ class TestReportShape:
             assert store.get_file("b.py") is not None
 
     def test_single_file_deleted_then_missing_audit(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {"solo.py": "def solo():\n    pass\n"})
         with EventStore(str(tmp_path / "s.sqlite3")) as store:
@@ -1138,7 +1138,7 @@ class TestReportShape:
 
 class TestDeterminism:
     def test_repeated_ingest_same_report_shape(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, {**SIMPLE, "c.py": "def gamma():\n    pass\n-> alpha\n"})
         reports = []
@@ -1153,7 +1153,7 @@ class TestDeterminism:
         assert r1.resolution == r2.resolution
 
     def test_canonical_dump_helper(self, tmp_path):
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as s1, EventStore() as s2:
@@ -1163,7 +1163,7 @@ class TestDeterminism:
 
     def test_no_wallclock_in_v3_rows(self, tmp_path):
         """The only volatile v3 column is unresolved_refs.first_seen."""
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         write_fixture(tmp_path, SIMPLE)
         with EventStore() as store:
@@ -1175,6 +1175,6 @@ class TestDeterminism:
 
 
 def canonical_dump_of(store) -> str:
-    from know_your_soul.ingest.pipeline import canonical_ingestion_dump
+    from know_your_context.ingest.pipeline import canonical_ingestion_dump
 
     return canonical_ingestion_dump(store)

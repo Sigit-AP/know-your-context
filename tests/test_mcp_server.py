@@ -24,9 +24,9 @@ from mcp.server.lowlevel import Server
 from mcp.shared.exceptions import MCPError
 from mcp.shared.memory import create_client_server_memory_streams
 
-from know_your_soul import runtime_guard
-from know_your_soul.contracts import DEFAULT_MAX_TOKEN_BUDGET, QueryRequest
-from know_your_soul.domain import (
+from know_your_context import runtime_guard
+from know_your_context.contracts import DEFAULT_MAX_TOKEN_BUDGET, QueryRequest
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -36,9 +36,9 @@ from know_your_soul.domain import (
     RelationKind,
     canonical_json,
 )
-from know_your_soul.projection import GraphProjector
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.projection import GraphProjector
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 
 # The MCP tool surface (contract v2 — operator ruling 2026-10-26, progress.md;
 # addendum docs/contracts/retrieval-verbs-v2.md): the frozen ten v1 tools plus
@@ -105,7 +105,7 @@ def _child(node_id: str, *, summary: str, tags: tuple[str, ...] = ()) -> Node:
         domain=PrimaryDomain.P1,
         summary=summary,
         context_tags=tags,
-        provenance=("soul://corpus/lesson.md",),
+        provenance=("context://corpus/lesson.md",),
         source_version_id="sv-test",
     )
 
@@ -122,7 +122,7 @@ def _seeded(tmp_path: Path) -> tuple[EventStore, GraphProjector, KnowledgeServic
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -135,7 +135,7 @@ def _seeded(tmp_path: Path) -> tuple[EventStore, GraphProjector, KnowledgeServic
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -146,7 +146,7 @@ def _seeded(tmp_path: Path) -> tuple[EventStore, GraphProjector, KnowledgeServic
 
 
 def _server(tmp_path: Path) -> tuple[EventStore, KnowledgeService, Server]:
-    from know_your_soul.mcp_server import build_server
+    from know_your_context.mcp_server import build_server
 
     store, _, service = _seeded(tmp_path)
     server = build_server(service, graph_root=tmp_path / "graph")
@@ -380,7 +380,7 @@ def test_unknown_tool_is_a_typed_error_not_a_success(tmp_path: Path) -> None:
 
 
 def test_server_requires_an_existing_graph_root(tmp_path: Path) -> None:
-    from know_your_soul.mcp_server import build_server
+    from know_your_context.mcp_server import build_server
 
     _, _, service = _seeded(tmp_path)
     with pytest.raises(Exception) as caught:
@@ -474,7 +474,7 @@ def _node_payload(node_id: str = "n-mcp") -> dict[str, Any]:
         "kind": "leaf",
         "domain": "P1",
         "summary": "Written through MCP",
-        "provenance": ["soul://corpus/lesson.md"],
+        "provenance": ["context://corpus/lesson.md"],
         "source_version_id": "sv-test",
     }
 
@@ -484,7 +484,7 @@ def _evidence_payload(evidence_id: str, node_id: str) -> dict[str, Any]:
         "evidence_id": evidence_id,
         "node_id": node_id,
         "source_version_id": "sv-test",
-        "source_uri": "soul://corpus/lesson.md",
+        "source_uri": "context://corpus/lesson.md",
         "observed_at": "2026-10-20T00:00:00+00:00",
         "context_tags": ["gates"],
         "independence_key": evidence_id,
@@ -590,7 +590,7 @@ def test_review_and_improvement_flow(tmp_path: Path) -> None:
 
 
 def test_resources_are_sanitized_and_size_capped(tmp_path: Path) -> None:
-    from know_your_soul.mcp_server import build_server
+    from know_your_context.mcp_server import build_server
 
     store, projector, service = _seeded(tmp_path)
     # A hostile label with ANSI escapes and zero-width markup must never reach
@@ -605,7 +605,7 @@ def test_resources_are_sanitized_and_size_capped(tmp_path: Path) -> None:
             listed = await session.list_resources()
             uris = {str(resource.uri) for resource in listed.resources}
             assert uris, "the server must expose sanitized resources"
-            assert all(uri.startswith("soul://") for uri in uris)
+            assert all(uri.startswith("context://") for uri in uris)
             assert not any("graphify" in uri for uri in uris)
             for resource in listed.resources:
                 read = await session.read_resource(str(resource.uri))
@@ -618,7 +618,7 @@ def test_resources_are_sanitized_and_size_capped(tmp_path: Path) -> None:
                 payload = json.loads(text)
                 assert len(text.encode("utf-8")) <= 65_536
                 assert text == canonical_json(payload)
-            manifest = await session.read_resource("soul://projection/manifest")
+            manifest = await session.read_resource("context://projection/manifest")
             manifest_contents = manifest.contents[0]
             assert isinstance(manifest_contents, types.TextResourceContents)
             manifest_payload = json.loads(manifest_contents.text)
@@ -634,11 +634,11 @@ def test_unknown_resource_uri_fails_closed(tmp_path: Path) -> None:
     async def scenario() -> None:
         async with _session(server) as session:
             with pytest.raises(MCPError):
-                await session.read_resource("soul://does-not-exist")
+                await session.read_resource("context://does-not-exist")
             with pytest.raises(MCPError):
                 await session.read_resource("file:///etc/passwd")
             with pytest.raises(MCPError):
-                await session.read_resource("soul://projection/../../etc/passwd")
+                await session.read_resource("context://projection/../../etc/passwd")
 
     _run(scenario)
 
@@ -700,8 +700,8 @@ def test_f3_http_transport_wraps_streamable_app_with_boundary_auth(
     keyless remote *and* keyless loopback callers, and pass keyed callers to
     the real MCP streamable-http app.
     """
-    from know_your_soul import mcp_server
-    from know_your_soul.http_api import BoundaryMiddleware
+    from know_your_context import mcp_server
+    from know_your_context.http_api import BoundaryMiddleware
 
     _seeded(tmp_path)  # graph root + store exist for main()'s startup path
 
@@ -757,7 +757,7 @@ def test_f3_http_transport_wraps_streamable_app_with_boundary_auth(
 
 def test_f3_http_transport_without_key_serves_loopback_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """No key configured: loopback is served, remote clients are denied."""
-    from know_your_soul import mcp_server
+    from know_your_context import mcp_server
 
     _seeded(tmp_path)
 

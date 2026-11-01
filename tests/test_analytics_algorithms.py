@@ -25,7 +25,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.algorithms import (
+from know_your_context.analytics.algorithms import (
     DEFAULT_KATZ_ALPHA,
     GraphCapExceededError,
     compute_assortativity,
@@ -1878,7 +1878,7 @@ def test_cap_error_string_mentions_cap_and_actual() -> None:
 
 
 def test_triad_classes_constant_is_complete() -> None:
-    from know_your_soul.analytics.algorithms import TRIAD_CLASSES
+    from know_your_context.analytics.algorithms import TRIAD_CLASSES
 
     assert len(TRIAD_CLASSES) == 16
     assert len(set(TRIAD_CLASSES)) == 16
@@ -1898,7 +1898,7 @@ def test_triad_classes_constant_is_complete() -> None:
     ],
 )
 def test_default_constants_are_positive_ints(constant_name: str) -> None:
-    import know_your_soul.analytics.algorithms as algorithms
+    import know_your_context.analytics.algorithms as algorithms
 
     value = getattr(algorithms, constant_name)
     assert isinstance(value, int) and value >= 1

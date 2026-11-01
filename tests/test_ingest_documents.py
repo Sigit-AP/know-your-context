@@ -13,13 +13,13 @@ import hashlib
 import pytest
 
 from _doc_fixtures import build_encrypted_pdf_bytes, build_pdf_bytes
-from know_your_soul.graph_model import (
+from know_your_context.graph_model import (
     SplitThresholds,
     file_node_id,
     make_node_id,
     parse_node_id,
 )
-from know_your_soul.ingest.documents import (
+from know_your_context.ingest.documents import (
     DEFAULT_MAX_CHUNK_CHARS,
     DOCUMENT_EXTENSION_MAP,
     DOCUMENT_EXTRACTION_VERSION,
@@ -39,7 +39,7 @@ from know_your_soul.ingest.documents import (
     split_text_blocks,
     suggest_primary_splits,
 )
-from know_your_soul.ingest.extractor import (
+from know_your_context.ingest.extractor import (
     EXTRACTION_VERSION,
     FileTooLargeError,
     SourceDecodeError,

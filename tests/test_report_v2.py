@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.report.report_v2`` (ATM plan F-C3).
+"""Tests for ``know_your_context.report.report_v2`` (ATM plan F-C3).
 
 The report is a canonical structured dict plus a deterministic markdown
 render. Every count flows through the single ``is_real_node`` predicate so
@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import pytest
 
-from know_your_soul.domain import canonical_json
-from know_your_soul.report.report_v2 import (
+from know_your_context.domain import canonical_json
+from know_your_context.report.report_v2 import (
     CONFIDENCE_BUCKETS,
     ReportIntegrityError,
     build_graph_report,
@@ -74,7 +74,7 @@ def _graph(nodes: list[dict], links: list[dict] | None = None) -> dict:
     return {
         "directed": True,
         "multigraph": False,
-        "graph": {"schema_version": 1, "generator": "know-your-soul", "partitioner": "test"},
+        "graph": {"schema_version": 1, "generator": "know-your-context", "partitioner": "test"},
         "nodes": nodes,
         "links": links or [],
         "hyperedges": [],
@@ -286,7 +286,7 @@ def test_render_markdown_sections_and_content() -> None:
     graph = _graph([_node("a", community_sig="c1"), _node("b", community_sig="c1")], [_link("a", "b")])
     report = build_graph_report(graph, _manifest(watermark=1), store_watermark=2)
     text = render_markdown(report)
-    assert text.startswith("# SOUL Knowledge Graph Report (v2)")
+    assert text.startswith("# Know Your Context Graph Report (v2)")
     for heading in (
         "## Counts",
         "## Confidence distribution",

@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.analytics.bridges`` (ATM F-A5).
+"""Tests for ``know_your_context.analytics.bridges`` (ATM F-A5).
 
 Pins the "surprising connection" contract for knowledge graphs: candidate
 edges cross primary domains and/or communities, the surprise score is our own
@@ -14,11 +14,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.bridges import (
+from know_your_context.analytics.bridges import (
     DEFAULT_TOP_N,
     find_bridges,
 )
-from know_your_soul.domain import canonical_json
+from know_your_context.domain import canonical_json
 
 # ------------------------------------------------------------------ helpers
 

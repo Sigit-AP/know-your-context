@@ -14,8 +14,8 @@ import re
 import pytest
 from tree_sitter_language_pack import get_parser
 
-from know_your_soul.graph_model import CoreNodeKind
-from know_your_soul.ingest.languages import (
+from know_your_context.graph_model import CoreNodeKind
+from know_your_context.ingest.languages import (
     EXTENSION_MAP,
     LANGUAGES,
     ImportRule,

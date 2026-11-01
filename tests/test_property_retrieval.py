@@ -27,9 +27,9 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.contracts import AmbiguousDomain, UnknownDomain
-from know_your_soul.domain import PrimaryDomain
-from know_your_soul.retrieval import (
+from know_your_context.contracts import AmbiguousDomain, UnknownDomain
+from know_your_context.domain import PrimaryDomain
+from know_your_context.retrieval import (
     DOMAIN_ALIASES,
     STOPWORDS,
     BudgetedTraversal,
@@ -230,7 +230,7 @@ def _jsonable(depth: int = 0) -> st.SearchStrategy[Any]:
 @given(payload=_jsonable())
 @settings(derandomize=True, max_examples=50, deadline=None)
 def test_estimated_tokens_matches_the_frozen_estimator(payload: Any) -> None:
-    from know_your_soul.domain import canonical_json
+    from know_your_context.domain import canonical_json
 
     expected = -(-len(canonical_json(payload).encode("utf-8")) // 4)
     assert estimated_tokens(payload) == expected

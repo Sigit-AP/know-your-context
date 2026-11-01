@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from _extraction_helpers import make_args, make_method, make_payload, seed_engine
-from know_your_soul.serve.webview import WebviewApp
+from know_your_context.serve.webview import WebviewApp
 
 
 def _seed(tmp_path: Path):
@@ -32,7 +32,7 @@ class TestExtractionsPayload:
 
     def test_missing_sidecar_is_an_empty_queue(self, tmp_path: Path) -> None:
         # No extraction was ever submitted: the sidecar DB does not exist.
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         store = EventStore(tmp_path / "soul.sqlite3")
         app = WebviewApp(store.db_path)

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.ingest.extractor import (
+from know_your_context.ingest.extractor import (
     MAX_SOURCE_FILE_SIZE_BYTES,
     FileTooLargeError,
     IngestError,

@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from _retrieval_v2_helpers import add_file, add_symbol
-from know_your_soul.retrieval_v2 import (
+from know_your_context.retrieval_v2 import (
     FTS_TABLE,
     META_TABLE,
     build_fts_query,
@@ -22,7 +22,7 @@ from know_your_soul.retrieval_v2 import (
     fts_available,
     rebuild_fts_index,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 
 @pytest.fixture

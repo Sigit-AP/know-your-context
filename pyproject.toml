@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "know-your-soul"
+name = "know-your-context"
 version = "0.3.0"
-description = "Standalone deterministic knowledge and learning graph for Hermes Agent; no model, provider, or vector calls."
+description = "Deterministic context for AI agents across three pillars — multi-modal knowledge, code intelligence, and auditable memory. No model, provider, or vector calls."
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.14,<3.15"
@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
-know-your-soul = "know_your_soul.cli:main"
+know-your-context = "know_your_context.cli:main"
 
 [dependency-groups]
 dev = [
@@ -37,7 +37,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/know_your_soul"]
+packages = ["src/know_your_context"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

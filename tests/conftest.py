@@ -1,4 +1,4 @@
-"""Shared fixtures for the know-your-soul test suite."""
+"""Shared fixtures for the know-your-context test suite."""
 
 from __future__ import annotations
 

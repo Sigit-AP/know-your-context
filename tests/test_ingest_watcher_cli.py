@@ -1,4 +1,4 @@
-"""CLI tests for ``know-your-soul watch`` (SUB-92).
+"""CLI tests for ``know-your-context watch`` (SUB-92).
 
 OPS surface only — like ``ingest``/``export`` it never joins the frozen
 fourteen knowledge operations. Exit codes: 0 completed, 1 typed failure
@@ -11,8 +11,8 @@ import json
 import os
 from pathlib import Path
 
-from know_your_soul.cli import main
-from know_your_soul.ingest.watcher import ENV_NO_WATCH
+from know_your_context.cli import main
+from know_your_context.ingest.watcher import ENV_NO_WATCH
 
 FIXED_NS = 1_700_000_000_000_000_000
 
@@ -69,7 +69,7 @@ class TestWatchCliOnce:
         store = tmp_path / "s.sqlite3"
         assert run_cli(["--store", str(store), "watch", str(root), "--once"]) == 0
         capsys.readouterr()
-        from know_your_soul.store import EventStore
+        from know_your_context.store import EventStore
 
         with EventStore(str(store)) as reopened:
             assert sorted(row.path for row in reopened.list_files()) == ["mod.py"]
@@ -156,7 +156,7 @@ class TestWatchCliUsage:
         assert "full_scan_ceiling" in json.loads(capsys.readouterr().err)["error"]["message"]
 
     def test_watch_not_a_knowledge_operation(self):
-        from know_your_soul.http_api import KNOWLEDGE_OPERATIONS, OPS_OPERATIONS
+        from know_your_context.http_api import KNOWLEDGE_OPERATIONS, OPS_OPERATIONS
 
         assert "watch" not in KNOWLEDGE_OPERATIONS
         assert "watch" not in OPS_OPERATIONS

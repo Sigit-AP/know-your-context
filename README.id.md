@@ -2,12 +2,12 @@
 
 [🇬🇧 English](README.md) | **🇮🇩 Bahasa Indonesia**
 
-# Know Your Soul
+# Know Your Context
 
-**Graph pengetahuan lokal yang teraudit untuk agent — memori deterministik, ingestion universal, dan server 50-agent. Tanpa model di dalam.**
+**Konteks untuk agent, dibangun di atas tiga pilar — pengetahuan multi-modal, kecerdasan kode deterministik, dan memori teraudit. Semua lokal. Tanpa model di dalam.**
 
-[![CI](https://github.com/Sigit-AP/know-your-soul/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Sigit-AP/know-your-soul/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/know-your-soul)](https://pypi.org/project/know-your-soul/)
+[![CI](https://github.com/Sigit-AP/know-your-context/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Sigit-AP/know-your-context/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/know-your-context)](https://pypi.org/project/know-your-context/)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue)](https://www.python.org/)
 [![Lisensi: Apache 2.0](https://img.shields.io/badge/Lisensi-Apache%202.0-blue)](LICENSE)
 
@@ -36,7 +36,7 @@ Agent membaca ulang dokumen yang sama di setiap sesi dan membayar harga token
 penuh untuk itu. Lebih buruk lagi, apa yang dipelajari agent hari ini hilang
 besok — tidak ada yang dinilai, berversi, atau teraudit.
 
-Know Your Soul adalah memori yang memperbaiki keduanya. Ia menjawab dari graph
+Know Your Context adalah memori yang memperbaiki keduanya. Ia menjawab dari graph
 lokal, bukan dari korpus mentah (**terukur: 466× lebih sedikit token pada korpus
 campuran 52 file**), setiap jawaban membawa provenance dan id audit, dan setiap
 perubahan graph melewati proposal yang kamu setujui — dengan rollback byte-exact.
@@ -50,19 +50,30 @@ pernah menebak.
 > `submit_extraction` — terikat hash file sumber, bertanda `agent-extracted`,
 > digate oleh review. Produknya sendiri tidak pernah memanggil model.
 
+Know Your Context memberi agent konteksnya dari tiga pilar:
+
+- **Knowledge** — pengetahuan multi-modal lintas domain: markdown, PDF,
+  teks biasa, dan gambar atau dokumen hasil scan lewat ekstraksi agent
+  eksternal (kontrak `submit_extraction`).
+- **Code intelligence** — pemahaman kode deterministik: ekstraksi AST,
+  symbol lookup, call hierarchy, lintas 19 bahasa.
+- **Auditable memory** — memori pembelajaran yang deterministik, ternilai,
+  berversi, dan rollback-exact. Pilar ini milik kita; belum ada yang lain
+  mengirimkannya.
+
 ## Instalasi
 
 **Butuh:** Python 3.14
 
 ```bash
-pip install know-your-soul
+pip install know-your-context
 ```
 
 Dari source:
 
 ```bash
-git clone https://github.com/Sigit-AP/know-your-soul.git
-cd know-your-soul
+git clone https://github.com/Sigit-AP/know-your-context.git
+cd know-your-context
 uv sync --frozen
 ```
 
@@ -74,24 +85,24 @@ fallback ke extractor Python — kedua engine menghasilkan graph yang byte-ident
 
 ```bash
 # catat pengetahuan (teraudit, ternilai)
-know-your-soul --store demo.sqlite3 log-event \
+know-your-context --store demo.sqlite3 log-event \
   '{"node_id":"n1","parent_id":"p1-root","domain":"P1",
     "summary":"Selalu verifikasi sebelum mengklaim selesai",
-    "provenance":["soul://demo"],"source_version_id":"demo-v1"}'
+    "provenance":["context://demo"],"source_version_id":"demo-v1"}'
 
-know-your-soul --store demo.sqlite3 rebuild
-know-your-soul --store demo.sqlite3 query \
+know-your-context --store demo.sqlite3 rebuild
+know-your-context --store demo.sqlite3 query \
   '{"purpose":"verify before claiming done","token_budget":400}'
 
 # ingest kode dan dokumen (proposal-only, kontrak v3)
-know-your-soul ingest-directory ./my-project
-know-your-soul watch ./my-project --interval 2
+know-your-context ingest-directory ./my-project
+know-your-context watch ./my-project --interval 2
 
 # lihat semuanya
-know-your-soul webview                 # web view interaktif, loopback + token
-know-your-soul serve --daemon          # superpower server 50-agent
-know-your-soul report                  # god nodes, koneksi mengejutkan, pertanyaan
-know-your-soul diagnose                # 11 self-check, exit code mencerminkan kesehatan
+know-your-context webview                 # web view interaktif, loopback + token
+know-your-context serve --daemon          # superpower server 50-agent
+know-your-context report                  # god nodes, koneksi mengejutkan, pertanyaan
+know-your-context diagnose                # 11 self-check, exit code mencerminkan kesehatan
 ```
 
 ## Benchmark
@@ -128,10 +139,15 @@ ter-ack.
 ekstraksi (Rust + Python), lintas proses, lintas hash seed. Kalau angkanya
 berubah, inputnya yang berubah.
 
-**Ingestion universal.** Sembilan belas bahasa pemrograman via tree-sitter
-(kernel Rust di jalur panas; fallback Python byte-identik menutup sisanya),
-plus text layer PDF, markdown structure-aware, dan teks biasa. PDF hasil scan
-ditandai jujur (`no_text_layer`), tidak dipalsukan.
+**Ingestion pengetahuan.** Markdown structure-aware, text layer PDF, dan teks
+biasa. PDF hasil scan ditandai jujur (`no_text_layer`), tidak dipalsukan, dan
+agent dengan model vision men-submit ekstraksi gambar/scan lewat
+`submit_extraction` — terikat hash, digate review, tidak pernah auto-promote.
+
+**Code intelligence.** Sembilan belas bahasa pemrograman via tree-sitter:
+kernel Rust di jalur panas dan fallback Python byte-identik menutup sisanya.
+Symbol lookup FTS5, call hierarchy, dan retrieval berbudget token di atas
+graph yang dihasilkan.
 
 **Hierarki yang mengenal dirinya.** Node primary memegang tanggung jawab
 tunggal, turun ke kedalaman arbitrer, dan terhubung ke primary lain lewat
@@ -158,7 +174,7 @@ manifest generasi.
 
 ## Web View
 
-`know-your-soul webview` menjalankan viewer loopback-only (token di URL, cookie
+`know-your-context webview` menjalankan viewer loopback-only (token di URL, cookie
 sesi setelah load pertama, anti DNS-rebinding, tanpa CORS). Tujuh tab:
 
 <p align="center">
@@ -224,10 +240,10 @@ MCP server mengekspos empat belas operasi knowledge beku (`knowledge_query`,
 
 ## Konfigurasi
 
-Berlapis: defaults → file TOML → environment variable (`KNOW_YOUR_SOUL_*`) →
+Berlapis: defaults → file TOML → environment variable (`KNOW_YOUR_CONTEXT_*`) →
 flag CLI. `config describe` mencetak setiap key dengan provenance-nya; secret
 teredaksi di semua permukaan. Kill switch tersedia untuk setiap optimasi
-(`KNOW_YOUR_SOUL_NO_GROUP_COMMIT`, `KYS_DISABLE_RUST_KERNEL`, …).
+(`KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT`, `KYS_DISABLE_RUST_KERNEL`, …).
 
 ## Keamanan
 
@@ -242,7 +258,7 @@ teredaksi di semua permukaan. Kill switch tersedia untuk setiap optimasi
 
 ```bash
 uv sync --frozen
-uv run pytest -q                 # 6.782 test
+uv run pytest -q                 # 6.830 test
 uv run pyright
 uv run ruff check
 uv run python bench/run.py run   # 24/24 diterima

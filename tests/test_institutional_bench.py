@@ -160,9 +160,9 @@ def test_algorithms_module_autodiscovered_when_landed(harness: Any, monkeypatch:
             },
         }
 
-    stub = types.ModuleType("know_your_soul.analytics.algorithms")
+    stub = types.ModuleType("know_your_context.analytics.algorithms")
     stub.compute_clustering = stub_clustering  # type: ignore[attr-defined]
-    monkeypatch.setitem(sys.modules, "know_your_soul.analytics.algorithms", stub)
+    monkeypatch.setitem(sys.modules, "know_your_context.analytics.algorithms", stub)
 
     datasets = harness.build_datasets()
     lcc = harness._kernel_lcc(datasets, repeats=1, quick=True, max_n=64)

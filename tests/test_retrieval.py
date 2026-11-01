@@ -19,12 +19,12 @@ from __future__ import annotations
 
 import pytest
 
-from know_your_soul.contracts import (
+from know_your_context.contracts import (
     AmbiguousDomain,
     UnknownDomain,
 )
-from know_your_soul.domain import PrimaryDomain
-from know_your_soul.retrieval import (
+from know_your_context.domain import PrimaryDomain
+from know_your_context.retrieval import (
     DOMAIN_ALIASES,
     STOPWORDS,
     BudgetedTraversal,
@@ -49,7 +49,7 @@ def _node(node_id: str, *, kind: str = "leaf", label: str = "", tags: tuple[str,
         "label": label or node_id,
         "context_tags": list(tags),
         "domain": "P1",
-        "provenance": ["soul://corpus/x.md"],
+        "provenance": ["context://corpus/x.md"],
         "source_file": "x.md",
     }
 
@@ -141,7 +141,7 @@ def test_ranking_ignores_provenance_and_source_paths() -> None:
         {
             **_node("a"),
             "label": "alpha",
-            "provenance": ["soul://corpus/uniqueprovterm.md"],
+            "provenance": ["context://corpus/uniqueprovterm.md"],
             "source_file": "uniqueprovterm.md",
         },
         {**_node("b"), "label": "alpha"},

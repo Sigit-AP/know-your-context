@@ -1,11 +1,11 @@
 //! Rust-side sanity tests: every registry language parses its fixture,
 //! extraction is deterministic across runs, and ids follow the frozen format.
 
-use know_your_soul_kernel::walker::{
+use know_your_context_kernel::walker::{
     extract_file, extract_source, make_node_id, sort_edges_canonical, sort_nodes_canonical,
     sort_refs_canonical,
 };
-use know_your_soul_kernel::registry;
+use know_your_context_kernel::registry;
 
 const FIXTURES: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../tests/fixtures/ingest");
 

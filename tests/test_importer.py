@@ -16,10 +16,10 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.domain import NodeKind, PrimaryDomain, RelationKind
-from know_your_soul.importer import ImportManifestError, SeedImporter, injective_file_id, injective_section_key
-from know_your_soul.source_registry import SourceKind, SourceRegistry
-from know_your_soul.store import EventStore
+from know_your_context.domain import NodeKind, PrimaryDomain, RelationKind
+from know_your_context.importer import ImportManifestError, SeedImporter, injective_file_id, injective_section_key
+from know_your_context.source_registry import SourceKind, SourceRegistry
+from know_your_context.store import EventStore
 
 ALPHA = (
     b"# Alpha Lessons\n"
@@ -54,10 +54,10 @@ def test_import_requires_an_explicit_domain_mapping(tmp_path: Path) -> None:
     importer = _importer(store, tmp_path)
     source = _write(tmp_path / "alpha.md", ALPHA)
     with pytest.raises(TypeError):
-        importer.import_file(source, source_uri="soul://corpus/alpha.md")  # type: ignore[call-arg]
+        importer.import_file(source, source_uri="context://corpus/alpha.md")  # type: ignore[call-arg]
     with pytest.raises(TypeError):
-        importer.import_file(source, domain="P1", source_uri="soul://corpus/alpha.md")  # type: ignore[arg-type]
-    receipt = importer.import_file(source, domain=PrimaryDomain.P3, source_uri="soul://corpus/alpha.md")
+        importer.import_file(source, domain="P1", source_uri="context://corpus/alpha.md")  # type: ignore[arg-type]
+    receipt = importer.import_file(source, domain=PrimaryDomain.P3, source_uri="context://corpus/alpha.md")
     assert receipt.domain is PrimaryDomain.P3
     for node_id in receipt.node_ids:
         node = store.current_node(node_id)
@@ -69,7 +69,7 @@ def test_seven_primary_roots_exist_after_import(tmp_path: Path) -> None:
     store = _store(tmp_path)
     importer = _importer(store, tmp_path)
     importer.import_file(
-        _write(tmp_path / "alpha.md", ALPHA), domain=PrimaryDomain.P1, source_uri="soul://corpus/alpha.md"
+        _write(tmp_path / "alpha.md", ALPHA), domain=PrimaryDomain.P1, source_uri="context://corpus/alpha.md"
     )
     root = store.current_node("KROOT")
     assert root is not None and root.kind is NodeKind.ROOT
@@ -87,7 +87,7 @@ def test_provenance_and_source_version_are_preserved(tmp_path: Path) -> None:
     store = _store(tmp_path)
     importer = _importer(store, tmp_path)
     source = _write(tmp_path / "alpha.md", ALPHA)
-    receipt = importer.import_file(source, domain=PrimaryDomain.P1, source_uri="soul://corpus/alpha.md")
+    receipt = importer.import_file(source, domain=PrimaryDomain.P1, source_uri="context://corpus/alpha.md")
     active = SourceRegistry(store).active(SourceKind.OPERATOR_IMPORT)
     assert active is not None
     assert receipt.source_version_id == active.source_version_id
@@ -95,17 +95,17 @@ def test_provenance_and_source_version_are_preserved(tmp_path: Path) -> None:
     node = store.current_node(receipt.node_ids[0])
     assert node is not None
     assert node.source_version_id == receipt.source_version_id
-    assert "soul://corpus/alpha.md" in node.provenance
+    assert "context://corpus/alpha.md" in node.provenance
 
 
 def test_duplicate_import_is_idempotent(tmp_path: Path) -> None:
     store = _store(tmp_path)
     importer = _importer(store, tmp_path)
     source = _write(tmp_path / "alpha.md", ALPHA)
-    first = importer.import_file(source, domain=PrimaryDomain.P1, source_uri="soul://corpus/alpha.md")
+    first = importer.import_file(source, domain=PrimaryDomain.P1, source_uri="context://corpus/alpha.md")
     events = store.event_count()
     watermark = store.knowledge_high_watermark()
-    second = importer.import_file(source, domain=PrimaryDomain.P1, source_uri="soul://corpus/alpha.md")
+    second = importer.import_file(source, domain=PrimaryDomain.P1, source_uri="context://corpus/alpha.md")
     assert second.idempotent_replay is True
     assert second.events_appended == 0
     assert second.source_version_id == first.source_version_id
@@ -120,8 +120,8 @@ def test_stable_file_scoped_ids_follow_the_relative_name(tmp_path: Path) -> None
     importer = _importer(store, tmp_path)
     one = _write(tmp_path / "one" / "alpha.md", ALPHA)
     two = _write(tmp_path / "two" / "alpha.md", ALPHA)
-    first = importer.import_file(one, domain=PrimaryDomain.P1, source_uri="soul://corpus/alpha.md")
-    second = importer.import_file(two, domain=PrimaryDomain.P1, source_uri="soul://mirror/alpha.md")
+    first = importer.import_file(one, domain=PrimaryDomain.P1, source_uri="context://corpus/alpha.md")
+    second = importer.import_file(two, domain=PrimaryDomain.P1, source_uri="context://mirror/alpha.md")
     assert first.node_ids == second.node_ids
     assert second.idempotent_replay is True
 
@@ -130,7 +130,7 @@ def test_parent_relation_integrity_and_unresolved_links(tmp_path: Path) -> None:
     store = _store(tmp_path)
     importer = _importer(store, tmp_path)
     alpha = _write(tmp_path / "alpha.md", ALPHA)
-    receipt = importer.import_file(alpha, domain=PrimaryDomain.P1, source_uri="soul://corpus/alpha.md")
+    receipt = importer.import_file(alpha, domain=PrimaryDomain.P1, source_uri="context://corpus/alpha.md")
     # [[beta]] and [[ghost]] cannot resolve yet; both are reported, neither stored.
     assert receipt.unresolved_links == ("beta", "ghost")
     file_id = injective_file_id("alpha.md")
@@ -143,8 +143,8 @@ def test_parent_relation_integrity_and_unresolved_links(tmp_path: Path) -> None:
     assert not any(r.kind is RelationKind.DEPENDS_ON for r in file_relations)
     # Once the target file exists, a re-import resolves the link deterministically.
     _write(tmp_path / "beta.md", BETA)
-    importer.import_file(tmp_path / "beta.md", domain=PrimaryDomain.P1, source_uri="soul://corpus/beta.md")
-    again = importer.import_file(alpha, domain=PrimaryDomain.P1, source_uri="soul://corpus/alpha.md")
+    importer.import_file(tmp_path / "beta.md", domain=PrimaryDomain.P1, source_uri="context://corpus/beta.md")
+    again = importer.import_file(alpha, domain=PrimaryDomain.P1, source_uri="context://corpus/alpha.md")
     assert again.unresolved_links == ("ghost",)
     resolved = store.relations_from(file_id)
     assert any(r.kind is RelationKind.DEPENDS_ON and r.target_node_id == injective_file_id("beta.md") for r in resolved)

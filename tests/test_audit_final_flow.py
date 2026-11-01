@@ -41,8 +41,8 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.audit import AuditLog
-from know_your_soul.backup import (
+from know_your_context.audit import AuditLog
+from know_your_context.backup import (
     BackupError,
     backup_store,
     diagnose_projection,
@@ -50,19 +50,24 @@ from know_your_soul.backup import (
     recover_projection,
     restore_store,
 )
-from know_your_soul.contracts import ApplyImprovementRequest, LifecycleError, NodeNotFound, StaleProjectionUnavailable
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, ScoreVector, canonical_json
-from know_your_soul.http_api import error_envelope, status_for_error
-from know_your_soul.importer import SeedImporter
-from know_your_soul.observability import check_readiness
-from know_your_soul.projection import (
+from know_your_context.contracts import (
+    ApplyImprovementRequest,
+    LifecycleError,
+    NodeNotFound,
+    StaleProjectionUnavailable,
+)
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, ScoreVector, canonical_json
+from know_your_context.http_api import error_envelope, status_for_error
+from know_your_context.importer import SeedImporter
+from know_your_context.observability import check_readiness
+from know_your_context.projection import (
     ARTIFACT_MAX_BYTES,
     GraphProjector,
     ProjectionValidationError,
     ProjectorBusy,
 )
-from know_your_soul.service import InvalidPublishCapacity, KnowledgeService
-from know_your_soul.store import EventStore, PublishCapacityExceeded
+from know_your_context.service import InvalidPublishCapacity, KnowledgeService
+from know_your_context.store import EventStore, PublishCapacityExceeded
 
 NOW = datetime(2026, 10, 26, 12, 0, tzinfo=UTC)
 
@@ -77,7 +82,7 @@ def _node(node_id: str, *, parent: str | None = None, summary: str | None = None
         kind=NodeKind.CHILD if parent else NodeKind.ROOT,
         domain=PrimaryDomain.P1,
         summary=summary or node_id,
-        provenance=("soul://corpus/lesson.md",),
+        provenance=("context://corpus/lesson.md",),
         source_version_id="sv-test",
         scores=ScoreVector.zero(),
     )

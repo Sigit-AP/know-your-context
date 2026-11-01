@@ -16,7 +16,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.book import (
+from know_your_context.exporters.book import (
     BOOK_FILENAME_MAX_BYTES,
     MAX_BOOK_PAGE_BYTES,
     MAX_BOOK_PAGES,
@@ -55,7 +55,7 @@ def _node(
         },
         "confidence": "0.500000000000",
         "professional_level": 2,
-        "provenance": provenance if provenance is not None else ["soul://store"],
+        "provenance": provenance if provenance is not None else ["context://store"],
     }
 
 
@@ -111,7 +111,7 @@ def test_build_minimal_book_structure() -> None:
     pages = build_book(_read_model())
     assert sorted(pages) == ["book/P1.md", "book/P2.md", "book/index.md"]
     index = pages["book/index.md"]
-    assert "know-your-soul-book v1" in index
+    assert "know-your-context-book v1" in index
     assert "[P1 — Pembelajaran](P1.md)" in index
     assert "[P2 — Gagasan](P2.md)" in index
     # No community section without community data.

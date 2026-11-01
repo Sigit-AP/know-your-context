@@ -15,7 +15,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from _extraction_helpers import make_args, make_method, make_payload
-from know_your_soul.extraction import (
+from know_your_context.extraction import (
     CONTRADICTION_PENALTY,
     CORROBORATION_STEP,
     INTAKE_CAP,
@@ -25,7 +25,7 @@ from know_your_soul.extraction import (
     recompute_group,
     validate_submission,
 )
-from know_your_soul.extraction.corroboration import OVERLAP_THRESHOLD
+from know_your_context.extraction.corroboration import OVERLAP_THRESHOLD
 
 BASE_NODES = [
     {"name": "Graft procedure", "kind": "child", "domain": "P3", "summary": "needs two witnesses"},

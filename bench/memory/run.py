@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Memory benchmark: Know Your Soul vs Graphify's published LOCOMO numbers.
+"""Memory benchmark: Know Your Context vs Graphify's published LOCOMO numbers.
 
 SUB-83. Deterministic, no-AI measurement of the product's retrieval recall on
 the LOCOMO conversational-memory dataset, compared against the numbers
@@ -187,10 +187,10 @@ def iter_qa(data: list[dict[str, Any]]):
 
 def build_shards(data: list[dict[str, Any]], *, force: bool = False) -> dict[str, Any]:
     """Write all turns through the product path into sharded stores."""
-    from know_your_soul.domain import Node, NodeKind, PrimaryDomain
-    from know_your_soul.projection import GraphProjector
-    from know_your_soul.service import KnowledgeService
-    from know_your_soul.store import EventStore
+    from know_your_context.domain import Node, NodeKind, PrimaryDomain
+    from know_your_context.projection import GraphProjector
+    from know_your_context.service import KnowledgeService
+    from know_your_context.store import EventStore
 
     manifest_path = WORK_ROOT / "build_manifest.json"
     if manifest_path.exists() and not force:
@@ -286,7 +286,7 @@ def build_shards(data: list[dict[str, Any]], *, force: bool = False) -> dict[str
 
 def load_shard_indexes() -> list[tuple[Any, dict[str, dict[str, Any]]]]:
     """One product LexicalIndex per shard, built from the published graph.json."""
-    from know_your_soul.retrieval import LexicalIndex
+    from know_your_context.retrieval import LexicalIndex
 
     indexes = []
     for shard_dir in sorted(WORK_ROOT.glob("shard-*")):
@@ -299,7 +299,7 @@ def load_shard_indexes() -> list[tuple[Any, dict[str, dict[str, Any]]]]:
 
 def kys_federated_topk(indexes, question: str, k: int) -> list[str]:
     """Merge per-shard product rankings by the product's own ordering."""
-    from know_your_soul.retrieval import query_terms
+    from know_your_context.retrieval import query_terms
 
     terms = query_terms(question)
     merged = []
@@ -374,7 +374,7 @@ class GlobalIndexView:
                 self._postings[term].append((node_id, fields))
 
     def topk(self, terms: list[str], k: int) -> list[str]:
-        from know_your_soul.retrieval import normalize_term
+        from know_your_context.retrieval import normalize_term
 
         norm = list(dict.fromkeys(normalize_term(t) for t in terms))
         candidates: dict[str, Any] = {}
@@ -418,11 +418,11 @@ def sanity_query_path(sample_qas, n: int) -> dict[str, Any]:
     the shard holding each sampled question's evidence and compares the first
     TOP_K result node ids with the bench-side index ranking.
     """
-    from know_your_soul.contracts import QueryRequest
-    from know_your_soul.projection import GraphProjector
-    from know_your_soul.retrieval import LexicalIndex, query_terms
-    from know_your_soul.service import KnowledgeService
-    from know_your_soul.store import EventStore
+    from know_your_context.contracts import QueryRequest
+    from know_your_context.projection import GraphProjector
+    from know_your_context.retrieval import LexicalIndex, query_terms
+    from know_your_context.service import KnowledgeService
+    from know_your_context.store import EventStore
 
     # map sample_id -> shard dir (first shard whose graph contains an evidence node)
     shard_dirs = sorted(WORK_ROOT.glob("shard-*"))
@@ -474,7 +474,7 @@ def run_locomo(*, skip_sanity: bool = False) -> int:
     print(f"loaded {len(indexes)} shard indexes")
 
     # global diagnostic view: same published node dicts, one merged index
-    from know_your_soul.retrieval import LexicalIndex, query_terms
+    from know_your_context.retrieval import LexicalIndex, query_terms
 
     all_nodes: dict[str, dict[str, Any]] = {}
     for _index, nodes in indexes:

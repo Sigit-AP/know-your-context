@@ -22,18 +22,18 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.audit import AuditLog
-from know_your_soul.domain import Event, EventKind, Node, PrimaryDomain
-from know_your_soul.events import Invocation, InvocationOutcome
-from know_your_soul.fragment_generator import (
+from know_your_context.audit import AuditLog
+from know_your_context.domain import Event, EventKind, Node, PrimaryDomain
+from know_your_context.events import Invocation, InvocationOutcome
+from know_your_context.fragment_generator import (
     FRAGMENT_GENERATOR_VERSION,
     FRAGMENT_PROMPT_FINGERPRINT,
     FragmentGenerator,
     file_scoped_id,
 )
-from know_your_soul.graphify_adapter import GraphifyAdapter
-from know_your_soul.importer import SeedImporter, injective_section_key
-from know_your_soul.projection import (
+from know_your_context.graphify_adapter import GraphifyAdapter
+from know_your_context.importer import SeedImporter, injective_section_key
+from know_your_context.projection import (
     ARTIFACT_NAMES,
     FragmentCache,
     GraphProjector,
@@ -43,10 +43,10 @@ from know_your_soul.projection import (
     ShrinkGuardError,
     StalePublicationError,
 )
-from know_your_soul.retrieval import BudgetedTraversal, PrimaryRouter
-from know_your_soul.source_registry import SourceRegistry
-from know_your_soul.source_watcher import ChangeKind, SourceWatcher
-from know_your_soul.store import EventStore
+from know_your_context.retrieval import BudgetedTraversal, PrimaryRouter
+from know_your_context.source_registry import SourceRegistry
+from know_your_context.source_watcher import ChangeKind, SourceWatcher
+from know_your_context.store import EventStore
 
 ALPHA = (
     b"# Alpha Lessons\n"
@@ -251,7 +251,7 @@ def test_single_writer_lock_and_pending_drain(tmp_path: Path) -> None:
             second.rebuild()
         (tmp_path / "corpus" / "gamma.md").write_bytes(GAMMA)
         importer.import_file(
-            tmp_path / "corpus" / "gamma.md", domain=PrimaryDomain.P2, source_uri="soul://corpus/gamma.md"
+            tmp_path / "corpus" / "gamma.md", domain=PrimaryDomain.P2, source_uri="context://corpus/gamma.md"
         )
     receipt = second.rebuild()
     assert receipt.source_knowledge_high_watermark == store.knowledge_high_watermark()
@@ -330,7 +330,7 @@ def test_shrink_guard_blocks_silent_loss(tmp_path: Path) -> None:
 
 
 def test_dedup_disabled_on_guarded_build(monkeypatch: pytest.MonkeyPatch) -> None:
-    import know_your_soul.graphify_adapter as adapter_module
+    import know_your_context.graphify_adapter as adapter_module
 
     calls: list[dict[str, Any]] = []
     original = adapter_module.build_from_json
@@ -383,7 +383,9 @@ def test_activation_swap_failure_leaves_previous_pointer_and_repairs(
     projector = _projector(store, tmp_path)
     first = projector.rebuild()
     (tmp_path / "corpus" / "gamma.md").write_bytes(GAMMA)
-    importer.import_file(tmp_path / "corpus" / "gamma.md", domain=PrimaryDomain.P2, source_uri="soul://corpus/gamma.md")
+    importer.import_file(
+        tmp_path / "corpus" / "gamma.md", domain=PrimaryDomain.P2, source_uri="context://corpus/gamma.md"
+    )
     real_replace = os.replace
 
     def crash_on_pointer(src: Any, dst: Any) -> None:
@@ -443,7 +445,7 @@ def test_partition_input_canonical_across_hash_seeds(tmp_path: Path) -> None:
     script = (
         "import json, sys\n"
         f"sys.path.insert(0, {str(SRC)!r})\n"
-        "from know_your_soul.graphify_adapter import GraphifyAdapter\n"
+        "from know_your_context.graphify_adapter import GraphifyAdapter\n"
         "adapter = GraphifyAdapter()\n"
         "nodes = [{'id': f'n{i}', 'label': f'N{i}', 'file_type': 'document', 'source_file': 'a.md'}"
         " for i in range(8)]\n"
@@ -537,7 +539,9 @@ def test_html_view_is_generation_keyed(tmp_path: Path) -> None:
     html = (Path(first.generation_dir) / "graph.html").read_text(encoding="utf-8")
     assert first.projection_version in html
     (tmp_path / "corpus" / "gamma.md").write_bytes(GAMMA)
-    importer.import_file(tmp_path / "corpus" / "gamma.md", domain=PrimaryDomain.P2, source_uri="soul://corpus/gamma.md")
+    importer.import_file(
+        tmp_path / "corpus" / "gamma.md", domain=PrimaryDomain.P2, source_uri="context://corpus/gamma.md"
+    )
     second = projector.rebuild()
     html2 = (Path(second.generation_dir) / "graph.html").read_text(encoding="utf-8")
     assert second.projection_version in html2
@@ -595,7 +599,9 @@ def test_deterministic_rebuild_from_replay_at_a_fixed_watermark(tmp_path: Path) 
     mark = store.knowledge_high_watermark()
     first = projector.rebuild(upto_knowledge_seq=mark)
     (tmp_path / "corpus" / "gamma.md").write_bytes(GAMMA)
-    importer.import_file(tmp_path / "corpus" / "gamma.md", domain=PrimaryDomain.P2, source_uri="soul://corpus/gamma.md")
+    importer.import_file(
+        tmp_path / "corpus" / "gamma.md", domain=PrimaryDomain.P2, source_uri="context://corpus/gamma.md"
+    )
     assert store.knowledge_high_watermark() > mark
     second = projector.rebuild(upto_knowledge_seq=mark)
     assert second.content_hash == first.content_hash
@@ -617,7 +623,7 @@ def test_recover_incomplete_runs_the_projection_repair_hook(tmp_path: Path) -> N
         domain=PrimaryDomain.P2,
         summary="Gamma",
         payload={"source_file": "gamma.md"},
-        provenance=("soul://corpus/gamma.md",),
+        provenance=("context://corpus/gamma.md",),
         source_version_id=SourceRegistry(store).active().source_version_id,  # type: ignore[union-attr]
     )
     store.append_domain(
@@ -660,7 +666,7 @@ def _enriched(tmp_path: Path, content: bytes = ENRICH) -> tuple[EventStore, Grap
     corpus = tmp_path / "corpus"
     corpus.mkdir()
     (corpus / "guide.md").write_bytes(content)
-    importer.import_file(corpus / "guide.md", domain=PrimaryDomain.P1, source_uri="soul://corpus/guide.md")
+    importer.import_file(corpus / "guide.md", domain=PrimaryDomain.P1, source_uri="context://corpus/guide.md")
     projector = GraphProjector(store, output_root=tmp_path / "out")
     return store, projector
 
@@ -770,8 +776,8 @@ def test_oversized_node_summary_fails_typed_before_building(tmp_path: Path) -> N
         parent_id="P1",
         domain=PrimaryDomain.P1,
         summary="x" * 70_000,
-        payload={"source_file": "soul://operator"},
-        provenance=("soul://operator",),
+        payload={"source_file": "context://operator"},
+        provenance=("context://operator",),
         source_version_id=SourceRegistry(store).active().source_version_id,  # type: ignore[union-attr]
     )
     store.append_domain(

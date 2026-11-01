@@ -540,7 +540,7 @@ wheels = [
 ]
 
 [[package]]
-name = "know-your-soul"
+name = "know-your-context"
 version = "0.3.0"
 source = { editable = "." }
 dependencies = [

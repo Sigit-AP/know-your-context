@@ -18,11 +18,11 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, canonical_json
-from know_your_soul.events import Invocation
-from know_your_soul.projection import GraphProjector
-from know_your_soul.read_model_validator import ReadModelValidator
-from know_your_soul.security import (
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, canonical_json
+from know_your_context.events import Invocation
+from know_your_context.projection import GraphProjector
+from know_your_context.read_model_validator import ReadModelValidator
+from know_your_context.security import (
     DEFAULT_MAX_PAYLOAD_BYTES,
     BindPolicyError,
     HostNotAllowedError,
@@ -43,7 +43,7 @@ from know_your_soul.security import (
     resolve_within_root,
     sanitize_text,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 
@@ -342,7 +342,7 @@ def test_middleware_factories_for_task7_wiring() -> None:
 # ------------------------------------------- matrix row 36: no DB sink, no
 # ------------------------------------------- credentials on argv
 
-_SRC_ROOT = Path(__file__).resolve().parents[1] / "src" / "know_your_soul"
+_SRC_ROOT = Path(__file__).resolve().parents[1] / "src" / "know_your_context"
 
 # External database / graph-push drivers a "DB sink" would import. The product
 # excludes DB push entirely (matrix row 36); the runtime guard already bans

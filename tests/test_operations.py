@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.audit import AuditLog
-from know_your_soul.backup import (
+from know_your_context.audit import AuditLog
+from know_your_context.backup import (
     BackupError,
     ProjectionState,
     backup_protected_artifacts,
@@ -26,10 +26,10 @@ from know_your_soul.backup import (
     recover_projection,
     restore_store,
 )
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.events import Invocation, InvocationOutcome
-from know_your_soul.importer import SeedImporter
-from know_your_soul.observability import (
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.events import Invocation, InvocationOutcome
+from know_your_context.importer import SeedImporter
+from know_your_context.observability import (
     MetricsRegistry,
     StructuredLogger,
     check_health,
@@ -37,8 +37,8 @@ from know_your_soul.observability import (
     collect_store_metrics,
     export_query_audit,
 )
-from know_your_soul.projection import GraphProjector
-from know_your_soul.store import EventStore
+from know_your_context.projection import GraphProjector
+from know_your_context.store import EventStore
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 
@@ -214,7 +214,7 @@ def test_health_detects_unapplied_migrations(tmp_path: Path) -> None:
     store = EventStore(tmp_path / "soul.sqlite3")
     # Point the health check at a migrations dir carrying one extra migration
     # the store has never applied.
-    default_dir = Path(__file__).resolve().parents[1] / "src" / "know_your_soul" / "migrations"
+    default_dir = Path(__file__).resolve().parents[1] / "src" / "know_your_context" / "migrations"
     for path in default_dir.glob("*.sql"):
         (migrations / path.name).write_bytes(path.read_bytes())
     (migrations / "9999_pending.sql").write_text("CREATE TABLE pending_probe (id INTEGER);\n", encoding="utf-8")

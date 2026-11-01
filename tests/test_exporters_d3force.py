@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.d3force`` (ATM wave-2 formats).
+"""Tests for ``know_your_context.exporters.d3force`` (ATM wave-2 formats).
 
 Pins the canonical D3-force node-link JSON contract: ``nodes`` carry an
 ``index`` matching their sorted position and a ``group`` per domain;
@@ -17,7 +17,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.d3force import (
+from know_your_context.exporters.d3force import (
     D3FORCE_LABEL_MAX_CHARS,
     D3FORCE_MAX_BYTES,
     D3FORCE_MAX_EDGES,
@@ -27,7 +27,7 @@ from know_your_soul.exporters.d3force import (
     register_d3force,
     roundtrip_d3force,
 )
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportError,
     ExportRegistry,

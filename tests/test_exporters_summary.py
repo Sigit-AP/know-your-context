@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.summary`` (ATM wave-2 formats).
+"""Tests for ``know_your_context.exporters.summary`` (ATM wave-2 formats).
 
 Pins the canonical ``analytics/graph-summary.json`` contract: node/edge/
 self-loop/isolated counts, a degree histogram (total degree over the
@@ -17,14 +17,14 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportError,
     ExportRegistry,
     ExportRoundTripError,
     produce_exports,
 )
-from know_your_soul.exporters.summary import (
+from know_your_context.exporters.summary import (
     SUMMARY_MAX_BYTES,
     build_summary,
     produce_summary,

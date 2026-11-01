@@ -22,8 +22,8 @@ from _serve_helpers import (
     tool_payload,
     wait_for,
 )
-from know_your_soul.serve import rpc
-from know_your_soul.serve.superpower import (
+from know_your_context.serve import rpc
+from know_your_context.serve.superpower import (
     READ_TOOLS,
     WRITE_TOOLS,
     LivenessWatchdog,
@@ -53,7 +53,7 @@ def _query_args() -> dict:
 
 class TestClassification:
     def test_lanes_partition_the_extended_surface(self) -> None:
-        from know_your_soul.serve.superpower import HEAVY_TOOLS
+        from know_your_context.serve.superpower import HEAVY_TOOLS
 
         assert READ_TOOLS | WRITE_TOOLS | HEAVY_TOOLS == frozenset(EXPECTED_TOOLS_ALL)
         assert not (READ_TOOLS & WRITE_TOOLS)
@@ -79,7 +79,7 @@ class TestClassification:
         assert classify_tool(tool) == "heavy"
 
     def test_unknown_verb_rejected(self) -> None:
-        from know_your_soul.serve.superpower import UnknownVerb
+        from know_your_context.serve.superpower import UnknownVerb
 
         with pytest.raises(UnknownVerb):
             classify_tool("filesystem_delete")
@@ -96,7 +96,7 @@ class TestHandshakeAndMeta:
         result = response["result"]
         assert result["protocolVersion"] == "2025-11-25"
         assert set(result["capabilities"]) == {"tools", "resources"}
-        assert result["serverInfo"]["name"] == "know-your-soul"
+        assert result["serverInfo"]["name"] == "know-your-context"
 
     def test_tools_list_seventeen(self, daemon) -> None:
         _, config = daemon
@@ -136,8 +136,8 @@ class TestHandshakeAndMeta:
         with SocketClient(config.paths.socket) as client:
             listed = client.request("resources/list")["result"]
             uris = [resource["uri"] for resource in listed["resources"]]
-            assert "soul://projection/manifest" in uris
-            read = client.request("resources/read", {"uri": "soul://projection/manifest"})["result"]
+            assert "context://projection/manifest" in uris
+            read = client.request("resources/read", {"uri": "context://projection/manifest"})["result"]
             assert read["contents"][0]["mimeType"] == "application/json"
 
     def test_unknown_resource_rejected(self, daemon) -> None:
@@ -169,7 +169,7 @@ class TestDispatch:
             "kind": "leaf",
             "domain": "P1",
             "summary": "written through the daemon write lane",
-            "provenance": ["soul://test"],
+            "provenance": ["context://test"],
             "source_version_id": "sv-test",
         }
         with SocketClient(config.paths.socket) as client:
@@ -299,7 +299,7 @@ class TestCapacity:
 
 class TestLifecycle:
     def test_double_start_fails_closed(self, daemon) -> None:
-        from know_your_soul.serve.superpower import DaemonUnavailable
+        from know_your_context.serve.superpower import DaemonUnavailable
 
         instance, config = daemon
         with pytest.raises(DaemonUnavailable):
@@ -388,7 +388,7 @@ class TestLivenessWatchdog:
                 sys.executable,
                 "-c",
                 "import time\n"
-                "from know_your_soul.serve.superpower import LivenessWatchdog\n"
+                "from know_your_context.serve.superpower import LivenessWatchdog\n"
                 "w = LivenessWatchdog(stall_seconds=0.4, interval_seconds=0.1)\n"
                 "w.start()\n"
                 "time.sleep(10)\n",

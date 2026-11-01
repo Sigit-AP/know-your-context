@@ -27,15 +27,15 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.domain import PrimaryDomain
-from know_your_soul.fragment_generator import file_scoped_id
-from know_your_soul.importer import SeedImporter
-from know_your_soul.projection import GraphProjector, ProjectorBusy
-from know_your_soul.relearn import RelearnApproval, RelearnEngine
-from know_your_soul.source_registry import RELEARN_PENDING, SourceKind
-from know_your_soul.source_watcher import ChangeKind, SourceChange, SourceWatcher
-from know_your_soul.store import EventStore
-from know_your_soul.update_pipeline import (
+from know_your_context.domain import PrimaryDomain
+from know_your_context.fragment_generator import file_scoped_id
+from know_your_context.importer import SeedImporter
+from know_your_context.projection import GraphProjector, ProjectorBusy
+from know_your_context.relearn import RelearnApproval, RelearnEngine
+from know_your_context.source_registry import RELEARN_PENDING, SourceKind
+from know_your_context.source_watcher import ChangeKind, SourceChange, SourceWatcher
+from know_your_context.store import EventStore
+from know_your_context.update_pipeline import (
     UpdatePipelineError,
     apply_approved_update,
     update_from_changes,

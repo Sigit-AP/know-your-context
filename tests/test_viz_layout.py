@@ -15,8 +15,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.domain import canonical_json
-from know_your_soul.viz.layout import (
+from know_your_context.domain import canonical_json
+from know_your_context.viz.layout import (
     DEFAULT_ITERATIONS,
     DEFAULT_SEED,
     MAX_LAYOUT_NODES,

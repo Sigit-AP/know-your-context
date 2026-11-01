@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.analytics.query_trace`` (ATM plan F-C5).
+"""Tests for ``know_your_context.analytics.query_trace`` (ATM plan F-C5).
 
 A retrieval explanation trace is a pure function over query input and the
 service's own outputs: terms with IDF, ranked candidates, quota cuts,
@@ -11,9 +11,9 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from know_your_soul.analytics.query_trace import aggregate_traces, build_query_trace
-from know_your_soul.domain import canonical_json
-from know_your_soul.retrieval import LexicalIndex, query_terms
+from know_your_context.analytics.query_trace import aggregate_traces, build_query_trace
+from know_your_context.domain import canonical_json
+from know_your_context.retrieval import LexicalIndex, query_terms
 
 
 def _index() -> LexicalIndex:

@@ -1,4 +1,4 @@
-# Verification Evidence — Know Your Soul
+# Verification Evidence — Know Your Context
 
 Status: **INTEGRATED (Task 10, SUB-10, 2026-10-25 UTC).** Every row carries
 fresh command output and exit codes from the final gate run. Base: HEAD
@@ -94,7 +94,7 @@ table (size + sha256): §7 and `docs/recovery/atm-integration-final.md`.
 |------|---------|-----------|----------------------------------|------------|
 | Full test suite | `.venv/bin/pytest tests/ -q` | **0** | `1369 passed, 1 warning in 244.02s` — **0 skipped** (SUB-52 wave incl. SUB48-1/F-SUB51-1/F-SUB51-2 regression probes); supersedes the dated historical rows `898 passed` (SUB-44), `632 passed, 1 skipped` (pre-wave-3) and `690 passed` (wave-3 fix round) | 2026-10-26 |
 | Acceptance e2e | `.venv/bin/pytest tests/test_acceptance_e2e.py -q` | **0** | `49 passed in 48.72s` — the install-tree check (`TestNoHermesSourceModification`) executes for real; skip-gates only when no git-managed Hermes install exists | 2026-10-26 |
-| Code coverage | `.venv/bin/pytest tests/ -q --cov=know_your_soul --cov-report=term` | **0** | **99.47%** (7,227 statements, 38 miss; supersedes 99.46% / 7,220 / 39 from the wave-3 push) | 2026-10-26 |
+| Code coverage | `.venv/bin/pytest tests/ -q --cov=know_your_context --cov-report=term` | **0** | **99.47%** (7,227 statements, 38 miss; supersedes 99.46% / 7,220 / 39 from the wave-3 push) | 2026-10-26 |
 | Type checking | `.venv/bin/pyright` | **0** | `0 errors, 0 warnings, 0 informations` | 2026-10-26 |
 | Lint | `.venv/bin/ruff check .` | **0** | `All checks passed!` | 2026-10-26 |
 | Format | `.venv/bin/ruff format --check .` | **1 (pre-existing)** | `1 file would be reformatted, 190 files already formatted`; the single offender is `docs/mathematics/scoring.md` (comment alignment inside a fenced code block) — drift committed in `724843c` and never touched since (verified `git log --follow docs/mathematics/scoring.md` → sole commit `724843c`), i.e. pre-existing every fix wave; the contracts directory is frozen, so the drift is documented, not reformatted | 2026-10-26 |
@@ -150,7 +150,7 @@ reports an honest 1.0.
 field from the scored payload text on BOTH sides (system response and
 compliant ceiling) via `rubric_scoring_text` — per the spec, provenance is
 routing metadata with zero relevance, so a rubric term present only in a
-`soul://` URI filename can no longer count as delivered knowledge (q16's
+`context://` URI filename can no longer count as delivered knowledge (q16's
 `steelman` was satisfiable by `09-premortem-steelman.md`'s *filename* alone).
 Provenance still counts toward token estimation on both sides. Fresh ledger
 `bench/results/ledger-20261025T235210Z.json` (repeats=5, exit 0, **24/24
@@ -275,8 +275,8 @@ unchanged since freeze) runs for real in `TestFrozenCorpus` and passes.
 | Full suite | `.venv/bin/python -m pytest tests/ -q` | **0** | `2025 passed, 1 warning in 251.62s` | 2026-10-26 |
 | Lint/type | `ruff check src/ tests/` + `ruff format --check` + `pyright src tests` | **0** | `All checks passed!` / 147 files formatted / `0 errors, 0 warnings` | 2026-10-26 |
 | Bench | `python bench/run.py check` | **0** | `check: OK (cases schema, frozen corpus integrity, estimator parity)` | 2026-10-26 |
-| E2E export | `know-your-soul --store bench.sqlite3 --output-root graph export --formats all` | **0** | 16 format artifacts on disk, sha256 per artifact in summary; re-run all `written: false` | 2026-10-26 |
-| E2E analytics | `know-your-soul ... analytics --modules all` | **0** | 14 analytics artifacts; timeline `events_processed` == store domain events; report staleness `{known: true, stale: false}`; health `{ok: true, score: 1.0}` | 2026-10-26 |
+| E2E export | `know-your-context --store bench.sqlite3 --output-root graph export --formats all` | **0** | 16 format artifacts on disk, sha256 per artifact in summary; re-run all `written: false` | 2026-10-26 |
+| E2E analytics | `know-your-context ... analytics --modules all` | **0** | 14 analytics artifacts; timeline `events_processed` == store domain events; report staleness `{known: true, stale: false}`; health `{ok: true, score: 1.0}` | 2026-10-26 |
 | E2E diff/timeline (2 generations) | real `record-outcome` + `rebuild` + `analytics --modules generation-diff,timeline` | **0** | diff `status: "diff"` (36→36 nodes, 35→35 edges); timeline point P=`1.000000000000`, level 2 | 2026-10-26 |
 | Store read-only | `SELECT COUNT(*) FROM event_log` before/after export+analytics | — | **74 / 74** — no write, no rebuild | 2026-10-26 |
 | Frozen surface | `test_export_and_analytics_are_not_knowledge_or_http_ops` | **0** | export/analytics ∉ 14 knowledge ops, ∉ OPS_OPERATIONS, no MCP/HTTP dispatch | 2026-10-26 |

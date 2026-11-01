@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.ops.metrics`` (ATM wave-2 OPS).
+"""Tests for ``know_your_context.ops.metrics`` (ATM wave-2 OPS).
 
 Pins the operational metrics contract: store counts, audit-derived latency
 summaries, artifact sizes from the active generation, the publish-capacity
@@ -14,16 +14,16 @@ from typing import Any, cast
 
 import pytest
 
-from know_your_soul.domain import canonical_json
-from know_your_soul.ops.metrics import (
+from know_your_context.domain import canonical_json
+from know_your_context.ops.metrics import (
     HEALTH_COMPONENT_WEIGHTS,
     METRICS_SCHEMA_VERSION,
     collect_ops_metrics,
     latency_summary,
     render_markdown,
 )
-from know_your_soul.projection import ARTIFACT_MAX_BYTES, GraphProjector
-from know_your_soul.store import PUBLISH_CAPACITY_RATIO, EventStore
+from know_your_context.projection import ARTIFACT_MAX_BYTES, GraphProjector
+from know_your_context.store import PUBLISH_CAPACITY_RATIO, EventStore
 
 # ------------------------------------------------------------------ helpers
 
@@ -451,7 +451,7 @@ def test_health_chain_failure_drops_score(tmp_path: Path) -> None:
             return getattr(self._inner, name)
 
         def verify_chain(self) -> Any:
-            from know_your_soul.store import ChainReport
+            from know_your_context.store import ChainReport
 
             return ChainReport(ok=False, checked=1, first_bad_seq=1)
 

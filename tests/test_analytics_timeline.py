@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.analytics.timeline`` (ATM F-C2).
+"""Tests for ``know_your_context.analytics.timeline`` (ATM F-C2).
 
 Pins the learning-timeline contract: the event log is the single source of
 truth, ``recorded_at`` is the timeline clock (never the wall clock), scoring
@@ -18,7 +18,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.timeline import (
+from know_your_context.analytics.timeline import (
     TIMELINE_SCHEMA_VERSION,
     TimelineError,
     build_timeline,
@@ -26,7 +26,7 @@ from know_your_soul.analytics.timeline import (
     sparkline,
     timeline_json,
 )
-from know_your_soul.domain import canonical_json
+from know_your_context.domain import canonical_json
 
 _BASE = datetime(2026, 1, 1, tzinfo=UTC)
 
@@ -59,7 +59,7 @@ def _evidence(
         "evidence_id": evidence_id,
         "node_id": node_id,
         "source_version_id": "sv-test",
-        "source_uri": "soul://test",
+        "source_uri": "context://test",
         "observed_at": observed_at,
         "context_tags": list(context_tags),
         "independence_key": independence_key if independence_key is not None else evidence_id,

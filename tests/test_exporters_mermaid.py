@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.mermaid`` (ATM F-B2).
+"""Tests for ``know_your_context.exporters.mermaid`` (ATM F-B2).
 
 Pins the Mermaid flowchart contract: one subgraph per primary domain P1-P7
 (sorted, with Indonesian titles), Mermaid-safe node ids derived
@@ -17,7 +17,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.mermaid import (
+from know_your_context.exporters.mermaid import (
     DEFAULT_MERMAID_MAX_BYTES,
     DEFAULT_MERMAID_MAX_NODES,
     produce_mermaid,
@@ -25,7 +25,7 @@ from know_your_soul.exporters.mermaid import (
     render_mermaid,
     roundtrip_mermaid,
 )
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportRegistry,
     ExportRoundTripError,

@@ -15,8 +15,8 @@ import pytest
 
 from _extraction_helpers import make_args
 from _serve_helpers import SocketClient, make_config, tool_error_code, tool_payload
-from know_your_soul.serve import rpc
-from know_your_soul.serve.superpower import (
+from know_your_context.serve import rpc
+from know_your_context.serve.superpower import (
     HEAVY_TOOLS,
     READ_TOOLS,
     WRITE_TOOLS,
@@ -32,7 +32,7 @@ class TestLanePlacement:
         assert classify_tool("knowledge_submit_extraction") == "write"
 
     def test_lanes_partition_the_extended_surface(self) -> None:
-        from know_your_soul.mcp_server import EXPECTED_TOOLS
+        from know_your_context.mcp_server import EXPECTED_TOOLS
 
         assert frozenset(EXPECTED_TOOLS) == frozenset(READ_TOOLS | WRITE_TOOLS | HEAVY_TOOLS)
         assert len(EXPECTED_TOOLS) == 17

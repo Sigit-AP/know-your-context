@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.cytoscape`` (ATM wave-2 formats).
+"""Tests for ``know_your_context.exporters.cytoscape`` (ATM wave-2 formats).
 
 Pins the canonical Cytoscape.js elements JSON contract: ``elements.nodes`` /
 ``elements.edges`` with ``data`` records, nodes sorted by id, edges sorted by
@@ -16,7 +16,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.cytoscape import (
+from know_your_context.exporters.cytoscape import (
     CYTOSCAPE_LABEL_MAX_CHARS,
     CYTOSCAPE_MAX_BYTES,
     CYTOSCAPE_MAX_EDGES,
@@ -26,7 +26,7 @@ from know_your_soul.exporters.cytoscape import (
     register_cytoscape,
     roundtrip_cytoscape,
 )
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportError,
     ExportRegistry,

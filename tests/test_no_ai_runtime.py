@@ -9,7 +9,7 @@ guards, plus the two matrix contract tests owned by this gate (rows 36 and
 40).
 
 Every assertion here is about a *runtime surface*, not a document: the guard
-module (``know_your_soul.runtime_guard``) fails closed, so a violation raises
+module (``know_your_context.runtime_guard``) fails closed, so a violation raises
 instead of warning. The tests exercise the guards against synthetic hostile
 inputs, against the real installed environment, and inside a scrubbed child
 process, and they statically scan product sources for forbidden imports.
@@ -34,7 +34,7 @@ import pytest
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
 
-from know_your_soul import runtime_guard
+from know_your_context import runtime_guard
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC = REPO_ROOT / "src"
@@ -60,7 +60,7 @@ def _clean_mcp_server():
         return None
 
     handler = cast(Any, _handler)
-    return Server("know-your-soul", on_list_tools=handler, on_list_resources=handler)
+    return Server("know-your-context", on_list_tools=handler, on_list_resources=handler)
 
 
 def _unix_roundtrip(name: str = "roundtrip") -> None:
@@ -249,7 +249,7 @@ def test_forbidden_imports_fail_closed_and_allowed_imports_work() -> None:
         assert importlib_import("graphify") is not None
         assert importlib_import("graphify.cache") is not None
         assert importlib_import("networkx") is not None
-        assert importlib_import("know_your_soul.runtime_guard") is not None
+        assert importlib_import("know_your_context.runtime_guard") is not None
 
 
 def test_import_guard_detects_modules_that_are_already_loaded() -> None:
@@ -435,7 +435,7 @@ def test_allowed_mcp_capabilities_are_exactly_tools_and_resources() -> None:
 def test_fresh_mcp_sdk_server_registers_no_sampling_handler() -> None:
     from mcp.server.lowlevel import Server
 
-    server = Server("know-your-soul")
+    server = Server("know-your-context")
     assert runtime_guard.forbidden_mcp_methods(server) == []
     runtime_guard.assert_no_sampling_handler(server)
 
@@ -472,7 +472,7 @@ def test_observed_capabilities_come_from_the_server_registry_not_the_allowlist()
 def test_empty_server_advertises_no_allowed_capability() -> None:
     from mcp.server.lowlevel import Server
 
-    observed = runtime_guard.observed_mcp_capabilities(Server("know-your-soul"))
+    observed = runtime_guard.observed_mcp_capabilities(Server("know-your-context"))
     assert observed == {}
     with pytest.raises(runtime_guard.CapabilityViolation):
         runtime_guard.assert_mcp_capabilities(observed)
@@ -583,7 +583,7 @@ def test_guards_hold_inside_a_scrubbed_child_process(tmp_path: Path) -> None:
             f"""
             import json, os, socket, sys
             sys.path.insert(0, {str(SRC)!r})
-            from know_your_soul import runtime_guard as guard
+            from know_your_context import runtime_guard as guard
 
             report = {{"credentials": sorted(guard.provider_credentials(os.environ))}}
             report["hash_seed"] = os.environ.get("PYTHONHASHSEED")
@@ -604,7 +604,7 @@ def test_guards_hold_inside_a_scrubbed_child_process(tmp_path: Path) -> None:
             async def _handler(context, params):
                 return None
 
-            _server = Server("know-your-soul", on_list_tools=_handler, on_list_resources=_handler)
+            _server = Server("know-your-context", on_list_tools=_handler, on_list_resources=_handler)
             report["report"] = guard.verify_runtime(mcp_server=_server)
             print(json.dumps(report))
             """
@@ -782,7 +782,7 @@ def test_benign_protocol_methods_are_not_capabilities() -> None:
     """ping / server/* / notifications/* advertise no capability and stay allowed."""
     from mcp.server.lowlevel import Server
 
-    assert runtime_guard.observed_mcp_capabilities(Server("know-your-soul")) == {}
+    assert runtime_guard.observed_mcp_capabilities(Server("know-your-context")) == {}
 
     class ProductLike:
         _request_handlers = {
@@ -830,7 +830,7 @@ def test_forbidden_import_scan_covers_the_full_runtime_surface() -> None:
     """Every named runtime module exists and imports no forbidden module."""
     offenders: list[str] = []
     for module in RUNTIME_SURFACE_MODULES:
-        path = SRC / "know_your_soul" / f"{module}.py"
+        path = SRC / "know_your_context" / f"{module}.py"
         assert path.is_file(), f"{module}.py missing — the runtime surface changed"
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
@@ -853,21 +853,21 @@ def test_runtime_surface_runs_with_outbound_sockets_denied(tmp_path: Path) -> No
     calls. If any module secretly needed the network, the guard would turn it
     into a hard failure instead of a silent leak.
     """
-    from know_your_soul import backup as backup_module
-    from know_your_soul import cli, http_api, mcp_server, observability, scheduler, security
-    from know_your_soul.contracts import (
+    from know_your_context import backup as backup_module
+    from know_your_context import cli, http_api, mcp_server, observability, scheduler, security
+    from know_your_context.contracts import (
         ApplyImprovementRequest,
         EvaluateRequest,
         ProposeImprovementRequest,
         QueryRequest,
         ReviewRequest,
     )
-    from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, Relation, RelationKind
-    from know_your_soul.improvement import DiffOp, DiffOperation
-    from know_your_soul.projection import GraphProjector
-    from know_your_soul.relearn import RelearnEngine
-    from know_your_soul.service import KnowledgeService
-    from know_your_soul.store import EventStore
+    from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, Relation, RelationKind
+    from know_your_context.improvement import DiffOp, DiffOperation
+    from know_your_context.projection import GraphProjector
+    from know_your_context.relearn import RelearnEngine
+    from know_your_context.service import KnowledgeService
+    from know_your_context.store import EventStore
 
     assert scheduler.DueReviewScheduler is not None  # exercised below via review(include_due=True)
     store = EventStore(tmp_path / "soul.sqlite3")
@@ -882,7 +882,7 @@ def test_runtime_surface_runs_with_outbound_sockets_denied(tmp_path: Path) -> No
                 kind=NodeKind.ROOT,
                 domain=PrimaryDomain.P1,
                 summary="Knowledge Root",
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-guard",
             ),
         ),
@@ -900,7 +900,7 @@ def test_runtime_surface_runs_with_outbound_sockets_denied(tmp_path: Path) -> No
                     kind=NodeKind.PRIMARY,
                     domain=domain,
                     summary=domain.title,
-                    provenance=("soul://roots",),
+                    provenance=("context://roots",),
                     source_version_id="sv-guard",
                 ),
             ),
@@ -918,7 +918,7 @@ def test_runtime_surface_runs_with_outbound_sockets_denied(tmp_path: Path) -> No
                 domain=PrimaryDomain.P1,
                 summary="Run the gates before commit",
                 context_tags=("gates",),
-                provenance=("soul://corpus/lesson.md",),
+                provenance=("context://corpus/lesson.md",),
                 source_version_id="sv-guard",
             ),
         ),
@@ -1021,12 +1021,12 @@ def test_containment_caps_and_generation_secret_scan(tmp_path: Path) -> None:
     """Matrix row 40: containment, size caps, sanitization, generation secret scan."""
     import hashlib
 
-    from know_your_soul import security
-    from know_your_soul.domain import PrimaryDomain, canonical_json
-    from know_your_soul.importer import SeedImporter
-    from know_your_soul.projection import GraphProjector
-    from know_your_soul.read_model_validator import ReadModelValidator
-    from know_your_soul.store import EventStore
+    from know_your_context import security
+    from know_your_context.domain import PrimaryDomain, canonical_json
+    from know_your_context.importer import SeedImporter
+    from know_your_context.projection import GraphProjector
+    from know_your_context.read_model_validator import ReadModelValidator
+    from know_your_context.store import EventStore
 
     store = EventStore(tmp_path / "soul.sqlite3")
     importer = SeedImporter(store, state_dir=tmp_path / "import-state")

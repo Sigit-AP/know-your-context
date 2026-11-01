@@ -1,7 +1,7 @@
 """Contract-v3 ingestion adapter tests (F2, audit-final-v020).
 
 The frozen adapter mapping of ``docs/contracts/ingestion-contract-v3.md``
-(``know-your-soul ingest-file``/``ingest-directory``,
+(``know-your-context ingest-file``/``ingest-directory``,
 ``POST /v1/knowledge/ingest/file|directory``,
 ``knowledge_ingest_file``/``knowledge_ingest_directory``) is exercised
 end-to-end against the real extractor and a real store:
@@ -30,13 +30,13 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.cli import build_parser, main
-from know_your_soul.contracts import estimated_tokens_of_payload
-from know_your_soul.http_api import build_stack, create_app
-from know_your_soul.mcp_server import build_server
-from know_your_soul.projection import GraphProjector
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.cli import build_parser, main
+from know_your_context.contracts import estimated_tokens_of_payload
+from know_your_context.http_api import build_stack, create_app
+from know_your_context.mcp_server import build_server
+from know_your_context.projection import GraphProjector
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 from test_http_api import _post
 from test_mcp_server import _call_tool, _error_payload, _result_text, _session
 

@@ -22,8 +22,8 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.graph_model import UniversalGraph, parse_node_id
-from know_your_soul.ingest.extractor import ExtractionResult, extract_file, extract_source
+from know_your_context.graph_model import UniversalGraph, parse_node_id
+from know_your_context.ingest.extractor import ExtractionResult, extract_file, extract_source
 
 FIXTURES = Path(__file__).parent / "fixtures" / "ingest"
 
@@ -47,8 +47,8 @@ ALL = pytest.mark.parametrize("language", sorted(FIXTURE_CASES))
 
 def build_graph(result: ExtractionResult) -> None:
     """Feed the artifact into the W1 invariant engine; any violation raises."""
-    from know_your_soul.graph_model import GraphEdge as GE
-    from know_your_soul.graph_model import GraphNode as GN
+    from know_your_context.graph_model import GraphEdge as GE
+    from know_your_context.graph_model import GraphNode as GN
 
     graph = UniversalGraph()
     for node in result.nodes:
@@ -89,7 +89,7 @@ def test_byte_identical_across_pythonhashseed(language: str, seed: str):
     """Spawn a fresh interpreter under a foreign hash seed; bytes must match."""
     fixture = FIXTURE_CASES[language]
     code = (
-        "from know_your_soul.ingest.extractor import extract_file;"
+        "from know_your_context.ingest.extractor import extract_file;"
         f"print(extract_file({str(FIXTURES / fixture)!r}, display_path={fixture!r}).canonical_json())"
     )
     env = dict(os.environ, PYTHONHASHSEED=seed, PYTHONPATH=str(Path(__file__).parent.parent / "src"))

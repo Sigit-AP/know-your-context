@@ -20,7 +20,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.centrality import compute_centrality
+from know_your_context.analytics.centrality import compute_centrality
 
 _SCORE_RE = re.compile(r"^\d+\.\d{12}$")
 

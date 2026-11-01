@@ -14,14 +14,14 @@ from pathlib import Path
 import pytest
 
 from _retrieval_v2_helpers import add_file, add_symbol
-from know_your_soul.retrieval_v2 import (
+from know_your_context.retrieval_v2 import (
     LookupConfig,
     LookupError,
     ScoredSymbol,
     SymbolLookup,
     parse_query,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 
 @pytest.fixture

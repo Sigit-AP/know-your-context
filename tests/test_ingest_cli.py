@@ -1,4 +1,4 @@
-"""CLI tests for the ``know-your-soul ingest`` ops subcommand (SUB-89)."""
+"""CLI tests for the ``know-your-context ingest`` ops subcommand (SUB-89)."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import sqlite3
 import pytest
 
 from _ingest_fakes import ToyExtractor, ToyResolver, write_fixture
-from know_your_soul.cli import build_parser, main
+from know_your_context.cli import build_parser, main
 
 SIMPLE = {
     "a.py": "def alpha():\n    pass\n\ndef beta():\n    pass\n",
@@ -20,7 +20,7 @@ SIMPLE = {
 def fake_sibling_modules(monkeypatch):
     """SUB-87/SUB-88 have not landed: inject the deterministic fakes via the
     pipeline's documented fallback seam (tests skip honestly without it)."""
-    import know_your_soul.ingest.pipeline as pipeline_mod
+    import know_your_context.ingest.pipeline as pipeline_mod
 
     monkeypatch.setattr(pipeline_mod, "_default_extractor", lambda: ToyExtractor())
     monkeypatch.setattr(pipeline_mod, "_default_resolver", lambda: ToyResolver())
@@ -168,7 +168,7 @@ class TestIngestCommand:
 
     def test_resolver_unavailable_reported_not_fatal(self, tmp_path, capsys, monkeypatch):
         """Without SUB-88 the CLI reports resolution as unavailable, exit 0."""
-        import know_your_soul.ingest.pipeline as pipeline_mod
+        import know_your_context.ingest.pipeline as pipeline_mod
 
         monkeypatch.setattr(pipeline_mod, "_default_resolver", lambda: None)
         write_fixture(tmp_path, {"a.py": "def alpha():\n    pass\n-> beta\n"})
@@ -179,10 +179,10 @@ class TestIngestCommand:
 
     def test_extractor_unavailable_typed_failure(self, tmp_path, capsys, monkeypatch):
         """Without SUB-87 (and no injection) the CLI fails typed, exit 1."""
-        import know_your_soul.ingest.pipeline as pipeline_mod
+        import know_your_context.ingest.pipeline as pipeline_mod
 
         def no_extractor():
-            from know_your_soul.ingest.pipeline import ExtractorUnavailableError
+            from know_your_context.ingest.pipeline import ExtractorUnavailableError
 
             raise ExtractorUnavailableError("not landed")
 

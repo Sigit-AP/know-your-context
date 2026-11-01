@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.tabular`` (ATM F-B3).
+"""Tests for ``know_your_context.exporters.tabular`` (ATM F-B3).
 
 Pins the RFC 4180 CSV contract for ``nodes.csv`` / ``edges.csv``: exact column
 sets (no secret-shaped free-text fields — labels, provenance, source paths and
@@ -18,13 +18,13 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportRegistry,
     ExportRoundTripError,
     produce_exports,
 )
-from know_your_soul.exporters.tabular import (
+from know_your_context.exporters.tabular import (
     EDGE_COLUMNS,
     NODE_COLUMNS,
     NODES_CSV_MAX_BYTES,

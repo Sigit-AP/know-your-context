@@ -9,7 +9,7 @@ Gates pinned here:
 
 * corpus integrity vs ``manifest.json`` (per-file sha256, exact file set);
 * estimator parity with the frozen contract formula
-  ``ceil(utf8_byte_length / 4)`` (``know_your_soul.contracts``);
+  ``ceil(utf8_byte_length / 4)`` (``know_your_context.contracts``);
 * question-set integrity: every question's source files exist in its tier,
   tiers are nested (small ⊂ medium ⊂ large), file counts match the pins;
 * determinism: two full measurement passes produce identical per-question
@@ -82,7 +82,7 @@ class TestSelfChecks:
         # ceil(utf8_byte_length / 4). The contract helper measures the
         # canonical-JSON payload; the suite measures raw bytes — same formula
         # on both sides of the encoding boundary.
-        from know_your_soul.contracts import canonical_json, estimated_tokens_of_payload
+        from know_your_context.contracts import canonical_json, estimated_tokens_of_payload
 
         for text in ("", "a", "abcd", "abcde", "héllo wörld", "x" * 1025):
             raw = text.encode("utf-8")

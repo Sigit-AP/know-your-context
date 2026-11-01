@@ -15,7 +15,7 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportError,
     ExportFormat,
@@ -33,7 +33,7 @@ def _read_model() -> dict[str, Any]:
     return {
         "directed": True,
         "multigraph": False,
-        "graph": {"schema_version": 1, "generator": "know-your-soul", "partitioner": "test"},
+        "graph": {"schema_version": 1, "generator": "know-your-context", "partitioner": "test"},
         "nodes": [
             {"id": "b-node", "domain": "P2", "kind": "CHILD", "version": 1, "confidence": "0.900000000000"},
             {"id": "a-node", "domain": "P1", "kind": "PRIMARY", "version": 2, "confidence": "0.500000000000"},

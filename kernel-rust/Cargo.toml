@@ -1,9 +1,9 @@
 [package]
-name = "know-your-soul-kernel"
+name = "know-your-context-kernel"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-description = "Deterministic tree-sitter extraction kernel for know-your-soul (byte-identical to the Python reference extractor)"
+description = "Deterministic tree-sitter extraction kernel for know-your-context (byte-identical to the Python reference extractor)"
 publish = false
 
 # Grammar pinning rationale (see docs/recovery/w5-rust-kernel.md):
@@ -29,7 +29,7 @@ publish = false
 # (nielsenko) whose parser.c differs from the bundled grammar.
 
 [lib]
-name = "know_your_soul_kernel"
+name = "know_your_context_kernel"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]

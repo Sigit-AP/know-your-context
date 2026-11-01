@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.adjacency`` (ATM wave-2 formats).
+"""Tests for ``know_your_context.exporters.adjacency`` (ATM wave-2 formats).
 
 Two artifacts over one canonical extraction:
 
@@ -19,7 +19,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.adjacency import (
+from know_your_context.exporters.adjacency import (
     ADJACENCY_CSV_MAX_BYTES,
     ADJACENCY_MAX_NODES,
     EDGE_LIST_MAX_BYTES,
@@ -32,7 +32,7 @@ from know_your_soul.exporters.adjacency import (
     roundtrip_adjacency_csv,
     roundtrip_edge_list_txt,
 )
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportError,
     ExportRegistry,
@@ -158,7 +158,7 @@ class TestAdjacencyCsvRoundTrip:
 class TestEdgeListTxt:
     def test_empty_model(self) -> None:
         text = render_edge_list_txt(_model([_node("a")]))
-        assert text == "# know-your-soul edge-list v1\n# nodes: 1\n# edges: 0\n"
+        assert text == "# know-your-context edge-list v1\n# nodes: 1\n# edges: 0\n"
 
     def test_node_count_includes_isolated_nodes(self) -> None:
         text = render_edge_list_txt(_model([_node("a"), _node("b"), _node("c")], [_link("a", "b")]))
@@ -237,16 +237,16 @@ class TestEdgeListRoundTrip:
     def test_unsorted_lines_fail(self) -> None:
         with pytest.raises(ExportRoundTripError, match="order"):
             roundtrip_edge_list_txt(
-                b"# know-your-soul edge-list v1\n# nodes: 2\n# edges: 2\nb\ta\tsupports\na\tb\tsupports\n"
+                b"# know-your-context edge-list v1\n# nodes: 2\n# edges: 2\nb\ta\tsupports\na\tb\tsupports\n"
             )
 
     def test_wrong_field_count_fails(self) -> None:
         with pytest.raises(ExportRoundTripError, match="field"):
-            roundtrip_edge_list_txt(b"# know-your-soul edge-list v1\n# nodes: 2\n# edges: 1\na\tb\n")
+            roundtrip_edge_list_txt(b"# know-your-context edge-list v1\n# nodes: 2\n# edges: 1\na\tb\n")
 
     def test_crlf_fails(self) -> None:
         with pytest.raises(ExportRoundTripError, match="LF"):
-            roundtrip_edge_list_txt(b"# know-your-soul edge-list v1\r\n# nodes: 0\r\n# edges: 0\r\n")
+            roundtrip_edge_list_txt(b"# know-your-context edge-list v1\r\n# nodes: 0\r\n# edges: 0\r\n")
 
 
 # ----------------------------------------------------------- registry seam

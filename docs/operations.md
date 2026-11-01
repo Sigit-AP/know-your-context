@@ -1,4 +1,4 @@
-# Operations — know-your-soul
+# Operations — know-your-context
 
 This document covers day-2 operation of the store, projection and
 API surfaces: observability, health/readiness, backup/restore, projection
@@ -7,7 +7,7 @@ recovery, and the security posture. The HTTP/Unix-socket server
 
 ## Security posture
 
-Least privilege by default (`src/know_your_soul/security.py`):
+Least privilege by default (`src/know_your_context/security.py`):
 
 - **Bind policy** — `assert_bind_allowed(bind, api_key=...)`: Unix sockets
   (`unix:/path.sock`) and loopback binds (`127.0.0.1`, `::1`, `localhost`)
@@ -39,7 +39,7 @@ Least privilege by default (`src/know_your_soul/security.py`):
 
 ## Observability
 
-`src/know_your_soul/observability.py`:
+`src/know_your_context/observability.py`:
 
 - `MetricsRegistry` — thread-safe counters/gauges, deterministic
   `snapshot()` and Prometheus-style `render_text()`.
@@ -68,7 +68,7 @@ invocations exactly once.
 
 ## Backup and restore
 
-`src/know_your_soul/backup.py`:
+`src/know_your_context/backup.py`:
 
 - `backup_store(store, dest)` — SQLite online backup into a same-directory
   temp file, verified (`PRAGMA quick_check`, event count, chain-head anchor),
@@ -100,7 +100,7 @@ schedule; keep receipts with the backup so rollback can assert the chain head.
 
 ## Source watch (spec 13.5)
 
-`know-your-soul serve --watch PATH` runs the doc-change watcher for the
+`know-your-context serve --watch PATH` runs the doc-change watcher for the
 server's lifespan (arch review F-1; `update_pipeline.SourceWatchLoop` +
 `source_watcher.SourceWatcher`):
 
@@ -126,7 +126,7 @@ server's lifespan (arch review F-1; `update_pipeline.SourceWatchLoop` +
   for another root fails closed (`WatcherStateError`).
 - **Failure isolation.** Watcher errors (corrupt/foreign state file,
   unreadable corpus) and gate-callback failures are logged
-  (`know_your_soul.update_pipeline`) and backed off exponentially — they
+  (`know_your_context.update_pipeline`) and backed off exponentially — they
   never take the API down. Operator repair: remove or fix the state file;
   detection resumes on the next polls. The watch thread
   (`soul-source-watch`) starts and stops with the server.
@@ -144,8 +144,8 @@ never trigger a rebuild, and are OPS surface only — they are not knowledge
 operations and are never dispatched over MCP or HTTP.
 
 ```bash
-know-your-soul --store soul.sqlite3 --output-root graph export --formats all
-know-your-soul --store bench.sqlite3 --output-root graph analytics --modules all
+know-your-context --store soul.sqlite3 --output-root graph export --formats all
+know-your-context --store bench.sqlite3 --output-root graph analytics --modules all
 ```
 
 - `export` produces the **format** artifacts (22): `exports/node-index.json`,
@@ -190,7 +190,7 @@ know-your-soul --store bench.sqlite3 --output-root graph analytics --modules all
   `assortativity`, `paths`, `aggregates`, `near-duplicates`), or `all`
   (every artifact of the command's kind). Unknown selections are usage errors
   (exit 2); an example with a real artifact name:
-  `know-your-soul ... export --formats exports/graph.dot`.
+  `know-your-context ... export --formats exports/graph.dot`.
 - Every artifact is produced fail-closed through the export registry
   (`exporters/orchestrator.py` + `exporters/builtin.py`): an explicit
   per-artifact byte cap, then a format-specific round-trip validator that
@@ -213,24 +213,24 @@ know-your-soul --store bench.sqlite3 --output-root graph analytics --modules all
 
 ## Ops tooling: config, metrics, diagnose (mega-wave 2)
 
-Three more OPS-only commands (`src/know_your_soul/ops/{config,metrics,diagnose}.py`,
+Three more OPS-only commands (`src/know_your_context/ops/{config,metrics,diagnose}.py`,
 wired in `cli.py`). All are strictly read-only against the store — the store
 file is byte-identical before and after (pinned by
 `tests/test_wave2_integration.py::test_cli_ops_commands_never_touch_the_store`).
 
 ```bash
-know-your-soul config describe               # markdown: resolved value + provenance per key
-know-your-soul config effective              # canonical JSON: flat key=value (secrets redacted)
-know-your-soul config dump                   # canonical JSON: {key: {value, source}}
-know-your-soul config --config ops.toml describe   # extra TOML layer
-know-your-soul metrics                       # canonical JSON operational metrics
-know-your-soul metrics --format markdown     # human report
-know-your-soul diagnose                      # self-check; exit 0 = no errors, 1 = any error
-know-your-soul diagnose --format markdown --no-permissions
+know-your-context config describe               # markdown: resolved value + provenance per key
+know-your-context config effective              # canonical JSON: flat key=value (secrets redacted)
+know-your-context config dump                   # canonical JSON: {key: {value, source}}
+know-your-context config --config ops.toml describe   # extra TOML layer
+know-your-context metrics                       # canonical JSON operational metrics
+know-your-context metrics --format markdown     # human report
+know-your-context diagnose                      # self-check; exit 0 = no errors, 1 = any error
+know-your-context diagnose --format markdown --no-permissions
 ```
 
 - **Configuration** (`ops/config.py`) resolves 20 declared keys through four
-  layers: defaults < TOML file (`--config`) < environment (`KNOW_YOUR_SOUL_*`)
+  layers: defaults < TOML file (`--config`) < environment (`KNOW_YOUR_CONTEXT_*`)
   < CLI flags. Every key is typed and fail-closed (`ConfigError` with a code:
   `UNKNOWN_KEY`, `TYPE_MISMATCH`, `OUT_OF_RANGE`, ...); a bad file is a usage
   error (exit 2). Secrets (`serve.api_key`) render as `<redacted>` on every
@@ -247,11 +247,11 @@ know-your-soul diagnose --format markdown --no-permissions
   (`--no-permissions` skips the last). A crashed check becomes a
   `CHECK_CRASHED` finding instead of an exception. The process exit code is
   the report's: 1 iff any `error`-severity finding exists — so CI can gate on
-  `know-your-soul diagnose` directly.
+  `know-your-context diagnose` directly.
 
 ## Generation retention (ATM wave D)
 
-`src/know_your_soul/ops/retention.py` (SUB-69) implements deterministic
+`src/know_your_context/ops/retention.py` (SUB-69) implements deterministic
 generation GC: `RetentionPolicy` (keep N newest + pinned), `plan_retention`
 (pure plan), `run_retention` (delete only non-CURRENT, non-pinned generations
 not referenced by any backup, with an audit event per deletion). Retention
@@ -274,12 +274,12 @@ requirement. Dependency installs differ by surface, deliberately:
   constraints file from the lock (`uv export`) or install with uv; the
   current image accepts the pyproject ranges by design.
 
-The `know-your-soul` entrypoint (console script, `cli.py`) is installed by
+The `know-your-context` entrypoint (console script, `cli.py`) is installed by
 the build stage.
 
 ## Rust extraction kernel (optional, wave W5)
 
-The code-ingestion hot path (`src/know_your_soul/ingest/extractor.py`) routes
+The code-ingestion hot path (`src/know_your_context/ingest/extractor.py`) routes
 through an optional Rust kernel (`kernel-rust/`, crate `kys-kernel`) when it
 is built; **the pure-Python tree-sitter walker is the automatic fallback**, so
 every install works with or without a Rust toolchain — nothing in CI or in
@@ -302,11 +302,11 @@ cargo test                               # kernel unit tests
 `uv sync --locked` already provides it in `.venv/bin/maturin`; it needs
 `VIRTUAL_ENV` set (active venv) for `develop`. The bridge
 (`ingest/kernel_bridge.py`) finds the kernel via (1) an installed
-`know_your_soul_kernel` module (`maturin develop` / wheel install), or (2) the
-repo-local `kernel-rust/target/{release,debug}/libknow_your_soul_kernel.so`.
+`know_your_context_kernel` module (`maturin develop` / wheel install), or (2) the
+repo-local `kernel-rust/target/{release,debug}/libknow_your_context_kernel.so`.
 
 Gotcha: a plain `cargo build` also writes a cdylib to
-`target/*/libknow_your_soul_kernel.so` that lacks the PyO3 module — always
+`target/*/libknow_your_context_kernel.so` that lacks the PyO3 module — always
 refresh with `maturin build`/`develop` after plain cargo builds (the bridge
 detects the stale artifact and falls back).
 
@@ -321,11 +321,22 @@ through the kernel hot path; both paths must stay green.
 
 The CLI resolves the default `--store` path in this order:
 
-1. `KNOW_YOUR_SOUL_STORE` (current product variable; set by the container
-   image to `/data/know-your-soul.sqlite3`),
-2. `SOUL_STORE` (pre-rename name; still honored with a deprecation warning on
-   stderr),
-3. the built-in default `./know-your-soul.sqlite3`.
+1. `KNOW_YOUR_CONTEXT_STORE` (set by the container image to
+   `/data/know-your-context.sqlite3`),
+2. the built-in default `./know-your-context.sqlite3`.
+
+All `KNOW_YOUR_SOUL_*` variables and the older `SOUL_STORE` fallback were
+removed in the Know Your Context rename — there are no aliases.
 
 `SOUL_CORPUS` is unrelated to the product store: it names the external SOUL
 corpus input (`SourceKind.SOUL_CORPUS`) and is intentionally unchanged.
+
+## Legacy `soul://` provenance scheme
+
+The product's provenance URI scheme is `context://`. The previous `soul://`
+scheme survives only inside byte-frozen artifacts that must never drift:
+the frozen v1/v2 measurement fixtures (`tests/fixtures/*.json`) and the
+digest-pinned contracts (`docs/contracts/*.md`, sha256-pinned by
+`tests/test_contract_v3_shape.py` and `tests/test_extraction_contract_v4_shape.py`).
+Those files are historical records; new data and new code use `context://`
+exclusively.

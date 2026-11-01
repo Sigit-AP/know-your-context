@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# know-your-soul container: deterministic, offline, non-root.
+# know-your-context container: deterministic, offline, non-root.
 #
 # The runtime needs no outbound network (the runtime guard denies provider
 # imports, credentials and sockets); network access is only used at build time
@@ -16,18 +16,17 @@ RUN pip install --no-cache-dir --no-compile .
 FROM python:3.14-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
-RUN groupadd --system soul \
-    && useradd --system --gid soul --no-create-home --shell /usr/sbin/nologin soul \
+RUN groupadd --system context \
+    && useradd --system --gid context --no-create-home --shell /usr/sbin/nologin context \
     && mkdir -p /data \
-    && chown soul:soul /data
+    && chown context:context /data
 COPY --from=build /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
 COPY --from=build /usr/local/bin /usr/local/bin
-USER soul
+USER context
 VOLUME ["/data"]
 # Default store location inside the container; projections live next to it.
-# The CLI resolves the store default from KNOW_YOUR_SOUL_STORE; the pre-rename
-# SOUL_STORE name is still honored (deprecated, warns on stderr).
-ENV KNOW_YOUR_SOUL_STORE=/data/know-your-soul.sqlite3
-# The `know-your-soul` console script ships in the package (cli.py) and is
-# installed by the build above; e.g.: docker run --rm <image> know-your-soul --help
-ENTRYPOINT ["know-your-soul"]
+# The CLI resolves the store default from KNOW_YOUR_CONTEXT_STORE.
+ENV KNOW_YOUR_CONTEXT_STORE=/data/know-your-context.sqlite3
+# The `know-your-context` console script ships in the package (cli.py) and is
+# installed by the build above; e.g.: docker run --rm <image> know-your-context --help
+ENTRYPOINT ["know-your-context"]

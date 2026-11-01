@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.analytics.communities`` (ATM F-A3).
+"""Tests for ``know_your_context.analytics.communities`` (ATM F-A3).
 
 Pins the deterministic community contract: canonical-order label propagation
 with an explicit iteration cap, stable community ids (0 = largest), hub labels
@@ -19,7 +19,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.communities import (
+from know_your_context.analytics.communities import (
     DEFAULT_HOP_ATTENUATION,
     DEFAULT_MAX_ITERATIONS,
     detect_communities,
@@ -27,7 +27,7 @@ from know_your_soul.analytics.communities import (
     membership_signature,
     remap_communities,
 )
-from know_your_soul.domain import canonical_json
+from know_your_context.domain import canonical_json
 
 # ------------------------------------------------------------------ helpers
 
@@ -161,8 +161,8 @@ class TestDetectCommunities:
 
     def test_hashseed_independent_via_subprocess(self) -> None:
         code = (
-            "from know_your_soul.analytics.communities import detect_communities\n"
-            "from know_your_soul.domain import canonical_json\n"
+            "from know_your_context.analytics.communities import detect_communities\n"
+            "from know_your_context.domain import canonical_json\n"
             "nodes = [{'id': c} for c in 'abcdefghij']\n"
             "links = [{'source': a, 'target': b, 'relation': 'supports', 'weight': 1.0}\n"
             "         for a, b in [('a','b'),('b','c'),('d','e'),('e','f'),('f','d'),\n"

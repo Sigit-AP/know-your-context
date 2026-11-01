@@ -2,12 +2,12 @@
 
 **🇬🇧 English** | [🇮🇩 Bahasa Indonesia](README.id.md)
 
-# Know Your Soul
+# Know Your Context
 
-**A local, auditable knowledge graph for agents — deterministic memory, universal ingestion, and a 50-agent server. No model inside.**
+**Context for agents, built on three pillars — multi-modal knowledge, deterministic code intelligence, and auditable memory. All local. No model inside.**
 
-[![CI](https://github.com/Sigit-AP/know-your-soul/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Sigit-AP/know-your-soul/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/know-your-soul)](https://pypi.org/project/know-your-soul/)
+[![CI](https://github.com/Sigit-AP/know-your-context/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Sigit-AP/know-your-context/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/know-your-context)](https://pypi.org/project/know-your-context/)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue)](https://www.python.org/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](LICENSE)
 
@@ -36,7 +36,7 @@ Agents re-read the same documents every session and pay full token price for
 it. Worse, what an agent learns today is gone tomorrow — nothing is scored,
 versioned, or auditable.
 
-Know Your Soul is the memory that fixes both. It answers from a local graph
+Know Your Context is the memory that fixes both. It answers from a local graph
 instead of the raw corpus (**measured: 466× fewer tokens on a 52-file mixed
 corpus**), every answer carries provenance and an audit id, and every change
 to the graph goes through a proposal you approve — with byte-exact rollback.
@@ -50,19 +50,29 @@ never guesses.
 > contract — hash-bound to the source file, tagged `agent-extracted`, gated by
 > review. The product itself never calls a model.
 
+Know Your Context gives an agent its context from three pillars:
+
+- **Knowledge** — multi-modal knowledge across domains: markdown,
+  PDFs, plain text, and images or scanned documents via external-agent
+  extraction (the `submit_extraction` contract).
+- **Code intelligence** — deterministic code understanding: AST extraction,
+  symbol lookup, call hierarchy, across 19 languages.
+- **Auditable memory** — a learning memory that is deterministic, scored,
+  versioned, and rollback-exact. This pillar is ours; nobody else ships it.
+
 ## Install
 
 **Requires:** Python 3.14
 
 ```bash
-pip install know-your-soul
+pip install know-your-context
 ```
 
 From source:
 
 ```bash
-git clone https://github.com/Sigit-AP/know-your-soul.git
-cd know-your-soul
+git clone https://github.com/Sigit-AP/know-your-context.git
+cd know-your-context
 uv sync --frozen
 ```
 
@@ -74,24 +84,24 @@ byte-identical graphs (verified by test).
 
 ```bash
 # record knowledge (audited, scored)
-know-your-soul --store demo.sqlite3 log-event \
+know-your-context --store demo.sqlite3 log-event \
   '{"node_id":"n1","parent_id":"p1-root","domain":"P1",
     "summary":"Always verify before claiming done",
-    "provenance":["soul://demo"],"source_version_id":"demo-v1"}'
+    "provenance":["context://demo"],"source_version_id":"demo-v1"}'
 
-know-your-soul --store demo.sqlite3 rebuild
-know-your-soul --store demo.sqlite3 query \
+know-your-context --store demo.sqlite3 rebuild
+know-your-context --store demo.sqlite3 query \
   '{"purpose":"verify before claiming done","token_budget":400}'
 
 # ingest code and documents (proposal-only, contract v3)
-know-your-soul ingest-directory ./my-project
-know-your-soul watch ./my-project --interval 2
+know-your-context ingest-directory ./my-project
+know-your-context watch ./my-project --interval 2
 
 # see everything
-know-your-soul webview                 # interactive web view, loopback + token
-know-your-soul serve --daemon          # 50-agent superpower server
-know-your-soul report                  # god nodes, surprising connections, questions
-know-your-soul diagnose                # 11 self-checks, exit code reflects health
+know-your-context webview                 # interactive web view, loopback + token
+know-your-context serve --daemon          # 50-agent superpower server
+know-your-context report                  # god nodes, surprising connections, questions
+know-your-context diagnose                # 11 self-checks, exit code reflects health
 ```
 
 ## Benchmarks
@@ -128,10 +138,15 @@ raises write throughput **7.04×**, a spammer at 10× costs polite agents only
 extraction engines (Rust + Python), across processes, across hash seeds. If a
 number changes, the input changed.
 
-**Universal ingestion.** Nineteen programming languages via tree-sitter (a
-Rust kernel does the hot path; a byte-identical Python fallback covers the
-rest), plus PDF text layers, structure-aware markdown, and plain text. Scanned
-PDFs are flagged honestly (`no_text_layer`) instead of being faked.
+**Knowledge ingestion.** Structure-aware markdown, PDF text layers, and plain
+text. Scanned PDFs are flagged honestly (`no_text_layer`) instead of being
+faked, and agents with vision models submit image/scanned extractions through
+`submit_extraction` — hash-bound, review-gated, never auto-promoted.
+
+**Code intelligence.** Nineteen programming languages via tree-sitter: a Rust
+kernel does the hot path and a byte-identical Python fallback covers the rest.
+FTS5 symbol lookup, call hierarchy, and token-budgeted retrieval over the
+resulting graph.
 
 **A hierarchy that knows itself.** Primary nodes hold single responsibilities,
 descend to arbitrary depth, and connect to other primaries through bridges.
@@ -158,7 +173,7 @@ generation manifest.
 
 ## The Web View
 
-`know-your-soul webview` starts a loopback-only viewer (token in URL, session
+`know-your-context webview` starts a loopback-only viewer (token in URL, session
 cookie after first load, anti-DNS-rebinding, no CORS). Seven tabs:
 
 <p align="center">
@@ -224,10 +239,10 @@ plus `knowledge_ingest_file`, `knowledge_ingest_directory` (v3), and
 
 ## Configuration
 
-Layered: defaults → TOML file → environment variables (`KNOW_YOUR_SOUL_*`) →
+Layered: defaults → TOML file → environment variables (`KNOW_YOUR_CONTEXT_*`) →
 CLI flags. `config describe` prints every key with its provenance; secrets are
 redacted on every surface. Kill switches exist for every optimization
-(`KNOW_YOUR_SOUL_NO_GROUP_COMMIT`, `KYS_DISABLE_RUST_KERNEL`, …).
+(`KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT`, `KYS_DISABLE_RUST_KERNEL`, …).
 
 ## Security
 
@@ -242,7 +257,7 @@ redacted on every surface. Kill switches exist for every optimization
 
 ```bash
 uv sync --frozen
-uv run pytest -q                 # 6,782 tests
+uv run pytest -q                 # 6,830 tests
 uv run pyright
 uv run ruff check
 uv run python bench/run.py run   # 24/24 accepted

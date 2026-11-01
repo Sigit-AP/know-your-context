@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.analytics.review_signals`` (ATM F-A6).
+"""Tests for ``know_your_context.analytics.review_signals`` (ATM F-A6).
 
 Pins the review-signal catalog: low-confidence edges, isolated nodes,
 low-cohesion communities, stale-evidence nodes (superseded source versions),
@@ -14,11 +14,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.review_signals import (
+from know_your_context.analytics.review_signals import (
     CATALOG_ORDER,
     collect_review_signals,
 )
-from know_your_soul.domain import canonical_json
+from know_your_context.domain import canonical_json
 
 # ------------------------------------------------------------------ helpers
 

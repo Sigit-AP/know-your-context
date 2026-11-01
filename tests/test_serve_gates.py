@@ -32,14 +32,14 @@ from pathlib import Path
 import pytest
 
 from _serve_helpers import SocketClient, make_config, tool_payload, wait_for
-from know_your_soul.serve import rpc
-from know_your_soul.serve.superpower import (
+from know_your_context.serve import rpc
+from know_your_context.serve.superpower import (
     SuperpowerDaemon,
     classify_tool,
     spawn_daemon,
     stop_daemon,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 # Written latency targets for the storm gate (client-side milliseconds, ~1.5x
 # headroom over the measured p95). Under the defined 50-agent storm the write
@@ -70,7 +70,7 @@ def _node(node_id: str, summary: str = "gate node") -> dict:
         "kind": "leaf",
         "domain": "P1",
         "summary": summary,
-        "provenance": ["soul://gate"],
+        "provenance": ["context://gate"],
         "source_version_id": "sv-test",
     }
 
@@ -80,7 +80,7 @@ def _evidence(evidence_id: str, node_id: str) -> dict:
         "evidence_id": evidence_id,
         "node_id": node_id,
         "source_version_id": "sv-test",
-        "source_uri": "soul://gate",
+        "source_uri": "context://gate",
         "observed_at": "2026-10-28T00:00:00+00:00",
         "context_tags": ["gate"],
         "independence_key": evidence_id,

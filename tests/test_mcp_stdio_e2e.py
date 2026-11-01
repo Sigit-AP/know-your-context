@@ -1,6 +1,6 @@
 """Fresh-process stdio end-to-end tests for the MCP adapter (Task 8).
 
-A real ``python -m know_your_soul.mcp_server`` child is spawned under a
+A real ``python -m know_your_context.mcp_server`` child is spawned under a
 scrubbed environment (provider credentials injected, then scrubbed away) and
 driven both by the official MCP client and by raw JSON-RPC frames. This is
 the wire-level proof of the binding contract in
@@ -22,10 +22,10 @@ import anyio
 from mcp import ClientSession, types
 from mcp.client.stdio import StdioServerParameters, stdio_client
 
-from know_your_soul import runtime_guard
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, Relation, RelationKind
-from know_your_soul.projection import GraphProjector
-from know_your_soul.store import EventStore
+from know_your_context import runtime_guard
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, Relation, RelationKind
+from know_your_context.projection import GraphProjector
+from know_your_context.store import EventStore
 
 # The MCP tool surface (contract v2 — operator ruling 2026-10-26, progress.md;
 # addendum docs/contracts/retrieval-verbs-v2.md): the frozen ten v1 tools plus
@@ -70,7 +70,7 @@ def _seed(tmp_path: Path) -> tuple[Path, Path]:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -83,7 +83,7 @@ def _seed(tmp_path: Path) -> tuple[Path, Path]:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -96,7 +96,7 @@ def _seed(tmp_path: Path) -> tuple[Path, Path]:
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
             context_tags=("gates",),
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
     )
@@ -136,7 +136,7 @@ def _scrubbed_env() -> dict[str, str]:
 
 
 def _server_args(graph_root: Path, db: Path) -> list[str]:
-    return ["-m", "know_your_soul.mcp_server", "--graph-root", str(graph_root), "--db", str(db)]
+    return ["-m", "know_your_context.mcp_server", "--graph-root", str(graph_root), "--db", str(db)]
 
 
 def _result_text(result: types.CallToolResult) -> str:
@@ -175,7 +175,7 @@ def test_fresh_client_discovers_ten_tools(tmp_path: Path) -> None:
                 assert "project_path" not in tool.input_schema.get("properties", {}), tool.name
             resources = await session.list_resources()
             assert resources.resources
-            assert all(str(resource.uri).startswith("soul://") for resource in resources.resources)
+            assert all(str(resource.uri).startswith("context://") for resource in resources.resources)
 
     anyio.run(scenario)
 
@@ -278,8 +278,8 @@ def test_canonical_payload_parity(tmp_path: Path) -> None:
 
     # Direct in-process call against the same store: identical payload shape,
     # differing only in the per-invocation audit id.
-    from know_your_soul.contracts import QueryRequest
-    from know_your_soul.service import KnowledgeService
+    from know_your_context.contracts import QueryRequest
+    from know_your_context.service import KnowledgeService
 
     store = EventStore(db)
     service = KnowledgeService(store, GraphProjector(store, output_root=graph_root))
@@ -307,7 +307,7 @@ def test_persistence_across_server_restart(tmp_path: Path) -> None:
         "kind": "leaf",
         "domain": "P1",
         "summary": "Persisted through one server and read by the next",
-        "provenance": ["soul://corpus/lesson.md"],
+        "provenance": ["context://corpus/lesson.md"],
         "source_version_id": "sv-test",
     }
 
@@ -351,8 +351,8 @@ def test_guards_hold_inside_the_scrubbed_server_process(tmp_path: Path) -> None:
         "\n".join(
             [
                 "import json, socket, sys",
-                "from know_your_soul import runtime_guard as guard",
-                "from know_your_soul.mcp_server import build_server, build_service",
+                "from know_your_context import runtime_guard as guard",
+                "from know_your_context.mcp_server import build_server, build_service",
                 f"service = build_service(graph_root={str(graph_root)!r}, db={str(db)!r})",
                 f"server = build_server(service, graph_root={str(graph_root)!r})",
                 "report = {'credentials': sorted(guard.provider_credentials())}",

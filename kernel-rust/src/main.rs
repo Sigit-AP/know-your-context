@@ -9,8 +9,8 @@
 use std::collections::BTreeMap;
 use std::process::ExitCode;
 
-use know_your_soul_kernel::canon::{canonical_json, Json};
-use know_your_soul_kernel::walker::{extract_file, KernelError};
+use know_your_context_kernel::canon::{canonical_json, Json};
+use know_your_context_kernel::walker::{extract_file, KernelError};
 
 fn usage() -> &'static str {
     "usage: kys-kernel <file> [--display-path PATH]"

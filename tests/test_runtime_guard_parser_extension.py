@@ -19,7 +19,7 @@ from importlib.metadata import EntryPoint
 
 import pytest
 
-from know_your_soul import runtime_guard
+from know_your_context import runtime_guard
 
 PARSER_DISTRIBUTIONS = ("pypdf", "tree-sitter", "tree-sitter-language-pack")
 PARSER_IMPORT_ROOTS = ("pypdf", "tree_sitter", "tree_sitter_language_pack")

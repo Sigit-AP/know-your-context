@@ -41,9 +41,9 @@ from hypothesis import strategies as st
 from mcp import types
 from mcp.shared.exceptions import MCPError
 
-from know_your_soul.audit import AuditLog
-from know_your_soul.domain import canonical_json
-from know_your_soul.mcp_server import (
+from know_your_context.audit import AuditLog
+from know_your_context.domain import canonical_json
+from know_your_context.mcp_server import (
     _RESOURCE_URIS,
     _TOOL_TO_OPERATION,
     EXPECTED_TOOLS,
@@ -53,9 +53,9 @@ from know_your_soul.mcp_server import (
     _tool_schemas,
     _validate_arguments,
 )
-from know_your_soul.projection import GraphProjector
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.projection import GraphProjector
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 
 _TOOL_NAME_RE = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
 _MAX = 1024  # the max_token_budget the test adapter is built with
@@ -493,7 +493,7 @@ def test_an_unknown_resource_uri_fails_closed(uri: str) -> None:
 
 def test_resource_uris_are_exactly_the_four_sanitized_projections() -> None:
     assert len(_RESOURCE_URIS) == 4
-    assert all(uri.startswith("soul://") for uri in _RESOURCE_URIS)
+    assert all(uri.startswith("context://") for uri in _RESOURCE_URIS)
     assert not any(".." in uri or "\\" in uri for uri in _RESOURCE_URIS)
     adapter = _adapter()
     listed = adapter.list_resources()
@@ -592,7 +592,7 @@ def test_the_rollback_tool_without_a_target_fails_at_dispatch() -> None:
 )
 @settings(derandomize=True, max_examples=25, deadline=None)
 def test_the_diff_op_enum_is_closed(op: str) -> None:
-    from know_your_soul.mcp_server import _DIFF_OPS
+    from know_your_context.mcp_server import _DIFF_OPS
 
     schema = _tool_schemas(_MAX)["knowledge_propose_improvement"]
     arguments = {"node_id": "n-1", "diff": [{"op": op}], "rationale": "r"}
@@ -695,12 +695,12 @@ def test_tool_error_carries_its_code_and_optional_audit_id() -> None:
 def test_reading_a_projection_resource_without_a_projection_fails_closed() -> None:
     adapter = _adapter()
     with pytest.raises(MCPError):
-        anyio.run(adapter.read_resource, "soul://projection/manifest")
+        anyio.run(adapter.read_resource, "context://projection/manifest")
 
 
 def test_relearn_status_resource_is_served_without_a_pending_gate() -> None:
     adapter = _adapter()
-    result = anyio.run(adapter.read_resource, "soul://relearn/status")
+    result = anyio.run(adapter.read_resource, "context://relearn/status")
     content = result.contents[0]
     assert isinstance(content, types.TextResourceContents)
     assert content.mime_type == "application/json"

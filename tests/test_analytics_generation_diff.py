@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.analytics.generation_diff`` (ATM F-C1).
+"""Tests for ``know_your_context.analytics.generation_diff`` (ATM F-C1).
 
 Pins the cross-generation diff contract: canonical edge keys
 ``(source, target, relation)``, reversed edges detected explicitly and never
@@ -14,13 +14,13 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.generation_diff import (
+from know_your_context.analytics.generation_diff import (
     DIFF_SCHEMA_VERSION,
     GenerationDiffError,
     diff_generations,
     render_diff_markdown,
 )
-from know_your_soul.domain import canonical_json
+from know_your_context.domain import canonical_json
 
 # ------------------------------------------------------------------ helpers
 

@@ -32,8 +32,8 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
-from know_your_soul.domain import PrimaryDomain, ScoreVector
-from know_your_soul.graph_model import (
+from know_your_context.domain import PrimaryDomain, ScoreVector
+from know_your_context.graph_model import (
     CORE_EDGE_KINDS,
     CORE_NODE_KINDS,
     SYMMETRIC_EDGE_KINDS,
@@ -417,7 +417,7 @@ class TestNodeIdParse:
 
     def test_id_stable_across_hashseed(self) -> None:
         code = (
-            "from know_your_soul.graph_model import make_node_id, file_node_id;"
+            "from know_your_context.graph_model import make_node_id, file_node_id;"
             "print(make_node_id(path='src/a.py', kind='function', name='f', line=3));"
             "print(file_node_id('src/a.py'))"
         )
@@ -1327,7 +1327,7 @@ class TestCanonicalDump:
     def test_dump_stable_across_hashseed(self) -> None:
         code = (
             "from datetime import UTC, datetime;"
-            "from know_your_soul.graph_model import UniversalGraph, GraphNode, file_node_id;"
+            "from know_your_context.graph_model import UniversalGraph, GraphNode, file_node_id;"
             "g=UniversalGraph();"
             "g.add_node(GraphNode(node_id=file_node_id('a.py'),kind='file',name='a.py',path='a.py',"
             "updated_at=datetime(2026,1,1,tzinfo=UTC)));"

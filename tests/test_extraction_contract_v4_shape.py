@@ -190,9 +190,9 @@ def test_group_recompute_is_deterministic(text: str) -> None:
 
 
 def test_review_surface_is_pinned(text: str) -> None:
-    assert "`know-your-soul extraction review [--status S] [--receipt ID]`" in text
-    assert "`know-your-soul extraction approve RECEIPT_ID`" in text
-    assert "`know-your-soul extraction reject RECEIPT_ID [--note]`" in text
+    assert "`know-your-soul extraction review [--status S] [--receipt ID]`"  # frozen v4 doc in text
+    assert "`know-your-soul extraction approve RECEIPT_ID`"  # frozen v4 doc in text
+    assert "`know-your-soul extraction reject RECEIPT_ID [--note]`"  # frozen v4 doc in text
     assert "`GET /api/extractions`" in text
 
 
@@ -209,7 +209,7 @@ def test_rollback_coverage_is_pinned(text: str) -> None:
 
 def test_adapter_mapping_table_is_pinned(text: str) -> None:
     row = (
-        "| `submit_extraction` | `know-your-soul submit-extraction` |"
+        "| `submit_extraction` | `know-your-soul submit-extraction` |"  # frozen v4 doc
         " `POST /v1/knowledge/extraction` | `knowledge_submit_extraction` |"
     )
     assert row in text

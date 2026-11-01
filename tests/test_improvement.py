@@ -14,8 +14,8 @@ from typing import Literal
 
 import pytest
 
-from know_your_soul.domain import Event, EventKind, LifecycleStatus, Node, NodeKind, PrimaryDomain, ScoreVector
-from know_your_soul.improvement import (
+from know_your_context.domain import Event, EventKind, LifecycleStatus, Node, NodeKind, PrimaryDomain, ScoreVector
+from know_your_context.improvement import (
     ApprovalRecord,
     ApprovalRequired,
     DiffOp,
@@ -35,7 +35,7 @@ from know_your_soul.improvement import (
     retain_improvement,
     rollback_improvement,
 )
-from know_your_soul.store import EventStore, VersionConflict
+from know_your_context.store import EventStore, VersionConflict
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 LATER = NOW + timedelta(hours=1)

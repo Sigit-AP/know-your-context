@@ -25,9 +25,9 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-import know_your_soul.store as store_module
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.store import (
+import know_your_context.store as store_module
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.store import (
     EventStore,
     MigrationError,
     SchemaStateError,

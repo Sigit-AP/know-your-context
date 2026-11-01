@@ -18,8 +18,8 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.cli import main
-from know_your_soul.domain import (
+from know_your_context.cli import main
+from know_your_context.domain import (
     Event,
     EventKind,
     Evidence,
@@ -29,8 +29,8 @@ from know_your_soul.domain import (
     Relation,
     RelationKind,
 )
-from know_your_soul.exporters import builtin
-from know_your_soul.exporters.builtin import (
+from know_your_context.exporters import builtin
+from know_your_context.exporters.builtin import (
     ANALYTICS_ALIASES,
     FORMAT_ALIASES,
     ExportContext,
@@ -38,10 +38,10 @@ from know_your_soul.exporters.builtin import (
     gather_context,
     resolve_selection,
 )
-from know_your_soul.exporters.orchestrator import manifest_entries, produce_exports
-from know_your_soul.projection import GraphProjector
-from know_your_soul.report import report_v2
-from know_your_soul.store import EventStore
+from know_your_context.exporters.orchestrator import manifest_entries, produce_exports
+from know_your_context.projection import GraphProjector
+from know_your_context.report import report_v2
+from know_your_context.store import EventStore
 
 # --------------------------------------------------------------- expectations
 
@@ -111,7 +111,7 @@ def _node(node_id: str, domain: PrimaryDomain, *, kind: NodeKind = NodeKind.LEAF
         kind=kind,
         domain=domain,
         summary=f"summary of {node_id}",
-        provenance=("soul://tests",),
+        provenance=("context://tests",),
         source_version_id="sv-test",
     )
 
@@ -121,7 +121,7 @@ def _evidence(evidence_id: str, node_id: str) -> Evidence:
         evidence_id=evidence_id,
         node_id=node_id,
         source_version_id="sv-test",
-        source_uri="soul://tests/evidence",
+        source_uri="context://tests/evidence",
         observed_at=datetime(2026, 1, 1, tzinfo=UTC),
         independence_key=f"ind-{evidence_id}",
         outcome=Decimal("1"),
@@ -364,11 +364,11 @@ def test_analytics_contents_are_real(tmp_path: Path) -> None:
     signals = json.loads(artifacts["analytics/review-signals.json"])
     assert set(signals["signal_counts"]) >= {"low_confidence_edge", "isolated_node"}
     md = artifacts["analytics/graph-report-v2.md"].decode("utf-8")
-    assert md.startswith("# SOUL Knowledge Graph Report (v2)")
+    assert md.startswith("# Know Your Context Graph Report (v2)")
 
 
 def test_book_pages_validate_as_a_set(tmp_path: Path) -> None:
-    from know_your_soul.exporters.book import validate_book
+    from know_your_context.exporters.book import validate_book
 
     db_path, out_path = _rebuilt(tmp_path)
     context = _gather(db_path, out_path)

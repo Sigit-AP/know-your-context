@@ -23,12 +23,12 @@ from _extraction_helpers import (
     make_payload,
     seed_root,
 )
-from know_your_soul.audit import AuditLog
-from know_your_soul.http_api import build_stack, create_app, run_extraction_verb
-from know_your_soul.mcp_server import _TOOL_TO_OPERATION, _Adapter, _tool_schemas, _validate_arguments
-from know_your_soul.projection import GraphProjector
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.audit import AuditLog
+from know_your_context.http_api import build_stack, create_app, run_extraction_verb
+from know_your_context.mcp_server import _TOOL_TO_OPERATION, _Adapter, _tool_schemas, _validate_arguments
+from know_your_context.projection import GraphProjector
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 from test_http_api import asgi_call
 
 _JSON = [(b"content-type", b"application/json")]
@@ -219,7 +219,7 @@ class TestHttpRoute:
             stack.close()
 
     def test_route_is_not_a_generic_knowledge_operation(self) -> None:
-        from know_your_soul.http_api import KNOWLEDGE_OPERATIONS
+        from know_your_context.http_api import KNOWLEDGE_OPERATIONS
 
         assert "submit_extraction" not in KNOWLEDGE_OPERATIONS
         assert "extraction" not in KNOWLEDGE_OPERATIONS
@@ -228,7 +228,7 @@ class TestHttpRoute:
         stack = build_stack(tmp_path / "soul.sqlite3", tmp_path / "out")
         try:
             app = create_app(stack)
-            from know_your_soul.extraction import schema as xs
+            from know_your_context.extraction import schema as xs
 
             payload = make_payload(text="x" * (xs.MAX_TEXT_CHARS + 1))
             status, out = _post(app, "/v1/knowledge/extraction", make_args(payload=payload))
@@ -253,7 +253,7 @@ class TestRunExtractionVerb:
     def test_arguments_must_be_a_mapping(self, tmp_path: Path) -> None:
         store = EventStore(tmp_path / "soul.sqlite3")
         try:
-            from know_your_soul.http_api import AdapterValidationError
+            from know_your_context.http_api import AdapterValidationError
 
             with pytest.raises(AdapterValidationError):
                 run_extraction_verb(
@@ -265,7 +265,7 @@ class TestRunExtractionVerb:
     def test_adapter_rejection_is_audited_once(self, tmp_path: Path) -> None:
         store = EventStore(tmp_path / "soul.sqlite3")
         try:
-            from know_your_soul.http_api import AdapterValidationError
+            from know_your_context.http_api import AdapterValidationError
 
             with pytest.raises(AdapterValidationError):
                 run_extraction_verb(
@@ -279,7 +279,7 @@ class TestRunExtractionVerb:
     def test_unknown_top_level_property_rejected(self, tmp_path: Path) -> None:
         store = EventStore(tmp_path / "soul.sqlite3")
         try:
-            from know_your_soul.extraction import PayloadSchemaError
+            from know_your_context.extraction import PayloadSchemaError
 
             with pytest.raises(PayloadSchemaError, match="surprise"):
                 run_extraction_verb(
@@ -298,7 +298,7 @@ class TestRunExtractionVerb:
 
 
 def _run_cli(capsys: pytest.CaptureFixture[str], *argv: str) -> tuple[int, str, str]:
-    from know_your_soul.cli import main
+    from know_your_context.cli import main
 
     code = main(list(argv))
     captured = capsys.readouterr()
@@ -307,7 +307,7 @@ def _run_cli(capsys: pytest.CaptureFixture[str], *argv: str) -> tuple[int, str, 
 
 class TestCliSubmit:
     def test_submit_extraction_registered(self) -> None:
-        from know_your_soul.cli import build_parser
+        from know_your_context.cli import build_parser
 
         args = build_parser().parse_args(["submit-extraction", "{}"])
         assert args.command == "submit-extraction"
@@ -471,7 +471,7 @@ class TestAdapterParity:
     def test_all_three_surfaces_agree_on_receipt_identity(self, tmp_path: Path, monkeypatch) -> None:
         # The receipt id is content-derived: the same submission yields the
         # same id whichever surface computed it.
-        from know_your_soul.extraction import validate_submission
+        from know_your_context.extraction import validate_submission
 
         submission = validate_submission(make_args())
         assert submission.receipt_id("tester") == submission.receipt_id("tester")

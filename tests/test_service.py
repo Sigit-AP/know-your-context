@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.contracts import (
+from know_your_context.contracts import (
     ACCESS_ONLY_TOKEN_CAP,
     MINIMUM_TOKEN_BUDGET,
     AccessDecision,
@@ -40,7 +40,7 @@ from know_your_soul.contracts import (
     StaleProjectionUnavailable,
     attempt_promotion,
 )
-from know_your_soul.domain import (
+from know_your_context.domain import (
     Event,
     EventKind,
     Evidence,
@@ -52,11 +52,11 @@ from know_your_soul.domain import (
     ScoreVector,
     canonical_json,
 )
-from know_your_soul.importer import SeedImporter
-from know_your_soul.projection import GraphProjector, ProjectorBusy
-from know_your_soul.retrieval import estimated_tokens
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.importer import SeedImporter
+from know_your_context.projection import GraphProjector, ProjectorBusy
+from know_your_context.retrieval import estimated_tokens
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
@@ -99,7 +99,7 @@ def _roots(store: EventStore) -> None:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -112,7 +112,7 @@ def _roots(store: EventStore) -> None:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -134,7 +134,7 @@ def _child(
         domain=domain,
         summary=summary or node_id,
         context_tags=tags,
-        provenance=("soul://corpus/lesson.md",),
+        provenance=("context://corpus/lesson.md",),
         source_version_id="sv-test",
         scores=scores if scores is not None else ScoreVector.zero(),
     )
@@ -145,7 +145,7 @@ def _evidence(evidence_id: str, node_id: str) -> Evidence:
         evidence_id=evidence_id,
         node_id=node_id,
         source_version_id="sv-test",
-        source_uri="soul://corpus/lesson.md",
+        source_uri="context://corpus/lesson.md",
         observed_at=datetime(2026, 10, 20, tzinfo=UTC),
         context_tags=("gates",),
         independence_key=evidence_id,
@@ -221,7 +221,7 @@ def test_query_missing_primary_root_fails_without_keyword_fallback(tmp_path: Pat
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -236,7 +236,7 @@ def test_query_missing_primary_root_fails_without_keyword_fallback(tmp_path: Pat
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -503,7 +503,7 @@ def test_response_never_contains_raw_corpus_text(tmp_path: Path) -> None:
         b"RAW_SOUL_DO_NOT_EXPOSE: the raw body stays in the corpus.\n"
     )
     importer = SeedImporter(store, state_dir=tmp_path / "import-state")
-    importer.import_file(corpus / "lesson.md", domain=PrimaryDomain.P1, source_uri="soul://corpus/lesson.md")
+    importer.import_file(corpus / "lesson.md", domain=PrimaryDomain.P1, source_uri="context://corpus/lesson.md")
     projector.rebuild()
     response = service.query(QueryRequest(purpose="gate discipline", domain="P1", token_budget=2048))
     assert response.results, "the imported heading should be retrievable"
@@ -568,7 +568,7 @@ def test_access_policy_unknown_surface_defaults_to_access_only() -> None:
 
 
 def test_access_policy_artifact_is_hash_pinned() -> None:
-    from know_your_soul.contracts import ACCESS_POLICY_PATH, ACCESS_POLICY_SHA256
+    from know_your_context.contracts import ACCESS_POLICY_PATH, ACCESS_POLICY_SHA256
 
     digest = hashlib.sha256(ACCESS_POLICY_PATH.read_bytes()).hexdigest()
     assert digest == ACCESS_POLICY_SHA256

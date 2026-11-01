@@ -22,8 +22,8 @@ from _extraction_helpers import (
     seed_engine,
     seed_root,
 )
-from know_your_soul.domain import canonical_json
-from know_your_soul.extraction import (
+from know_your_context.domain import canonical_json
+from know_your_context.extraction import (
     INTAKE_CAP,
     TIER_CAP,
     ExtractionDuplicateError,
@@ -513,7 +513,7 @@ class TestRollback:
         applied = store.current_node(node_id)
         assert applied is not None and applied.version == 1
         # an operator edit through the existing propose/apply path…
-        from know_your_soul.improvement import DiffOp, DiffOperation
+        from know_your_context.improvement import DiffOp, DiffOperation
 
         proposal = service.propose_improvement(
             node_id=node_id,
@@ -531,7 +531,7 @@ class TestRollback:
         assert restored.version == 3
         # byte-exact on the content fields (version/updated_at move by design,
         # and the rollback revision itself carries the rollback status)
-        from know_your_soul.domain import LifecycleStatus
+        from know_your_context.domain import LifecycleStatus
 
         assert restored.lifecycle_status == LifecycleStatus.ROLLBACK
         for field_name in (

@@ -28,8 +28,8 @@ from pathlib import Path
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.resolve import ReferenceResolver
-from know_your_soul.store import EventStore
+from know_your_context.resolve import ReferenceResolver
+from know_your_context.store import EventStore
 
 SEEN = "2026-10-26T00:00:00+00:00"
 

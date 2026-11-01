@@ -27,8 +27,8 @@ from typing import Any
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.domain import SCORE_QUANTUM, canonical_json, quantize_score
-from know_your_soul.scoring import ScoreAssessment, score_items, serialize_score
+from know_your_context.domain import SCORE_QUANTUM, canonical_json, quantize_score
+from know_your_context.scoring import ScoreAssessment, score_items, serialize_score
 
 AT = datetime(2026, 10, 24, tzinfo=UTC)
 
@@ -49,7 +49,7 @@ def _valid_item(draw_ids: tuple[str, str, str]) -> st.SearchStrategy[dict[str, A
         {
             "evidence_id": st.just(evidence_id),
             "node_id": st.just(node_id),
-            "source_uri": st.just(f"soul://corpus/{evidence_id}.md"),
+            "source_uri": st.just(f"context://corpus/{evidence_id}.md"),
             "observed_at": _past_iso,
             "context_tags": st.lists(_tag, max_size=3),
             "independence_key": st.just(independence_key),
@@ -92,7 +92,7 @@ def _raw_items(max_size: int = 8) -> st.SearchStrategy[list[dict[str, Any]]]:
         {
             "evidence_id": st.text(alphabet="abcdefgh", min_size=1, max_size=8),
             "node_id": st.text(alphabet="xyz", min_size=1, max_size=4),
-            "source_uri": st.one_of(st.just(""), st.just("soul://x")),
+            "source_uri": st.one_of(st.just(""), st.just("context://x")),
             "observed_at": st.one_of(
                 _past_iso,
                 st.just((AT + timedelta(days=3)).isoformat()),  # future: invalid
@@ -212,7 +212,7 @@ def test_more_eligible_evidence_never_increases_uncertainty(items: list[dict[str
     extra = {
         "evidence_id": "ev-extra",
         "node_id": "node-extra",
-        "source_uri": "soul://corpus/ev-extra.md",
+        "source_uri": "context://corpus/ev-extra.md",
         "observed_at": (AT - timedelta(days=1)).isoformat(),
         "context_tags": ["extra"],
         "independence_key": "ik-extra",

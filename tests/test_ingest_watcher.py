@@ -17,7 +17,7 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.ingest.watcher import (
+from know_your_context.ingest.watcher import (
     DEFAULT_DEBOUNCE_SECONDS,
     DEFAULT_FULL_SCAN_CEILING,
     DEFAULT_INTERVAL_SECONDS,
@@ -433,7 +433,7 @@ class TestWatchPolicy:
     def test_macos_statfs_probe_blocks_remote_mount(self, monkeypatch, tmp_path):
         # No /proc/mounts and on Darwin: the policy asks libc statfs(2) for
         # the watched path's filesystem type (never spawning `mount`).
-        import know_your_soul.ingest.watcher as watcher_module
+        import know_your_context.ingest.watcher as watcher_module
 
         remote = tmp_path / "remote"
         remote.mkdir()
@@ -446,7 +446,7 @@ class TestWatchPolicy:
         assert "nfs" in decision.reason
 
     def test_macos_statfs_probe_allows_local_fs(self, monkeypatch, tmp_path):
-        import know_your_soul.ingest.watcher as watcher_module
+        import know_your_context.ingest.watcher as watcher_module
 
         monkeypatch.setattr(watcher_module, "_read_proc_mounts", lambda: None)
         monkeypatch.setattr(watcher_module.platform, "system", lambda: "Darwin")

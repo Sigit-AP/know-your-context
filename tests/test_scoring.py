@@ -1,6 +1,6 @@
 """Feature-code tests for the calibrated P/M/E scoring engine (Task 5).
 
-These tests exercise ``know_your_soul.scoring`` against the frozen fixtures in
+These tests exercise ``know_your_context.scoring`` against the frozen fixtures in
 ``tests/fixtures/scoring_cases.json`` (read-only; owned and validated by the
 Task 3A contract tests) and against an in-memory event store. The frozen
 reference implementation in ``tests/test_measurement_contracts.py`` is never
@@ -17,15 +17,15 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.domain import Event, EventKind, Evidence, Node, PrimaryDomain
-from know_your_soul.scoring import (
+from know_your_context.domain import Event, EventKind, Evidence, Node, PrimaryDomain
+from know_your_context.scoring import (
     SCORING_CONFIG_PATH,
     ScoreAssessment,
     ScoreEngine,
     ScoringConfig,
     score_items,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 ROOT = Path(__file__).resolve().parent.parent
 SCORING_FIXTURES = ROOT / "tests" / "fixtures" / "scoring_cases.json"
@@ -119,7 +119,7 @@ def _item_to_domain_evidence(item: dict[str, Any]) -> Evidence:
         evidence_id=item["evidence_id"],
         node_id=item["node_id"],
         source_version_id="sv-test",
-        source_uri=item["source_uri"] or "soul://corpus/placeholder",
+        source_uri=item["source_uri"] or "context://corpus/placeholder",
         observed_at=datetime.fromisoformat(item["observed_at"]),
         context_tags=tuple(item["context_tags"]),
         independence_key=item["independence_key"],
@@ -211,7 +211,7 @@ def test_aggregate_primary_unions_descendant_evidence_with_depth(scoring_cases: 
     child_item = dict(item, evidence_id="e0002", node_id="n-child")
     store = EventStore()
     try:
-        from know_your_soul.domain import Relation, RelationKind
+        from know_your_context.domain import Relation, RelationKind
 
         for node_id in ("n1", "n-child"):
             node = Node(node_id=node_id, domain=PrimaryDomain.P1, source_version_id="sv-test")

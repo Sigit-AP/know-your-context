@@ -12,13 +12,13 @@ import os
 from pathlib import Path
 
 from _ingest_fakes import ToyExtractor, ToyResolver
-from know_your_soul.ingest.pipeline import IngestionBudget, IngestionPipeline, canonical_ingestion_dump
-from know_your_soul.ingest.watcher import (
+from know_your_context.ingest.pipeline import IngestionBudget, IngestionPipeline, canonical_ingestion_dump
+from know_your_context.ingest.watcher import (
     ChangeKind,
     IngestionWatcher,
     WatcherConfig,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 # ------------------------------------------------------------------ helpers
 
@@ -253,9 +253,9 @@ class TestIncrementalConvergence:
             f"sys.path.insert(0, {str(repo / 'src')!r})\n"
             f"sys.path.insert(0, {str(repo / 'tests')!r})\n"
             "from _ingest_fakes import ToyExtractor, ToyResolver\n"
-            "from know_your_soul.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\n"
-            "from know_your_soul.ingest.watcher import IngestionWatcher, WatcherConfig\n"
-            "from know_your_soul.store import EventStore\n"
+            "from know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump\n"
+            "from know_your_context.ingest.watcher import IngestionWatcher, WatcherConfig\n"
+            "from know_your_context.store import EventStore\n"
             f"root = Path(sys.argv[1])\n"
             "root.mkdir(exist_ok=True)\n"
             "(root / 'a.py').write_text('def alpha():\\n    pass\\n')\n"

@@ -27,7 +27,7 @@ uv run python bench/tokens/run.py run      # full measurement -> results/
 ## What is measured
 
 * **Raw tokens**: `ceil(utf8_bytes / 4)` per file (the frozen contract
-  estimator, `know_your_soul.contracts.estimated_tokens_of_payload`),
+  estimator, `know_your_context.contracts.estimated_tokens_of_payload`),
   summed over the tier.
 * **Query tokens**: for each frozen question, the product retrieval runs
   as-is — `SymbolLookup` (FTS5 → LIKE → fuzzy) at top-10, then

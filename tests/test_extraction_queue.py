@@ -15,13 +15,13 @@ from pathlib import Path
 import pytest
 
 from _extraction_helpers import SOURCE_SHA256, SOURCE_SHA256_B, make_args, make_method
-from know_your_soul.extraction import (
+from know_your_context.extraction import (
     ExtractionQueue,
     ExtractionQueueFullError,
     QueueRow,
     validate_submission,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 
 def _row(queue_path: Path | str, *, actor: str = "actor-a", agent: str = "agent-a", source: str = SOURCE_SHA256):
@@ -168,7 +168,7 @@ class TestGroupAndVerdicts:
         queue.close()
 
     def test_update_verdicts_writes_status_and_confidence(self, tmp_path: Path) -> None:
-        from know_your_soul.extraction import GroupVerdict
+        from know_your_context.extraction import GroupVerdict
 
         queue = ExtractionQueue(tmp_path / "q.sqlite3")
         row = _row(queue.path)
@@ -191,7 +191,7 @@ class TestGroupAndVerdicts:
         queue.close()
 
     def test_update_verdicts_never_resurrects_decided_rows(self, tmp_path: Path) -> None:
-        from know_your_soul.extraction import GroupVerdict
+        from know_your_context.extraction import GroupVerdict
 
         queue = ExtractionQueue(tmp_path / "q.sqlite3")
         row = _row(queue.path)

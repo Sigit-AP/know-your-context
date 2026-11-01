@@ -29,8 +29,8 @@ from typing import Any
 
 import pytest
 
-from know_your_soul import http_api
-from know_your_soul.domain import (
+from know_your_context import http_api
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -39,8 +39,8 @@ from know_your_soul.domain import (
     Relation,
     RelationKind,
 )
-from know_your_soul.http_api import BoundaryMiddleware, build_stack, create_app, serve
-from know_your_soul.store import EventStore
+from know_your_context.http_api import BoundaryMiddleware, build_stack, create_app, serve
+from know_your_context.store import EventStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -78,7 +78,7 @@ def _seed(store: EventStore) -> None:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         )
     )
@@ -90,7 +90,7 @@ def _seed(store: EventStore) -> None:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             )
         )
@@ -102,7 +102,7 @@ def _seed(store: EventStore) -> None:
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
             context_tags=("gates", "discipline"),
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         )
     )
@@ -349,7 +349,7 @@ class TestRubricExcludesProvenance:
     def test_provenance_only_term_scores_zero(self) -> None:
         payload = {
             "results": [{"summary": "unrelated content"}],
-            "provenance": ["soul://corpus/09-premortem-steelman.md"],
+            "provenance": ["context://corpus/09-premortem-steelman.md"],
         }
         scoring_text = bench.rubric_scoring_text(payload)
         assert "provenance" not in scoring_text
@@ -361,7 +361,7 @@ class TestRubricExcludesProvenance:
     def test_provenance_still_counts_toward_token_estimation(self) -> None:
         """The exclusion is scoring-only: provenance stays on the wire and in
         the token budget on both sides of the comparison."""
-        with_prov = {"results": [], "provenance": ["soul://corpus/09-premortem-steelman.md"]}
+        with_prov = {"results": [], "provenance": ["context://corpus/09-premortem-steelman.md"]}
         without_prov = {"results": []}
         assert bench.estimate_tokens_of_payload(with_prov) > bench.estimate_tokens_of_payload(without_prov)
 
@@ -375,4 +375,4 @@ class TestRubricExcludesProvenance:
         payload = response.canonical_payload()
         scoring_text = bench.rubric_scoring_text(payload).casefold()
         assert "steelman" in scoring_text, "q16 must earn 'steelman' from delivered knowledge"
-        assert "soul://corpus/09-premortem-steelman.md" not in scoring_text
+        assert "context://corpus/09-premortem-steelman.md" not in scoring_text

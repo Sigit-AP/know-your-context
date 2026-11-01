@@ -11,7 +11,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from know_your_soul.retrieval_v2 import KNOWN_FIELDS, ParsedQuery, parse_query
+from know_your_context.retrieval_v2 import KNOWN_FIELDS, ParsedQuery, parse_query
 
 
 class TestEmptyAndPlain:

@@ -23,8 +23,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from know_your_soul.graph_model import file_node_id, make_node_id
-from know_your_soul.store import EventStore
+from know_your_context.graph_model import file_node_id, make_node_id
+from know_your_context.store import EventStore
 
 _DEF_RE = re.compile(r"def ([A-Za-z_][A-Za-z0-9_]*)\(")
 _CLASS_RE = re.compile(r"class ([A-Za-z_][A-Za-z0-9_]*)")

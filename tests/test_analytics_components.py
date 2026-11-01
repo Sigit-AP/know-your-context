@@ -13,7 +13,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.analytics.components import analyze_components
+from know_your_context.analytics.components import analyze_components
 
 _IDS = ["a", "b", "c", "d", "e", "f"]
 _DOMAINS = [f"P{i}" for i in range(1, 8)]

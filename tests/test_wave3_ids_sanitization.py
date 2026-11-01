@@ -31,17 +31,17 @@ import random
 import string
 from pathlib import Path
 
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.fragment_generator import file_scoped_id
-from know_your_soul.importer import SeedImporter, injective_file_id, injective_section_key
-from know_your_soul.projection import (
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.fragment_generator import file_scoped_id
+from know_your_context.importer import SeedImporter, injective_file_id, injective_section_key
+from know_your_context.projection import (
     ENRICHED_SUMMARY_MAX_LENGTH,
     GraphProjector,
     _clean_sentence,
     enriched_summary,
 )
-from know_your_soul.security import SECRET_PATTERNS, redact_text
-from know_your_soul.store import EventStore
+from know_your_context.security import SECRET_PATTERNS, redact_text
+from know_your_context.store import EventStore
 
 # --------------------------------------------------------------------- W3-2
 
@@ -151,7 +151,7 @@ def test_wikilinks_resolve_to_injective_target_ids(tmp_path: Path) -> None:
             "Beta Two.md": b"# Beta Two\n\nThe target body.\n",
         },
     )
-    from know_your_soul.domain import RelationKind
+    from know_your_context.domain import RelationKind
 
     source_id = injective_file_id("alpha-one.md")
     target_id = injective_file_id("Beta Two.md")
@@ -288,8 +288,8 @@ def test_publish_caps_long_store_summaries_at_word_boundary(tmp_path: Path) -> N
             kind=NodeKind.LEAF,
             domain=PrimaryDomain.P1,
             summary=long_summary,
-            payload={"source_file": "soul://ops"},
-            provenance=("soul://ops",),
+            payload={"source_file": "context://ops"},
+            provenance=("context://ops",),
             source_version_id="sv-test",
         ),
         "k-long",
@@ -313,8 +313,8 @@ def test_publish_collapses_raw_newlines_and_tabs_in_summaries(tmp_path: Path) ->
             kind=NodeKind.LEAF,
             domain=PrimaryDomain.P1,
             summary="Line one\n# Injected Heading\nLine three\twith tab",
-            payload={"source_file": "soul://ops"},
-            provenance=("soul://ops",),
+            payload={"source_file": "context://ops"},
+            provenance=("context://ops",),
             source_version_id="sv-test",
         ),
         "k-multi",

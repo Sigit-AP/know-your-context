@@ -28,8 +28,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.store import EventStore, IdempotencyConflict, VersionConflict
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.store import EventStore, IdempotencyConflict, VersionConflict
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 
@@ -44,7 +44,7 @@ def _node(node_id: str, summary: str = "summary", domain: PrimaryDomain = Primar
         kind=NodeKind.LEAF,
         domain=domain,
         summary=summary,
-        provenance=("soul://corpus/x.md",),
+        provenance=("context://corpus/x.md",),
         source_version_id="sv-1",
         created_at=NOW,
         updated_at=NOW,

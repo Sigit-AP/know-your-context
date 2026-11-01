@@ -1,6 +1,6 @@
 # bench/ — deterministic benchmark suites
 
-Four reproducible, no-AI benchmark suites ship with the product. Anyone can
+Six reproducible, no-AI benchmark suites ship with the product. Anyone can
 run them against the system as-is and reproduce the published numbers:
 
 | Suite | What it measures | How to run |
@@ -10,6 +10,7 @@ run them against the system as-is and reproduce the published numbers:
 | `bench/institutional/` | Graph-algorithm correctness + performance, GAPBS/LDBC-Graphalytics style | `uv run python bench/institutional/run.py` |
 | `bench/codebase/` | Code ingestion + retrieval on pinned real OSS codebases (requests, chalk, tree-sitter-python) | `uv run python bench/codebase/run.py run` |
 | `bench/tokens/` | Token reduction on a pinned mixed corpus (code + markdown + PDF) across small/medium/large tiers | `uv run python bench/tokens/run.py run` |
+| `bench/competitive/` | Head-to-head vs codegraph + graphify on identical tasks (ingest, cold-start, concurrent load, crash recovery, determinism, tokens) over the pinned codebase corpus | `uv run python bench/competitive/run.py run` |
 
 Everything is deterministic: corpora and datasets are pinned by sha256,
 questions are frozen, no model is involved anywhere, and `--strict` exits 1 on
@@ -126,7 +127,7 @@ silently accepted or rejected on floor grounds.
 | 2 | usage error |
 
 `run` measures the whole system through the three access-path adapters
-(`know_your_soul.cli`, `know_your_soul.http_api`, `know_your_soul.mcp_server`)
+(`know_your_context.cli`, `know_your_context.http_api`, `know_your_context.mcp_server`)
 and exits **0 with 24/24 cases accepted** on the frozen corpus (gate contract
 2.1.0).
 
@@ -134,5 +135,5 @@ and exits **0 with 24/24 cases accepted** on the frozen corpus (gate contract
 
 `check` verifies the local estimator byte-for-byte against the frozen fixtures
 in `tests/fixtures/token_budget_cases.json` and against
-`know_your_soul.contracts.estimated_tokens_of_payload`. The same parity is
+`know_your_context.contracts.estimated_tokens_of_payload`. The same parity is
 pinned by `tests/test_acceptance_e2e.py::TestTokenEstimatorParity`.

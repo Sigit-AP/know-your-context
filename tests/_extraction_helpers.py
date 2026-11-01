@@ -12,10 +12,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-from know_your_soul.audit import AuditLog
-from know_your_soul.projection import GraphProjector
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.audit import AuditLog
+from know_your_context.projection import GraphProjector
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 
 SOURCE_BYTES = b"page 1: the graft procedure requires two witnesses.\n"
 SOURCE_SHA256 = hashlib.sha256(SOURCE_BYTES).hexdigest()
@@ -92,7 +92,7 @@ def seed_root(tmp_path: Path) -> Path:
 
 def seed_engine(tmp_path: Path, *, actor: str = "tester"):
     """A store + service + audit + engine over a fresh scratch dir."""
-    from know_your_soul.extraction import ExtractionEngine, ExtractionQueue
+    from know_your_context.extraction import ExtractionEngine, ExtractionQueue
 
     store = EventStore(tmp_path / "soul.sqlite3")
     projector = GraphProjector(store, output_root=tmp_path / "graph")

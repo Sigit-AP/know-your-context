@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.tgf`` (ATM wave-2 formats).
+"""Tests for ``know_your_context.exporters.tgf`` (ATM wave-2 formats).
 
 Pins the canonical Trivial Graph Format contract: node section with
 sequential integer ids (1..N, assigned in sorted node-id order) and
@@ -15,14 +15,14 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportError,
     ExportRegistry,
     ExportRoundTripError,
     produce_exports,
 )
-from know_your_soul.exporters.tgf import (
+from know_your_context.exporters.tgf import (
     TGF_LABEL_MAX_CHARS,
     TGF_MAX_BYTES,
     TGF_MAX_EDGES,

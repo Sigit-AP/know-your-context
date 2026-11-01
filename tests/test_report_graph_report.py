@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.report.graph_report`` (W8 SUB-107).
+"""Tests for ``know_your_context.report.graph_report`` (W8 SUB-107).
 
 Pins the composite graph-analysis report that measurably beats Graphify's
 ``analyze.py`` mechanisms:
@@ -29,8 +29,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.cli import main
-from know_your_soul.domain import (
+from know_your_context.cli import main
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -38,9 +38,9 @@ from know_your_soul.domain import (
     PrimaryDomain,
     canonical_json,
 )
-from know_your_soul.http_api import KNOWLEDGE_OPERATIONS, OPS_OPERATIONS
-from know_your_soul.projection import GraphProjector
-from know_your_soul.report.graph_report import (
+from know_your_context.http_api import KNOWLEDGE_OPERATIONS, OPS_OPERATIONS
+from know_your_context.projection import GraphProjector
+from know_your_context.report.graph_report import (
     DEFAULT_TOP_GOD,
     DEFAULT_TOP_QUESTIONS,
     DEFAULT_TOP_SURPRISING,
@@ -52,8 +52,8 @@ from know_your_soul.report.graph_report import (
     build_graph_analysis,
     render_graph_analysis_markdown,
 )
-from know_your_soul.retrieval import estimated_tokens
-from know_your_soul.store import EventStore
+from know_your_context.retrieval import estimated_tokens
+from know_your_context.store import EventStore
 
 # ------------------------------------------------------------------ helpers
 
@@ -86,7 +86,7 @@ def _graph(nodes: list[dict[str, Any]], links: list[dict[str, Any]]) -> dict[str
     return {
         "directed": True,
         "multigraph": False,
-        "graph": {"schema_version": 1, "generator": "know-your-soul"},
+        "graph": {"schema_version": 1, "generator": "know-your-context"},
         "nodes": nodes,
         "links": links,
         "hyperedges": [],
@@ -860,7 +860,7 @@ class TestTokenBenchmark:
 class TestMarkdown:
     def test_header(self) -> None:
         markdown = render_graph_analysis_markdown(build_graph_analysis(_star_in()))
-        assert markdown.startswith("# SOUL Graph Analysis Report")
+        assert markdown.startswith("# Know Your Context Graph Analysis Report")
 
     def test_sections_in_order(self) -> None:
         markdown = render_graph_analysis_markdown(build_graph_analysis(_rich_graph()))
@@ -972,7 +972,7 @@ def _seeded_paths(tmp_path: Path) -> tuple[Path, Path]:
                 kind=NodeKind.ROOT,
                 domain=PrimaryDomain.P1,
                 summary="Knowledge Root",
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
             source_version_id="sv-test",
@@ -994,7 +994,7 @@ class TestReportCli:
         code = main(_base(db_path, out_path) + ["report"])
         captured = capsys.readouterr()
         assert code == 0
-        assert captured.out.startswith("# SOUL Graph Analysis Report")
+        assert captured.out.startswith("# Know Your Context Graph Analysis Report")
         assert "## God nodes" in captured.out
 
     def test_benchmark_printed_to_stderr(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -1024,7 +1024,8 @@ class TestReportCli:
         assert (target / "graph-report.md").is_file()
         payload = json.loads((target / "graph-report.json").read_text(encoding="utf-8"))
         assert payload["kind"] == GRAPH_REPORT_KIND
-        assert (target / "graph-report.md").read_text(encoding="utf-8").startswith("# SOUL Graph Analysis Report")
+        report_md = (target / "graph-report.md").read_text(encoding="utf-8")
+        assert report_md.startswith("# Know Your Context Graph Analysis Report")
 
     def test_out_is_idempotent(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
         db_path, out_path = _seeded_paths(tmp_path)

@@ -14,18 +14,18 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.cli import main
-from know_your_soul.domain import (
+from know_your_context.cli import main
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
     NodeKind,
     PrimaryDomain,
 )
-from know_your_soul.exporters.builtin import build_registry
-from know_your_soul.http_api import KNOWLEDGE_OPERATIONS, OPS_OPERATIONS
-from know_your_soul.projection import GraphProjector
-from know_your_soul.store import EventStore
+from know_your_context.exporters.builtin import build_registry
+from know_your_context.http_api import KNOWLEDGE_OPERATIONS, OPS_OPERATIONS
+from know_your_context.projection import GraphProjector
+from know_your_context.store import EventStore
 
 
 def _seeded_paths(tmp_path: Path) -> tuple[Path, Path]:
@@ -42,7 +42,7 @@ def _seeded_paths(tmp_path: Path) -> tuple[Path, Path]:
                 kind=NodeKind.ROOT,
                 domain=PrimaryDomain.P1,
                 summary="Knowledge Root",
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
             source_version_id="sv-test",

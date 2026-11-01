@@ -29,10 +29,10 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.domain import canonical_json
-from know_your_soul.resolve.name_matcher import NameMatchReport
-from know_your_soul.resolve.resolver import PROVENANCE, BatchReport, ReferenceResolver
-from know_your_soul.resolve.synthesis import (
+from know_your_context.domain import canonical_json
+from know_your_context.resolve.name_matcher import NameMatchReport
+from know_your_context.resolve.resolver import PROVENANCE, BatchReport, ReferenceResolver
+from know_your_context.resolve.synthesis import (
     PASS_CALLBACK_EDGES,
     PASS_METHOD_CLASS_CONTAINMENT,
     PASS_REEXPORT_CHAINS,
@@ -48,7 +48,7 @@ from know_your_soul.resolve.synthesis import (
     resolve_and_synthesize,
     run_synthesis,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 SEEN = "2026-10-28T00:00:00+00:00"
 PARSE = "ingest:0123456789abcdef"

@@ -19,7 +19,7 @@ from typing import Any
 import pytest
 import uvicorn
 
-from know_your_soul.domain import (
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -28,8 +28,8 @@ from know_your_soul.domain import (
     Relation,
     RelationKind,
 )
-from know_your_soul.http_api import build_stack, create_app  # noqa: E402  (RED until http_api.py lands)
-from know_your_soul.store import EventStore
+from know_your_context.http_api import build_stack, create_app  # noqa: E402  (RED until http_api.py lands)
+from know_your_context.store import EventStore
 
 # --------------------------------------------------------------------- setup
 
@@ -55,7 +55,7 @@ def _seed_store(store: EventStore) -> None:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -68,7 +68,7 @@ def _seed_store(store: EventStore) -> None:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -81,7 +81,7 @@ def _seed_store(store: EventStore) -> None:
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
             context_tags=("gates", "discipline"),
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
     )
@@ -215,7 +215,7 @@ def test_log_event_and_record_outcome(stack: Any) -> None:
         "kind": "child",
         "domain": "P1",
         "summary": "Added through the API",
-        "provenance": ["soul://corpus/api.md"],
+        "provenance": ["context://corpus/api.md"],
         "source_version_id": "sv-test",
     }
     status, out = _post(app, "/v1/knowledge/log_event", node_payload)
@@ -227,7 +227,7 @@ def test_log_event_and_record_outcome(stack: Any) -> None:
         "evidence_id": "ev-api-1",
         "node_id": "n-api",
         "source_version_id": "sv-test",
-        "source_uri": "soul://corpus/api.md",
+        "source_uri": "context://corpus/api.md",
         "observed_at": "2026-10-20T00:00:00+00:00",
         "context_tags": ["gates"],
         "independence_key": "ev-api-1",

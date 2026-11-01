@@ -13,7 +13,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from _doc_fixtures import build_pdf_bytes
-from know_your_soul.ingest.documents import (
+from know_your_context.ingest.documents import (
     ChunkingConfig,
     chunk_text,
     extract_document,

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.graph_model import (
+from know_your_context.graph_model import (
     CoreNodeKind,
     UniversalGraph,
     file_node_id,
@@ -14,13 +14,13 @@ from know_your_soul.graph_model import (
     make_node_id,
     parse_node_id,
 )
-from know_your_soul.ingest.extractor import (
+from know_your_context.ingest.extractor import (
     EXTRACTION_VERSION,
     ExtractionResult,
     extract_file,
     extract_source,
 )
-from know_your_soul.ingest.languages import EXTENSION_MAP, get_spec
+from know_your_context.ingest.languages import EXTENSION_MAP, get_spec
 
 FIXTURES = Path(__file__).parent / "fixtures" / "ingest"
 
@@ -344,7 +344,7 @@ def test_contains_parent_chain_ends_at_file(language: str):
 @ALL
 def test_contains_graph_validates_in_universal_graph(language: str):
     """The emitted contains forest must satisfy the W1 graph invariants."""
-    from know_your_soul.graph_model import GraphEdge, GraphNode
+    from know_your_context.graph_model import GraphEdge, GraphNode
 
     result = extract_fixture(language)
     graph = UniversalGraph()

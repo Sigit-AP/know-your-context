@@ -24,10 +24,10 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.projection import GraphProjector
-from know_your_soul.security import _ENTROPY_RUN_RE, _PURE_HEX_RE, redact_text
-from know_your_soul.store import EventStore
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.projection import GraphProjector
+from know_your_context.security import _ENTROPY_RUN_RE, _PURE_HEX_RE, redact_text
+from know_your_context.store import EventStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -198,8 +198,8 @@ def test_zs_split_secret_node_is_quarantined_from_published_graph(tmp_path: Path
             kind=NodeKind.LEAF,
             domain=PrimaryDomain.P1,
             summary=f"operator notes AKIA\u200a{AWS_KEY_TAIL} inside",
-            payload={"source_file": "soul://ops"},
-            provenance=("soul://ops",),
+            payload={"source_file": "context://ops"},
+            provenance=("context://ops",),
             source_version_id="sv-test",
         ),
         "k-zs-evil",
@@ -211,8 +211,8 @@ def test_zs_split_secret_node_is_quarantined_from_published_graph(tmp_path: Path
             kind=NodeKind.LEAF,
             domain=PrimaryDomain.P1,
             summary="ordinary operator notes with no secret material",
-            payload={"source_file": "soul://ops"},
-            provenance=("soul://ops",),
+            payload={"source_file": "context://ops"},
+            provenance=("context://ops",),
             source_version_id="sv-test",
         ),
         "k-clean",

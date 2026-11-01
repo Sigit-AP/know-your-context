@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.ingest import kernel_bridge
-from know_your_soul.ingest.extractor import TreeSitterExtractor, extract_file, extract_source
-from know_your_soul.ingest.languages import get_spec
+from know_your_context.ingest import kernel_bridge
+from know_your_context.ingest.extractor import TreeSitterExtractor, extract_file, extract_source
+from know_your_context.ingest.languages import get_spec
 
 FIXTURES = Path(__file__).parent / "fixtures" / "ingest"
 
@@ -37,7 +37,7 @@ def test_fallback_when_kernel_module_is_absent(monkeypatch: pytest.MonkeyPatch, 
     """Simulate an environment without the Rust kernel: import fails."""
     monkeypatch.setattr(kernel_bridge, "_import_kernel_module", lambda: None)
     kernel_bridge.reset_probe()
-    with caplog.at_level(logging.INFO, logger="know_your_soul.ingest"):
+    with caplog.at_level(logging.INFO, logger="know_your_context.ingest"):
         assert kernel_bridge.kernel_available() is False
         assert kernel_bridge.kernel_unavailable_reason()
         result = extract_source("x/sample.py", "def f():\n    pass\n", language="python")
@@ -66,7 +66,7 @@ def test_kernel_exception_falls_back_to_python(monkeypatch: pytest.MonkeyPatch, 
     monkeypatch.setattr(kernel_bridge, "_import_kernel_module", lambda: _BrokenKernel)
     kernel_bridge.reset_probe()
     assert kernel_bridge.kernel_available() is True
-    with caplog.at_level(logging.WARNING, logger="know_your_soul.ingest"):
+    with caplog.at_level(logging.WARNING, logger="know_your_context.ingest"):
         result = extract_source("x/sample.py", "def g():\n    return 1\n", language="python")
     reference = TreeSitterExtractor(get_spec("python")).extract("x/sample.py", "def g():\n    return 1\n")
     assert result == reference
@@ -102,7 +102,7 @@ def test_error_paths_never_touch_the_kernel(monkeypatch: pytest.MonkeyPatch) -> 
     """Unsupported media type must raise before any kernel involvement."""
     monkeypatch.setattr(kernel_bridge, "_import_kernel_module", lambda: None)
     kernel_bridge.reset_probe()
-    from know_your_soul.ingest.extractor import UnsupportedMediaTypeError
+    from know_your_context.ingest.extractor import UnsupportedMediaTypeError
 
     with pytest.raises(UnsupportedMediaTypeError):
         extract_source("x/notes.txt", "hello\n")

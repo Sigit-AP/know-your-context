@@ -1,4 +1,4 @@
-# Connecting Hermes Agent to the Know Your Soul MCP server
+# Connecting Hermes Agent to the Know Your Context MCP server
 
 This product is a **pure external MCP consumer target**: Hermes supplies its
 own model and calls the fourteen knowledge operations as first-class tools
@@ -28,8 +28,8 @@ An initialized knowledge base: an event store and at least one published
 projection under the graph root (see `docs/operations.md`). Example layout:
 
 ```
-/root/superpower-knowledge-soul/.local/graph       # projection root (allowlisted)
-/root/superpower-knowledge-soul/.local/know-your-soul.sqlite3 # event store
+/root/know-your-context/.local/graph       # projection root (allowlisted)
+/root/know-your-context/.local/know-your-context.sqlite3 # event store
 ```
 
 ## 2. Connect Hermes (stdio, recommended)
@@ -37,22 +37,22 @@ projection under the graph root (see `docs/operations.md`). Example layout:
 Use Hermes' own MCP command — no config files are edited by hand:
 
 ```bash
-hermes mcp add know-your-soul \
-  --command /root/superpower-knowledge-soul/.venv/bin/python \
-  --args -m know_your_soul.mcp_server \
-         --graph-root /root/superpower-knowledge-soul/.local/graph \
-         --db /root/superpower-knowledge-soul/.local/know-your-soul.sqlite3
+hermes mcp add know-your-context \
+  --command /root/know-your-context/.venv/bin/python \
+  --args -m know_your_context.mcp_server \
+         --graph-root /root/know-your-context/.local/graph \
+         --db /root/know-your-context/.local/know-your-context.sqlite3
 ```
 
 Then verify discovery:
 
 ```bash
-hermes mcp test know-your-soul
+hermes mcp test know-your-context
 hermes mcp list
 ```
 
 Hermes registers the fourteen operations as
-`mcp__know-your-soul__knowledge_query`, `…__knowledge_get_node`,
+`mcp__know-your-context__knowledge_query`, `…__knowledge_get_node`,
 `…__knowledge_get_subtree`, `…__knowledge_log_event`,
 `…__knowledge_record_outcome`, `…__knowledge_evaluate`,
 `…__knowledge_review`, `…__knowledge_propose_improvement`,
@@ -70,11 +70,11 @@ needs nothing else:
 
 ```yaml
 mcp_servers:
-  know-your-soul:
-    command: /root/superpower-knowledge-soul/.venv/bin/python
-    args: ["-m", "know_your_soul.mcp_server",
-           "--graph-root", "/root/superpower-knowledge-soul/.local/graph",
-           "--db", "/root/superpower-knowledge-soul/.local/know-your-soul.sqlite3"]
+  know-your-context:
+    command: /root/know-your-context/.venv/bin/python
+    args: ["-m", "know_your_context.mcp_server",
+           "--graph-root", "/root/know-your-context/.local/graph",
+           "--db", "/root/know-your-context/.local/know-your-context.sqlite3"]
     enabled: true
     # no env, no provider keys, no project_path, no url required
 ```
@@ -88,9 +88,9 @@ method-not-found; the entry above must not configure them.
 For a long-lived local server instead of a per-session stdio child:
 
 ```bash
-/root/superpower-knowledge-soul/.venv/bin/python -m know_your_soul.mcp_server \
-  --graph-root /root/superpower-knowledge-soul/.local/graph \
-  --db /root/superpower-knowledge-soul/.local/know-your-soul.sqlite3 \
+/root/know-your-context/.venv/bin/python -m know_your_context.mcp_server \
+  --graph-root /root/know-your-context/.local/graph \
+  --db /root/know-your-context/.local/know-your-context.sqlite3 \
   --transport http --host 127.0.0.1 --port 8080
 ```
 
@@ -98,7 +98,7 @@ The bind policy fails closed: only loopback binds need no API key; anything
 wider is refused without `--api-key` (see `docs/operations.md`). Then:
 
 ```bash
-hermes mcp add know-your-soul --url http://127.0.0.1:8080/mcp
+hermes mcp add know-your-context --url http://127.0.0.1:8080/mcp
 ```
 
 Keep the loopback/Unix-socket boundary; do not expose the port externally.
@@ -141,10 +141,10 @@ token-budgeted, and audited like every other operation:
 Four read-only resources are exposed, all sanitized (control/bidi/zero-width
 stripping, secret redaction), canonical-JSON, and capped at 64 KiB:
 
-- `soul://projection/manifest` — the active projection manifest;
-- `soul://projection/stats` — node/edge counts, watermarks, content hash;
-- `soul://projection/nodes` — bounded node summaries with a truncation flag;
-- `soul://relearn/status` — the relearn gate (below).
+- `context://projection/manifest` — the active projection manifest;
+- `context://projection/stats` — node/edge counts, watermarks, content hash;
+- `context://projection/nodes` — bounded node summaries with a truncation flag;
+- `context://relearn/status` — the relearn gate (below).
 
 Raw Graphify reports are never served; there are no PR/`gh` tools.
 
@@ -158,10 +158,10 @@ knowledge operations and the fourteen MCP tools are unchanged by it, and no
 relearn tool exists on the knowledge surface:
 
 ```bash
-know-your-soul relearn-scan '{"path": "/path/to/corpus", "kind": "SOUL_CORPUS"}'
-know-your-soul relearn-status            # pending offer + offer_id, or null
-know-your-soul relearn-preview '{"mode": "RESET"}'       # or "ACCUMULATE"
-know-your-soul relearn-apply '{"mode": "RESET", "approval": {"offer_id": "...", "approved_by": "you"}}'
+know-your-context relearn-scan '{"path": "/path/to/corpus", "kind": "SOUL_CORPUS"}'
+know-your-context relearn-status            # pending offer + offer_id, or null
+know-your-context relearn-preview '{"mode": "RESET"}'       # or "ACCUMULATE"
+know-your-context relearn-apply '{"mode": "RESET", "approval": {"offer_id": "...", "approved_by": "you"}}'
 ```
 
 `relearn-scan` registers the baseline on first run (offer `null`) and emits
@@ -172,7 +172,7 @@ the pending `offer_id` and mode; every apply takes a verified atomic backup
 `POST /v1/knowledge/rollback {"relearn_id": "..."}` restores the exact
 pre-relearn state.
 
-Over MCP the gate is **read-only**: `soul://relearn/status` returns the
+Over MCP the gate is **read-only**: `context://relearn/status` returns the
 `relearn_state`, the pending offer (including its `offer_id` and the file
 diff), and per-mode preview *counts* (`evidence_carried`,
 `evidence_quarantined`, `nodes_reused`, `promotion_blocked`). A resource

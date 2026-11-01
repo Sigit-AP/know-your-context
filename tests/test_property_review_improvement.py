@@ -26,8 +26,8 @@ from typing import Any
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.domain import LifecycleStatus, Node, NodeKind, PrimaryDomain
-from know_your_soul.improvement import (
+from know_your_context.domain import LifecycleStatus, Node, NodeKind, PrimaryDomain
+from know_your_context.improvement import (
     DiffOp,
     DiffOperation,
     _proposal_id,
@@ -35,7 +35,7 @@ from know_your_soul.improvement import (
     content_fingerprint,
     default_regression_gate,
 )
-from know_your_soul.review import DEFAULT_REVIEW_POLICY, ReviewSignal, decide
+from know_your_context.review import DEFAULT_REVIEW_POLICY, ReviewSignal, decide
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 POLICY = DEFAULT_REVIEW_POLICY

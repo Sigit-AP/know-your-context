@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from know_your_soul.contracts import (
+from know_your_context.contracts import (
     ApplyImprovementRequest,
     ApprovalRequiredError,
     EvaluateRequest,
@@ -27,8 +27,8 @@ from know_your_soul.contracts import (
     ReviewRequest,
     RollbackRequest,
 )
-from know_your_soul.improvement import DiffOp, DiffOperation
-from know_your_soul.scoring import ScoreEngine
+from know_your_context.improvement import DiffOp, DiffOperation
+from know_your_context.scoring import ScoreEngine
 from test_service import _evidence, _seeded
 
 AT = datetime(2026, 10, 20, 12, tzinfo=UTC)

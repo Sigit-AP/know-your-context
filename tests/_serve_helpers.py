@@ -15,7 +15,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from know_your_soul.domain import (
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -24,8 +24,8 @@ from know_your_soul.domain import (
     Relation,
     RelationKind,
 )
-from know_your_soul.projection import GraphProjector
-from know_your_soul.store import EventStore
+from know_your_context.projection import GraphProjector
+from know_your_context.store import EventStore
 
 EXPECTED_TOOLS_ALL = tuple(
     sorted(
@@ -80,7 +80,7 @@ def seed_store(tmp_path: Path) -> tuple[Path, Path]:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -93,7 +93,7 @@ def seed_store(tmp_path: Path) -> tuple[Path, Path]:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -106,7 +106,7 @@ def seed_store(tmp_path: Path) -> tuple[Path, Path]:
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
             context_tags=("gates",),
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
     )
@@ -126,7 +126,7 @@ def seed_store(tmp_path: Path) -> tuple[Path, Path]:
 
 def make_config(tmp_path: Path, **overrides: Any) -> Any:
     """A DaemonConfig over a freshly seeded store (graph_root, db under tmp_path)."""
-    from know_your_soul.serve.daemon_config import DaemonConfig
+    from know_your_context.serve.daemon_config import DaemonConfig
 
     graph_root, db = seed_store(tmp_path)
     kwargs: dict[str, Any] = {"db_path": db, "graph_root": graph_root}

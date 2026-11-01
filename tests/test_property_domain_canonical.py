@@ -27,7 +27,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
-from know_your_soul.domain import (
+from know_your_context.domain import (
     Evidence,
     Node,
     NodeKind,
@@ -39,7 +39,7 @@ from know_your_soul.domain import (
     quantize_score,
     storage_payload,
 )
-from know_your_soul.scoring import serialize_score
+from know_your_context.scoring import serialize_score
 
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
 
@@ -200,7 +200,7 @@ def _evidence_payload(**overrides: Any) -> dict[str, Any]:
         "evidence_id": "ev-1",
         "node_id": "n-1",
         "source_version_id": "sv-1",
-        "source_uri": "soul://x.md",
+        "source_uri": "context://x.md",
         "observed_at": NOW,
         "independence_key": "ik-1",
         "outcome": "0.5",

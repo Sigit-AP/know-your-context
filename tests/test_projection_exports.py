@@ -16,7 +16,7 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.domain import (
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -24,19 +24,19 @@ from know_your_soul.domain import (
     PrimaryDomain,
     canonical_json,
 )
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportFormat,
     ExportRegistry,
     ExportRoundTripError,
     default_registry,
 )
-from know_your_soul.projection import (
+from know_your_context.projection import (
     ARTIFACT_NAMES,
     GraphProjector,
     ProjectionValidationError,
 )
-from know_your_soul.read_model_validator import ReadModelValidator
-from know_your_soul.store import EventStore
+from know_your_context.read_model_validator import ReadModelValidator
+from know_your_context.store import EventStore
 
 
 def _seeded_store(tmp_path: Path) -> EventStore:
@@ -51,7 +51,7 @@ def _seeded_store(tmp_path: Path) -> EventStore:
                 kind=NodeKind.ROOT,
                 domain=PrimaryDomain.P1,
                 summary="Knowledge Root",
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
             source_version_id="sv-test",
@@ -69,7 +69,7 @@ def _seeded_store(tmp_path: Path) -> EventStore:
                 kind=NodeKind.PRIMARY,
                 domain=PrimaryDomain.P1,
                 summary="Discipline",
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
             source_version_id="sv-test",

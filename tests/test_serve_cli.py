@@ -1,8 +1,8 @@
 """CLI surface tests for the superpower server (SUB-100).
 
 Both entries are exercised as real subprocesses: the package module
-(``python -m know_your_soul.serve``) and the operator CLI
-(``know_your_soul.cli`` → ``serve --daemon|--proxy`` + ``daemon
+(``python -m know_your_context.serve``) and the operator CLI
+(``know_your_context.cli`` → ``serve --daemon|--proxy`` + ``daemon
 status|stop``). The frozen fourteen-op command surface is untouched.
 """
 
@@ -51,14 +51,14 @@ def seeded(tmp_path: Path):
 
 
 def _module_cli(db: Path, graph_root: Path, *args: str) -> list[str]:
-    return [sys.executable, "-m", "know_your_soul.serve", *args, "--db", str(db), "--graph-root", str(graph_root)]
+    return [sys.executable, "-m", "know_your_context.serve", *args, "--db", str(db), "--graph-root", str(graph_root)]
 
 
 def _operator_cli(db: Path, graph_root: Path, *args: str) -> list[str]:
     return [
         sys.executable,
         "-m",
-        "know_your_soul",
+        "know_your_context",
         "--store",
         str(db),
         "--output-root",
@@ -113,7 +113,7 @@ class TestModuleCli:
         proxy.stdin.write(json.dumps(frame).encode() + b"\n")
         proxy.stdin.flush()
         response = json.loads(proxy.stdout.readline())
-        assert response["result"]["serverInfo"]["name"] == "know-your-soul"
+        assert response["result"]["serverInfo"]["name"] == "know-your-context"
         proxy.stdin.close()
         assert proxy.wait(timeout=20) == 0
         # Cleanup the auto-spawned daemon.
@@ -123,7 +123,7 @@ class TestModuleCli:
         graph_root, db = seeded
         completed = subprocess.run(
             _module_cli(db, graph_root, "--daemon"),
-            env={**os.environ, "KNOW_YOUR_SOUL_DAEMON_INTERNAL": "1"},
+            env={**os.environ, "KNOW_YOUR_CONTEXT_DAEMON_INTERNAL": "1"},
             capture_output=True,
             timeout=30,
         )

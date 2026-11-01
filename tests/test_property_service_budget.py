@@ -15,7 +15,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.contracts import (
+from know_your_context.contracts import (
     DEFAULT_MAX_TOKEN_BUDGET,
     MINIMUM_TOKEN_BUDGET,
     BudgetExceedsMax,
@@ -23,10 +23,10 @@ from know_your_soul.contracts import (
     KnowledgeError,
     QueryRequest,
 )
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, Relation, RelationKind
-from know_your_soul.projection import GraphProjector
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, Relation, RelationKind
+from know_your_context.projection import GraphProjector
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 
 
 def _upsert(store: EventStore, node: Node) -> None:
@@ -54,7 +54,7 @@ def service_stack(tmp_path_factory: pytest.TempPathFactory) -> KnowledgeService:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -67,7 +67,7 @@ def service_stack(tmp_path_factory: pytest.TempPathFactory) -> KnowledgeService:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -80,7 +80,7 @@ def service_stack(tmp_path_factory: pytest.TempPathFactory) -> KnowledgeService:
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
             context_tags=("gates", "discipline"),
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
     )

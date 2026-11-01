@@ -20,7 +20,7 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.domain import (
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -28,11 +28,11 @@ from know_your_soul.domain import (
     PrimaryDomain,
     canonical_json,
 )
-from know_your_soul.http_api import build_stack, create_app
-from know_your_soul.importer import SeedImporter
-from know_your_soul.projection import GraphProjector
-from know_your_soul.read_model_validator import ReadModelValidator
-from know_your_soul.store import EventStore
+from know_your_context.http_api import build_stack, create_app
+from know_your_context.importer import SeedImporter
+from know_your_context.projection import GraphProjector
+from know_your_context.read_model_validator import ReadModelValidator
+from know_your_context.store import EventStore
 
 # Canonical AWS documentation example key shape (matches AKIA[0-9A-Z]{16}).
 SECRET = "AKIA" + "IOSFODNN7EXAMPLE"
@@ -61,7 +61,7 @@ def _seed(store: EventStore) -> None:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
         key="test:f7:upsert:KROOT",
@@ -74,7 +74,7 @@ def _seed(store: EventStore) -> None:
             kind=NodeKind.PRIMARY,
             domain=PrimaryDomain.P1,
             summary=PrimaryDomain.P1.title,
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
         key="test:f7:upsert:P1",
@@ -87,7 +87,7 @@ def _seed(store: EventStore) -> None:
             kind=NodeKind.CHILD,
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
         key="test:f7:upsert:n-gates",
@@ -189,12 +189,12 @@ def test_f7_secret_bearing_node_is_quarantined_and_reads_survive(stack: Any, cap
             kind=NodeKind.CHILD,
             domain=PrimaryDomain.P1,
             summary=f"operator notes with a pasted credential {SECRET} inside",
-            provenance=("soul://corpus/evil.md",),
+            provenance=("context://corpus/evil.md",),
             source_version_id="sv-test",
         ),
         key="test:f7:upsert:n-evil",
     )
-    with caplog.at_level(logging.WARNING, logger="know_your_soul.projection"):
+    with caplog.at_level(logging.WARNING, logger="know_your_context.projection"):
         receipt = stack.projector.rebuild()  # RED: raises ProjectionValidationError
     assert receipt.node_count == int(before["node_count"]), "the poisoned node must be excluded, not published"
 
@@ -250,7 +250,7 @@ def test_f7_secret_update_to_existing_node_quarantines_without_shrink_outage(sta
             kind=NodeKind.CHILD,
             domain=PrimaryDomain.P1,
             summary=f"edited notes now carrying {SECRET}",
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
         key="test:f7:upsert:n-gates:v2",
@@ -405,7 +405,7 @@ def test_f9_client_disconnect_is_caught_and_logged_without_traceback(
         return {"type": "http.disconnect"}
 
     app = create_app(stack)
-    with caplog.at_level(logging.INFO, logger="know_your_soul.http_api"):
+    with caplog.at_level(logging.INFO, logger="know_your_context.http_api"):
         status, _, raw = asgi_call(
             app,
             "POST",

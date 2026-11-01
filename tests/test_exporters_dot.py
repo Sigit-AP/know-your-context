@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.dot`` (ATM F-B1).
+"""Tests for ``know_your_context.exporters.dot`` (ATM F-B1).
 
 Pins the canonical Graphviz DOT contract: nodes sorted by id, edges sorted by
 (source, target, relation) and deduplicated, labels sanitized through
@@ -17,7 +17,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.dot import (
+from know_your_context.exporters.dot import (
     DEFAULT_DOT_MAX_BYTES,
     DOMAIN_COLORS,
     FALLBACK_COLOR,
@@ -26,7 +26,7 @@ from know_your_soul.exporters.dot import (
     render_dot,
     roundtrip_dot,
 )
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportRegistry,
     ExportRoundTripError,
@@ -89,7 +89,7 @@ def _edge_lines(dot: str) -> list[str]:
 class TestStructure:
     def test_empty_model_renders_valid_skeleton(self) -> None:
         dot = render_dot(_model([]))
-        assert dot.startswith("digraph soul_knowledge {\n")
+        assert dot.startswith("digraph know_your_context {\n")
         assert dot.endswith("}\n")
         assert 'graph [rankdir="LR"];' in dot
         assert _node_lines(dot) == []
@@ -203,7 +203,7 @@ class TestRoundTrip:
 
     def test_roundtrip_rejects_unsorted_nodes(self) -> None:
         bad = (
-            'digraph soul_knowledge {\n  graph [rankdir="LR"];\n  node [shape="box", style="filled"];\n'
+            'digraph know_your_context {\n  graph [rankdir="LR"];\n  node [shape="box", style="filled"];\n'
             f'  "b" [label="b", fillcolor="{DOMAIN_COLORS["P1"]}"];\n'
             f'  "a" [label="a", fillcolor="{DOMAIN_COLORS["P1"]}"];\n}}\n'
         ).encode()
@@ -212,7 +212,7 @@ class TestRoundTrip:
 
     def test_roundtrip_rejects_color_outside_palette(self) -> None:
         bad = (
-            b'digraph soul_knowledge {\n  graph [rankdir="LR"];\n  node [shape="box", style="filled"];\n'
+            b'digraph know_your_context {\n  graph [rankdir="LR"];\n  node [shape="box", style="filled"];\n'
             b'  "a" [label="a", fillcolor="#FFFFFF"];\n}\n'
         )
         with pytest.raises(ExportRoundTripError, match="palette"):

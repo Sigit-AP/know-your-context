@@ -77,7 +77,7 @@ jobs:
       - name: pytest with coverage
         run: >
           uv run --frozen pytest tests/ -q
-          --cov=know_your_soul --cov-report=term --cov-report=xml
+          --cov=know_your_context --cov-report=term --cov-report=xml
           --cov-fail-under=93
 
       - name: Upload coverage report
@@ -137,4 +137,4 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Build image
-        run: docker build -f deploy/Dockerfile -t know-your-soul:ci .
+        run: docker build -f deploy/Dockerfile -t know-your-context:ci .

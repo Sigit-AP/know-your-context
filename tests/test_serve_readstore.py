@@ -15,9 +15,9 @@ from pathlib import Path
 import pytest
 
 from _serve_helpers import seed_store, upsert_node
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
-from know_your_soul.serve.superpower import ReadOnlyEventStore, ReadOnlyStoreError
-from know_your_soul.store import EventStore
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain
+from know_your_context.serve.superpower import ReadOnlyEventStore, ReadOnlyStoreError
+from know_your_context.store import EventStore
 
 
 @pytest.fixture()
@@ -53,7 +53,7 @@ class TestReadOnlyEnforcement:
                             kind=NodeKind.LEAF,
                             domain=PrimaryDomain.P1,
                             summary="must never land",
-                            provenance=("soul://x",),
+                            provenance=("context://x",),
                             source_version_id="sv-test",
                         ),
                         source_version_id="sv-test",
@@ -138,7 +138,7 @@ class TestWalConcurrency:
                         kind=NodeKind.LEAF,
                         domain=PrimaryDomain.P1,
                         summary=f"wal writer node {index}",
-                        provenance=("soul://x",),
+                        provenance=("context://x",),
                         source_version_id="sv-test",
                     ),
                 )

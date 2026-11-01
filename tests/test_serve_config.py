@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.serve.daemon_config import (
+from know_your_context.serve.daemon_config import (
     DEFAULT_IDLE_TIMEOUT_SECONDS,
     DEFAULT_MAX_AGENTS,
     DEFAULT_READ_POOL_SIZE,
@@ -71,7 +71,7 @@ class TestPaths:
         assert paths.socket.resolve().is_relative_to(paths.root.resolve()) or "/kys-" in socket_text
 
     def test_long_root_gets_short_deterministic_socket(self) -> None:
-        from know_your_soul.serve.daemon_config import DaemonPaths
+        from know_your_context.serve.daemon_config import DaemonPaths
 
         long_root = Path("/tmp") / ("x" * 120)
         paths = DaemonPaths(long_root)

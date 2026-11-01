@@ -24,11 +24,11 @@ from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
 
 from _serve_helpers import mask_volatile, seed_store, tool_payload, wait_for
-from know_your_soul import runtime_guard
-from know_your_soul.serve import rpc
-from know_your_soul.serve.daemon_config import DaemonConfig
-from know_your_soul.serve.superpower import daemon_status, stop_daemon
-from know_your_soul.store import EventStore
+from know_your_context import runtime_guard
+from know_your_context.serve import rpc
+from know_your_context.serve.daemon_config import DaemonConfig
+from know_your_context.serve.superpower import daemon_status, stop_daemon
+from know_your_context.store import EventStore
 
 
 def _scrubbed_env() -> dict[str, str]:
@@ -41,7 +41,7 @@ def _scrubbed_env() -> dict[str, str]:
 def _proxy_args(db: Path, graph_root: Path, *extra: str) -> list[str]:
     return [
         "-m",
-        "know_your_soul.serve",
+        "know_your_context.serve",
         "--proxy",
         "--db",
         str(db),
@@ -54,7 +54,7 @@ def _proxy_args(db: Path, graph_root: Path, *extra: str) -> list[str]:
 def _daemon_args(db: Path, graph_root: Path, *extra: str) -> list[str]:
     return [
         "-m",
-        "know_your_soul.serve",
+        "know_your_context.serve",
         *extra,
         "--db",
         str(db),
@@ -138,7 +138,7 @@ class TestLocalHandshake:
         """Proxy initialize + tools/list equal the reference mcp_server answers."""
         graph_root, db, _ = seeded
         reference = subprocess.Popen(
-            [sys.executable, "-m", "know_your_soul.mcp_server", "--graph-root", str(graph_root), "--db", str(db)],
+            [sys.executable, "-m", "know_your_context.mcp_server", "--graph-root", str(graph_root), "--db", str(db)],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -244,7 +244,7 @@ class TestForwardingAndAudit:
             "kind": "leaf",
             "domain": "P1",
             "summary": "written through the proxy",
-            "provenance": ["soul://test"],
+            "provenance": ["context://test"],
             "source_version_id": "sv-test",
         }
         with _RawProxy(db, graph_root) as proxy:
@@ -270,7 +270,7 @@ class TestOfficialClient:
                 async with ClientSession(read, write) as session:
                     initialized = await session.initialize()
                     assert initialized.server_info is not None
-                    assert initialized.server_info.name == "know-your-soul"
+                    assert initialized.server_info.name == "know-your-context"
                     capabilities = session.server_capabilities
                     assert capabilities is not None
                     advertised = capabilities.model_dump(exclude_none=True)

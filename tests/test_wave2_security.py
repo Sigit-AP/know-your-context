@@ -21,8 +21,8 @@ from typing import Any
 import pytest
 import uvicorn
 
-from know_your_soul import http_api
-from know_your_soul.domain import (
+from know_your_context import http_api
+from know_your_context.domain import (
     Event,
     EventKind,
     Node,
@@ -31,8 +31,8 @@ from know_your_soul.domain import (
     Relation,
     RelationKind,
 )
-from know_your_soul.http_api import build_stack, create_app
-from know_your_soul.store import EventStore
+from know_your_context.http_api import build_stack, create_app
+from know_your_context.store import EventStore
 
 # --------------------------------------------------------------------- setup
 
@@ -58,7 +58,7 @@ def _seed(store: EventStore) -> None:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-test",
         ),
     )
@@ -71,7 +71,7 @@ def _seed(store: EventStore) -> None:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-test",
             ),
         )
@@ -83,7 +83,7 @@ def _seed(store: EventStore) -> None:
             kind=NodeKind.CHILD,
             domain=PrimaryDomain.P1,
             summary="Run the gates before commit",
-            provenance=("soul://corpus/lesson.md",),
+            provenance=("context://corpus/lesson.md",),
             source_version_id="sv-test",
         ),
     )
@@ -497,9 +497,9 @@ def test_f5_internal_error_never_leaks_exception_text(
     def boom(*args: Any, **kwargs: Any) -> Any:
         raise RuntimeError(secret_detail)
 
-    monkeypatch.setattr("know_your_soul.http_api.dispatch_text", boom)
+    monkeypatch.setattr("know_your_context.http_api.dispatch_text", boom)
     app = create_app(stack)
-    with caplog.at_level(logging.ERROR, logger="know_your_soul.http_api"):
+    with caplog.at_level(logging.ERROR, logger="know_your_context.http_api"):
         status, _, raw = asgi_call(
             app, "POST", "/v1/knowledge/query", body=json.dumps({"purpose": "x", "token_budget": 512}).encode()
         )

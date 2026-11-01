@@ -15,16 +15,16 @@ import pytest
 
 from _doc_fixtures import build_encrypted_pdf_bytes, build_pdf_bytes
 from _ingest_fakes import ToyResolver, write_fixture
-from know_your_soul.graph_model import SplitThresholds, file_node_id, make_node_id
-from know_your_soul.ingest.documents import DOCUMENT_EXTRACTION_VERSION
-from know_your_soul.ingest.extractor import EXTRACTION_VERSION
-from know_your_soul.ingest.pipeline import (
+from know_your_context.graph_model import SplitThresholds, file_node_id, make_node_id
+from know_your_context.ingest.documents import DOCUMENT_EXTRACTION_VERSION
+from know_your_context.ingest.extractor import EXTRACTION_VERSION
+from know_your_context.ingest.pipeline import (
     IngestionBudget,
     IngestionBudgetError,
     IngestionPipeline,
     canonical_ingestion_dump,
 )
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 PDF_PAGES = ["alpha one\n\nbeta two", "gamma three", "delta four"]
 
@@ -314,7 +314,7 @@ class TestDocumentReferences:
         # ``references``; a markdown link to a known document resolves by
         # exact name to that document node (supersedes the W3 residual that
         # failed these refs as unknown_ref_kind; see docs/recovery/w4-retrieval.md).
-        from know_your_soul.resolve.resolver import ReferenceResolver
+        from know_your_context.resolve.resolver import ReferenceResolver
 
         write_fixture(tmp_path, {"a.md": "see [x](b.md)\n", "b.md": "# B\n\ny\n"})
         with EventStore() as store:

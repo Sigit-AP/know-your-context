@@ -4,12 +4,12 @@ R1 — defense-in-depth on the Task 4 read surfaces: the publish gate
 (read_model_validator) already fails closed on secret shapes, but
 ``get_node``/``get_subtree``/``query`` must *also* pass content-derived text
 (summary, provenance, context tags) through
-:func:`know_your_soul.security.redact_text` before leaving the service. A
+:func:`know_your_context.security.redact_text` before leaving the service. A
 node carrying secret/PII-shaped text must never surface the raw string;
 clean text must pass through byte-identical (token estimator parity).
 
 R2 — every importer file read is contained and bounded: paths resolve through
-:func:`know_your_soul.security.resolve_within_root` (symlink/path escapes
+:func:`know_your_context.security.resolve_within_root` (symlink/path escapes
 fail closed with a typed ``PathEscapeError``) and files larger than
 ``importer.MAX_IMPORT_FILE_BYTES`` fail closed with a typed
 ``OversizedPayloadError``. Normal and in-root-symlinked imports still work.
@@ -21,14 +21,23 @@ from pathlib import Path
 
 import pytest
 
-from know_your_soul.contracts import QueryRequest
-from know_your_soul.domain import Event, EventKind, Node, NodeKind, PrimaryDomain, Relation, RelationKind, ScoreVector
-from know_your_soul.importer import SeedImporter
-from know_your_soul.importer import __dict__ as _importer_dict
-from know_your_soul.projection import GraphProjector
-from know_your_soul.security import OversizedPayloadError, PathEscapeError
-from know_your_soul.service import KnowledgeService
-from know_your_soul.store import EventStore
+from know_your_context.contracts import QueryRequest
+from know_your_context.domain import (
+    Event,
+    EventKind,
+    Node,
+    NodeKind,
+    PrimaryDomain,
+    Relation,
+    RelationKind,
+    ScoreVector,
+)
+from know_your_context.importer import SeedImporter
+from know_your_context.importer import __dict__ as _importer_dict
+from know_your_context.projection import GraphProjector
+from know_your_context.security import OversizedPayloadError, PathEscapeError
+from know_your_context.service import KnowledgeService
+from know_your_context.store import EventStore
 
 # The R2 fix must define and document this constant; the fallback keeps the
 # probes collectible pre-fix so the R1 RED signal is visible too.
@@ -76,7 +85,7 @@ def _roots(store: EventStore) -> None:
             kind=NodeKind.ROOT,
             domain=PrimaryDomain.P1,
             summary="Knowledge Root",
-            provenance=("soul://roots",),
+            provenance=("context://roots",),
             source_version_id="sv-probe",
         ),
     )
@@ -89,7 +98,7 @@ def _roots(store: EventStore) -> None:
                 kind=NodeKind.PRIMARY,
                 domain=domain,
                 summary=domain.title,
-                provenance=("soul://roots",),
+                provenance=("context://roots",),
                 source_version_id="sv-probe",
             ),
         )
@@ -122,7 +131,7 @@ def _leaky_node() -> Node:
         kind=NodeKind.CHILD,
         domain=PrimaryDomain.P1,
         summary=f"Rollback drill; contact {EMAIL} for the runbook",
-        provenance=(f"soul://corpus/lesson.md?owner={EMAIL}",),
+        provenance=(f"context://corpus/lesson.md?owner={EMAIL}",),
         context_tags=(f"owner-{EMAIL}", "rollback"),
         source_version_id="sv-probe",
         scores=ScoreVector.zero(),
@@ -142,7 +151,7 @@ def test_r1_result_and_view_helpers_redact_true_secret_shapes() -> None:
         "domain": "P1",
         "kind": "child",
         "version": 3,
-        "provenance": [f"soul://corpus/x.md#jwt-{jwt}", "soul://plain"],
+        "provenance": [f"context://corpus/x.md#jwt-{jwt}", "context://plain"],
         "context_tags": [f"tok-{AWS_KEY}", "clean-tag"],
         "lifecycle_status": "active",
         "source_version_id": "sv-raw",
@@ -156,7 +165,7 @@ def test_r1_result_and_view_helpers_redact_true_secret_shapes() -> None:
     assert "[REDACTED:" in view.provenance[0]
     assert "[REDACTED:" in view.context_tags[0]
     # Clean fields and structure survive untouched.
-    assert view.provenance[1] == "soul://plain"
+    assert view.provenance[1] == "context://plain"
     assert view.context_tags[1] == "clean-tag"
     assert result.node_id == "n-raw" and result.version == 3
 
@@ -204,7 +213,7 @@ def test_r1_clean_text_passes_through_unchanged(tmp_path: Path) -> None:
         kind=NodeKind.CHILD,
         domain=PrimaryDomain.P1,
         summary="Run the gates before commit",
-        provenance=("soul://corpus/lesson.md",),
+        provenance=("context://corpus/lesson.md",),
         context_tags=("gates", "discipline"),
         source_version_id="sv-probe",
         scores=ScoreVector.zero(),
@@ -212,7 +221,7 @@ def test_r1_clean_text_passes_through_unchanged(tmp_path: Path) -> None:
     service = _service(tmp_path, clean)
     view = service.get_node("n-clean").node
     assert view.summary == "Run the gates before commit"
-    assert view.provenance == ("soul://corpus/lesson.md",)
+    assert view.provenance == ("context://corpus/lesson.md",)
     assert view.context_tags == ("gates", "discipline")
     response = service.query(QueryRequest(purpose="run the gates", domain="P1", token_budget=2048))
     found = [node for node in response.results if node.node_id == "n-clean"]
@@ -230,14 +239,14 @@ def test_r2_import_file_refuses_symlink_escape(tmp_path: Path) -> None:
     link.symlink_to(outside)
     importer = SeedImporter(EventStore(tmp_path / "soul.sqlite3"))
     with pytest.raises(PathEscapeError):
-        importer.import_file(link, domain=PrimaryDomain.P1, source_uri="soul://probe/lesson.md")
+        importer.import_file(link, domain=PrimaryDomain.P1, source_uri="context://probe/lesson.md")
 
 
 def test_r2_import_file_refuses_oversized_file(tmp_path: Path) -> None:
     giant = _write(tmp_path / "giant.md", b"# Giant\n\n" + b"x" * (MAX_IMPORT_FILE_BYTES + 1))
     importer = SeedImporter(EventStore(tmp_path / "soul.sqlite3"))
     with pytest.raises(OversizedPayloadError) as excinfo:
-        importer.import_file(giant, domain=PrimaryDomain.P1, source_uri="soul://probe/giant.md")
+        importer.import_file(giant, domain=PrimaryDomain.P1, source_uri="context://probe/giant.md")
     assert str(MAX_IMPORT_FILE_BYTES) in str(excinfo.value)
 
 
@@ -274,7 +283,7 @@ def test_r2_normal_and_in_root_symlinked_imports_still_work(tmp_path: Path) -> N
     assert all(receipt.node_ids for receipt in receipts)
     # Standalone single-file import (default parent containment), fresh content.
     standalone = _write(tmp_path / "standalone" / "solo.md", LESSON)
-    single = importer.import_file(standalone, domain=PrimaryDomain.P2, source_uri="soul://probe/solo.md")
+    single = importer.import_file(standalone, domain=PrimaryDomain.P2, source_uri="context://probe/solo.md")
     assert single.node_ids
 
 

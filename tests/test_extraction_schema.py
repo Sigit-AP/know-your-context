@@ -2,7 +2,7 @@
 
 Pins the strict closed-schema validation, the sanitization rules, the size
 caps and the decimal-string confidence discipline of
-``know_your_soul.extraction.schema`` — every rejection is a typed error,
+``know_your_context.extraction.schema`` — every rejection is a typed error,
 never an exception with a raw value.
 """
 
@@ -14,7 +14,7 @@ from decimal import Decimal
 import pytest
 
 from _extraction_helpers import SOURCE_SHA256, make_args, make_method, make_payload
-from know_your_soul.extraction import (
+from know_your_context.extraction import (
     ConfidenceNotDecimalError,
     ConfidenceOutOfRangeError,
     MethodSchemaError,
@@ -23,7 +23,7 @@ from know_your_soul.extraction import (
     Submission,
     validate_submission,
 )
-from know_your_soul.extraction import schema as xs
+from know_your_context.extraction import schema as xs
 
 
 class TestTopLevel:
@@ -334,7 +334,7 @@ class TestSanitization:
     def test_sanitization_happens_before_hashing(self) -> None:
         import hashlib as _hashlib
 
-        from know_your_soul.domain import canonical_json as _canonical
+        from know_your_context.domain import canonical_json as _canonical
 
         raw = make_args(payload=make_payload(text="<script>x</script>"))
         submission = validate_submission(raw)

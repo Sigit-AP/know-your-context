@@ -7,12 +7,12 @@ build-backend = "maturin"
 # docs/recovery/w5-rust-kernel.md; CI wiring lands in a later wave.
 
 [project]
-name = "know-your-soul-kernel"
+name = "know-your-context-kernel"
 version = "0.1.0"
-description = "Rust extraction kernel for know-your-soul (tree-sitter, byte-identical to the Python reference)"
+description = "Rust extraction kernel for know-your-context (tree-sitter, byte-identical to the Python reference)"
 requires-python = ">=3.14"
 license = "Apache-2.0"
 
 [tool.maturin]
-module-name = "know_your_soul_kernel"
+module-name = "know_your_context_kernel"
 features = ["pyo3"]

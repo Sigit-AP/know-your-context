@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.ops.subgraph_export`` (ATM F-D3).
+"""Tests for ``know_your_context.ops.subgraph_export`` (ATM F-D3).
 
 Pins the bounded subgraph contract: per-domain and per-node (ego-net)
 selection from the generation read model, deterministic BFS with a hard node
@@ -15,9 +15,9 @@ from typing import Any
 
 import pytest
 
-from know_your_soul.domain import canonical_json
-from know_your_soul.exporters.mermaid import roundtrip_mermaid
-from know_your_soul.ops.subgraph_export import (
+from know_your_context.domain import canonical_json
+from know_your_context.exporters.mermaid import roundtrip_mermaid
+from know_your_context.ops.subgraph_export import (
     SubgraphCapExceededError,
     SubgraphExportError,
     SubgraphRequest,

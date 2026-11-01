@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import hashlib
 
-from know_your_soul.store import EventStore
+from know_your_context.store import EventStore
 
 FIXED_MTIME = 1_700_000_000
 FIXED_SIZE = 64

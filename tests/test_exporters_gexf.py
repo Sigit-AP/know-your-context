@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.exporters.gexf`` (ATM wave-2 formats).
+"""Tests for ``know_your_context.exporters.gexf`` (ATM wave-2 formats).
 
 Pins the canonical GEXF 1.2draft contract: XML-1.0-legal bytes, nodes sorted
 by id with ``domain``/``kind``/``version`` attvalues, edges sorted by
@@ -16,7 +16,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from know_your_soul.exporters.gexf import (
+from know_your_context.exporters.gexf import (
     GEXF_LABEL_MAX_CHARS,
     GEXF_MAX_BYTES,
     GEXF_MAX_EDGES,
@@ -27,7 +27,7 @@ from know_your_soul.exporters.gexf import (
     render_gexf,
     roundtrip_gexf,
 )
-from know_your_soul.exporters.orchestrator import (
+from know_your_context.exporters.orchestrator import (
     ExportCapExceededError,
     ExportError,
     ExportRegistry,

@@ -43,12 +43,12 @@ from typing import Any
 import pytest
 from pydantic import BaseModel, ConfigDict
 
-from know_your_soul import http_api, mcp_server
-from know_your_soul.contracts import KnowledgeError
-from know_your_soul.domain import PrimaryDomain, RelationKind
-from know_your_soul.http_api import build_stack, dispatch_text
-from know_your_soul.importer import SeedImporter
-from know_your_soul.improvement import DiffOp
+from know_your_context import http_api, mcp_server
+from know_your_context.contracts import KnowledgeError
+from know_your_context.domain import PrimaryDomain, RelationKind
+from know_your_context.http_api import build_stack, dispatch_text
+from know_your_context.importer import SeedImporter
+from know_your_context.improvement import DiffOp
 
 # --------------------------------------------------------------------- harness
 

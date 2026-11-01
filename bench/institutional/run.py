@@ -1,6 +1,6 @@
 """Institutional-grade graph benchmark harness (LDBC Graphalytics / GAPBS aligned).
 
-Compares the ``know_your_soul.analytics`` kernels against reference
+Compares the ``know_your_context.analytics`` kernels against reference
 implementations (networkx 3.7, a pinned main dependency) on deterministic
 datasets:
 
@@ -332,14 +332,14 @@ def _load(module_name: str, attr: str) -> Callable[..., Any] | None:
 
 
 def ours_pagerank_public(graph: dict[str, Any]) -> dict[str, float]:
-    centrality = importlib.import_module("know_your_soul.analytics.centrality")
+    centrality = importlib.import_module("know_your_context.analytics.centrality")
     result = centrality.compute_centrality(graph, pagerank_iterations=PAGERANK_ITERATIONS)
     return {entry["node_id"]: float(entry["score"]) for entry in result["global"]["pagerank"]}
 
 
 def ours_pagerank_kernel(graph: dict[str, Any]) -> dict[str, float]:
     """Isolated PageRank via private helpers (labeled as such in the report)."""
-    centrality = importlib.import_module("know_your_soul.analytics.centrality")
+    centrality = importlib.import_module("know_your_context.analytics.centrality")
     node_ids, _domains, links, _dropped = centrality._prepare_graph(graph)
     adjacency = centrality._directed_adjacency(node_ids, links)
     scores = centrality._pagerank_scores(node_ids, links, adjacency, PAGERANK_ITERATIONS)
@@ -347,27 +347,27 @@ def ours_pagerank_kernel(graph: dict[str, Any]) -> dict[str, float]:
 
 
 def ours_wcc_public(graph: dict[str, Any]) -> list[list[str]]:
-    components = importlib.import_module("know_your_soul.analytics.components")
+    components = importlib.import_module("know_your_context.analytics.components")
     result = components.analyze_components(graph)
     return [entry["nodes"] for entry in result["weak_components"]]
 
 
 def ours_wcc_kernel(graph: dict[str, Any]) -> list[list[str]]:
     """Isolated weak-components via private helpers (labeled as such)."""
-    components = importlib.import_module("know_your_soul.analytics.components")
+    components = importlib.import_module("know_your_context.analytics.components")
     node_ids, _domains, links, _dropped = components._prepare_graph(graph)
     undirected = components._undirected_adjacency(node_ids, links)
     return components._weak_components(node_ids, undirected)
 
 
 def ours_cdlp_public(graph: dict[str, Any]) -> list[list[str]]:
-    communities = importlib.import_module("know_your_soul.analytics.communities")
+    communities = importlib.import_module("know_your_context.analytics.communities")
     result = communities.detect_communities(graph["nodes"], graph["links"])
     return [entry["members"] for entry in result["communities"]]
 
 
 def ours_bc_public(graph: dict[str, Any]) -> dict[str, float]:
-    centrality = importlib.import_module("know_your_soul.analytics.centrality")
+    centrality = importlib.import_module("know_your_context.analytics.centrality")
     node_count = len(graph["nodes"])
     result = centrality.compute_centrality(graph, betweenness_samples=max(node_count, 1))
     return {entry["node_id"]: float(entry["score"]) for entry in result["global"]["betweenness"]}
@@ -375,7 +375,7 @@ def ours_bc_public(graph: dict[str, Any]) -> dict[str, float]:
 
 def ours_bc_kernel(graph: dict[str, Any]) -> dict[str, float]:
     """Isolated exact Brandes (samples >= n forces exactness), private helpers."""
-    centrality = importlib.import_module("know_your_soul.analytics.centrality")
+    centrality = importlib.import_module("know_your_context.analytics.centrality")
     node_ids, _domains, links, _dropped = centrality._prepare_graph(graph)
     adjacency = centrality._directed_adjacency(node_ids, links)
     scores, _sampled = centrality._betweenness_scores(node_ids, adjacency, max(len(node_ids), 1))
@@ -383,7 +383,7 @@ def ours_bc_kernel(graph: dict[str, Any]) -> dict[str, float]:
 
 
 def ours_cycles_public(graph: dict[str, Any]) -> list[tuple[str, ...]]:
-    cycles = importlib.import_module("know_your_soul.analytics.cycles")
+    cycles = importlib.import_module("know_your_context.analytics.cycles")
     result = cycles.find_cycles(
         graph,
         relations=cycles.DEFAULT_CYCLE_RELATIONS,
@@ -574,7 +574,7 @@ def _run_score_kernel(
 
 
 def _kernel_pagerank(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int) -> KernelReport:
-    if _load("know_your_soul.analytics.centrality", "compute_centrality") is None:
+    if _load("know_your_context.analytics.centrality", "compute_centrality") is None:
         return KernelReport(
             "pagerank", [], "", "skipped", "kernel belum tersedia: analytics.centrality.compute_centrality"
         )
@@ -641,7 +641,7 @@ def _pagerank_clone_check(datasets: list[Dataset], *, quick: bool, max_n: int) -
 
 
 def _kernel_wcc(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int) -> KernelReport:
-    if _load("know_your_soul.analytics.components", "analyze_components") is None:
+    if _load("know_your_context.analytics.components", "analyze_components") is None:
         return KernelReport("wcc", [], "", "skipped", "kernel belum tersedia: analytics.components.analyze_components")
     report = KernelReport(
         kernel="wcc",
@@ -678,7 +678,7 @@ def _kernel_wcc(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: in
 
 
 def _kernel_bc(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int) -> KernelReport:
-    if _load("know_your_soul.analytics.centrality", "compute_centrality") is None:
+    if _load("know_your_context.analytics.centrality", "compute_centrality") is None:
         return KernelReport("bc", [], "", "skipped", "kernel belum tersedia: analytics.centrality.compute_centrality")
     report = KernelReport(
         kernel="bc",
@@ -717,7 +717,7 @@ def _kernel_bc(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int
 
 
 def _kernel_cycles(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int) -> KernelReport:
-    if _load("know_your_soul.analytics.cycles", "find_cycles") is None:
+    if _load("know_your_context.analytics.cycles", "find_cycles") is None:
         return KernelReport("cycles", [], "", "skipped", "kernel belum tersedia: analytics.cycles.find_cycles")
     report = KernelReport(
         kernel="cycles",
@@ -809,7 +809,7 @@ def _run_partition_kernel(
 
 
 def _kernel_cdlp(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int) -> KernelReport:
-    if _load("know_your_soul.analytics.communities", "detect_communities") is None:
+    if _load("know_your_context.analytics.communities", "detect_communities") is None:
         return KernelReport(
             "cdlp", [], "", "skipped", "kernel belum tersedia: analytics.communities.detect_communities"
         )
@@ -835,7 +835,7 @@ def _kernel_cdlp(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: i
 
 
 def _kernel_lcc(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int) -> KernelReport:
-    func = _load("know_your_soul.analytics.algorithms", "compute_clustering")
+    func = _load("know_your_context.analytics.algorithms", "compute_clustering")
     if func is None:
         return KernelReport(
             "lcc",
@@ -865,7 +865,7 @@ def _kernel_lcc(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: in
 
 
 def _kernel_tc(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int) -> KernelReport:
-    func = _load("know_your_soul.analytics.algorithms", "compute_clustering")
+    func = _load("know_your_context.analytics.algorithms", "compute_clustering")
     if func is None:
         return KernelReport(
             "tc",
@@ -904,7 +904,7 @@ def _kernel_tc(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int
 
 
 def _kernel_louvain(datasets: list[Dataset], *, repeats: int, quick: bool, max_n: int) -> KernelReport:
-    func = _load("know_your_soul.analytics.algorithms", "compute_louvain")
+    func = _load("know_your_context.analytics.algorithms", "compute_louvain")
     if func is None:
         return KernelReport(
             "louvain",

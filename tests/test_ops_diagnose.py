@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.ops.diagnose`` (ATM wave-2 OPS).
+"""Tests for ``know_your_context.ops.diagnose`` (ATM wave-2 OPS).
 
 Pins the self-check diagnostics contract: hash chain, manifest vs disk,
 watermark consistency, read-model validation, publish capacity, stale
@@ -18,7 +18,7 @@ from typing import Any, cast
 
 import pytest
 
-from know_your_soul.ops.diagnose import (
+from know_your_context.ops.diagnose import (
     EXIT_ISSUES,
     EXIT_OK,
     SEVERITY_ORDER,
@@ -28,9 +28,9 @@ from know_your_soul.ops.diagnose import (
     render_markdown,
     run_diagnostics,
 )
-from know_your_soul.projection import ARTIFACT_MAX_BYTES, GraphProjector
-from know_your_soul.read_model_validator import ReadModelValidator, ValidationReport
-from know_your_soul.store import ChainReport, EventStore
+from know_your_context.projection import ARTIFACT_MAX_BYTES, GraphProjector
+from know_your_context.read_model_validator import ReadModelValidator, ValidationReport
+from know_your_context.store import ChainReport, EventStore
 
 # ------------------------------------------------------------------ helpers
 

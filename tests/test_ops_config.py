@@ -1,4 +1,4 @@
-"""Tests for ``know_your_soul.ops.config`` (ATM wave-2 OPS).
+"""Tests for ``know_your_context.ops.config`` (ATM wave-2 OPS).
 
 Pins the layered configuration contract: defaults → optional TOML file →
 environment → CLI overrides, typed validation with fail-closed
@@ -13,8 +13,8 @@ import json
 
 import pytest
 
-from know_your_soul.domain import canonical_json
-from know_your_soul.ops.config import (
+from know_your_context.domain import canonical_json
+from know_your_context.ops.config import (
     CONFIG_SPEC,
     REDACTED_PLACEHOLDER,
     ConfigError,
@@ -52,7 +52,7 @@ def test_spec_env_names_are_unique_and_prefixed() -> None:
     envs = [field.env for field in CONFIG_SPEC if field.env is not None]
     assert len(envs) == len(set(envs))
     for env in envs:
-        assert env.startswith("KNOW_YOUR_SOUL_")
+        assert env.startswith("KNOW_YOUR_CONTEXT_")
 
 
 def test_spec_types_are_known() -> None:
@@ -110,8 +110,8 @@ def test_spec_expected_keys_exist() -> None:
 
 def test_defaults_load_without_any_source() -> None:
     config = load_config(env={})
-    assert config.value("store.path") == "know-your-soul.sqlite3"
-    assert config.value("projection.output_root") == "know-your-soul-projection"
+    assert config.value("store.path") == "know-your-context.sqlite3"
+    assert config.value("projection.output_root") == "know-your-context-projection"
     assert config.value("retention.keep") == 3
     assert config.value("diagnose.check_permissions") is True
     assert config.value("serve.api_key") is None
@@ -146,15 +146,15 @@ def test_unknown_key_access_fails_closed() -> None:
 @pytest.mark.parametrize(
     ("env_name", "raw", "key", "expected"),
     [
-        ("KNOW_YOUR_SOUL_STORE", "/tmp/x.sqlite3", "store.path", "/tmp/x.sqlite3"),
-        ("KNOW_YOUR_SOUL_OUTPUT_ROOT", "/tmp/out", "projection.output_root", "/tmp/out"),
-        ("KNOW_YOUR_SOUL_OPS_ROOT", "/tmp/ops", "ops.root", "/tmp/ops"),
-        ("KNOW_YOUR_SOUL_API_KEY", "supersecret", "serve.api_key", "supersecret"),
-        ("KNOW_YOUR_SOUL_RETENTION_KEEP", "7", "retention.keep", 7),
-        ("KNOW_YOUR_SOUL_STALE_AFTER_SECONDS", "12.5", "ops.stale_after_seconds", 12.5),
-        ("KNOW_YOUR_SOUL_CHECK_PERMISSIONS", "no", "diagnose.check_permissions", False),
-        ("KNOW_YOUR_SOUL_HOST_ALLOWLIST", "a,b, c", "serve.host_allowlist", ("a", "b", "c")),
-        ("KNOW_YOUR_SOUL_MAX_BODY_BYTES", "4096", "serve.max_body_bytes", 4096),
+        ("KNOW_YOUR_CONTEXT_STORE", "/tmp/x.sqlite3", "store.path", "/tmp/x.sqlite3"),
+        ("KNOW_YOUR_CONTEXT_OUTPUT_ROOT", "/tmp/out", "projection.output_root", "/tmp/out"),
+        ("KNOW_YOUR_CONTEXT_OPS_ROOT", "/tmp/ops", "ops.root", "/tmp/ops"),
+        ("KNOW_YOUR_CONTEXT_API_KEY", "supersecret", "serve.api_key", "supersecret"),
+        ("KNOW_YOUR_CONTEXT_RETENTION_KEEP", "7", "retention.keep", 7),
+        ("KNOW_YOUR_CONTEXT_STALE_AFTER_SECONDS", "12.5", "ops.stale_after_seconds", 12.5),
+        ("KNOW_YOUR_CONTEXT_CHECK_PERMISSIONS", "no", "diagnose.check_permissions", False),
+        ("KNOW_YOUR_CONTEXT_HOST_ALLOWLIST", "a,b, c", "serve.host_allowlist", ("a", "b", "c")),
+        ("KNOW_YOUR_CONTEXT_MAX_BODY_BYTES", "4096", "serve.max_body_bytes", 4096),
     ],
 )
 def test_env_layer_overrides_defaults(env_name: str, raw: str, key: str, expected: object) -> None:
@@ -165,56 +165,56 @@ def test_env_layer_overrides_defaults(env_name: str, raw: str, key: str, expecte
 
 @pytest.mark.parametrize("raw", ["1", "true", "TRUE", "yes", "on"])
 def test_env_bool_true_spellings(raw: str) -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_CHECK_PERMISSIONS": raw})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_CHECK_PERMISSIONS": raw})
     assert config.value("diagnose.check_permissions") is True
 
 
 @pytest.mark.parametrize("raw", ["0", "false", "FALSE", "no", "off"])
 def test_env_bool_false_spellings(raw: str) -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_CHECK_PERMISSIONS": raw})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_CHECK_PERMISSIONS": raw})
     assert config.value("diagnose.check_permissions") is False
 
 
 @pytest.mark.parametrize("raw", ["maybe", "2", "", "yesno"])
 def test_env_bool_invalid_fails_closed(raw: str) -> None:
     with pytest.raises(ConfigError) as excinfo:
-        load_config(env={"KNOW_YOUR_SOUL_CHECK_PERMISSIONS": raw})
+        load_config(env={"KNOW_YOUR_CONTEXT_CHECK_PERMISSIONS": raw})
     assert excinfo.value.code == "INVALID_VALUE"
 
 
 @pytest.mark.parametrize("raw", ["1.5", "abc", "", "0x10", "1_000"])
 def test_env_int_invalid_fails_closed(raw: str) -> None:
     with pytest.raises(ConfigError) as excinfo:
-        load_config(env={"KNOW_YOUR_SOUL_RETENTION_KEEP": raw})
+        load_config(env={"KNOW_YOUR_CONTEXT_RETENTION_KEEP": raw})
     assert excinfo.value.code == "INVALID_VALUE"
 
 
 @pytest.mark.parametrize("raw", ["abc", "", "nan", "inf", "-inf"])
 def test_env_float_invalid_fails_closed(raw: str) -> None:
     with pytest.raises(ConfigError) as excinfo:
-        load_config(env={"KNOW_YOUR_SOUL_STALE_AFTER_SECONDS": raw})
+        load_config(env={"KNOW_YOUR_CONTEXT_STALE_AFTER_SECONDS": raw})
     assert excinfo.value.code == "INVALID_VALUE"
 
 
 def test_env_int_for_float_field_widens() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_STALE_AFTER_SECONDS": "10"})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_STALE_AFTER_SECONDS": "10"})
     assert config.value("ops.stale_after_seconds") == 10.0
     assert isinstance(config.value("ops.stale_after_seconds"), float)
 
 
 def test_env_unknown_variable_is_ignored() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_TOTALLY_UNKNOWN": "x", "PATH": "/bin"})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_TOTALLY_UNKNOWN": "x", "PATH": "/bin"})
     assert config.value("retention.keep") == 3
 
 
 def test_env_empty_string_for_optional_str_fails_closed() -> None:
     with pytest.raises(ConfigError) as excinfo:
-        load_config(env={"KNOW_YOUR_SOUL_API_KEY": ""})
+        load_config(env={"KNOW_YOUR_CONTEXT_API_KEY": ""})
     assert excinfo.value.code == "INVALID_VALUE"
 
 
 def test_env_str_list_empty_means_empty() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_RETENTION_PINNED": ""})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_RETENTION_PINNED": ""})
     assert config.value("retention.pinned") == ()
 
 
@@ -327,7 +327,7 @@ def test_cli_overrides_env_and_file(tmp_path) -> None:
     path.write_text("retention.keep = 2\n", encoding="utf-8")
     config = load_config(
         file_path=path,
-        env={"KNOW_YOUR_SOUL_RETENTION_KEEP": "5"},
+        env={"KNOW_YOUR_CONTEXT_RETENTION_KEEP": "5"},
         cli_overrides={"retention.keep": 11},
     )
     assert config.value("retention.keep") == 11
@@ -337,7 +337,7 @@ def test_cli_overrides_env_and_file(tmp_path) -> None:
 def test_env_beats_file(tmp_path) -> None:
     path = tmp_path / "cfg.toml"
     path.write_text("retention.keep = 2\n", encoding="utf-8")
-    config = load_config(file_path=path, env={"KNOW_YOUR_SOUL_RETENTION_KEEP": "5"})
+    config = load_config(file_path=path, env={"KNOW_YOUR_CONTEXT_RETENTION_KEEP": "5"})
     assert config.value("retention.keep") == 5
     assert config.source("retention.keep") == "env"
 
@@ -362,7 +362,7 @@ def test_cli_wrong_type_fails_closed() -> None:
 
 def test_cli_none_clears_optional_field() -> None:
     config = load_config(
-        env={"KNOW_YOUR_SOUL_API_KEY": "x"},
+        env={"KNOW_YOUR_CONTEXT_API_KEY": "x"},
         cli_overrides={"serve.api_key": None},
     )
     assert config.value("serve.api_key") is None
@@ -373,20 +373,20 @@ def test_cli_none_clears_optional_field() -> None:
 
 
 def test_dump_redacts_secret_values() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_API_KEY": "supersecretvalue"})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_API_KEY": "supersecretvalue"})
     dumped = config.dump()
     assert dumped["serve.api_key"]["value"] == REDACTED_PLACEHOLDER
     assert "supersecretvalue" not in json.dumps(dumped)
 
 
 def test_dump_without_redaction_shows_value() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_API_KEY": "supersecretvalue"})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_API_KEY": "supersecretvalue"})
     dumped = config.dump(redact_secrets=False)
     assert dumped["serve.api_key"]["value"] == "supersecretvalue"
 
 
 def test_dump_keeps_provenance_and_is_canonical() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_RETENTION_KEEP": "6"})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_RETENTION_KEEP": "6"})
     dumped = config.dump()
     assert dumped["retention.keep"] == {"value": 6, "source": "env"}
     assert list(dumped) == sorted(dumped)
@@ -400,7 +400,7 @@ def test_none_secret_is_not_placeholder() -> None:
 
 
 def test_describe_config_redacts_secrets() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_API_KEY": "supersecretvalue"})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_API_KEY": "supersecretvalue"})
     text = describe_config(config)
     assert REDACTED_PLACEHOLDER in text
     assert "supersecretvalue" not in text
@@ -424,7 +424,7 @@ def test_describe_spec_marks_secrets() -> None:
 
 
 def test_describe_config_includes_current_source() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_RETENTION_KEEP": "8"})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_RETENTION_KEEP": "8"})
     text = describe_config(config)
     assert "retention.keep" in text
     assert "env" in text
@@ -504,13 +504,13 @@ def test_ops_config_rejects_missing_keys() -> None:
 
 def test_env_range_violation_fails_closed() -> None:
     with pytest.raises(ConfigError) as excinfo:
-        load_config(env={"KNOW_YOUR_SOUL_STALE_AFTER_SECONDS": "0"})
+        load_config(env={"KNOW_YOUR_CONTEXT_STALE_AFTER_SECONDS": "0"})
     assert excinfo.value.code == "OUT_OF_RANGE"
 
 
 def test_env_negative_retention_fails_closed() -> None:
     with pytest.raises(ConfigError) as excinfo:
-        load_config(env={"KNOW_YOUR_SOUL_RETENTION_KEEP": "-1"})
+        load_config(env={"KNOW_YOUR_CONTEXT_RETENTION_KEEP": "-1"})
     assert excinfo.value.code == "OUT_OF_RANGE"
 
 
@@ -527,7 +527,7 @@ def test_cli_bool_for_int_fails_closed() -> None:
 
 
 def test_effective_mapping_is_flat_and_redacted() -> None:
-    config = load_config(env={"KNOW_YOUR_SOUL_API_KEY": "sekrit", "KNOW_YOUR_SOUL_RETENTION_KEEP": "5"})
+    config = load_config(env={"KNOW_YOUR_CONTEXT_API_KEY": "sekrit", "KNOW_YOUR_CONTEXT_RETENTION_KEEP": "5"})
     effective = config.effective()
     assert effective["retention.keep"] == 5
     assert effective["serve.api_key"] == REDACTED_PLACEHOLDER
@@ -535,7 +535,7 @@ def test_effective_mapping_is_flat_and_redacted() -> None:
 
 
 def test_process_environ_is_read_when_env_not_given(monkeypatch) -> None:
-    monkeypatch.setenv("KNOW_YOUR_SOUL_RETENTION_KEEP", "12")
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_RETENTION_KEEP", "12")
     config = load_config()
     assert config.value("retention.keep") == 12
     assert config.source("retention.keep") == "env"
@@ -577,7 +577,7 @@ def test_load_config_layers_full_chain(tmp_path) -> None:
     path.write_text('store.path = "from-file.sqlite3"\nretention.keep = 2\n', encoding="utf-8")
     config = load_config(
         file_path=path,
-        env={"KNOW_YOUR_SOUL_RETENTION_KEEP": "5"},
+        env={"KNOW_YOUR_CONTEXT_RETENTION_KEEP": "5"},
         cli_overrides={"ops.actor": "ci"},
     )
     assert config.value("store.path") == "from-file.sqlite3"
@@ -586,7 +586,7 @@ def test_load_config_layers_full_chain(tmp_path) -> None:
     assert config.source("retention.keep") == "env"
     assert config.value("ops.actor") == "ci"
     assert config.source("ops.actor") == "cli"
-    assert config.value("projection.output_root") == "know-your-soul-projection"
+    assert config.value("projection.output_root") == "know-your-context-projection"
     assert config.source("projection.output_root") == "default"
 
 

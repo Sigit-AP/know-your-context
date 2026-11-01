@@ -12,7 +12,7 @@ import io
 
 import pytest
 
-from know_your_soul.serve import rpc as protocol
+from know_your_context.serve import rpc as protocol
 
 # --------------------------------------------------------------------- codec
 
@@ -194,7 +194,7 @@ class TestHandshake:
         assert set(result) == {"protocolVersion", "capabilities", "serverInfo"}
         assert result["protocolVersion"] == "2025-03-26"
         assert set(result["capabilities"]) == {"tools", "resources"}
-        assert result["serverInfo"]["name"] == "know-your-soul"
+        assert result["serverInfo"]["name"] == "know-your-context"
         assert isinstance(result["serverInfo"]["version"], str)
         assert result["serverInfo"]["version"]
 
@@ -207,7 +207,7 @@ class TestHandshake:
                 "resources": {"listChanged": False, "subscribe": False},
                 "tools": {"listChanged": False},
             },
-            "serverInfo": {"name": "know-your-soul", "version": result["serverInfo"]["version"]},
+            "serverInfo": {"name": "know-your-context", "version": result["serverInfo"]["version"]},
         }
 
     def test_initialize_without_params_uses_latest_handshake(self) -> None:
@@ -235,7 +235,7 @@ class TestToolListing:
         assert protocol.tool_listing_result() == protocol.tool_listing_result()
 
     def test_listing_matches_mcp_server_surface(self) -> None:
-        from know_your_soul.mcp_server import EXPECTED_TOOLS
+        from know_your_context.mcp_server import EXPECTED_TOOLS
 
         names = tuple(tool["name"] for tool in protocol.tool_listing_result()["tools"])
         assert names == EXPECTED_TOOLS
