@@ -366,6 +366,29 @@ class TestTokenAuth:
         assert len(token) >= 32
         assert all(char.isalnum() or char in "-_" for char in token)
 
+    def test_page_with_token_issues_session_cookie(self, server: WebviewServer) -> None:
+        # The index page, authenticated via ?token=, sets an HttpOnly session
+        # cookie so static assets and API calls need no query token.
+        status, headers, _ = _http(server, "/")
+        assert status == 200
+        cookie = headers.get("set-cookie", "")
+        assert cookie.startswith("kys_token=")
+        assert "HttpOnly" in cookie
+        assert "SameSite=Strict" in cookie
+
+    def test_session_cookie_authenticates_assets_and_api(self, server: WebviewServer) -> None:
+        # A request carrying only the session cookie (no query token) passes:
+        # this is how the browser loads /static/*.css and /static/*.js.
+        _, headers, _ = _http(server, "/")
+        cookie = headers["set-cookie"].split(";")[0]
+        for path in ("/static/style.css", "/static/app.js", "/api/health"):
+            status, _, _ = _http(server, path, token=None, headers={"Cookie": cookie})
+            assert status == 200, path
+
+    def test_wrong_cookie_is_401(self, server: WebviewServer) -> None:
+        status, _, _ = _http(server, "/api/health", token=None, headers={"Cookie": "kys_token=wrong"})
+        assert status == 401
+
     def test_generated_tokens_differ(self) -> None:
         assert generate_token() != generate_token()
 

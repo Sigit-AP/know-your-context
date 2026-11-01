@@ -2,36 +2,53 @@
 
 [🇬🇧 English](README.md) | **🇮🇩 Bahasa Indonesia**
 
-</div>
-
 # Know Your Soul
+
+**Graph pengetahuan lokal yang teraudit untuk agent — memori deterministik, ingestion universal, dan server 50-agent. Tanpa model di dalam.**
 
 [![CI](https://github.com/Sigit-AP/know-your-soul/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Sigit-AP/know-your-soul/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/know-your-soul)](https://pypi.org/project/know-your-soul/)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue)](https://www.python.org/)
 [![Lisensi: Apache 2.0](https://img.shields.io/badge/Lisensi-Apache%202.0-blue)](LICENSE)
 
-**Layanan memori untuk agent.** Ia menyimpan apa yang dipelajari agent dalam
-satu graph lokal yang teraudit — dinilai, berversi, dan mustahil berubah tanpa
-persetujuanmu. Tidak ada model, embedding, atau panggilan provider di dalamnya.
-AI tetap di sisi agent; ini bagian yang tidak pernah menebak.
+</div>
 
-Baru di 0.3.0: **superpower server** — daemon multi-agent yang melayani
-hingga 50 agent bersamaan (read pool + writer tunggal dengan group commit,
-fairness per-agent, backpressure typed saat overload, journal crash-safe)
-plus **web view** (`know-your-soul webview`) dengan graph interaktif, search,
-metrics, health, analytics, dan tab audit. Ingestion kode kini mencakup
-**19 bahasa**.
+## Daftar Isi
 
-Baru di 0.2.0: graph tidak lagi terbatas pada pengetahuan terkurasi. Arahkan
-ke folder mana pun dan ia meng-ingest kode sumber dalam dua belas bahasa
-(lewat kernel tree-sitter Rust, byte-identik dengan referensi Python), PDF,
-markdown, dan teks biasa menjadi satu graph yang bisa di-query dengan symbol
-search dan call hierarchy.
+- [Kenapa](#kenapa)
+- [Instalasi](#instalasi)
+- [Mulai Cepat](#mulai-cepat)
+- [Benchmark](#benchmark)
+- [Fitur Utama](#fitur-utama)
+- [Web View](#web-view)
+- [Cara Kerja](#cara-kerja)
+- [Referensi CLI](#referensi-cli)
+- [MCP Tools](#mcp-tools)
+- [Konfigurasi](#konfigurasi)
+- [Keamanan](#keamanan)
+- [Development](#development)
+- [Kontribusi](#kontribusi)
+- [Lisensi](#lisensi)
 
-> Agent membaca ulang dokumen yang sama di setiap sesi dan membayar harga token
-> penuh untuk itu. Know Your Soul menjawab dari graph: **hemat token 94,2%**,
-> setiap jawaban membawa provenance dan id audit-nya.
+## Kenapa
+
+Agent membaca ulang dokumen yang sama di setiap sesi dan membayar harga token
+penuh untuk itu. Lebih buruk lagi, apa yang dipelajari agent hari ini hilang
+besok — tidak ada yang dinilai, berversi, atau teraudit.
+
+Know Your Soul adalah memori yang memperbaiki keduanya. Ia menjawab dari graph
+lokal, bukan dari korpus mentah (**terukur: 466× lebih sedikit token pada korpus
+campuran 52 file**), setiap jawaban membawa provenance dan id audit, dan setiap
+perubahan graph melewati proposal yang kamu setujui — dengan rollback byte-exact.
+
+Batasannya keras dan ditegakkan saat runtime: tidak ada model, embedding, atau
+panggilan provider di dalam. AI tetap di sisi agent. Ini bagian yang tidak
+pernah menebak.
+
+> Agent dengan model vision tidak dikunci keluar: mereka membaca gambar atau
+> PDF hasil scan di sisi mereka, lalu men-submit hasil ekstraksi lewat kontrak
+> `submit_extraction` — terikat hash file sumber, bertanda `agent-extracted`,
+> digate oleh review. Produknya sendiri tidak pernah memanggil model.
 
 ## Instalasi
 
@@ -49,9 +66,14 @@ cd know-your-soul
 uv sync --frozen
 ```
 
-## Pemakaian
+Kernel ekstraksi Rust bersifat opsional. Instalasi tanpa toolchain Rust otomatis
+fallback ke extractor Python — kedua engine menghasilkan graph yang byte-identik
+(dibuktikan oleh test).
+
+## Mulai Cepat
 
 ```bash
+# catat pengetahuan (teraudit, ternilai)
 know-your-soul --store demo.sqlite3 log-event \
   '{"node_id":"n1","parent_id":"p1-root","domain":"P1",
     "summary":"Selalu verifikasi sebelum mengklaim selesai",
@@ -61,132 +83,173 @@ know-your-soul --store demo.sqlite3 rebuild
 know-your-soul --store demo.sqlite3 query \
   '{"purpose":"verify before claiming done","token_budget":400}'
 
-know-your-soul export --format all        # graph.html + DOT/Mermaid/CSV/GraphML/SVG + buku
-know-your-soul analytics --modules all    # centrality, communities, cycles, health, timeline
-know-your-soul serve --socket demo.sock   # API lokal persisten
-know-your-soul diagnose                   # self-check menyeluruh, exit code mencerminkan kesehatan
+# ingest kode dan dokumen (proposal-only, kontrak v3)
+know-your-soul ingest-directory ./my-project
+know-your-soul watch ./my-project --interval 2
 
-# ingest codebase atau folder dokumen apa pun (0.2.0+)
-know-your-soul ingest-file src/main.py           # satu file
-know-your-soul ingest-directory ./my-project     # seluruh tree, incremental saat diulang
-know-your-soul watch ./my-project --interval 2   # graph tetap sinkron saat file berubah
+# lihat semuanya
+know-your-soul webview                 # web view interaktif, loopback + token
+know-your-soul serve --daemon          # superpower server 50-agent
+know-your-soul report                  # god nodes, koneksi mengejutkan, pertanyaan
+know-your-soul diagnose                # 11 self-check, exit code mencerminkan kesehatan
 ```
-
-Ingestion bersifat proposal-only: menulis ke code graph dan melaporkan
-ringkasan plus satu event audit. Penggabungan ke graph pengetahuan ternilai
-tetap lewat alur proposal yang kamu setujui. Graph hasil ingestion mendukung
-symbol search FTS5 dengan filter `kind:/lang:/path:` dan hirarki
-callers/callees lewat API Python `know_your_soul.retrieval_v2`.
-
-Hermes mendaftarkannya sebagai MCP server; setup:
-[docs/integration/hermes.md](docs/integration/hermes.md).
-
-## Apa yang kamu dapatkan
-
-**Graph viewer** — `export` menulis `graph.html` mandiri. Tanpa CDN, tanpa
-dependensi JavaScript, jalan offline. Ini hasil nyata dari sistem yang berjalan
-di korpus benchmark:
-
-<p align="center">
-  <img src="docs/assets/screenshots/graph-viewer.png" alt="Graph viewer: 36 node, 35 edge bertipe, berwarna per domain" width="900"/>
-</p>
-
-Klik sebuah node, dapatkan skor dan provenance-nya:
-
-<p align="center">
-  <img src="docs/assets/screenshots/node-detail.png" alt="Detail node: label, domain, skor P/M/E, provenance" width="900"/>
-</p>
-
-<p align="center">
-  <img src="docs/assets/screenshots/dark-theme.png" alt="Tema gelap" width="700"/>
-</p>
-
-**Jawaban dengan bukti** — setiap panggilan, termasuk bacaan, tercatat sebagai
-satu event dalam store SQLite append-only berantai-hash. Respons query langsung
-membawa id audit-nya:
-
-<p align="center">
-  <img src="docs/assets/screenshots/live-api-query.png" alt="Respons query langsung dari server yang berjalan" width="900"/>
-</p>
-
-**Belajar dengan kontrak** — node membawa skor P/M/E di bawah matematika beku.
-Perbaikan datang sebagai proposal diff yang kamu setujui; rollback byte-exact.
-Perubahan korpus menghasilkan relearn offer dan menunggumu.
-
-**Analitik graph** — PageRank, HITS, Katz, communities, Louvain, cycles,
-bridges, health check. Deterministik: input sama, byte sama, setiap run.
-
-**Ingestion universal (0.2.0)** — kode sumber dalam dua belas bahasa (Python,
-JavaScript, TypeScript, Go, Rust, Java, C, C++, C#, Ruby, PHP, Bash) diparse
-oleh kernel tree-sitter Rust (dengan fallback Python otomatis yang
-byte-identik), plus PDF, markdown structure-aware, dan teks biasa.
-Re-ingestion incremental, resolver referensi lintas-file dua fase, dan watcher
-polling stdlib menjaga graph tetap mutakhir.
-
-**Dua belas format ekspor** — DOT, Mermaid, CSV, GraphML, GEXF, Cytoscape, D3,
-SVG, TGF, adjacency, plus buku markdown per domain.
 
 ## Benchmark
 
-Korpus terkunci (28 file, 13.151 token), 24 pertanyaan beku, tanpa model:
+Semua angka berasal dari suite benchmark yang ter-commit dan reproduksibel di
+`bench/`. Jalankan sendiri; setiap suite deterministik dan offline.
 
-| Metrik | Hasil |
+**Reduksi token** (`bench/tokens/`, korpus campuran ter-pin, estimator beku):
+
+| Ukuran korpus | File | Token mentah | Token per jawaban | Reduksi | Cakupan rubric |
+|---|---|---|---|---|---|
+| Kecil | 6 | 8.940 | 321 | 27,9× | 100% |
+| Sedang | 26 | 62.442 | 320 | 195,4× | 87% |
+| Besar | 52 | 151.606 | 325 | **466,4×** | 97% |
+
+**Retrieval memori** (`bench/memory/`, dataset LOCOMO asli, 5.882 turn /
+1.982 pertanyaan): recall@10 = **0,5433** diukur pada produk apa adanya.
+
+**Retrieval kode pada repo nyata** (`bench/codebase/`, psf/requests + chalk +
+tree-sitter-python ter-pin): symbol lookup **15/15 top-1**, call hierarchy
+**7/7 eksak** terhadap ground truth terverifikasi manual, nol kegagalan ekstraksi.
+
+**Beban multi-agent** (50 agent, 16 operasi campuran, terukur): group commit
+menaikkan throughput tulis **7,04×**, spammer 10× hanya memangkas 14,2%
+throughput agent sopan, kill -9 di tengah burst kehilangan **nol** tulisan yang
+ter-ack.
+
+**Algoritma graph** (`bench/institutional/`, gaya GAPBS/LDBC-Graphalytics):
+**8/8 kernel lolos** kebenaran terhadap implementasi referensi.
+
+## Fitur Utama
+
+**Deterministik menyeluruh.** Input sama, byte sama, setiap run — di dua engine
+ekstraksi (Rust + Python), lintas proses, lintas hash seed. Kalau angkanya
+berubah, inputnya yang berubah.
+
+**Ingestion universal.** Sembilan belas bahasa pemrograman via tree-sitter
+(kernel Rust di jalur panas; fallback Python byte-identik menutup sisanya),
+plus text layer PDF, markdown structure-aware, dan teks biasa. PDF hasil scan
+ditandai jujur (`no_text_layer`), tidak dipalsukan.
+
+**Hierarki yang mengenal dirinya.** Node primary memegang tanggung jawab
+tunggal, turun ke kedalaman arbitrer, dan terhubung ke primary lain lewat
+bridge. Graph memberitahumu kapan subtree anak butuh perbaikan — sebagai
+proposal, tidak pernah menulis ulang diam-diam.
+
+**Ekstraksi eksternal, bertingkat jujur.** Agent men-submit ekstraksi
+vision/LLM lewat `submit_extraction`: terikat sha256 file sumber, bertanda
+`agent-extracted` dengan plafon confidence lebih rendah, dikoroborasi atau
+dikontradiksi agent lain, dan tidak pernah dipromosikan tanpa persetujuan.
+
+**Superpower server.** Satu daemon detached per store melayani hingga 50 agent:
+read pool di atas snapshot WAL, writer tunggal dengan group commit, token bucket
+per-agent, jalur weighted-fair-queuing, session lease, graceful drain, dan stop
+bereskalasi (graceful → forced → SIGKILL + pembersihan artifak).
+
+**Analitik dan laporan.** PageRank, HITS, Katz, Louvain, cycles, bridges, skor
+kesehatan — plus laporan komposit (god nodes, koneksi mengejutkan dengan
+penjelasan terstruktur, suggested questions yang terbukti bisa dijawab).
+
+**Dua belas format ekspor.** DOT, Mermaid, CSV, GraphML, GEXF, Cytoscape, D3,
+SVG, TGF, adjacency, dan buku markdown per domain — semuanya ter-hash ke dalam
+manifest generasi.
+
+## Web View
+
+`know-your-soul webview` menjalankan viewer loopback-only (token di URL, cookie
+sesi setelah load pertama, anti DNS-rebinding, tanpa CORS). Tujuh tab:
+
+<p align="center">
+  <img src="docs/assets/screenshots/tab-graph.png" alt="Tab Graph: layout radial interaktif" width="860"/>
+</p>
+
+| Tab | Isinya |
 |---|---|
-| Kasus diterima | 24/24 |
-| Rata-rata hemat token vs korpus mentah | 94,2% |
-| Median latensi query (p50) | 7,9 ms |
+| Graph | Kanvas interaktif — pan/zoom/klik untuk detail node (skor, provenance) |
+| Search | Pencarian simbol FTS5 dengan filter `kind:`/`lang:` |
+| Metrics | Hitungan store, latensi per operasi, kapasitas publish, skor kesehatan |
+| Health | 11 self-check fail-closed dengan severity |
+| Analytics | Centrality, communities, bridges atas graph live |
+| Audit | Log event berantai-hash, teredaksi |
+| Proposals | Antrian review: saran split, antrian ekstraksi, sinyal review |
 
-Benchmark memori pada dataset LOCOMO asli (5.882 turn, 1.982 pertanyaan):
+<p align="center">
+  <img src="docs/assets/screenshots/tab-analytics.png" alt="Tab Analytics" width="700"/>
+</p>
 
-| Metrik | Hasil |
+## Cara Kerja
+
+```
+sumber (kode, dokumen, pengetahuan) ──▶ extractor (kernel Rust / fallback Python)
+                                        │  deterministik, terbatas, fail-closed
+                                        ▼
+                          event store SQLite (append-only, berantai-hash)
+                                        │  schema v4, WAL
+                                        ▼
+                  proyeksi (read model) ──▶ retrieval + analitik + ekspor
+                                        │
+              superpower server: 50 agent, jalur, kuota, group commit
+```
+
+Tulisan tidak pernah langsung masuk ke graph. Ia mendarat sebagai event
+teraudit, menjadi proposal, dan di-apply lewat alur operator-gated. Rollback
+memulihkan hash dan skor persis seperti sebelum apply.
+
+## Referensi CLI
+
+| Perintah | Fungsi |
 |---|---|
-| recall@10 (produk, apa adanya) | 0,5433 |
+| `query` / `get-node` / `get-subtree` | Baca graph pengetahuan (berbatas token) |
+| `path` / `explain` / `affected` / `god-nodes` | Verb traversal dan analisis |
+| `log-event` / `record-outcome` / `evaluate` / `review` | Siklus tulis + penilaian |
+| `propose-improvement` / `apply-improvement` / `rollback` | Alur mutasi ter-gate |
+| `ingest-file` / `ingest-directory` / `ingest` | Ingestion kode/dokumen (kontrak v3, proposal-only) |
+| `submit-extraction` / `extraction review\|approve\|reject` | Ekstraksi agent eksternal (kontrak v4) |
+| `watch` | Watcher polling, re-ingestion incremental |
+| `export` / `analytics` / `report` | Format, metrik dalam, laporan komposit |
+| `serve --daemon\|--proxy\|--socket\|--http` | Superpower server + adapter |
+| `webview` | Web view interaktif |
+| `config` / `metrics` / `diagnose` | Tooling ops (konfigurasi berlapis, metrik, self-check) |
+| `backup` / `restore` / `relearn-scan` / `relearn-apply` | Durabilitas dan alur relearn |
 
-Benchmark codebase nyata (psf/requests, chalk, tree-sitter-python — ter-pin):
+## MCP Tools
 
-| Metrik | Hasil |
-|---|---|
-| Symbol lookup hit@10 (ground truth) | 15/15, semua top-1 |
-| Call hierarchy cocok eksak | 7/7 |
-| Kegagalan ekstraksi | 0 file |
-| Determinisme lintas engine (Rust vs Python) | store byte-identik |
+MCP server mengekspos empat belas operasi knowledge beku (`knowledge_query`,
+`knowledge_get_node`, … sampai `knowledge_god_nodes`) plus
+`knowledge_ingest_file`, `knowledge_ingest_directory` (v3), dan
+`knowledge_submit_extraction` (v4). Setup dengan Hermes:
+[docs/integration/hermes.md](docs/integration/hermes.md).
 
-Jalankan sendiri semuanya: `uv run python bench/run.py run`,
-`uv run python bench/memory/run.py run`, `uv run python bench/codebase/run.py
-run`, `uv run python bench/institutional/run.py --strict`. Bukti:
-[docs/verification.md](docs/verification.md).
+## Konfigurasi
 
-## Empat belas operasi
-
-Sama di CLI, HTTP, dan MCP:
-
-| | | | |
-|---|---|---|---|
-| `query` | `get_node` | `get_subtree` | `log_event` |
-| `record_outcome` | `evaluate` | `review` | `propose_improvement` |
-| `apply_improvement` | `rollback` | `path` | `explain` |
-| `affected` | `god_nodes` | | |
+Berlapis: defaults → file TOML → environment variable (`KNOW_YOUR_SOUL_*`) →
+flag CLI. `config describe` mencetak setiap key dengan provenance-nya; secret
+teredaksi di semua permukaan. Kill switch tersedia untuk setiap optimasi
+(`KNOW_YOUR_SOUL_NO_GROUP_COMMIT`, `KYS_DISABLE_RUST_KERNEL`, …).
 
 ## Keamanan
 
-Batas no-AI ditegakkan saat runtime: paket provider dan vector gagal-tertutup,
-socket keluar ditolak, dan MCP server menolak start bila menemukan kredensial
-provider di environment-nya. Host allowlist di setiap request, perbandingan API
-key dalam waktu konstan, body dibatasi, secret teredaksi, path terkurung.
+- Batas no-AI ditegakkan saat runtime: paket provider/vector gagal-tertutup,
+  socket keluar ditolak, dan MCP server menolak start bila menemukan kredensial
+  provider di environment-nya.
+- Host allowlist di setiap request, perbandingan key dalam waktu konstan, body
+  dibatasi, secret teredaksi, path terkurung.
+- CI menjalankan bandit dan pip-audit sebagai gate blocking di setiap push.
 
 ## Development
 
 ```bash
 uv sync --frozen
-uv run pytest -q                 # 5.445 test
+uv run pytest -q                 # 6.782 test
 uv run pyright
 uv run ruff check
 uv run python bench/run.py run   # 24/24 diterima
 ```
 
 Kernel Rust opsional dibangun dengan [maturin](https://maturin.rs):
-`maturin build --release -m kernel-rust/Cargo.toml`. Tanpa itu, semuanya
-otomatis fallback ke extractor Python yang byte-identik.
+`maturin build --release -m kernel-rust/Cargo.toml`.
 
 CI menjalankan gate yang sama di Ubuntu dan macOS, plus bandit, pip-audit, dan
 penjaga atribusi lisensi.
@@ -202,5 +265,4 @@ Perubahan perilaku kontrak beku hanya lewat versi kontrak baru.
 
 ## Lisensi
 
-[Apache 2.0](LICENSE). Format proyeksi graph dikonsumsi lewat paket `graphifyy`
-yang ter-pin. Atribusi di [NOTICE](NOTICE).
+[Apache 2.0](LICENSE). Atribusi di [NOTICE](NOTICE).

@@ -757,6 +757,14 @@ class WebviewServer:
                 self.send_header("Cache-Control", "no-store")
                 if content_type.startswith("text/html"):
                     self.send_header("Content-Security-Policy", _CSP)
+                if getattr(self, "_fresh_token", False) and content_type.startswith("text/html"):
+                    # Page authenticated via ?token= — issue the session cookie
+                    # so static assets and API calls authenticate without the
+                    # token in the URL. HttpOnly + SameSite=Strict, loopback.
+                    self.send_header(
+                        "Set-Cookie",
+                        f"kys_token={server_ref._token}; Path=/; HttpOnly; SameSite=Strict",
+                    )
                 self.end_headers()
                 if not head_only:
                     self.wfile.write(body)
@@ -786,10 +794,19 @@ class WebviewServer:
                     return False
                 query = parse_qs(urlsplit(self.path).query)
                 provided = query.get("token", [None])[-1]
-                if provided is None or not hmac.compare_digest(str(provided), server_ref._token):
-                    self._respond_json(401, _error_payload("UNAUTHORIZED", "a valid token query parameter is required"))
-                    return False
-                return True
+                if provided is not None and hmac.compare_digest(str(provided), server_ref._token):
+                    self._fresh_token = True  # mark: issue the session cookie
+                    return True
+                # Fall back to the session cookie issued when the page itself
+                # was authenticated (static assets/API calls carry no query
+                # token; the cookie is HttpOnly + SameSite=Strict).
+                cookie_header = self.headers.get("Cookie", "")
+                for part in cookie_header.split(";"):
+                    name, _, value = part.strip().partition("=")
+                    if name == "kys_token" and hmac.compare_digest(value, server_ref._token):
+                        return True
+                self._respond_json(401, _error_payload("UNAUTHORIZED", "a valid token query parameter is required"))
+                return False
 
             # -- verbs ---------------------------------------------------
 
