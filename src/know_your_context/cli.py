@@ -287,6 +287,44 @@ def build_parser() -> argparse.ArgumentParser:
     report_parser.add_argument("--top-surprising", type=int, default=10, help="surprising-connection cap (default 10)")
     report_parser.add_argument("--top-questions", type=int, default=8, help="suggested-question cap (default 8)")
 
+    # W14 (SUB-128): knowledge debt queue — budgeted, prioritized work queue
+    # with burn-down metrics and proposal-gated actions. OPS surface only —
+    # never knowledge ops, never MCP/HTTP.
+    debt_parser = subparsers.add_parser(
+        "debt",
+        help="ops: knowledge debt queue — list, report (burn-down), propose (not a knowledge op)",
+    )
+    debt_sub = debt_parser.add_subparsers(dest="debt_action", required=True)
+
+    def _debt_config_args(sub: argparse.ArgumentParser) -> None:
+        sub.add_argument("--budget", type=int, default=10, help="max queue items per cycle (1..100, default 10)")
+        sub.add_argument(
+            "--stale-days", type=int, default=30, help="days without use before a node is stale (default 30)"
+        )
+        sub.add_argument(
+            "--unresolved-days", type=int, default=7, help="days before an unresolved ref is debt (default 7)"
+        )
+        sub.add_argument(
+            "--low-score-threshold",
+            default="0.250000000000",
+            help="confidence below this is low-score debt (default 0.250000000000)",
+        )
+
+    debt_list = debt_sub.add_parser("list", help="print the budgeted debt queue as canonical JSON")
+    _debt_config_args(debt_list)
+    debt_report = debt_sub.add_parser("report", help="debt report with burn-down metrics")
+    _debt_config_args(debt_report)
+    debt_report.add_argument("--format", choices=("json", "markdown"), default="markdown")
+    debt_report.add_argument(
+        "--record", action="store_true", help="append this cycle's snapshot to the burn-down ledger"
+    )
+    debt_report.add_argument("--ledger", default=None, help="ledger path (default: alongside the store)")
+    debt_propose = debt_sub.add_parser(
+        "propose", help="turn a node's debt item into a real improvement proposal (gated)"
+    )
+    debt_propose.add_argument("node_id", help="node whose debt item becomes a proposal")
+    _debt_config_args(debt_propose)
+
     # Mega-wave 2 OPS tooling (SUB-77 modules, wired by SUB-80): layered
     # configuration introspection, operational metrics, and the fail-closed
     # self-check. OPS surface only — never knowledge ops, never MCP/HTTP.
@@ -563,6 +601,27 @@ def build_parser() -> argparse.ArgumentParser:
         sub = extraction_sub.add_parser(action, help=f"{action} one queued extraction (operator-gated)")
         sub.add_argument("receipt_id", help="the ext-… receipt id")
         sub.add_argument("--note", default="", help="operator note recorded with the decision")
+
+    # W14 I2: verifiable provenance chain. Read-only: re-derives the five
+    # hash-chained links (source sha256 -> payload hash -> capability actor ->
+    # submission event hash -> node event hash) for one node and reports the
+    # exact broken link. Exit 0 verified, 1 failed/unknown node, 3 unverified
+    # (legacy node without a contract-v4 provenance block — never faked).
+    provenance_parser = subparsers.add_parser(
+        "provenance",
+        help="verify the 5-link extraction provenance chain of a node (read-only)",
+    )
+    provenance_sub = provenance_parser.add_subparsers(dest="provenance_action", required=True)
+    provenance_verify = provenance_sub.add_parser("verify", help="verify one node's provenance chain")
+    provenance_verify.add_argument("node_id", help="the graph node id to verify")
+    provenance_verify.add_argument(
+        "--json", action="store_true", dest="as_json", help="print the canonical JSON report"
+    )
+    provenance_verify.add_argument(
+        "--root",
+        default=None,
+        help="extraction root: additionally re-hash the bound source file (link 0)",
+    )
 
     # Wave-4 SUB-92: polling watcher over the ingestion pipeline. OPS surface
     # only — same rules as `ingest`: never a knowledge op, never MCP/HTTP.
@@ -1164,6 +1223,49 @@ def _serve_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def _provenance_command(args: argparse.Namespace) -> int:
+    """The W14 I2 ``provenance verify`` command (read-only).
+
+    Exit 0 = verified (all five links re-derive and match), 1 = failed (a
+    typed broken link, reported with its index) or unknown node, 3 =
+    unverified (a legacy node with no contract-v4 provenance block — the
+    honest status, never faked as verified).
+    """
+    from know_your_context.security.provenance import ProvenanceNodeNotFoundError, verify_provenance
+    from know_your_context.store import EventStore
+
+    store = EventStore(args.store)
+    try:
+        try:
+            report = verify_provenance(store, args.node_id, extraction_root=args.root)
+        except ProvenanceNodeNotFoundError as error:
+            envelope = {
+                "error": {
+                    "code": "PROVENANCE_NODE_NOT_FOUND",
+                    "message": str(error),
+                    "retryable": False,
+                    "audit_event_id": None,
+                }
+            }
+            print(canonical_json(envelope), file=sys.stderr)
+            return 1
+    finally:
+        store.close()
+    if args.as_json:
+        print(canonical_json(report.to_dict()))
+    else:
+        print(f"provenance {report.node_id}: {report.status}")
+        for link in report.links:
+            suffix = f" [{link.error_type}]" if link.error_type else ""
+            print(f"  [{link.index}] {link.name:<18} {link.status:<10} {link.detail}{suffix}")
+        print(f"  reason: {report.reason}")
+    if report.status == "verified":
+        return 0
+    if report.status == "unverified":
+        return 3
+    return 1
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     command = str(args.command).replace("-", "_")
@@ -1181,6 +1283,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from know_your_context.ops.report_cli import run_report_command
 
         return run_report_command(args)
+    if command == "debt":
+        from know_your_context.ops.debt import run_debt_command
+
+        return run_debt_command(args)
     if command == "config":
         return _config_command(args)
     if command == "metrics":
@@ -1212,6 +1318,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _extraction_verb_command(args)
     if command == "extraction":
         return _extraction_review_command(args)
+    if command == "provenance":
+        return _provenance_command(args)
     if command == "watch":
         from know_your_context.ops.watch_cli import run_watch_command
 

@@ -77,6 +77,7 @@ DEFAULT_STAGE_RETRYABLE: tuple[type[BaseException], ...] = (OSError, sqlite3.Err
 
 class StageName(StrEnum):
     """The five contract stages of the ingestion flow, in execution order."""
+
     EXTRACT = "extract"
     RESOLVE = "resolve"
     SYNTHESIZE = "synthesize"
@@ -148,6 +149,7 @@ class StageContext:
 @dataclass(frozen=True)
 class StageRunRecord:
     """One stage's outcome in a run: status, attempts, timing, item counts."""
+
     stage: str
     status: str  # "ok" | "resumed" | "failed"
     attempts: int
@@ -175,6 +177,7 @@ class StageRunRecord:
 @dataclass(frozen=True)
 class FlowRunReport:
     """The complete record of one staged-pipeline run (ok or failed)."""
+
     run_id: str
     input_digest: str
     status: str  # "ok"

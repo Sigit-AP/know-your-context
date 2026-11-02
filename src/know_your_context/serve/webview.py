@@ -56,6 +56,7 @@ import threading
 import webbrowser
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -216,6 +217,7 @@ API_ROUTES: tuple[ApiRoute, ...] = (
     ApiRoute("/api/improvements", "GET", RouteAccess.AUTHENTICATED, "improvement proposals from the event log"),
     ApiRoute("/api/improvements/{id}", "GET", RouteAccess.AUTHENTICATED, "one improvement proposal with lifecycle"),
     ApiRoute("/api/extractions", "GET", RouteAccess.AUTHENTICATED, "extraction review queue"),
+    ApiRoute("/api/debt", "GET", RouteAccess.AUTHENTICATED, "knowledge debt queue (budgeted, prioritized)"),
     ApiRoute("/api/refs", "GET", RouteAccess.AUTHENTICATED, "unresolved reference statistics"),
     ApiRoute("/api/query", "GET", RouteAccess.AUTHENTICATED, "graph neighborhood query around one node"),
     ApiRoute("/api/bench", "GET", RouteAccess.AUTHENTICATED, "per-operation latency summary from the journal"),
@@ -695,6 +697,23 @@ class WebviewApp:
             }
         finally:
             queue.close()
+
+    def debt_payload(self) -> dict[str, Any]:
+        """The knowledge debt queue (I4): budgeted, prioritized, read-only.
+
+        Mirrors ``know-your-context debt list``: the pure detector in
+        :mod:`know_your_context.analytics.debt` runs over the read-only
+        adapter in :mod:`know_your_context.ops.debt`, honouring the same
+        ``KYS_DEBT_QUEUE`` kill switch. ``generated_at`` is the wall clock;
+        everything else is deterministic.
+        """
+        from know_your_context.analytics.debt import build_debt_queue
+        from know_your_context.ops.debt import load_debt_inputs
+
+        nodes, links, refs = load_debt_inputs(self._store)
+        queue = build_debt_queue(nodes, links, now=datetime.now(UTC), unresolved_refs=refs)
+        queue["count"] = len(queue["items"])
+        return queue
 
     # ------------------------------------------------------- W13 JSON API
 
@@ -1366,6 +1385,8 @@ class WebviewServer:
                         payload = app.proposals_payload()
                     elif tail == "extractions":
                         payload = app.extractions_payload()
+                    elif tail == "debt":
+                        payload = app.debt_payload()
                     elif tail == "refs":
                         payload = app.refs_payload()
                     # -- W13 JSON API routes -----------------------------

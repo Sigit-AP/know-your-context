@@ -75,6 +75,8 @@ Contract v3/v4 additions (same three surfaces):
 | `webview` | `--port`, `--no-open` | Loopback-only token-authenticated web viewer |
 | `ingest` | `path`, incremental flags | File or directory ingestion (proposal-only) |
 | `extraction` | `review` (`--status`, `--receipt`), `approve`, `reject` | Operator-only contract-v4 review queue |
+| `debt` | `list`, `report` (`--format json\|markdown`, `--record`, `--ledger`), `propose` NODE_ID | Knowledge debt queue: budgeted prioritized list, burn-down metrics over a hash-chained ledger, proposal-gated actions (improve/merge/retire); kill switch `KYS_DEBT_QUEUE` |
+| `provenance` | `verify` (`--json`, `--root`) | Re-derive the 5-link extraction provenance chain of one node (read-only; exit 0 verified, 1 failed, 3 unverified) |
 | `watch` | `path`, `--interval`, `--once`, `--max-cycles`, `--debounce` | Polling watcher driving incremental re-ingestion |
 
 ## MCP server

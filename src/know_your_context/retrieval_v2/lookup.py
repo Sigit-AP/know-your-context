@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from know_your_context.retrieval_v2.fts import FTS_TABLE, build_fts_query, ensure_fts_index
 from know_your_context.retrieval_v2.query import ParsedQuery, parse_query
@@ -36,6 +36,9 @@ from know_your_context.retrieval_v2.scoring import (
     path_relevance,
 )
 from know_your_context.store import EventStore, SymbolRow
+
+if TYPE_CHECKING:
+    from know_your_context.retrieval_v2.experience import ExperienceReranker
 
 __all__ = ["LookupConfig", "LookupError", "ScoredSymbol", "SymbolLookup"]
 
@@ -115,14 +118,26 @@ def _like_score(name: str, path: str, term: str) -> float:
 
 
 class SymbolLookup:
-    """Tiered symbol search over the v3 ``symbols`` table."""
+    """Tiered symbol search over the v3 ``symbols`` table.
 
-    def __init__(self, config: LookupConfig | None = None) -> None:
+    ``experience`` (wave W14, additive): an optional
+    :class:`~know_your_context.retrieval_v2.experience.ExperienceReranker`
+    applied after the canonical sort and *before* limit truncation, so
+    outcome-boosted nodes can enter the top-N. Default ``None`` keeps the
+    historical behavior byte-identical.
+    """
+
+    def __init__(self, config: LookupConfig | None = None, *, experience: ExperienceReranker | None = None) -> None:
         self._config = config if config is not None else LookupConfig()
+        self._experience = experience
 
     @property
     def config(self) -> LookupConfig:
         return self._config
+
+    @property
+    def experience(self) -> ExperienceReranker | None:
+        return self._experience
 
     def search(
         self, store: EventStore, query: str | ParsedQuery, *, limit: int | None = None
@@ -157,6 +172,10 @@ class SymbolLookup:
 
         gated = [hit for hit in candidates.values() if self._passes_filters(hit, parsed, language_map)]
         gated.sort(key=lambda hit: (-hit.score, hit.path, hit.line, hit.col, hit.node_id))
+        if self._experience is not None:
+            # W14: experience re-rank runs before truncation so a boosted
+            # node outside the baseline top-N can still enter it.
+            gated = list(self._experience.rerank(gated, query=parsed.text).hits)
         return tuple(gated[:effective_limit])
 
     # ------------------------------------------------------------ channels

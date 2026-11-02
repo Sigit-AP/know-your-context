@@ -1202,6 +1202,44 @@ class EventStore:
                 (idempotency_key,),
             ).fetchone()
 
+    def fetch_event_chain_state(self, event_id: str) -> dict[str, Any] | None:
+        """Read-only per-event chain evidence (additive, W14 I2 provenance).
+
+        Returns the stored hash, the re-derived hash and the actual
+        predecessor hash for one event, so the provenance verifier can check
+        a single link without replaying the whole chain. ``None`` when the
+        event does not exist. Never writes.
+        """
+        with self.read() as conn:
+            row = conn.execute("SELECT * FROM event_log WHERE event_id = ?", (event_id,)).fetchone()
+            if row is None:
+                return None
+            event_seq = int(row["event_seq"])
+            predecessor = conn.execute(
+                "SELECT event_hash FROM event_log WHERE event_seq = ?", (event_seq - 1,)
+            ).fetchone()
+        stored_hash = str(row["event_hash"])
+        rederived_hash = self._row_hash(row)
+        stored_prev = row["prev_event_hash"]
+        actual_prev = str(predecessor["event_hash"]) if predecessor is not None else None
+        return {
+            "event_seq": event_seq,
+            "event_id": str(row["event_id"]),
+            "kind": str(row["kind"]),
+            "event_type": str(row["event_type"]),
+            "node_id": row["node_id"],
+            "actor": str(row["actor"]),
+            "source_version_id": row["source_version_id"],
+            "idempotency_key": row["idempotency_key"],
+            "payload_json": str(row["payload_json"]),
+            "stored_hash": stored_hash,
+            "rederived_hash": rederived_hash,
+            "hash_ok": stored_hash == rederived_hash,
+            "stored_prev": stored_prev,
+            "actual_prev": actual_prev,
+            "prev_ok": stored_prev == actual_prev,
+        }
+
     # ------------------------------------------------------------- projection
 
     def heal_lying_projection_watermark(self) -> bool:

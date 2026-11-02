@@ -226,6 +226,12 @@ KILL_SWITCHES: tuple[KillSwitch, ...] = (
         fail_safe="disabled (any non-empty value): the python engine parses instead",
         owned_here=False,
     ),
+    KillSwitch(
+        name="debt_queue",
+        env="KYS_DEBT_QUEUE",
+        affects="the knowledge debt queue (analytics.debt, ops.debt CLI, webview /api/debt)",
+        fail_safe="disabled (0/false/no/off or unparseable): the queue is an empty typed envelope; nothing is proposed",
+    ),
 )
 
 _SWITCH_BY_NAME: dict[str, KillSwitch] = {entry.name: entry for entry in KILL_SWITCHES}

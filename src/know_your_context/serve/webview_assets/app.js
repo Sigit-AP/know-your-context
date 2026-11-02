@@ -73,6 +73,7 @@
     if (name === "analytics") return loadPanel("analytics-body", "/api/analytics", renderAnalytics);
     if (name === "audit") return loadPanel("audit-body", "/api/audit?limit=100", renderAudit);
     if (name === "proposals") return loadPanel("proposals-body", "/api/proposals", renderProposals);
+    if (name === "debt") return loadPanel("debt-body", "/api/debt", renderDebt);
   }
 
   function loadPanel(elementId, path, renderer) {
@@ -504,6 +505,27 @@
         signal.low_confidence ? "hint" : "primary"];
     });
     table(container, ["signal", "reasons", "nodes", "level"], rows);
+  }
+
+  // ------------------------------------------------------------------ debt
+
+  function renderDebt(container, payload) {
+    if (payload.disabled) {
+      container.appendChild(el("p", "empty", "debt queue disabled: " + (payload.reason || "")));
+      return;
+    }
+    container.appendChild(el("p", null,
+      payload.candidate_count + " debt candidates (budget " + payload.budget +
+      ", overflow " + payload.overflow_count + ") — proposals only; nothing here mutates the store"));
+    if (!payload.items || payload.items.length === 0) {
+      container.appendChild(el("p", "empty", "(no debt candidates)"));
+      return;
+    }
+    var rows = payload.items.map(function (item) {
+      return [item.rank, item.node_id, item.action, item.priority,
+        (item.signals || []).join(", "), item.merge_target || ""];
+    });
+    table(container, ["rank", "node", "action", "priority", "signals", "merge target"], rows);
   }
 
   // ------------------------------------------------------------------ refs
