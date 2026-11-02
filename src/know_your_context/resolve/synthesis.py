@@ -49,6 +49,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from know_your_context.domain import canonical_json
+from know_your_context.ops.switches import load_switches
 from know_your_context.resolve.name_matcher import NameMatchConfig, NameMatchReport, NameMatchResolver
 from know_your_context.resolve.resolver import BatchReport, ReferenceResolver, ResolverConfig
 from know_your_context.store import EventStore, UnresolvedRefRow
@@ -1006,19 +1007,34 @@ _PASS_RUNNERS = {
 
 
 class Synthesizer:
-    """Runs the enabled synthesis passes, in the fixed order, once."""
+    """Runs the enabled synthesis passes, in the fixed order, once.
+
+    W13 operator kill switches (``KNOW_YOUR_CONTEXT_DISABLE_SYNTH_*`` /
+    ``KNOW_YOUR_CONTEXT_DISABLE_SYNTHESIS``) are consulted at every ``run``:
+    a disabled pass is skipped and reported with zero counts (the report shape
+    never changes), and the skip is announced via :attr:`disabled_by_env` —
+    never silent. The operator env overrides even an explicit
+    ``SynthesisConfig.enabled_passes``.
+    """
 
     def __init__(self, config: SynthesisConfig | None = None) -> None:
         self._config = config if config is not None else SynthesisConfig()
+        self._disabled_by_env: frozenset[str] = frozenset()
 
     @property
     def config(self) -> SynthesisConfig:
         return self._config
 
+    @property
+    def disabled_by_env(self) -> frozenset[str]:
+        """Passes the operator disabled via env at the most recent ``run``."""
+        return self._disabled_by_env
+
     def run(self, store: EventStore) -> SynthesisReport:
+        self._disabled_by_env = load_switches().synthesis_passes_disabled()
         reports: list[PassReport] = []
         for name in SYNTH_PASS_ORDER:
-            if not self._config.is_enabled(name):
+            if name in self._disabled_by_env or not self._config.is_enabled(name):
                 reports.append(PassReport(name, 0, 0, 0, 0, 0))
                 continue
             result = _PASS_RUNNERS[name](store, self._config)
@@ -1051,7 +1067,12 @@ def resolve_and_synthesize(
     interleaved with, and never disguised as, parse output.
     """
     resolver_report = ReferenceResolver(resolver_config).resolve_pending(store, limit=limit)
-    name_match_report = NameMatchResolver(name_match_config).resolve_unmatched(store)
+    # W13 kill switch: KNOW_YOUR_CONTEXT_DISABLE_NAME_MATCH skips the tier
+    # (report is a zeroed neutral element — the shape never changes).
+    if load_switches().name_match_disabled():
+        name_match_report = NameMatchReport(processed=0, resolved=0, unmatched=0, edges_inserted=0, outcomes=())
+    else:
+        name_match_report = NameMatchResolver(name_match_config).resolve_unmatched(store)
     synthesis_report = Synthesizer(synthesis_config).run(store)
     return PipelineReport(
         resolver=resolver_report,

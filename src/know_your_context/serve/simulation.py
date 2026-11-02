@@ -495,6 +495,13 @@ def main(argv: list[str] | None = None) -> int:
     if not args:
         print("usage: python -m know_your_context.serve.simulation SEED [STEPS]", file=sys.stderr)
         return 2
+    # W13 operator freeze switch: refuse to run when the operator disabled the
+    # simulator (e.g. frozen CI window); exit 2, announced, nothing simulated.
+    from know_your_context.ops.switches import ENV_DISABLE_SIMULATION, load_switches
+
+    if load_switches().simulation_disabled():
+        print(f"simulation: refused — disabled by {ENV_DISABLE_SIMULATION}=1 (operator freeze switch)", file=sys.stderr)
+        return 2
     seed = int(args[0])
     steps = int(args[1]) if len(args) > 1 else SimConfig.steps
     result = Simulation(seed=seed, config=SimConfig(steps=steps)).run()

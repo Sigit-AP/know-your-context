@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from know_your_context.contracts import DEFAULT_MAX_TOKEN_BUDGET
+from know_your_context.ops.switches import load_switches
 from know_your_context.serve.rpc import MAX_FRAME_BYTES
 
 __all__ = [
@@ -170,10 +171,35 @@ class DaemonConfig:
     # behavior; "enforce" requires an operator-issued capability token for
     # every non-public verb (see security/capabilities.py).
     capability_mode: str = "off"
+    # W13 worker watchdog (SUB-124): every daemon worker thread (read lanes,
+    # heavy lane, acceptor, reaper) carries a heartbeat supervised with
+    # tiered suspect → restart → dead escalation. Kill switch: False keeps
+    # the exact pre-W13 behavior (only the global LivenessWatchdog).
+    worker_watchdog: bool = True
+    watchdog_suspect_seconds: float = 15.0
+    watchdog_stall_seconds: float = 45.0
+    watchdog_max_restarts: int = 2
+    watchdog_restart_window_seconds: float = 120.0
+    watchdog_check_interval_seconds: float = 5.0
+    # W13 flow (SUB-124): explicit socket timeouts for the stdio proxy.
+    # The IO bound is generous: heavy-lane ingest of a large tree is a
+    # legitimate multi-minute operation.
+    proxy_connect_timeout_seconds: float = 10.0
+    proxy_io_timeout_seconds: float = 900.0
+    # DST hook (SUB-124): a seed makes the proxy reconnect backoff stream
+    # reproducible in simulation; None = per-call nondeterministic jitter.
+    proxy_retry_seed: int | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "db_path", Path(self.db_path))
         object.__setattr__(self, "graph_root", Path(self.graph_root))
+        # W13 operator override: KNOW_YOUR_CONTEXT_CAPABILITY_MODE applies only
+        # when the constructor left the mode at the safe default — the env can
+        # raise the gate to "enforce" but never weaken an explicit "enforce".
+        if self.capability_mode == "off":
+            override = load_switches().capability_mode_override()
+            if override is not None:
+                object.__setattr__(self, "capability_mode", str(override))
         if self.runtime_dir is None:
             object.__setattr__(self, "runtime_dir", Path(self.db_path).expanduser().resolve().parent / "superpower")
         else:
@@ -245,6 +271,32 @@ class DaemonConfig:
             raise ConfigError("proxy_actor must be a non-empty string")
         if self.capability_mode not in ("off", "enforce"):
             raise ConfigError(f"capability_mode must be 'off' or 'enforce', got {self.capability_mode!r}")
+        if not isinstance(self.worker_watchdog, bool):
+            raise ConfigError("worker_watchdog must be a bool")
+        if float(self.watchdog_suspect_seconds) <= 0:
+            raise ConfigError("watchdog_suspect_seconds must be positive")
+        if float(self.watchdog_stall_seconds) < float(self.watchdog_suspect_seconds):
+            raise ConfigError(
+                f"watchdog_stall_seconds ({self.watchdog_stall_seconds}) must be >= "
+                f"watchdog_suspect_seconds ({self.watchdog_suspect_seconds})"
+            )
+        if int(self.watchdog_max_restarts) < 1:
+            raise ConfigError("watchdog_max_restarts must be >= 1")
+        if float(self.watchdog_restart_window_seconds) <= 0:
+            raise ConfigError("watchdog_restart_window_seconds must be positive")
+        if float(self.watchdog_check_interval_seconds) <= 0:
+            raise ConfigError("watchdog_check_interval_seconds must be positive")
+        if float(self.proxy_connect_timeout_seconds) <= 0:
+            raise ConfigError("proxy_connect_timeout_seconds must be positive")
+        if float(self.proxy_io_timeout_seconds) < float(self.proxy_connect_timeout_seconds):
+            raise ConfigError(
+                f"proxy_io_timeout_seconds ({self.proxy_io_timeout_seconds}) must be >= "
+                f"proxy_connect_timeout_seconds ({self.proxy_connect_timeout_seconds})"
+            )
+        if self.proxy_retry_seed is not None and (
+            isinstance(self.proxy_retry_seed, bool) or not isinstance(self.proxy_retry_seed, int)
+        ):
+            raise ConfigError(f"proxy_retry_seed must be an int or None, got {self.proxy_retry_seed!r}")
 
     @property
     def paths(self) -> DaemonPaths:

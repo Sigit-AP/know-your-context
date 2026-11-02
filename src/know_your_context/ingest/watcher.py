@@ -42,11 +42,13 @@ tables.
 
 from __future__ import annotations
 
+import asyncio
 import ctypes
 import logging
 import os
 import platform
 import re
+import threading
 import time
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -57,6 +59,7 @@ from know_your_context.ingest.pipeline import SKIP_DIR_NAMES
 
 __all__ = [
     "DEFAULT_DEBOUNCE_SECONDS",
+    "DEFAULT_CYCLE_TIMEOUT_MS",
     "DEFAULT_FULL_SCAN_CEILING",
     "DEFAULT_INTERVAL_SECONDS",
     "DEFAULT_MAX_CONSECUTIVE_FAILURES",
@@ -67,6 +70,7 @@ __all__ = [
     "ENV_NO_WATCH",
     "MIN_INTERVAL_SECONDS",
     "REMOTE_FS_TYPES",
+    "AsyncIngestionWatcher",
     "ChangeKind",
     "CycleReport",
     "FileChange",
@@ -137,6 +141,15 @@ class WatcherRootError(ValueError):
 
 
 class ChangeKind(StrEnum):
+    """Stat-level classification of one observed filesystem change.
+
+    Derived purely from comparing the current ``os.stat`` scan with the
+    previous cycle — never from OS events — so the classification is
+    portable and deterministic. ``REMOVED`` always forces the full
+    scan-diff path: deletions are cascade work the per-file quick path
+    cannot express.
+    """
+
     ADDED = "added"
     CHANGED = "changed"
     REMOVED = "removed"
@@ -683,3 +696,252 @@ class IngestionWatcher:
     def run_once(self) -> WatchReport:
         """A single cycle — the ``--once`` (test/CI) lane."""
         return self.run(once=True)
+
+
+# ---------------------------------------------------------------- async lane
+
+#: Bound on one ingest cycle (quick or full-scan). Generous by default: a
+#: legitimately large tree scan may take minutes on cold caches.
+DEFAULT_CYCLE_TIMEOUT_MS = 120_000
+
+
+class AsyncIngestionWatcher:
+    """The asyncio lane of the polling watcher — real cancellation, W13.
+
+    Same scan/diff/debounce policy as :class:`IngestionWatcher`, but the loop
+    is asyncio-native:
+
+    * **Cancellation is real.** ``task.cancel()`` interrupts interval sleeps
+      and cycle waits immediately (``asyncio.CancelledError`` propagates,
+      never swallowed); between quick-path files there is an explicit
+      cancellation point so a cancelled batch never submits the next file.
+      Blocking ingest work runs via :func:`asyncio.to_thread` bounded by
+      :func:`~know_your_context.serve.flow_retry.run_with_timeout_async` —
+      Python cannot kill threads, so a timed-out ingest is abandoned
+      (documented) and the cycle is recorded failed.
+    * **Cooperative stop.** :meth:`request_stop` (thread-safe) finishes the
+      current cycle, then ``run_async`` returns with ``status="cancelled"``.
+    * **Retry is per-ingest and deterministic.** Each file ingest runs under
+      the injected :class:`RetryPolicy` (seeded backoff), retrying transient
+      ``OSError`` only; permanent errors fail the cycle fast.
+    * **Fail-open posture inherited.** Cycle failures never raise; after
+      ``max_consecutive_failures`` the watcher degrades and stops.
+    """
+
+    def __init__(
+        self,
+        root: str | Path,
+        pipeline: Any,
+        *,
+        config: WatcherConfig | None = None,
+        retry_policy: Any = None,
+        cycle_timeout_ms: int = DEFAULT_CYCLE_TIMEOUT_MS,
+        clock: Any = None,
+        exclude_realpaths: frozenset[str] | None = None,
+        logger: Any = None,
+    ) -> None:
+        resolved = Path(root).resolve()
+        if not resolved.is_dir():
+            raise WatcherRootError(f"watched root {str(root)!r} is not an existing directory")
+        if isinstance(cycle_timeout_ms, bool) or not isinstance(cycle_timeout_ms, int) or cycle_timeout_ms <= 0:
+            raise ValueError(f"cycle_timeout_ms must be an int > 0, got {cycle_timeout_ms!r}")
+        from know_your_context.serve.flow_retry import RetryPolicy
+
+        self._root = resolved
+        self._pipeline = pipeline
+        self._config = config if config is not None else WatcherConfig()
+        self._retry_policy = retry_policy if retry_policy is not None else RetryPolicy()
+        self._cycle_timeout_ms = cycle_timeout_ms
+        self._clock = clock if clock is not None else time.monotonic
+        self._logger = logger if logger is not None else _LOGGER
+        if exclude_realpaths is None:
+            exclude_realpaths = frozenset()
+            db_path = getattr(getattr(pipeline, "_store", None), "db_path", None)
+            if db_path and db_path != ":memory:":
+                real = os.path.realpath(db_path)
+                exclude_realpaths = frozenset({real, real + "-wal", real + "-shm"})
+        self._exclude = exclude_realpaths
+        self._baseline: dict[str, tuple[int, int]] = {}
+        self._cycles = 0
+        self._consecutive_failures = 0
+        self._degraded = False
+        self._thread_stop = threading.Event()
+        self._stop_aio: asyncio.Event | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None
+
+    @property
+    def degraded(self) -> bool:
+        return self._degraded
+
+    @property
+    def config(self) -> WatcherConfig:
+        return self._config
+
+    def request_stop(self) -> None:
+        """Thread-safe cooperative stop: finish the cycle, then return."""
+        self._thread_stop.set()
+        loop, event = self._loop, self._stop_aio
+        if loop is not None and event is not None:
+            try:
+                loop.call_soon_threadsafe(event.set)
+            except RuntimeError:  # loop already closed — the thread flag stands
+                pass
+
+    # ------------------------------------------------------------- the loop
+
+    async def run_async(self, *, max_cycles: int | None = None) -> WatchReport:
+        """Async poll loop. ``CancelledError`` propagates; cooperative stop
+        returns ``status="cancelled"`` after the in-flight cycle drains."""
+        if self._degraded:
+            return WatchReport(root=str(self._root), status="degraded", consecutive_failures=self._consecutive_failures)
+        self._loop = asyncio.get_running_loop()
+        self._stop_aio = asyncio.Event()
+        if self._thread_stop.is_set():
+            self._stop_aio.set()
+        cycles: list[CycleReport] = []
+        try:
+            while True:
+                cycles.append(await self.poll_once_async())
+                if self._degraded or (max_cycles is not None and len(cycles) >= max_cycles):
+                    break
+                if await self._sleep_or_stopped(float(self._config.interval_seconds)):
+                    break
+        finally:
+            self._loop = None
+            self._stop_aio = None
+        stopped = self._thread_stop.is_set() and not self._degraded
+        return WatchReport(
+            root=str(self._root),
+            status="degraded" if self._degraded else ("cancelled" if stopped else "completed"),
+            cycles=tuple(cycles),
+            consecutive_failures=self._consecutive_failures,
+            total_changes=sum(len(cycle.changes) for cycle in cycles),
+        )
+
+    async def _sleep_or_stopped(self, seconds: float) -> bool:
+        """Sleep up to ``seconds``; True when the stop event fired first."""
+        if seconds <= 0:
+            await asyncio.sleep(0)
+            return self._thread_stop.is_set()
+        stop_aio = self._stop_aio
+        if stop_aio is None:
+            await asyncio.sleep(seconds)
+            return self._thread_stop.is_set()
+        try:
+            await asyncio.wait_for(stop_aio.wait(), timeout=seconds)
+            return True
+        except TimeoutError:
+            return self._thread_stop.is_set()
+
+    # ------------------------------------------------------------- one cycle
+
+    async def poll_once_async(self) -> CycleReport:
+        """One async scan→diff→ingest cycle; failures degrade, never raise."""
+        self._cycles += 1
+        started = self._clock()
+        try:
+            current = scan_stat_snapshot(self._root, exclude_realpaths=self._exclude)
+            changes = diff_snapshots(self._baseline, current)
+            if not changes:
+                self._baseline = current
+                self._consecutive_failures = 0
+                return CycleReport(cycle=self._cycles, mode="idle", duration_ms=self._elapsed_ms(started))
+            changes, current = await self._settle_async(changes, current)
+            report = await self._apply_async(changes, current, started)
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:  # noqa: BLE001 - the watcher degrades, never crashes
+            report = self._fail(started, error)
+        return report
+
+    async def _settle_async(
+        self, changes: tuple[FileChange, ...], current: dict[str, tuple[int, int]]
+    ) -> tuple[tuple[FileChange, ...], dict[str, tuple[int, int]]]:
+        rounds = 0
+        while rounds < self._config.max_quiet_rounds and not self._thread_stop.is_set():
+            quiet = (
+                float(self._config.quick_quiet_seconds)
+                if len(changes) <= self._config.quick_max_changes
+                else float(self._config.debounce_seconds)
+            )
+            if quiet <= 0:
+                break
+            if await self._sleep_or_stopped(quiet):
+                break
+            current = scan_stat_snapshot(self._root, exclude_realpaths=self._exclude)
+            settled = diff_snapshots(self._baseline, current)
+            rounds += 1
+            if settled == changes:
+                break
+            changes = settled
+        return changes, current
+
+    async def _apply_async(
+        self, changes: tuple[FileChange, ...], current: dict[str, tuple[int, int]], started: float
+    ) -> CycleReport:
+        has_removal = any(change.kind is ChangeKind.REMOVED for change in changes)
+        if has_removal or len(changes) > self._config.full_scan_ceiling:
+            mode = "full-scan"
+            reports = [await self._ingest_one(self._root)]
+        else:
+            mode = "quick"
+            reports = []
+            for change in changes:
+                if self._thread_stop.is_set():
+                    break  # drain: report the partial batch honestly
+                await asyncio.sleep(0)  # explicit cancellation point between files
+                reports.append(await self._ingest_one(self._root / change.relpath))
+        counts = IngestionWatcher._aggregate(reports)
+        self._baseline = current
+        self._consecutive_failures = 0
+        return CycleReport(
+            cycle=self._cycles,
+            mode=mode,
+            changes=changes,
+            files_proposed=counts["files_proposed"],
+            files_skipped=counts["files_skipped"],
+            files_failed=counts["files_failed"],
+            files_deleted=counts["files_deleted"],
+            nodes=counts["nodes"],
+            edges=counts["edges"],
+            refs_parked=counts["refs_parked"],
+            refs_resolved=counts["refs_resolved"],
+            refs_failed=counts["refs_failed"],
+            duration_ms=self._elapsed_ms(started),
+        )
+
+    async def _ingest_one(self, path: Path) -> Any:
+        from know_your_context.serve.flow_retry import retry, run_with_timeout_async
+
+        def work() -> Any:
+            return retry(
+                lambda: self._pipeline.ingest_path(path, incremental=True, recursive=True, resolve=True),
+                policy=self._retry_policy,
+                retryable=(OSError,),
+            )
+
+        return await run_with_timeout_async(asyncio.to_thread(work), timeout_ms=self._cycle_timeout_ms)
+
+    def _fail(self, started: float, error: Exception) -> CycleReport:
+        self._consecutive_failures += 1
+        exhausted = self._consecutive_failures >= self._config.max_consecutive_failures
+        if exhausted:
+            self._degraded = True
+            self._logger.error(
+                f"async watcher auto-degraded after {self._consecutive_failures} consecutive failures "
+                f"(last: {error}); stopped"
+            )
+        else:
+            self._logger.warning(
+                f"async watch cycle {self._cycles} failed ({self._consecutive_failures}/"
+                f"{self._config.max_consecutive_failures}): {error}"
+            )
+        return CycleReport(
+            cycle=self._cycles,
+            mode="degraded" if exhausted else "failed",
+            error=f"{type(error).__name__}: {error}",
+            duration_ms=self._elapsed_ms(started),
+        )
+
+    def _elapsed_ms(self, started: float) -> int:
+        return int((self._clock() - started) * 1000)

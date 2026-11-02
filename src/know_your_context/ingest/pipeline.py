@@ -192,26 +192,64 @@ class IngestionError(RuntimeError):
 
 
 class PathNotFoundError(IngestionError):
+    """The ingest target does not exist on disk.
+
+    Raised before any read; an operator error (bad path), never corruption —
+    the store is left untouched.
+    """
+
     code = "PATH_NOT_FOUND"
 
 
 class PathNotReadableError(IngestionError):
+    """The target exists but cannot be opened (permissions, dangling link).
+
+    Distinct from :class:`PathNotFoundError` so the caller can report "fix
+    permissions" instead of "fix path".
+    """
+
     code = "PATH_NOT_READABLE"
 
 
 class PathOutsideRootError(IngestionError):
+    """The target resolves outside the fixed ingestion root.
+
+    Containment check (symlink escape, ``..`` traversal) — fail closed: the
+    path is never followed and nothing is read from it.
+    """
+
     code = "PATH_OUTSIDE_ROOT"
 
 
 class UnsupportedMediaTypeError(IngestionError):
+    """The file's extension has no registered extractor.
+
+    Not retriable: adding support is a language-registry change, not a
+    retry. The invocation audit event still records the rejection.
+    """
+
     code = "UNSUPPORTED_MEDIA_TYPE"
 
 
 class FileTooLargeError(IngestionError):
+    """The file exceeds the per-file byte cap.
+
+    The cap is a deterministic memory bound, not a quota; the caller must
+    split the input or raise the cap deliberately — retrying unchanged
+    always fails the same way.
+    """
+
     code = "FILE_TOO_LARGE"
 
 
 class IngestionBudgetError(IngestionError):
+    """An aggregate ingestion budget (files/bytes per run) is exhausted.
+
+    The walk stops at the budget boundary; rows committed before the
+    boundary stay committed and the run reports partial progress, so a
+    later run resumes the remainder through the incremental pre-filter.
+    """
+
     code = "INGESTION_BUDGET_EXCEEDED"
 
 

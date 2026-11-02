@@ -152,6 +152,13 @@ class FrameReader:
 
 
 def write_message(sink: BinaryIO, message: Mapping[str, Any]) -> None:
+    """Write ``message`` as one newline-delimited JSON frame and flush.
+
+    The counterpart of :meth:`FrameReader.read`; validation of the frame
+    *content* is the caller's job (``encode_message`` canonicalizes). Only
+    ``OSError`` from the sink propagates — protocol problems are raised at
+    parse/validate time, never here.
+    """
     sink.write(encode_message(message))
     sink.flush()
 
@@ -194,6 +201,11 @@ def parse_request(obj: Mapping[str, Any]) -> RequestEnvelope:
 
 
 def result_response(request_id: str | int | None, result: Mapping[str, Any]) -> dict[str, Any]:
+    """Build a JSON-RPC result envelope pinned to ``PROTOCOL_VERSION``.
+
+    ``result`` is shallow-copied so later caller mutation cannot corrupt a
+    frame that has already been handed to the transport.
+    """
     return {"jsonrpc": PROTOCOL_VERSION, "id": request_id, "result": dict(result)}
 
 
@@ -203,6 +215,12 @@ def error_response(
     message: str,
     data: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Build a JSON-RPC error envelope with optional typed ``data``.
+
+    ``data`` carries machine-readable detail (e.g. ``retry_after_ms`` for
+    ``SERVER_BUSY``). ``message`` must already be sanitized — this helper
+    never redacts; sanitization happens where the error is raised.
+    """
     error: dict[str, Any] = {"code": int(code), "message": message}
     if data is not None:
         error["data"] = dict(data)

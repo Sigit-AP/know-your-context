@@ -46,6 +46,7 @@ against an unchanged store answer byte-identically.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import hmac
 import json
 import re
@@ -53,7 +54,8 @@ import secrets
 import sys
 import threading
 import webbrowser
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -64,24 +66,41 @@ from know_your_context.analytics.centrality import compute_centrality
 from know_your_context.analytics.communities import detect_communities
 from know_your_context.analytics.review_signals import collect_review_signals
 from know_your_context.domain import Node
+from know_your_context.enums import RouteAccess
 from know_your_context.ops.diagnose import exit_code as diagnose_exit_code
 from know_your_context.ops.diagnose import run_diagnostics
-from know_your_context.ops.metrics import collect_ops_metrics
+from know_your_context.ops.metrics import collect_ops_metrics, latency_summary
+from know_your_context.ops.switches import ENV_DISABLE_WEBVIEW, KILL_SWITCHES, load_switches
 from know_your_context.retrieval_v2 import CallHierarchy, HierarchyError, LookupError, SymbolLookup
 from know_your_context.security import redact_value, sanitize_text
+from know_your_context.serve.middleware import (
+    CapabilityDeniedError,
+    CapabilityGateMiddleware,
+    MiddlewareStack,
+    RequestContext,
+    RequestIdMiddleware,
+    TimingMiddleware,
+    TypedErrorMiddleware,
+)
 from know_your_context.store import EventStore
 from know_your_context.viz.layout import LayoutError
 from know_your_context.viz.layout import layout as compute_layout
 
 __all__ = [
     "ANALYTICS_MAX_NODES",
+    "API_ROUTES",
     "AUDIT_LIMIT_MAX",
+    "AUDIT_TAIL_LIMIT_MAX",
+    "AsyncWebviewServer",
     "DEFAULT_HOST_ALLOWLIST",
     "HIERARCHY_DEPTH_MAX",
     "HIERARCHY_DEPTH_MIN",
     "MAX_GRAPH_NODES",
+    "QUERY_LIMIT_MAX",
     "SCHEMA_VERSION",
     "SEARCH_LIMIT_MAX",
+    "SERIES_LIMIT_MAX",
+    "ApiRoute",
     "StoreUnavailableError",
     "WebviewApp",
     "WebviewError",
@@ -101,6 +120,10 @@ MAX_GRAPH_NODES = 4096
 ANALYTICS_MAX_NODES = 2048
 SEARCH_LIMIT_MAX = 100
 AUDIT_LIMIT_MAX = 500
+#: W13 route caps (fail-closed bounds for the new JSON API surface).
+QUERY_LIMIT_MAX = 200
+AUDIT_TAIL_LIMIT_MAX = 500
+SERIES_LIMIT_MAX = 366
 HIERARCHY_DEPTH_MIN, HIERARCHY_DEPTH_MAX = 1, 8
 
 #: Loopback hostnames accepted in the ``Host`` header (codegraph rule 1).
@@ -112,6 +135,8 @@ _TOP_RANKING = 50
 _TOKEN_MIN_LENGTH = 16
 _TOKEN_RE = re.compile(r"[A-Za-z0-9_-]+")
 _KIND_LANG_RE = re.compile(r"[a-z0-9_+#-]{1,32}")
+_PROPOSAL_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")
+_QUERY_DIRECTIONS = ("out", "in", "both")
 
 _ASSETS_DIR = Path(__file__).resolve().parent / "webview_assets"
 _STATIC_ASSETS: dict[str, tuple[str, str]] = {
@@ -150,7 +175,53 @@ class _NodeNotFound(Exception):
 
 
 class _BadRequest(Exception):
-    """Internal: the request parameters failed validation (mapped to 400)."""
+    """A request parameter failed validation (mapped to 400)."""
+
+
+# ------------------------------------------------------------------ routes
+
+
+@dataclass(frozen=True)
+class ApiRoute:
+    """One JSON API route of the viewer (all read-only GET, authenticated)."""
+
+    path: str
+    method: str
+    access: RouteAccess
+    summary: str
+
+    def __post_init__(self) -> None:
+        if not self.path.startswith("/api/"):
+            raise WebviewError(f"api route path must start with /api/, got {self.path!r}")
+        if self.method != "GET":
+            raise WebviewError(f"the viewer is read-only; route {self.path!r} declares {self.method!r}")
+
+
+#: The complete route table (W13): the original tab payloads plus the real
+#: JSON API routes (graph query, metrics series, audit tail, improvement
+#: proposals list/detail, health detail, bench summary, store stats, switches).
+API_ROUTES: tuple[ApiRoute, ...] = (
+    ApiRoute("/api/graph", "GET", RouteAccess.AUTHENTICATED, "laid-out graph payload for the viewer"),
+    ApiRoute("/api/node/{id}", "GET", RouteAccess.AUTHENTICATED, "one node's detail, relations and evidence"),
+    ApiRoute("/api/search", "GET", RouteAccess.AUTHENTICATED, "symbol search over the universal graph"),
+    ApiRoute("/api/hierarchy/{id}", "GET", RouteAccess.AUTHENTICATED, "call hierarchy around one node"),
+    ApiRoute("/api/metrics", "GET", RouteAccess.AUTHENTICATED, "operational metrics snapshot"),
+    ApiRoute("/api/metrics/series", "GET", RouteAccess.AUTHENTICATED, "daily event buckets + health history series"),
+    ApiRoute("/api/health", "GET", RouteAccess.AUTHENTICATED, "diagnostic findings summary"),
+    ApiRoute("/api/health/detail", "GET", RouteAccess.AUTHENTICATED, "health + store stats + timing + switches"),
+    ApiRoute("/api/analytics", "GET", RouteAccess.AUTHENTICATED, "centrality/communities/bridges"),
+    ApiRoute("/api/audit", "GET", RouteAccess.AUTHENTICATED, "recent audit events (paged)"),
+    ApiRoute("/api/audit/tail", "GET", RouteAccess.AUTHENTICATED, "audit events after a sequence number, ascending"),
+    ApiRoute("/api/proposals", "GET", RouteAccess.AUTHENTICATED, "review signals derived from the graph"),
+    ApiRoute("/api/improvements", "GET", RouteAccess.AUTHENTICATED, "improvement proposals from the event log"),
+    ApiRoute("/api/improvements/{id}", "GET", RouteAccess.AUTHENTICATED, "one improvement proposal with lifecycle"),
+    ApiRoute("/api/extractions", "GET", RouteAccess.AUTHENTICATED, "extraction review queue"),
+    ApiRoute("/api/refs", "GET", RouteAccess.AUTHENTICATED, "unresolved reference statistics"),
+    ApiRoute("/api/query", "GET", RouteAccess.AUTHENTICATED, "graph neighborhood query around one node"),
+    ApiRoute("/api/bench", "GET", RouteAccess.AUTHENTICATED, "per-operation latency summary from the journal"),
+    ApiRoute("/api/store/stats", "GET", RouteAccess.AUTHENTICATED, "table counts, pragmas and schema version"),
+    ApiRoute("/api/switches", "GET", RouteAccess.AUTHENTICATED, "resolved state of every operator kill switch"),
+)
 
 
 # ------------------------------------------------------------------ security
@@ -625,6 +696,322 @@ class WebviewApp:
         finally:
             queue.close()
 
+    # ------------------------------------------------------- W13 JSON API
+
+    def query_payload(self, node_id: str, *, kind: str | None, direction: str, limit: int) -> dict[str, Any]:
+        """Graph neighborhood of one node: real ``node_relation`` rows plus
+        the structural ``parent_of`` link, both directions, fail-closed bounds."""
+        if direction not in _QUERY_DIRECTIONS:
+            raise _BadRequest(f"direction must be one of {_QUERY_DIRECTIONS}, got {direction!r}")
+        if not 1 <= limit <= QUERY_LIMIT_MAX:
+            raise _BadRequest(f"limit must be in [1, {QUERY_LIMIT_MAX}], got {limit}")
+        node = self._store.current_node(node_id)
+        if node is None:
+            raise _NodeNotFound(node_id)
+        edges: list[dict[str, str]] = []
+        if direction in ("out", "both"):
+            with self._store.read() as conn:
+                rows = conn.execute(
+                    "SELECT target_node_id, relation FROM node_relation WHERE source_node_id = ? "
+                    "ORDER BY relation_seq LIMIT ?",
+                    (node_id, limit),
+                ).fetchall()
+            for row in rows:
+                if kind is None or str(row["relation"]) == kind:
+                    edges.append(
+                        {"source": node_id, "target": str(row["target_node_id"]), "kind": str(row["relation"])}
+                    )
+        if direction in ("in", "both"):
+            with self._store.read() as conn:
+                rows = conn.execute(
+                    "SELECT source_node_id, relation FROM node_relation WHERE target_node_id = ? "
+                    "ORDER BY relation_seq LIMIT ?",
+                    (node_id, limit),
+                ).fetchall()
+            for row in rows:
+                if kind is None or str(row["relation"]) == kind:
+                    edges.append(
+                        {"source": str(row["source_node_id"]), "target": node_id, "kind": str(row["relation"])}
+                    )
+        if node.parent_id is not None and direction in ("in", "both") and (kind is None or kind == "parent_of"):
+            edges.append({"source": node.parent_id, "target": node_id, "kind": "parent_of"})
+        edges = edges[:limit]
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "node_id": node_id,
+            "direction": direction,
+            "kind": kind,
+            "count": len(edges),
+            "edges": edges,
+        }
+
+    def metrics_series_payload(self, *, limit: int) -> dict[str, Any]:
+        """Time series: daily event-log buckets plus the hash-chained health
+        history (when the operator records one). Absent history is reported
+        honestly, never invented; a corrupt history is announced, not hidden."""
+        if not 1 <= limit <= SERIES_LIMIT_MAX:
+            raise _BadRequest(f"limit must be in [1, {SERIES_LIMIT_MAX}], got {limit}")
+        with self._store.read() as conn:
+            rows = conn.execute(
+                "SELECT substr(occurred_at, 1, 10) AS day, COUNT(*) AS n FROM event_log "
+                "GROUP BY day ORDER BY day DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+        event_series = [{"day": str(row["day"]), "events": int(row["n"])} for row in reversed(rows)]
+        health_series: list[dict[str, Any]] = []
+        health_state = "absent"
+        if str(self._store.db_path) != ":memory:":
+            from know_your_context.ops.lifecycle import LifecycleError, history_path_for_store, load_health_history
+
+            history = history_path_for_store(self._store)
+            if Path(history).is_file():
+                try:
+                    snapshots = load_health_history(history)
+                except LifecycleError as error:
+                    health_state = f"corrupt: {error}"
+                else:
+                    health_state = "ok"
+                    health_series = [
+                        {
+                            "recorded_at": snap.recorded_at,
+                            "score": snap.score,
+                            "max_score": snap.max_score,
+                            "event_count": snap.event_count,
+                        }
+                        for snap in snapshots[-limit:]
+                    ]
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "event_series": event_series,
+            "health_series": health_series,
+            "health_history": health_state,
+        }
+
+    def audit_tail_payload(self, *, since: int, limit: int) -> dict[str, Any]:
+        """Audit events with ``event_seq > since``, ascending — tail semantics
+        for polling consumers (the paged ``/api/audit`` view serves DESC)."""
+        if since < 0:
+            raise _BadRequest(f"since must be >= 0, got {since}")
+        if not 1 <= limit <= AUDIT_TAIL_LIMIT_MAX:
+            raise _BadRequest(f"limit must be in [1, {AUDIT_TAIL_LIMIT_MAX}], got {limit}")
+        with self._store.read() as conn:
+            rows = conn.execute(
+                "SELECT event_seq, event_type, actor, occurred_at, payload_json FROM event_log "
+                "WHERE kind = 'audit' AND event_seq > ? ORDER BY event_seq ASC LIMIT ?",
+                (since, limit),
+            ).fetchall()
+        events = []
+        for row in rows:
+            try:
+                payload = json.loads(str(row["payload_json"]))
+            except json.JSONDecodeError:
+                payload = None
+            events.append(
+                {
+                    "event_seq": int(row["event_seq"]),
+                    "event_type": str(row["event_type"]),
+                    "actor": str(row["actor"]),
+                    "occurred_at": str(row["occurred_at"]),
+                    "payload": redact_value(payload),
+                }
+            )
+        return {"schema_version": SCHEMA_VERSION, "since": since, "count": len(events), "events": events}
+
+    def _improvement_events(self) -> list[dict[str, Any]]:
+        """Domain events carrying improvement markers (proposal/apply/rollback)."""
+        with self._store.read() as conn:
+            rows = conn.execute(
+                "SELECT event_seq, event_type, actor, occurred_at, payload_json FROM event_log "
+                "WHERE kind = 'domain' AND event_type IN "
+                "('knowledge.propose_improvement', 'knowledge.apply_improvement', 'knowledge.rollback') "
+                "ORDER BY event_seq"
+            ).fetchall()
+        events = []
+        for row in rows:
+            try:
+                payload = json.loads(str(row["payload_json"]))
+            except json.JSONDecodeError:
+                continue  # an unreadable payload is skipped, never guessed
+            inner = payload.get("payload") or {}
+            marker = (
+                inner.get("improvement_proposal") or inner.get("improvement_apply") or inner.get("improvement_rollback")
+            )
+            if not isinstance(marker, dict):
+                continue
+            events.append(
+                {
+                    "event_seq": int(row["event_seq"]),
+                    "event_type": str(row["event_type"]),
+                    "actor": str(row["actor"]),
+                    "occurred_at": str(row["occurred_at"]),
+                    "marker": redact_value(marker),
+                }
+            )
+        return events
+
+    def improvements_payload(self) -> dict[str, Any]:
+        """List improvement proposals with their derived lifecycle status."""
+        proposals: dict[str, dict[str, Any]] = {}
+        for event in self._improvement_events():
+            marker = event["marker"]
+            if event["event_type"] == "knowledge.propose_improvement":
+                proposal_id = str(marker.get("proposal_id", ""))
+                if proposal_id:
+                    proposals[proposal_id] = {
+                        "proposal_id": proposal_id,
+                        "node_id": marker.get("node_id"),
+                        "impact": marker.get("impact"),
+                        "proposed_at": event["occurred_at"],
+                        "status": "proposed",
+                    }
+            elif event["event_type"] == "knowledge.apply_improvement":
+                proposal_id = str(marker.get("proposal_id", ""))
+                if proposal_id in proposals:
+                    proposals[proposal_id]["status"] = "applied"
+                    proposals[proposal_id]["applied_at"] = event["occurred_at"]
+        items = [proposals[key] for key in sorted(proposals)]
+        return {"schema_version": SCHEMA_VERSION, "count": len(items), "proposals": items}
+
+    def improvement_detail_payload(self, proposal_id: str) -> dict[str, Any]:
+        """One proposal with its full event trail."""
+        if _PROPOSAL_ID_RE.fullmatch(proposal_id) is None:
+            raise _BadRequest(f"proposal id must match {_PROPOSAL_ID_RE.pattern}, got {proposal_id!r}")
+        proposal: dict[str, Any] | None = None
+        trail: list[dict[str, Any]] = []
+        status = "proposed"
+        for event in self._improvement_events():
+            marker = event["marker"]
+            if event["event_type"] == "knowledge.propose_improvement" and marker.get("proposal_id") == proposal_id:
+                proposal = marker
+                trail.append(
+                    {
+                        "event_seq": event["event_seq"],
+                        "event_type": event["event_type"],
+                        "occurred_at": event["occurred_at"],
+                        "actor": event["actor"],
+                    }
+                )
+            elif event["event_type"] == "knowledge.apply_improvement" and marker.get("proposal_id") == proposal_id:
+                status = "applied"
+                trail.append(
+                    {
+                        "event_seq": event["event_seq"],
+                        "event_type": event["event_type"],
+                        "occurred_at": event["occurred_at"],
+                        "actor": event["actor"],
+                    }
+                )
+        if proposal is None:
+            raise _NodeNotFound(proposal_id)
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "proposal": proposal,
+            "status": status,
+            "events": trail,
+        }
+
+    def store_stats_payload(self) -> dict[str, Any]:
+        """Real store statistics: per-table row counts, pragmas, schema ledger."""
+        tables: dict[str, int] = {}
+        with self._store.read() as conn:
+            names = [
+                str(row["name"])
+                for row in conn.execute("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
+            ]
+            for name in names:
+                tables[name] = int(conn.execute(f'SELECT COUNT(*) AS n FROM "{name}"').fetchone()["n"])  # nosec B608 -- name from sqlite_master
+            page_count = int(conn.execute("PRAGMA page_count").fetchone()[0])
+            page_size = int(conn.execute("PRAGMA page_size").fetchone()[0])
+            freelist = int(conn.execute("PRAGMA freelist_count").fetchone()[0])
+            journal_mode = str(conn.execute("PRAGMA journal_mode").fetchone()[0])
+            versions = [
+                int(row["version"]) for row in conn.execute("SELECT version FROM schema_versions ORDER BY version")
+            ]
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "store_schema_version": max(versions) if versions else 0,
+            "schema_versions": versions,
+            "tables": tables,
+            "page_count": page_count,
+            "page_size_bytes": page_size,
+            "file_size_bytes": page_count * page_size,
+            "freelist_pages": freelist,
+            "journal_mode": journal_mode,
+        }
+
+    def bench_payload(self) -> dict[str, Any]:
+        """Per-operation latency summary from the invocation journal (real
+        measured durations; integer-only statistics via ``latency_summary``)."""
+        durations: dict[str, list[int]] = {}
+        malformed = 0
+        with self._store.read() as conn:
+            rows = conn.execute(
+                "SELECT operation, outcome_json FROM invocation_journal WHERE status = 'complete' "
+                "ORDER BY invocation_id"
+            ).fetchall()
+        for row in rows:
+            try:
+                outcome = json.loads(str(row["outcome_json"]))
+            except json.JSONDecodeError, TypeError:
+                malformed += 1
+                continue
+            duration = outcome.get("duration_ms") if isinstance(outcome, dict) else None
+            if isinstance(duration, bool) or not isinstance(duration, int) or duration < 0:
+                malformed += 1
+                continue
+            durations.setdefault(str(row["operation"]), []).append(duration)
+        operations = [
+            {
+                "operation": operation,
+                "count": summary["count"],
+                "min_ms": summary["min"],
+                "max_ms": summary["max"],
+                "mean_ms": summary["mean"],
+                "p50_ms": summary["p50"],
+                "p95_ms": summary["p95"],
+            }
+            for operation in sorted(durations)
+            for summary in (latency_summary(durations[operation]),)
+        ]
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "operations": operations,
+            "malformed_outcomes": malformed,
+        }
+
+    def switches_payload(self) -> dict[str, Any]:
+        """The resolved state of every operator kill switch (read at request
+        time — the operator's latest env always wins)."""
+        board = load_switches()
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "switches": [
+                {
+                    "name": entry.name,
+                    "env": entry.env,
+                    "state": str(board.state(entry.name)),
+                    "affects": entry.affects,
+                    "fail_safe": entry.fail_safe,
+                }
+                for entry in KILL_SWITCHES
+            ],
+            "announcements": list(board.announcements()),
+        }
+
+    def health_detail_payload(self, *, timing: Mapping[str, int]) -> dict[str, Any]:
+        """Health findings plus store stats, request timing and switch states."""
+        base = self.health_payload()
+        stats = self.store_stats_payload()
+        base["store"] = {
+            "tables": len(stats["tables"]),
+            "schema_versions": stats["schema_versions"],
+            "file_size_bytes": stats["file_size_bytes"],
+            "freelist_pages": stats["freelist_pages"],
+        }
+        base["timing"] = dict(timing)
+        base["switches"] = self.switches_payload()["switches"]
+        return base
+
     def refs_payload(self) -> dict[str, Any]:
         with self._store.read() as conn:
             counts = {
@@ -676,7 +1063,11 @@ class WebviewServer:
         port: int = 0,
         token: str | None = None,
         host_allowlist: Sequence[str] = DEFAULT_HOST_ALLOWLIST,
+        request_id_factory: Callable[[], str] | None = None,
     ) -> None:
+        # W13 kill switch: the operator can forbid the viewer entirely.
+        if load_switches().webview_disabled():
+            raise WebviewError(f"the webview is disabled by {ENV_DISABLE_WEBVIEW}=1 (operator kill switch)")
         if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
             raise WebviewError(f"port must be an int in [0, 65535], got {port!r}")
         resolved_token = token if token is not None else generate_token()
@@ -687,6 +1078,12 @@ class WebviewServer:
         self._app = WebviewApp(store_path)
         self._token = resolved_token
         self._host_allowlist = tuple(host_allowlist)
+        self._request_id_factory = request_id_factory or (lambda: secrets.token_hex(8))
+        # W13 middleware layer: timing + typed error mapping are server-level;
+        # the capability gate binds per request (it needs the handler's
+        # headers/query) inside the handler's guard chain.
+        self._timings = TimingMiddleware()
+        self._errors = TypedErrorMiddleware()
         handler = self._make_handler()
         self._httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
         self._httpd.daemon_threads = True
@@ -750,6 +1147,7 @@ class WebviewServer:
             # -- plumbing ------------------------------------------------
 
             def _respond(self, status: int, body: bytes, content_type: str, *, head_only: bool = False) -> None:
+                self._last_status = status
                 self.send_response(status)
                 self.send_header("Content-Type", content_type)
                 self.send_header("Content-Length", str(len(body)))
@@ -757,6 +1155,11 @@ class WebviewServer:
                 self.send_header("Cache-Control", "no-store")
                 if content_type.startswith("text/html"):
                     self.send_header("Content-Security-Policy", _CSP)
+                ctx = getattr(self, "_ctx", None)
+                if ctx is not None:
+                    server_ref._timings.stamp(ctx)  # Server-Timing: duration so far
+                    for header, value in ctx.response_headers.items():
+                        self.send_header(header, value)
                 if getattr(self, "_fresh_token", False) and content_type.startswith("text/html"):
                     # Page authenticated via ?token= — issue the session cookie
                     # so static assets and API calls authenticate without the
@@ -779,19 +1182,8 @@ class WebviewServer:
 
             # -- guards (order: host -> origin -> method -> token) -------
 
-            def _guards_pass(self) -> bool:
-                host = self.headers.get("Host")
-                if host is None or not host_allowed(host, server_ref.port, server_ref._host_allowlist):
-                    self._respond_json(
-                        403, _error_payload("HOST_NOT_ALLOWED", "Host header is not an allowlisted loopback origin")
-                    )
-                    return False
-                origin = self.headers.get("Origin")
-                if not origin_allowed(origin, server_ref.port):
-                    self._respond_json(
-                        403, _error_payload("ORIGIN_NOT_ALLOWED", "Origin header is not an allowlisted loopback origin")
-                    )
-                    return False
+            def _token_authorized(self) -> bool:
+                """The session-token capability decision (pure check + fresh mark)."""
                 query = parse_qs(urlsplit(self.path).query)
                 provided = query.get("token", [None])[-1]
                 if provided is not None and hmac.compare_digest(str(provided), server_ref._token):
@@ -805,8 +1197,33 @@ class WebviewServer:
                     name, _, value = part.strip().partition("=")
                     if name == "kys_token" and hmac.compare_digest(value, server_ref._token):
                         return True
-                self._respond_json(401, _error_payload("UNAUTHORIZED", "a valid token query parameter is required"))
                 return False
+
+            def _capability_gate(self) -> CapabilityGateMiddleware:
+                """The token check as an explicit middleware layer (W13)."""
+                return CapabilityGateMiddleware(checker=lambda _ctx: self._token_authorized())
+
+            def _guards_pass(self) -> bool:
+                host = self.headers.get("Host")
+                if host is None or not host_allowed(host, server_ref.port, server_ref._host_allowlist):
+                    self._respond_json(
+                        403, _error_payload("HOST_NOT_ALLOWED", "Host header is not an allowlisted loopback origin")
+                    )
+                    return False
+                origin = self.headers.get("Origin")
+                if not origin_allowed(origin, server_ref.port):
+                    self._respond_json(
+                        403, _error_payload("ORIGIN_NOT_ALLOWED", "Origin header is not an allowlisted loopback origin")
+                    )
+                    return False
+                try:
+                    self._capability_gate().before(self._ctx)
+                except CapabilityDeniedError as error:
+                    self._respond_json(
+                        error.status, _error_payload("UNAUTHORIZED", "a valid token query parameter is required")
+                    )
+                    return False
+                return True
 
             # -- verbs ---------------------------------------------------
 
@@ -834,16 +1251,41 @@ class WebviewServer:
             def _method_not_allowed(self) -> None:
                 # Guards still run first: an unauthenticated probe must not
                 # learn which methods exist.
+                self._ensure_ctx()
                 if self._guards_pass():
                     self._reject(405, "METHOD_NOT_ALLOWED", "the viewer is read-only; only GET and HEAD exist")
 
+            def _ensure_ctx(self) -> None:
+                """Build the per-request middleware context exactly once."""
+                if getattr(self, "_ctx", None) is None:
+                    self._ctx = RequestContext(
+                        request_id=server_ref._request_id_factory(),
+                        method=self.command,
+                        path=urlsplit(self.path).path,
+                        client=str(self.client_address[0]),
+                        headers={key: value for key, value in self.headers.items()},
+                    )
+                    self._last_status = 200
+
             def _dispatch(self, *, head_only: bool) -> None:
+                self._ensure_ctx()
                 if not self._guards_pass():
                     return
+                ctx = self._ctx
+                stack = MiddlewareStack((RequestIdMiddleware(), server_ref._timings))
+                stack.before(ctx)
                 try:
                     self._route(head_only=head_only)
                 except BrokenPipeError, ConnectionResetError:
                     pass  # client left; nothing to report
+                except Exception as error:
+                    # Typed error mapping (W13): typed errors keep their
+                    # code/status; untyped ones become 500 INTERNAL with no
+                    # internals leaked — never a bare connection drop.
+                    status, payload = server_ref._errors.map_error(error)
+                    self._respond_json(status, payload, head_only=head_only)
+                finally:
+                    stack.after(ctx, status=getattr(self, "_last_status", 200))
 
             # -- routing -------------------------------------------------
 
@@ -926,6 +1368,39 @@ class WebviewServer:
                         payload = app.extractions_payload()
                     elif tail == "refs":
                         payload = app.refs_payload()
+                    # -- W13 JSON API routes -----------------------------
+                    elif tail == "query":
+                        node_id = _str_param("node_id")
+                        if node_id is None:
+                            raise _BadRequest("node_id is required")
+                        kind = _str_param("kind")
+                        if kind is not None and _KIND_LANG_RE.fullmatch(kind) is None:
+                            raise _BadRequest(f"kind filter must match {_KIND_LANG_RE.pattern}, got {kind!r}")
+                        payload = app.query_payload(
+                            node_id,
+                            kind=kind,
+                            direction=_str_param("direction") or "both",
+                            limit=_int_param("limit", 50),
+                        )
+                    elif tail == "metrics/series":
+                        payload = app.metrics_series_payload(limit=_int_param("limit", 90))
+                    elif tail == "audit/tail":
+                        payload = app.audit_tail_payload(since=_int_param("since", 0), limit=_int_param("limit", 100))
+                    elif tail == "improvements":
+                        payload = app.improvements_payload()
+                    elif tail.startswith("improvements/"):
+                        proposal_id = tail[len("improvements/") :]
+                        if not proposal_id or "/" in proposal_id:
+                            raise _BadRequest("proposal id must be a single non-empty path segment")
+                        payload = app.improvement_detail_payload(proposal_id)
+                    elif tail == "health/detail":
+                        payload = app.health_detail_payload(timing=server_ref._timings.summary())
+                    elif tail == "bench":
+                        payload = app.bench_payload()
+                    elif tail == "store/stats":
+                        payload = app.store_stats_payload()
+                    elif tail == "switches":
+                        payload = app.switches_payload()
                     else:
                         self._reject(404, "NOT_FOUND", "unknown api endpoint")
                         return
@@ -941,6 +1416,104 @@ class WebviewServer:
 
 
 # ------------------------------------------------------------------ cli
+
+
+# ------------------------------------------------------------ async lifecycle
+
+
+class AsyncWebviewServer:
+    """asyncio lifecycle wrapper around :class:`WebviewServer` (W13).
+
+    The serving stack stays the hardened stdlib ``ThreadingHTTPServer`` —
+    what the sync server lacked is lifecycle: this wrapper runs the serve
+    loop as a heartbeat-beating
+    :class:`~know_your_context.serve.watchdog.SupervisedWorker` (the loop
+    beats once per ``handle_request`` poll, idle included), optionally
+    registered with a :class:`~know_your_context.serve.watchdog.Watchdog`,
+    and drains with a bounded async ``stop()``. Cancellation of ``stop()``
+    propagates; the wrapper never swallows ``CancelledError``.
+    """
+
+    def __init__(
+        self,
+        server: WebviewServer,
+        *,
+        watchdog: Any = None,
+        watchdog_policy: Any = None,
+        heartbeat_poll_seconds: float = 0.5,
+    ) -> None:
+        from know_your_context.serve.watchdog import WatchdogPolicy
+
+        if (
+            isinstance(heartbeat_poll_seconds, bool)
+            or not isinstance(heartbeat_poll_seconds, (int, float))
+            or heartbeat_poll_seconds <= 0
+        ):
+            raise WebviewError(f"heartbeat_poll_seconds must be a number > 0, got {heartbeat_poll_seconds!r}")
+        self._server = server
+        self._watchdog = watchdog
+        self._policy = watchdog_policy if watchdog_policy is not None else WatchdogPolicy()
+        self._poll = float(heartbeat_poll_seconds)
+        self._worker: Any = None
+
+    @property
+    def worker(self) -> Any:
+        return self._worker
+
+    @property
+    def heartbeat(self) -> Any:
+        return self._worker.heartbeat if self._worker is not None else None
+
+    def _serve_loop(self, heartbeat: Any, stop: threading.Event) -> None:
+        httpd = self._server._httpd
+        httpd.timeout = self._poll  # handle_request returns after each poll
+        while not stop.is_set():
+            try:
+                httpd.handle_request()
+            except OSError:
+                if stop.is_set():
+                    break
+                raise  # socket died underneath us: the supervisor must see it
+            heartbeat.beat()
+
+    async def start(self) -> None:
+        from know_your_context.serve.watchdog import SupervisedWorker
+
+        assert self._worker is None, "async webview server already started"
+        worker = SupervisedWorker("webview-serve", self._serve_loop, policy=self._policy)
+        worker.start()
+        self._worker = worker
+        if self._watchdog is not None:
+            self._watchdog.register(worker)
+        for _ in range(200):  # bound the "is it accepting" wait
+            if worker.is_alive():
+                break
+            await asyncio.sleep(0.005)
+
+    async def stop(self, *, timeout_ms: int = 5000) -> bool:
+        """Bounded cooperative drain; True when the serve loop joined."""
+        from know_your_context.serve.flow_retry import run_with_timeout_async
+
+        worker = self._worker
+        if worker is None:
+            return True
+        try:
+            drained: bool = await run_with_timeout_async(
+                asyncio.to_thread(worker.stop, timeout_ms=timeout_ms),
+                timeout_ms=timeout_ms + 1000,
+            )
+        finally:
+            self._worker = None
+            if self._watchdog is not None:
+                self._watchdog.unregister(worker.name)
+        # The sync shutdown() path only signals httpd.shutdown() when
+        # serve_forever() ran — our loop uses handle_request(), so close
+        # directly and mark the server closed to keep shutdown() idempotent.
+        if not self._server._closed:
+            self._server._closed = True
+            self._server._httpd.server_close()
+            self._server._app.close()
+        return drained
 
 
 def main(argv: Sequence[str] | None = None) -> int:

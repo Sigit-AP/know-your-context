@@ -33,6 +33,13 @@ _INTERNAL_ENV = "KNOW_YOUR_CONTEXT_DAEMON_INTERNAL"
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Argument parser for ``know-your-context serve``.
+
+    Modes: ``--daemon`` (idempotent detached spawn), ``--daemon-foreground``
+    (hidden; the re-exec'd child), ``--proxy`` (MCP stdio bridge), and
+    ``daemon status|stop`` — ``--force`` skips the drain window and queued
+    work fails typed.
+    """
     parser = argparse.ArgumentParser(
         prog="know-your-context serve",
         description="Superpower server: detached multi-agent daemon + thin MCP stdio proxy.",
@@ -78,6 +85,12 @@ def _config_from_args(args: argparse.Namespace) -> DaemonConfig:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Entry point for the serve module; returns the process exit code.
+
+    0 on success (including clean proxy EOF), 1 when the daemon is
+    unreachable for spawn/stop, 2 on invalid configuration or usage —
+    configuration errors fail closed before any socket is touched.
+    """
     args = build_parser().parse_args(argv)
     try:
         config = _config_from_args(args)

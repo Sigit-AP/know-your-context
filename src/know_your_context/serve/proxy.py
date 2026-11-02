@@ -41,6 +41,11 @@ _LOCAL_METHODS = frozenset({"initialize", "ping", "tools/list"})
 _EARLY_PPID = os.getppid()
 
 
+def _remaining(deadline: float) -> float:
+    """Seconds until the monotonic deadline, clamped at zero."""
+    return max(0.0, deadline - time.monotonic())
+
+
 class StdioProxy:
     """One stdio session (stdin/stdout) bridged to the daemon socket."""
 
@@ -52,12 +57,14 @@ class StdioProxy:
         stdout: BinaryIO | None = None,
         actor: str | None = None,
         ppid: int | None = None,
+        sleep: Any = None,
     ) -> None:
         self._config = config
         self._stdin = stdin if stdin is not None else sys.stdin.buffer
         self._stdout = stdout if stdout is not None else sys.stdout.buffer
         self._actor = actor or config.proxy_actor
         self._ppid = ppid if ppid is not None else _EARLY_PPID
+        self._sleep = sleep if sleep is not None else time.sleep  # W13: injectable for DST
         self._socket: socket.socket | None = None
         self._socket_reader: rpc.FrameReader | None = None
         self._socket_lock = threading.Lock()  # send+read is one atomic round-trip
@@ -134,9 +141,24 @@ class StdioProxy:
     # ------------------------------------------------------------- forwarding
 
     def _connect(self) -> None:
+        from know_your_context.serve.flow_retry import run_with_timeout
+
         result = ensure_daemon(self._config)
         connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        connection.connect(str(result.socket_path))
+        try:
+            # W13: an explicit connect timeout — a wedged listener that accepts
+            # nothing must not hang the host's tool call forever.
+            connection.settimeout(self._config.proxy_connect_timeout_seconds)
+            run_with_timeout(
+                lambda: connection.connect(str(result.socket_path)),
+                timeout_ms=int(self._config.proxy_connect_timeout_seconds * 1000),
+            )
+            # The IO bound is generous (heavy-lane ingests run for minutes)
+            # but explicit: a wedged daemon holding the socket open is caught.
+            connection.settimeout(self._config.proxy_io_timeout_seconds)
+        except BaseException:
+            connection.close()
+            raise
         self._socket = connection
         self._socket_reader = rpc.FrameReader(connection.makefile("rb"), max_bytes=self._config.max_frame_bytes)
 
@@ -145,18 +167,38 @@ class StdioProxy:
 
         A spawn under host load legitimately takes seconds, so the retry
         budget is time-based (spawn timeout + margin), not attempt-based.
+        W13: the fixed sleeps are now a deterministic exponential backoff
+        (``compute_delay_ms``; seeded via ``proxy_retry_seed`` for DST), and
+        every socket round-trip carries an explicit timeout bounded by the
+        remaining deadline.
         """
+        from know_your_context.serve.flow_retry import RetryPolicy, compute_delay_ms
+
+        policy = RetryPolicy(
+            max_attempts=1,  # unused: the outer deadline bounds retries
+            base_delay_ms=100,
+            max_delay_ms=1_000,
+            backoff_multiplier=2.0,
+            jitter_ratio=0.2,
+            seed=self._config.proxy_retry_seed,
+        )
+        rng = policy.rng()
+        attempt = 0
         deadline = time.monotonic() + self._config.spawn_timeout_seconds + 10.0
         while time.monotonic() < deadline:
+            attempt += 1
             if self._socket is None or self._socket_reader is None:
                 try:
                     self._connect()
                 except Exception:  # noqa: BLE001 - retried until the deadline
-                    time.sleep(0.2)
+                    self._sleep(min(compute_delay_ms(attempt, policy, rng=rng) / 1000.0, _remaining(deadline)))
                     continue
             assert self._socket is not None and self._socket_reader is not None
             with self._socket_lock:  # heartbeat and forwards never interleave frames
                 try:
+                    # Bound the round-trip by both the configured IO timeout
+                    # and the remaining retry deadline — whichever bites first.
+                    self._socket.settimeout(min(self._config.proxy_io_timeout_seconds, max(0.1, _remaining(deadline))))
                     message: dict[str, Any] = {"jsonrpc": "2.0", "id": envelope.id, "method": envelope.method}
                     if params:
                         message["params"] = dict(params)
@@ -165,15 +207,16 @@ class StdioProxy:
                 except ConnectionError, OSError, rpc.ProtocolError:
                     response = None
             if response is None:
-                # Clean EOF or a broken pipe: the daemon is gone — drop the
-                # connection and let the next pass respawn it.
+                # Clean EOF, a broken pipe or an IO timeout: the daemon is
+                # gone (or wedged) — drop the connection and let the next
+                # pass respawn it.
                 try:
                     self._socket.close()
                 except OSError:
                     pass
                 self._socket = None
                 self._socket_reader = None
-                time.sleep(0.1)
+                self._sleep(min(compute_delay_ms(attempt, policy, rng=rng) / 1000.0, _remaining(deadline)))
                 continue
             return response
         return None
@@ -190,6 +233,10 @@ class StdioProxy:
                 continue
             try:
                 with self._socket_lock:
+                    # W13: the keepalive round-trip is tightly bounded — an
+                    # unbounded read here would hold the socket lock and
+                    # starve the forward path behind a wedged daemon.
+                    self._socket.settimeout(max(1.0, interval * 2))
                     self._socket.sendall(
                         rpc.encode_message({"jsonrpc": "2.0", "id": "lease-hb", "method": "session.heartbeat"})
                     )
@@ -224,4 +271,12 @@ def run_proxy(
     stdout: BinaryIO | None = None,
     actor: str | None = None,
 ) -> int:
+    """Run the MCP stdio proxy loop until the host closes stdin.
+
+    Bridges newline-delimited JSON-RPC on stdio to the daemon's unix
+    socket: an unrecoverable frame is answered with a typed error frame and
+    exits 2; EOF, a dead parent (PPID watchdog) or a daemon-initiated close
+    return 0. ``actor`` stamps host requests that carry no
+    ``params._meta.actor``; agent requests keep their own actor.
+    """
     return StdioProxy(config, stdin=stdin, stdout=stdout, actor=actor).run()

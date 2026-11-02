@@ -26,6 +26,14 @@ __all__ = ["ChangeKind", "SourceChange", "SourceWatcher", "WatcherStateError"]
 
 
 class ChangeKind(StrEnum):
+    """Content-hash classification of one detected source change.
+
+    ``ADDED`` — on disk now, absent from the persisted snapshot.
+    ``CHANGED`` — same path, different content sha256; an mtime-only touch
+    never produces this kind (detection is content-hashed, never stat-based).
+    ``REMOVED`` — in the snapshot, gone from disk.
+    """
+
     ADDED = "added"
     CHANGED = "changed"
     REMOVED = "removed"

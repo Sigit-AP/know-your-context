@@ -38,6 +38,7 @@ from __future__ import annotations
 import asyncio
 import collections
 import json
+import logging
 import os
 import queue
 import secrets
@@ -83,6 +84,7 @@ from know_your_context.serve.budgets import (
     assert_static_budgets,
 )
 from know_your_context.serve.daemon_config import DaemonConfig, DaemonPaths
+from know_your_context.serve.watchdog import DrainReport, Heartbeat, SupervisedThread, Watchdog, WatchdogPolicy
 from know_your_context.service import KnowledgeService
 from know_your_context.store import EventStore, StoreError
 
@@ -156,6 +158,8 @@ _ADMIN_PREFIX = "daemon."
 # Kill switches (W7 attention-to-detail: every optimization is switchable).
 _NO_GROUP_COMMIT_ENV = "KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT"
 
+_LOGGER = logging.getLogger("know_your_context.serve.superpower")
+
 
 class ServeError(RuntimeError):
     """A typed daemon failure; ``rpc_code`` is the JSON-RPC application code."""
@@ -178,26 +182,67 @@ class ServerBusy(ServeError):
 
 
 class ScopeDenied(ServeError):
+    """The session's scope does not include the requested verb.
+
+    Raised at dispatch when e.g. a read-scoped agent calls a mutation verb.
+    Fail closed: the call is journaled as a denial and never reaches the
+    store; retrying without a scope upgrade always fails the same way.
+    """
+
     rpc_code = rpc.SCOPE_DENIED
 
 
 class UnknownVerb(ServeError):
+    """The requested method is not in the daemon's fixed verb table.
+
+    Unknown methods are rejected at the router — never proxied, never
+    defaulted — keeping the daemon's surface identical to the audited
+    verb list.
+    """
+
     rpc_code = rpc.UNKNOWN_VERB
 
 
 class ActorRequired(ServeError):
+    """The request carries no ``params._meta.actor``.
+
+    Every ``tools/call`` must name its agent so per-agent audit, quotas and
+    fair-queue lanes can attribute the work; anonymous calls are refused
+    before dispatch and before any capability check.
+    """
+
     rpc_code = rpc.ACTOR_REQUIRED
 
 
 class DaemonUnavailable(ServeError):
+    """The daemon cannot be reached (socket missing or connection refused).
+
+    Raised by client-side helpers (spawn, stop, status); it carries no
+    server state, so the caller should run ``daemon status`` instead of
+    retrying blindly.
+    """
+
     rpc_code = rpc.DAEMON_UNAVAILABLE
 
 
 class ShuttingDown(ServeError):
+    """The daemon is draining and rejects new work.
+
+    Raised once shutdown starts: in-flight requests run to their deadline,
+    new submissions fail typed instead of queueing behind a closing writer.
+    """
+
     rpc_code = rpc.SHUTTING_DOWN
 
 
 class DeadlineExceeded(ServeError):
+    """The request's deadline elapsed while queued or executing.
+
+    The daemon never delivers a late result: the lane slot is released, the
+    audit record closes with this code, and the caller may retry under a
+    fresh deadline.
+    """
+
     rpc_code = rpc.DEADLINE_EXCEEDED
 
 
@@ -1031,13 +1076,35 @@ class _ReadPool:
             retry_after_ms=config.retry_after_ms,
         )
         self._workers: list[threading.Thread] = []
+        # W13 (SUB-124): one heartbeat per worker; the daemon's worker
+        # watchdog supervises these via SupervisedThread adapters.
+        self._heartbeats: dict[int, Heartbeat] = {}
         self._stop = threading.Event()
 
     def start(self) -> None:
+        assert not self._workers, "read pool already started"
         for index in range(self._config.read_pool_size):
-            worker = threading.Thread(target=self._worker_main, name=f"superpower-read-{index}", daemon=True)
-            worker.start()
+            self._workers.append(self._spawn_worker(index))
+
+    def _spawn_worker(self, index: int) -> threading.Thread:
+        """Create and start read worker ``index`` with a fresh heartbeat."""
+        self._heartbeats[index] = Heartbeat()
+        worker = threading.Thread(target=self._worker_main, args=(index,), name=f"superpower-read-{index}", daemon=True)
+        worker.start()
+        return worker
+
+    def _respawn_worker(self, index: int) -> threading.Thread:
+        """Watchdog restart path: replace a DEAD worker (never a live one)."""
+        existing = self._workers[index] if index < len(self._workers) else None
+        assert existing is None or not existing.is_alive(), (
+            f"read worker {index} is alive — restarting would duplicate a queue consumer"
+        )
+        worker = self._spawn_worker(index)
+        if index < len(self._workers):
+            self._workers[index] = worker
+        else:
             self._workers.append(worker)
+        return worker
 
     def stop(self) -> None:
         self._stop.set()
@@ -1066,7 +1133,7 @@ class _ReadPool:
 
     # --------------------------------------------------------------- workers
 
-    def _worker_main(self) -> None:
+    def _worker_main(self, index: int) -> None:
         store = ReadOnlyEventStore(self._config.db_path, reference=self._writer_store)
         forwarding = _ForwardingAuditLog(self._arbiter, self._writer_audit)
         projector = _ReadOnlyProjector(GraphProjector(store, output_root=self._graph_root))
@@ -1077,8 +1144,10 @@ class _ReadPool:
             max_token_budget=self._config.max_token_budget,
         )
         adapters: dict[str, _Adapter] = {}
+        heartbeat = self._heartbeats[index]
         try:
             while not self._stop.is_set():
+                heartbeat.beat()  # W13: one beat per wakeup, idle included
                 item = self._queue.get(timeout=0.2)
                 if item is None:
                     continue
@@ -1188,11 +1257,21 @@ class _HeavyLane:
         )
         self._stop = threading.Event()
         self._worker = threading.Thread(target=self._main, name="superpower-heavy", daemon=True)
+        # W13 (SUB-124): the heavy lane beats once per loop wakeup.
+        self._heartbeat = Heartbeat()
         self._started = False
 
     def start(self) -> None:
         self._worker.start()
         self._started = True
+
+    def _respawn(self) -> threading.Thread:
+        """Watchdog restart path: replace a DEAD heavy worker."""
+        assert not self._worker.is_alive(), "the heavy lane is alive — restart would duplicate the single worker"
+        self._heartbeat = Heartbeat()
+        self._worker = threading.Thread(target=self._main, name="superpower-heavy", daemon=True)
+        self._worker.start()
+        return self._worker
 
     def stop(self) -> None:
         self._stop.set()
@@ -1221,7 +1300,9 @@ class _HeavyLane:
 
     def _main(self) -> None:
         adapters: dict[str, _Adapter] = {}
+        heartbeat = self._heartbeat
         while not self._stop.is_set():
+            heartbeat.beat()  # W13: one beat per wakeup, idle included
             item = self._queue.get(timeout=0.2)
             if item is None:
                 continue
@@ -1258,6 +1339,14 @@ class _HeavyLane:
 
 @dataclass(frozen=True)
 class SpawnResult:
+    """Outcome of an idempotent daemon spawn.
+
+    ``already_running`` is True when a healthy daemon already answered the
+    handshake — in that case no new process was created and ``pid`` names
+    the existing daemon. Frozen by contract: spawn state is a fact, callers
+    must not mutate it after the fact.
+    """
+
     pid: int
     socket_path: Path
     already_running: bool
@@ -1310,6 +1399,12 @@ class SuperpowerDaemon:
         self._acceptor: threading.Thread | None = None
         self._reaper: threading.Thread | None = None
         self._watchdog: LivenessWatchdog | None = None
+        # W13 (SUB-124): per-worker heartbeats + tiered watchdog supervision.
+        self._acceptor_heartbeat = Heartbeat()
+        self._reaper_heartbeat = Heartbeat()
+        self._worker_watchdog: Watchdog | None = None
+        self._worker_drain_report: DrainReport | None = None
+        self._worker_alerts: collections.deque[dict[str, str]] = collections.deque(maxlen=256)
         # lanes (built in start)
         self._store: EventStore | None = None
         self._arbiter: _WriteArbiter | None = None
@@ -1358,6 +1453,8 @@ class SuperpowerDaemon:
         self._watchdog.start()
         self._acceptor.start()
         self._reaper.start()
+        if self._config.worker_watchdog:
+            self._start_worker_watchdog()
         self._paths.ready.write_text(self._nonce, encoding="utf-8")
 
     def serve_forever(self) -> int:
@@ -1401,6 +1498,92 @@ class SuperpowerDaemon:
             self._stop.set()
 
         threading.Thread(target=drain, name="superpower-drain", daemon=True).start()
+
+    # ------------------------------------------------------- worker watchdog
+
+    def _start_worker_watchdog(self) -> None:
+        """Register every daemon worker with the tiered watchdog (W13).
+
+        Escalation: suspect (silent, alert only) → restart (dead threads are
+        replaced through the lanes' respawn factories; a live-but-wedged
+        worker is escalated to dead+alert instead — Python cannot kill a
+        thread, and duplicating a queue consumer is worse) → dead (restart
+        budget exhausted; terminal, alerted). Kill switch:
+        ``DaemonConfig.worker_watchdog=False``.
+        """
+        policy = WatchdogPolicy(
+            suspect_seconds=self._config.watchdog_suspect_seconds,
+            stall_seconds=self._config.watchdog_stall_seconds,
+            max_restarts=self._config.watchdog_max_restarts,
+            restart_window_seconds=self._config.watchdog_restart_window_seconds,
+            check_interval_seconds=self._config.watchdog_check_interval_seconds,
+        )
+        watchdog = Watchdog(policy=policy, on_alert=self._on_worker_alert)
+        assert self._read_pool is not None and self._heavy is not None
+        assert self._acceptor is not None and self._reaper is not None
+        read_pool, heavy = self._read_pool, self._heavy
+        for index, worker in enumerate(read_pool._workers):
+            watchdog.register(
+                SupervisedThread(
+                    f"read-{index}",
+                    worker,
+                    heartbeat_getter=lambda i=index: read_pool._heartbeats[i],
+                    restart_factory=lambda i=index: read_pool._respawn_worker(i),
+                    policy=policy,
+                )
+            )
+        watchdog.register(
+            SupervisedThread(
+                "heavy",
+                heavy._worker,
+                heartbeat_getter=lambda: heavy._heartbeat,
+                restart_factory=heavy._respawn,
+                policy=policy,
+            )
+        )
+        watchdog.register(
+            SupervisedThread(
+                "acceptor",
+                self._acceptor,
+                heartbeat_getter=lambda: self._acceptor_heartbeat,
+                restart_factory=self._respawn_acceptor,
+                policy=policy,
+            )
+        )
+        watchdog.register(
+            SupervisedThread(
+                "reaper",
+                self._reaper,
+                heartbeat_getter=lambda: self._reaper_heartbeat,
+                restart_factory=self._respawn_reaper,
+                policy=policy,
+            )
+        )
+        watchdog.start()
+        self._worker_watchdog = watchdog
+
+    def _on_worker_alert(self, name: str, kind: str) -> None:
+        entry = {"worker": name, "kind": kind, "at": _utcnow_iso()}
+        self._worker_alerts.append(entry)
+        _LOGGER.warning("worker watchdog: %s → %s", name, kind)
+
+    def _respawn_acceptor(self) -> threading.Thread:
+        assert self._acceptor is not None and not self._acceptor.is_alive(), (
+            "the acceptor is alive — restart would double-bind the listener"
+        )
+        self._acceptor_heartbeat = Heartbeat()
+        self._acceptor = threading.Thread(target=self._accept_loop, name="superpower-acceptor", daemon=True)
+        self._acceptor.start()
+        return self._acceptor
+
+    def _respawn_reaper(self) -> threading.Thread:
+        assert self._reaper is not None and not self._reaper.is_alive(), (
+            "the reaper is alive — restart would double-run lease reaping"
+        )
+        self._reaper_heartbeat = Heartbeat()
+        self._reaper = threading.Thread(target=self._reap_loop, name="superpower-reaper", daemon=True)
+        self._reaper.start()
+        return self._reaper
 
     # ------------------------------------------------------------- internals
 
@@ -1505,6 +1688,7 @@ class SuperpowerDaemon:
     def _accept_loop(self) -> None:
         assert self._listener is not None
         while not self._stop.is_set():
+            self._acceptor_heartbeat.beat()  # W13: one beat per wakeup
             if self._watchdog is not None:
                 self._watchdog.beat()
             try:
@@ -1539,6 +1723,7 @@ class SuperpowerDaemon:
 
     def _reap_loop(self) -> None:
         while not self._stop.wait(min(1.0, self._config.idle_timeout_seconds / 2)):
+            self._reaper_heartbeat.beat()  # W13: one beat per wakeup
             self._reap_expired_sessions()
             with self._sessions_lock:
                 active = len(self._sessions)
@@ -1996,6 +2181,7 @@ class SuperpowerDaemon:
                 "heavy_queue_depth": self._heavy.queue_depth if self._heavy else 0,
                 "published_watermark": self._arbiter.published_watermark if self._arbiter else 0,
                 "group_commit": self._arbiter._group_commit_enabled if self._arbiter else False,  # noqa: SLF001
+                "worker_watchdog": self._worker_watchdog_stats(),
                 "fairness": {
                     "per_actor_write_cap": self._config.per_actor_write_cap,
                     "per_actor_read_cap": self._config.per_actor_read_cap,
@@ -2009,6 +2195,30 @@ class SuperpowerDaemon:
                 "db_path": str(self._config.db_path),
                 "socket_path": str(self._paths.socket),
             }
+
+    def _worker_watchdog_stats(self) -> dict[str, Any]:
+        """The W13 per-worker supervision section of ``stats()``."""
+        if self._worker_watchdog is None:
+            return {"enabled": False, "workers": {}, "alerts": [], "drain": None}
+        workers: dict[str, Any] = {}
+        for name in self._worker_watchdog.worker_names():
+            worker = self._worker_watchdog._workers.get(name)  # noqa: SLF001 - same module ownership
+            if worker is None:
+                continue
+            workers[name] = {
+                "state": str(worker.state),
+                "alive": worker.is_alive(),
+                "beats": worker.heartbeat.beat_count,
+                "beat_age_seconds": round(worker.heartbeat.age_seconds(), 3),
+                "restarts": worker.restart_count,
+                "terminal": worker.terminal,
+            }
+        return {
+            "enabled": True,
+            "workers": workers,
+            "alerts": list(self._worker_alerts),
+            "drain": self._worker_drain_report.to_dict() if self._worker_drain_report is not None else None,
+        }
 
     # --------------------------------------------------------------- shutdown
 
@@ -2026,6 +2236,10 @@ class SuperpowerDaemon:
     def _finalize(self) -> None:
         if self._watchdog is not None:
             self._watchdog.stop()
+        if self._worker_watchdog is not None:
+            # Stop the monitor first: workers going down below are a planned
+            # drain, not stalls — the watchdog must not restart them.
+            self._worker_watchdog.stop()
         if self._listener is not None:
             try:
                 self._listener.close()
@@ -2043,6 +2257,13 @@ class SuperpowerDaemon:
             self._heavy.stop()
         if self._arbiter is not None:
             self._arbiter.stop()
+        if self._worker_watchdog is not None:
+            # Drain coverage (W13): every registered worker — read lanes,
+            # heavy, acceptor, reaper — is accounted in the report, including
+            # the reaper the pre-W13 finalize never joined.
+            self._worker_drain_report = self._worker_watchdog.drain_all(
+                timeout_ms=int(self._config.drain_timeout_seconds * 1000)
+            )
         if not self._forced:
             deadline = time.monotonic() + self._config.drain_timeout_seconds
             with self._inflight_cond:

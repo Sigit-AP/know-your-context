@@ -36,6 +36,7 @@ from typing import Literal
 
 from know_your_context.domain import canonical_json
 from know_your_context.graph_model import file_node_id, is_file_node_id
+from know_your_context.ops.switches import load_switches
 from know_your_context.resolve.lang_helpers import LanguageHelper, get_helper
 from know_your_context.store import EventStore, FileRow, SymbolRow, UnresolvedRefRow
 
@@ -199,10 +200,18 @@ class ReferenceResolver:
 
     def __init__(self, config: ResolverConfig | None = None) -> None:
         self._config = config if config is not None else ResolverConfig()
+        # W13 operator kill switch: KNOW_YOUR_CONTEXT_DISABLE_HELPER_TIER
+        # overrides even an explicitly enabled config (operator wins).
+        self._helper_tier_active = self._config.helper_tier_enabled and not load_switches().helper_tier_disabled()
 
     @property
     def config(self) -> ResolverConfig:
         return self._config
+
+    @property
+    def helper_tier_active(self) -> bool:
+        """Whether the module-helper tier will run (config AND kill switch)."""
+        return self._helper_tier_active
 
     # ------------------------------------------------------------ public API
 
@@ -313,7 +322,7 @@ class ReferenceResolver:
             if decision is not None:
                 return decision
         # (d) per-language helper tier (W12): imports refs only, after (c).
-        if edge_kind == "imports" and self._config.helper_tier_enabled:
+        if edge_kind == "imports" and self._helper_tier_active:
             helper = get_helper(language)
             if helper is not None:
                 decision = self._resolve_module_helper(store, helper, source_path, ref.target_name)
