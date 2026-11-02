@@ -132,12 +132,17 @@ class TestConstants:
         assert isinstance(SYNTHESIS_VERSION, int) and SYNTHESIS_VERSION >= 1
 
     def test_pass_order_is_fixed_tuple(self) -> None:
-        assert SYNTH_PASS_ORDER == (
+        # W12 (SUB-121): the four W7 passes keep their relative order; the
+        # eight W12 passes insert between type_hint_edges and callback_edges
+        # (callback stays last: it consumes resolver-minted edges).
+        assert SYNTH_PASS_ORDER[:3] == (
             PASS_METHOD_CLASS_CONTAINMENT,
             PASS_REEXPORT_CHAINS,
             PASS_TYPE_HINT_EDGES,
-            PASS_CALLBACK_EDGES,
         )
+        assert SYNTH_PASS_ORDER[-1] == PASS_CALLBACK_EDGES
+        assert len(SYNTH_PASS_ORDER) == 12
+        assert len(set(SYNTH_PASS_ORDER)) == 12
 
     @pytest.mark.parametrize(
         ("name", "expected"),

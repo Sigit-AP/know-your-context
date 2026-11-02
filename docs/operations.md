@@ -260,6 +260,75 @@ directories. Because `export`/`analytics` treat a missing previous
 generation as an honest `no_previous_generation` result, retention and the
 diff artifact compose safely.
 
+## Lifecycle, doctor, migrate, watchtower (W12)
+
+Four more OPS-only commands (`src/know_your_context/ops/{lifecycle,doctor,migrate,watchtower}.py`,
+wired in `cli.py`). None of them joins the frozen knowledge/OPS operations
+(pinned by `tests/test_cli_w12_tools.py`).
+
+```bash
+know-your-context lifecycle record                    # append one hash-chained health snapshot
+know-your-context lifecycle trend                     # direction/streaks/flaky components (integer-only)
+know-your-context lifecycle prune --keep 50           # retain the newest 50 snapshots (re-chained, atomic)
+know-your-context lifecycle prune --keep 50 --dry-run # same plan, no rewrite
+know-your-context lifecycle fragmentation             # page/freelist stats + vacuum recommendation
+know-your-context lifecycle vacuum                    # safe compaction (staging + verify + atomic swap)
+know-your-context doctor                              # deep diagnostic; exit 1 on any error finding
+know-your-context doctor --format markdown --full-integrity
+know-your-context migrate plan                        # pending schema steps for --store
+know-your-context migrate apply                       # apply pending migrations, verify the chain
+know-your-context migrate export --dest DIR           # portable hashed bundle of --store
+know-your-context migrate verify --bundle DIR         # manifest + sha256 + payload checks; exit 1 on failure
+know-your-context migrate import --bundle DIR [--dest PATH] [--overwrite]
+know-your-context watchtower a.sqlite3 b.sqlite3      # multi-store status; exit 1 if any store is down/corrupt
+know-your-context watchtower --target prod=/srv/prod.sqlite3 --format markdown
+```
+
+- **Lifecycle** (`ops/lifecycle.py`) tracks health history in an append-only,
+  hash-chained JSONL ledger (default `lifecycle-health.jsonl` next to the
+  store). A ledger that fails verification is never extended — recording is
+  fail-closed. `trend` is a pure, integer-only function of the verified
+  history (direction, drop streaks, flaky components, regressions). The
+  declarative retention engine (`RetentionRule`: `max_age_seconds` /
+  `max_entries`, protected items never evicted) also drives
+  `lifecycle prune`, which rewrites the ledger atomically (temp file + fsync
+  + `os.replace` + dir fsync) and re-chains the retained suffix, reporting
+  both head hashes. `vacuum` compacts the store file without endangering the
+  live handle: `VACUUM INTO` a same-directory staging file, verified-copy
+  inspection (quick_check + event-count/chain-head anchor), then an atomic
+  swap through the F-1 coordinated restore discipline, with a final
+  hash-chain verification on the reopened handle. `:memory:` stores are
+  refused; every SQLite failure is wrapped in `LifecycleError`.
+- **Doctor** (`ops/doctor.py`) goes beyond `diagnose` (store/projection
+  state) into the environment the store runs in: Python/SQLite version
+  floors, runtime dependency presence (all nine declared distributions),
+  store-directory writability probe (create/remove a 0600 file), free-space
+  headroom, file permissions and process umask, `quick_check` (+ optional
+  full `integrity_check` and `foreign_key_check`), hash chain, migration
+  drift, read-latency probes (integer p50/p95), fragmentation and WAL
+  growth, stale journals. Every finding carries structured `suggestions` —
+  the markdown report doubles as a runbook. Runtime facts are injectable for
+  deterministic tests; every check is fail-closed (`CHECK_CRASHED`).
+- **Migrate** (`ops/migrate.py`) inspects a store's version strictly
+  read-only (`mode=ro&immutable=1`, no WAL sidecars), classifying it as
+  `current` / `upgradeable` / `newer-than-build` / `not-a-store` / `absent`
+  against the full version ladder (file migrations plus the in-code v3/v4).
+  A store newer than the build is refused *before* it is opened. Portable
+  bundles are directories holding a verified backup copy plus a canonical
+  `bundle-manifest.json` (sha256, size, event count, chain head, applied
+  migrations, format version). `verify` re-checks every hash *and* runs the
+  payload through the backup inspector, so re-signing a corrupt payload with
+  an edited manifest still fails. `import` verifies first (fail-closed) and
+  installs through `restore_store`.
+- **Watchtower** (`ops/watchtower.py`) aggregates a fleet into one
+  deterministic, name-sorted report: reachability, health score, chain and
+  migration state, watermarks, event counts, stale journals, file size,
+  projection presence. A probe never creates a missing store file and never
+  raises — failures land in the report. Duplicate names or paths are a typed
+  `WatchtowerError`. Exit 1 iff any store is unreachable, errored, or fails
+  its chain/migration checks.
+
+
 ## Container
 
 `deploy/Dockerfile`: two-stage build on `python:3.14-slim`, non-root `soul`

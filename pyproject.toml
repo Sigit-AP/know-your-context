@@ -61,3 +61,4 @@ venvPath = "."
 venv = ".venv"
 include = ["src", "tests"]
 exclude = ["tests/fixtures"]
+extraPaths = ["bench/verdict"]

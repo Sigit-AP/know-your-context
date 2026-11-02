@@ -2323,7 +2323,7 @@
       "title": "Registry bahasa: 19 bahasa tervalidasi grammar-nya, spec frozen, parser load-gate per bahasa",
       "ours": {
         "proof_tests": [
-          "tests/test_ingest_languages.py::test_exactly_the_nineteen_supported_languages",
+          "tests/test_ingest_languages.py::test_exactly_the_supported_languages",
           "tests/test_ingest_languages.py::test_parser_loads_for_language"
         ]
       },

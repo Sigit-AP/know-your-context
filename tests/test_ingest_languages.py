@@ -29,26 +29,42 @@ EXPECTED_LANGUAGES = (
     "bash",
     "c",
     "cpp",
+    "crystal",
     "csharp",
     "dart",
+    "elisp",
+    "erlang",
+    "fsharp",
+    "gdscript",
+    "gleam",
     "go",
     "haskell",
+    "haxe",
     "java",
     "javascript",
     "kotlin",
     "lua",
+    "nim",
+    "objc",
     "perl",
     "php",
+    "powershell",
     "python",
     "ruby",
     "rust",
     "scala",
+    "solidity",
     "swift",
     "typescript",
+    "v",
+    "vala",
+    "zig",
 )
 
 #: Languages served by the Rust kernel (engine == "rust"); the rest are
-#: Python-fallback by design (docs/recovery/w7-languages.md).
+#: Python-fallback by design (docs/recovery/w7-languages.md for W7,
+#: docs/recovery/w12-depth.md for the 14 W12 languages — no parse-identical
+#: kernel crate exists for any W12 grammar, so all take the reference walker).
 EXPECTED_RUST_ENGINE = (
     "bash",
     "c",
@@ -68,12 +84,31 @@ EXPECTED_RUST_ENGINE = (
     "scala",
     "typescript",
 )
-EXPECTED_PYTHON_ENGINE = ("dart", "swift")
+EXPECTED_PYTHON_ENGINE = (
+    "crystal",
+    "dart",
+    "elisp",
+    "erlang",
+    "fsharp",
+    "gdscript",
+    "gleam",
+    "haxe",
+    "nim",
+    "objc",
+    "powershell",
+    "solidity",
+    "swift",
+    "v",
+    "vala",
+    "zig",
+)
 
 #: Grammars that expose no callee field on their call node, so no call
 #: extraction is possible in the declarative model (verified against the
-#: real grammars in tree-sitter-language-pack 1.22.1; W7 audit).
-NO_CALL_FIELD_GRAMMARS = frozenset({"dart", "kotlin", "swift"})
+#: real grammars in tree-sitter-language-pack 1.22.1; W7 + W12 audits).
+NO_CALL_FIELD_GRAMMARS = frozenset(
+    {"dart", "kotlin", "swift", "zig", "nim", "fsharp", "gdscript", "elisp", "powershell"}
+)
 
 ALL_LANGUAGES = pytest.mark.parametrize("language", EXPECTED_LANGUAGES)
 
@@ -81,7 +116,8 @@ ALL_LANGUAGES = pytest.mark.parametrize("language", EXPECTED_LANGUAGES)
 # ------------------------------------------------------------------ registry
 
 
-def test_exactly_the_nineteen_supported_languages():
+def test_exactly_the_supported_languages():
+    assert len(EXPECTED_LANGUAGES) == 33  # 12 (W2) + 7 (W7) + 14 (W12)
     assert supported_languages() == EXPECTED_LANGUAGES
 
 
@@ -161,9 +197,12 @@ def test_declaration_kinds_map_to_core_kinds(language: str):
 
 @ALL_LANGUAGES
 def test_declaration_node_types_are_grammar_identifiers(language: str):
+    """Node types match the grammars' own spellings — the zig/nim grammars
+    use CamelCase (``FnProto``, ``typeDef``); the real anti-typo gate is
+    ``test_declaration_node_types_exist_in_grammar`` below."""
     spec = get_spec(language)
     for node_type, _kind in spec.declaration_kinds:
-        assert re.fullmatch(r"[a-z][a-z0-9_]*", node_type), f"{language}: bad node type {node_type!r}"
+        assert re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", node_type), f"{language}: bad node type {node_type!r}"
 
 
 @ALL_LANGUAGES

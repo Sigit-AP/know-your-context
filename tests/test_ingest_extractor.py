@@ -141,6 +141,91 @@ LANGUAGE_CASES: dict[str, tuple[str, frozenset[str], frozenset[str], frozenset[s
         frozenset({"greet", "helper", "top_level"}),
         frozenset({"strict", "JSON::PP"}),
     ),
+    # ---------------------------------------------------------- W12 (SUB-121)
+    "objc": (
+        "objc/sample.m",
+        frozenset({"class"}),
+        frozenset({"greet", "helper", "helper_fn"}),
+        frozenset({"Foundation/Foundation.h", "util.h"}),
+    ),
+    "zig": (
+        "zig/sample.zig",
+        frozenset(),
+        frozenset({"greet", "helper"}),
+        frozenset({"std", "util.zig"}),
+    ),
+    "nim": (
+        "nim/sample.nim",
+        frozenset({"type"}),
+        frozenset({"greet", "helper"}),
+        frozenset({"strutils", "tables"}),
+    ),
+    "crystal": (
+        "crystal/sample.cr",
+        frozenset({"class", "module"}),
+        frozenset({"greet", "helper", "run"}),
+        frozenset({"json", "./util"}),
+    ),
+    "solidity": (
+        "solidity/sample.sol",
+        frozenset({"class", "interface"}),
+        frozenset({"greet", "helper"}),
+        frozenset({"./Token.sol"}),
+    ),
+    "erlang": (
+        "erlang/sample.erl",
+        frozenset({"module"}),
+        frozenset({"greet", "helper"}),
+        frozenset({"string"}),
+    ),
+    "fsharp": (
+        "fsharp/sample.fs",
+        frozenset({"module"}),
+        frozenset({"greet", "helper"}),
+        frozenset({"System", "System.IO"}),
+    ),
+    "powershell": (
+        "powershell/sample.ps1",
+        frozenset({"class"}),
+        frozenset({"Invoke-Greet", "Get-Helper", "Greet"}),
+        frozenset({"System.Collections"}),
+    ),
+    "gdscript": (
+        "gdscript/sample.gd",
+        frozenset({"class"}),
+        frozenset({"greet", "helper"}),
+        frozenset({"Node"}),
+    ),
+    "v": (
+        "v/sample.v",
+        frozenset({"module", "type"}),
+        frozenset({"greet", "helper"}),
+        frozenset({"os", "strings"}),
+    ),
+    "haxe": (
+        "haxe/sample.hx",
+        frozenset({"class", "interface"}),
+        frozenset({"greet", "helper", "run"}),
+        frozenset({"sys.FileSystem"}),
+    ),
+    "gleam": (
+        "gleam/sample.gleam",
+        frozenset({"type"}),
+        frozenset({"greet", "helper"}),
+        frozenset({"gleam/io", "gleam/string"}),
+    ),
+    "vala": (
+        "vala/sample.vala",
+        frozenset({"class", "interface"}),
+        frozenset({"greet", "helper", "run"}),
+        frozenset({"GLib"}),
+    ),
+    "elisp": (
+        "elisp/sample.el",
+        frozenset(),
+        frozenset({"greet", "helper"}),
+        frozenset({"cl-lib"}),
+    ),
 }
 
 ALL_LANGUAGES = sorted(LANGUAGE_CASES)

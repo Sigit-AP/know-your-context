@@ -36,6 +36,7 @@ from typing import Literal
 
 from know_your_context.domain import canonical_json
 from know_your_context.graph_model import file_node_id, is_file_node_id
+from know_your_context.resolve.lang_helpers import LanguageHelper, get_helper
 from know_your_context.store import EventStore, FileRow, SymbolRow, UnresolvedRefRow
 
 __all__ = [
@@ -104,6 +105,10 @@ class ResolverConfig:
     module_languages: frozenset[str] = frozenset(
         {"python", "javascript", "typescript", "javascriptreact", "typescriptreact"}
     )
+    #: W12 (SUB-121): the per-language helper tier (lang_helpers.py) runs for
+    #: ``imports`` refs after the import-path tier. ``False`` disables it
+    #: wholesale (kill switch; the pre-W12 behaviour).
+    helper_tier_enabled: bool = True
 
     def __post_init__(self) -> None:
         _validate_limit(self.batch_limit, "batch_limit")
@@ -120,6 +125,8 @@ class ResolverConfig:
             raise ResolverError("module_languages must be non-empty")
         if not all(isinstance(language, str) and language for language in self.module_languages):
             raise ResolverError("module_languages entries must be non-empty strings")
+        if not isinstance(self.helper_tier_enabled, bool):
+            raise ResolverError("helper_tier_enabled must be a bool")
 
 
 @dataclass(frozen=True)
@@ -128,7 +135,7 @@ class RefOutcome:
 
     ref_id: int
     status: Literal["resolved", "failed"]
-    strategy: Literal["exact", "name_tail", "import_path"] | None
+    strategy: Literal["exact", "name_tail", "import_path", "module_helper"] | None
     target_node_id: str | None
     reason: str | None
 
@@ -147,12 +154,12 @@ class BatchReport:
 
 @dataclass(frozen=True)
 class _Decision:
-    strategy: Literal["exact", "name_tail", "import_path"] | None
+    strategy: Literal["exact", "name_tail", "import_path", "module_helper"] | None
     target_node_id: str | None
     reason: str | None
 
 
-def _hit(strategy: Literal["exact", "name_tail", "import_path"], target_node_id: str) -> _Decision:
+def _hit(strategy: Literal["exact", "name_tail", "import_path", "module_helper"], target_node_id: str) -> _Decision:
     return _Decision(strategy, target_node_id, None)
 
 
@@ -305,6 +312,13 @@ class ReferenceResolver:
                 decision = self._resolve_js_import(store, source_path, ref.target_name)
             if decision is not None:
                 return decision
+        # (d) per-language helper tier (W12): imports refs only, after (c).
+        if edge_kind == "imports" and self._config.helper_tier_enabled:
+            helper = get_helper(language)
+            if helper is not None:
+                decision = self._resolve_module_helper(store, helper, source_path, ref.target_name)
+                if decision is not None:
+                    return decision
         if deferred_reason is not None:
             return _fail(deferred_reason)
         return _fail("no_resolution")
@@ -436,6 +450,69 @@ class ReferenceResolver:
         if fallback is not None:
             return _hit("import_path", file_node_id(fallback.path))
         return None
+
+    # -------------------------------------------------------- helper tier
+
+    def _resolve_module_helper(
+        self, store: EventStore, helper: LanguageHelper, source_path: str, target_name: str
+    ) -> _Decision | None:
+        """W12 tier: per-language candidate paths, resolved by the store.
+
+        Same discipline as the import-path tier: exact-then-suffix file
+        match, ambiguity never guesses (deterministic fail), first hit wins
+        in the helper's candidate order.
+        """
+        for candidate in helper.candidates(target_name, source_path):
+            if candidate.is_dir:
+                status, payload = self._package_dir(store, candidate.path)
+                if status == "ambiguous":
+                    return _fail(f"ambiguous_module:{payload}")
+                if status == "hit":
+                    assert isinstance(payload, str)
+                    return _hit("module_helper", file_node_id(payload))
+                continue
+            status, payload = self._module_file(store, candidate.path)
+            if status == "ambiguous":
+                return _fail(f"ambiguous_module:{payload}")
+            if status == "hit":
+                assert isinstance(payload, FileRow)
+                return _hit("module_helper", file_node_id(payload.path))
+        return None
+
+    def _package_dir(self, store: EventStore, rel: str) -> tuple[str, str | int | None]:
+        """Go-style package directory match: one distinct directory wins.
+
+        ``("hit", first_file_path)`` / ``("ambiguous", n_dirs)`` /
+        ``("miss", None)`` — multiple files in one directory are normal; the
+        anchor is the lexicographically first file (deterministic).
+        """
+        escaped = _escape_like(rel)
+        with store.read() as conn:
+            rows = conn.execute(
+                "SELECT path FROM files WHERE path LIKE ? ESCAPE '\\' OR path LIKE ? ESCAPE '\\' ORDER BY path",
+                (f"{escaped}/%", f"%/{escaped}/%"),
+            ).fetchall()
+        if not rows:
+            return ("miss", None)
+        directories: set[str] = set()
+        ordered_paths: list[str] = []
+        for row in rows:
+            path = str(row["path"])
+            # LIKE is a prefilter (its wildcards `_`/`%` may overmatch rel);
+            # the literal check is authoritative.
+            if path.startswith(f"{rel}/"):
+                directories.add(rel)
+                ordered_paths.append(path)
+                continue
+            marker = f"/{rel}/"
+            if marker in path:
+                directories.add(path[: path.index(marker) + 1 + len(rel)])
+                ordered_paths.append(path)
+        if not ordered_paths:
+            return ("miss", None)
+        if len(directories) > 1:
+            return ("ambiguous", len(directories))
+        return ("hit", ordered_paths[0])
 
     def _resolve_js_import(self, store: EventStore, source_path: str, target_name: str) -> _Decision | None:
         if not (target_name.startswith("./") or target_name.startswith("../")):

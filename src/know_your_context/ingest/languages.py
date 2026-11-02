@@ -524,6 +524,277 @@ _HASKELL = LanguageSpec(
     name_fields=("name", "module"),
 )
 
+# ------------------------------------------------------- phase-3 (W12) tables
+# Same audit discipline as phase 2 (docs/recovery/w12-depth.md §2-3): every
+# table below was derived from parsing the bundled tree-sitter-language-pack
+# 1.22.1 grammars with real samples; node types and field names come from the
+# grammars, never from READMEs. All W12 languages run the reference walker
+# (``engine="python"`` — the fail-closed default): no crates.io grammar was
+# proven parse-identical to any bundled revision, and this wave adds no
+# kernel crate. CamelCase grammars (zig/nim) use the grammar's own node type
+# spellings.
+#
+# Rejected with evidence (see the recovery doc): groovy (the grammar reduces
+# every statement to ``command``/``unit`` — no declaration node types exist)
+# and clojure (``defn`` is a bare ``sym_lit`` inside ``list_lit`` — the
+# elixir rejection class from W7).
+
+_OBJC = LanguageSpec(
+    name="objc",
+    parser="objc",
+    engine="python",
+    # class_interface and class_implementation are BOTH declared (they are
+    # distinct, real declarations of the same class); the preproc grammar is
+    # C's, so preproc_include covers #import and #include alike.
+    declaration_kinds=(
+        ("class_interface", "class"),
+        ("class_implementation", "class"),
+        ("protocol_declaration", "interface"),
+        ("function_definition", "function"),
+        ("method_declaration", "method"),
+        ("method_definition", "method"),
+        ("struct_specifier", "type"),
+        ("enum_specifier", "type"),
+        ("type_definition", "type"),
+        ("preproc_def", "constant"),
+    ),
+    import_rules=(ImportRule("preproc_include", target_fields=("path",)),),
+    call_types=("call_expression", "message_expression"),
+    call_name_fields=("function", "method"),
+    identifier_types=("identifier", "type_identifier", "field_identifier"),
+    name_fields=("name", "declarator"),
+    scoped_functions_become_methods=False,
+)
+
+_ZIG = LanguageSpec(
+    name="zig",
+    parser="zig",
+    engine="python",
+    # FnProto carries the function name in its `function` field. Container
+    # structs are VarDecls whose value is a container — not expressible
+    # declaratively, so they are honestly absent. Imports are VarDecls whose
+    # text is `@import("...")`; plain `const MAX = 42;` fails the regex and
+    # emits nothing (no fabrication).
+    declaration_kinds=(("FnProto", "function"),),
+    import_rules=(ImportRule("VarDecl", target_regex=r"@import\(\s*\"([^\"]+)\""),),
+    call_types=(),  # calls are SuffixExpr chains without a callee field (verified)
+    identifier_types=("IDENTIFIER",),
+    name_fields=("function",),
+    scoped_functions_become_methods=False,
+)
+
+_NIM = LanguageSpec(
+    name="nim",
+    parser="nim",
+    engine="python",
+    # routine covers proc/func/method/template/iterator/converter; the name
+    # sits in a bare `symbol` child (no field), found via identifier_types.
+    declaration_kinds=(
+        ("routine", "function"),
+        ("typeDef", "type"),
+        ("constant", "constant"),
+    ),
+    import_rules=(ImportRule("importStmt", target_regex=r"^import\s+([A-Za-z_][\w/]*)"),),
+    call_types=(),  # invocations are primary/primarySuffix chains, no call node
+    identifier_types=("ident", "symbol"),
+)
+
+_CRYSTAL = LanguageSpec(
+    name="crystal",
+    parser="crystal",
+    engine="python",
+    declaration_kinds=(
+        ("class_def", "class"),
+        ("module_def", "module"),
+        ("method_def", "function"),
+    ),
+    import_rules=(ImportRule("require", target_regex=r"[\"']([^\"']+)[\"']"),),
+    call_types=("call",),
+    call_name_fields=("method",),
+    identifier_types=("identifier", "constant"),
+)
+
+_SOLIDITY = LanguageSpec(
+    name="solidity",
+    parser="solidity",
+    engine="python",
+    declaration_kinds=(
+        ("contract_declaration", "class"),
+        ("interface_declaration", "interface"),
+        ("struct_declaration", "type"),
+        ("enum_declaration", "type"),
+        ("function_definition", "function"),
+        ("state_variable_declaration", "variable"),
+    ),
+    import_rules=(ImportRule("import_directive", target_fields=("source",)),),
+    call_types=("call_expression",),
+    call_name_fields=("function",),
+    identifier_types=("identifier",),
+)
+
+_ERLANG = LanguageSpec(
+    name="erlang",
+    parser="erlang",
+    engine="python",
+    # fun_decl wraps function_clause; the name lives one field hop down
+    # (clause -> name -> atom). Remote calls (string:uppercase) attribute to
+    # the inner call's function name — the module prefix is not groundable.
+    declaration_kinds=(
+        ("module_attribute", "module"),
+        ("fun_decl", "function"),
+    ),
+    import_rules=(ImportRule("import_attribute", target_fields=("module",)),),
+    call_types=("call",),
+    call_name_fields=("expr",),
+    identifier_types=("atom", "var"),
+    name_fields=("clause", "name"),
+    scoped_functions_become_methods=False,
+)
+
+_FSHARP = LanguageSpec(
+    name="fsharp",
+    parser="fsharp",
+    engine="python",
+    # function_or_value_defn splits left sides: function_declaration_left
+    # (`let f x = ...`) declares; value_declaration_left (`let X = 42`) is
+    # deliberately NOT declared (the W7 ocaml/r rejection class). Type names
+    # sit a grandchild down (type_definition > record_type_defn > type_name)
+    # with no field path the walker can follow, so types are honestly absent.
+    declaration_kinds=(
+        ("named_module", "module"),
+        ("function_declaration_left", "function"),
+    ),
+    import_rules=(ImportRule("import_decl", target_regex=r"open\s+([\w.]+)"),),
+    call_types=(),  # application_expression has no callee field (verified)
+    identifier_types=("identifier",),
+    scoped_functions_become_methods=False,
+)
+
+_POWERSHELL = LanguageSpec(
+    name="powershell",
+    parser="powershell",
+    engine="python",
+    declaration_kinds=(
+        ("function_statement", "function"),
+        ("class_statement", "class"),
+        ("class_method_definition", "method"),
+    ),
+    import_rules=(
+        ImportRule("command", target_regex=r"^(?:using\s+(?:namespace|module|assembly)|Import-Module)\s+([\w.\\/-]+)"),
+    ),
+    call_types=(),  # commands are pipelines without a callee field (verified)
+    identifier_types=("function_name", "simple_name"),
+    scoped_functions_become_methods=False,
+)
+
+_GDSCRIPT = LanguageSpec(
+    name="gdscript",
+    parser="gdscript",
+    engine="python",
+    # extends_statement is mapped as an import: the base type is the file's
+    # primary dependency and the contract has no inherits edge kind.
+    declaration_kinds=(
+        ("class_name_statement", "class"),
+        ("function_definition", "function"),
+    ),
+    import_rules=(ImportRule("extends_statement", target_regex=r"extends\s+([A-Za-z_][\w.]*)"),),
+    call_types=(),  # call nodes carry the callee as an unfielded identifier
+    identifier_types=("name", "identifier"),
+    variable_rules=(
+        VariableRule("const_statement", name_field="name", kind="constant"),
+        VariableRule("variable_statement", name_field="name", kind="variable"),
+    ),
+)
+
+_V = LanguageSpec(
+    name="v",
+    parser="v",
+    engine="python",
+    # fn-with-receiver stays "function": the receiver field exists but the
+    # declarative model cannot condition kinds on it (honest note).
+    declaration_kinds=(
+        ("module_clause", "module"),
+        ("struct_declaration", "type"),
+        ("interface_declaration", "interface"),
+        ("enum_declaration", "type"),
+        ("function_declaration", "function"),
+        ("const_spec", "constant"),
+    ),
+    import_rules=(ImportRule("import_declaration", target_fields=("path",)),),
+    call_types=("call_expression",),
+    call_name_fields=("function", "name"),
+    identifier_types=("identifier", "type_identifier", "module_identifier"),
+    scoped_functions_become_methods=False,
+)
+
+_HAXE = LanguageSpec(
+    name="haxe",
+    parser="haxe",
+    engine="python",
+    # package_statement is skipped: its repeated `name` fields resolve to the
+    # first segment only, which would misname the module node.
+    declaration_kinds=(
+        ("class_declaration", "class"),
+        ("interface_declaration", "interface"),
+        ("enum_declaration", "type"),
+        ("function_declaration", "function"),
+    ),
+    import_rules=(ImportRule("import_statement", target_regex=r"import\s+([\w.]+)"),),
+    call_types=("call_expression",),
+    call_name_fields=("object", "function"),
+    identifier_types=("identifier",),
+)
+
+_GLEAM = LanguageSpec(
+    name="gleam",
+    parser="gleam",
+    engine="python",
+    # type_name (not type_definition) declares: only type_name carries the
+    # name field. Gleam type annotations use a separate `type` node, so
+    # type_name occurs only in real type definitions (verified).
+    declaration_kinds=(
+        ("function", "function"),
+        ("type_name", "type"),
+    ),
+    import_rules=(ImportRule("import", target_fields=("module",)),),
+    call_types=("function_call",),
+    call_name_fields=("function",),
+    identifier_types=("identifier", "type_identifier"),
+    scoped_functions_become_methods=False,
+)
+
+_VALA = LanguageSpec(
+    name="vala",
+    parser="vala",
+    engine="python",
+    declaration_kinds=(
+        ("class_declaration", "class"),
+        ("interface_declaration", "interface"),
+        ("struct_declaration", "type"),
+        ("enum_declaration", "type"),
+        ("function_definition", "function"),
+    ),
+    import_rules=(ImportRule("using", target_regex=r"using\s+([\w.]+)"),),
+    call_types=("function_call",),
+    call_name_fields=("identifier",),
+    identifier_types=("identifier", "type_identifier"),
+)
+
+_ELISP = LanguageSpec(
+    name="elisp",
+    parser="elisp",
+    engine="python",
+    # defvar/defconst share `special_form` with `let` — indistinguishable
+    # declaratively, so only defun declares. require forms are plain `list`
+    # nodes; the anchored regex admits only `(require 'x)`. Honest limit:
+    # a non-matching list is consumed by the import probe, so a defun nested
+    # inside another top-level list (e.g. progn) is not seen.
+    declaration_kinds=(("function_definition", "function"),),
+    import_rules=(ImportRule("list", target_regex=r"^\(require\s+'([\w.-]+)"),),
+    call_types=(),  # calls are plain lists, callee is an unfielded symbol
+    identifier_types=("symbol",),
+)
+
 _PERL = LanguageSpec(
     name="perl",
     parser="perl",
@@ -564,6 +835,20 @@ LANGUAGES: dict[str, LanguageSpec] = {
             _DART,
             _HASKELL,
             _PERL,
+            _OBJC,
+            _ZIG,
+            _NIM,
+            _CRYSTAL,
+            _SOLIDITY,
+            _ERLANG,
+            _FSHARP,
+            _POWERSHELL,
+            _GDSCRIPT,
+            _V,
+            _HAXE,
+            _GLEAM,
+            _VALA,
+            _ELISP,
         ),
         key=lambda spec: spec.name,
     )
@@ -608,6 +893,24 @@ EXTENSION_MAP: dict[str, str] = {
     ".lhs": "haskell",
     ".pl": "perl",
     ".pm": "perl",
+    ".m": "objc",
+    ".mm": "objc",
+    ".zig": "zig",
+    ".nim": "nim",
+    ".cr": "crystal",
+    ".sol": "solidity",
+    ".erl": "erlang",
+    ".hrl": "erlang",
+    ".fs": "fsharp",
+    ".fsx": "fsharp",
+    ".ps1": "powershell",
+    ".psm1": "powershell",
+    ".gd": "gdscript",
+    ".v": "v",
+    ".hx": "haxe",
+    ".gleam": "gleam",
+    ".vala": "vala",
+    ".el": "elisp",
 }
 
 

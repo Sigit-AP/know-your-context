@@ -34,6 +34,7 @@ import argparse
 import os
 import sys
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 from know_your_context import __version__
@@ -341,6 +342,93 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-permissions",
         action="store_true",
         help="skip the file-permission check (diagnose.check_permissions)",
+    )
+
+    # W12 (SUB-122): lifecycle tooling — health history, retention pruning of
+    # the history ledger, fragmentation analysis and safe vacuum/compact.
+    # OPS surface only — never knowledge ops, never MCP/HTTP.
+    lifecycle_parser = subparsers.add_parser(
+        "lifecycle",
+        help="ops: health history, retention pruning and safe store compaction (not a knowledge op)",
+    )
+    lifecycle_sub = lifecycle_parser.add_subparsers(dest="lifecycle_action", required=True)
+    lifecycle_record = lifecycle_sub.add_parser("record", help="append one hash-chained health snapshot to the ledger")
+    lifecycle_record.add_argument("--history", default=None, help="ledger path (default: alongside the store)")
+    lifecycle_trend = lifecycle_sub.add_parser("trend", help="analyze the ledger's health trend")
+    lifecycle_trend.add_argument("--history", default=None, help="ledger path (default: alongside the store)")
+    lifecycle_prune = lifecycle_sub.add_parser("prune", help="retain only the newest N ledger snapshots")
+    lifecycle_prune.add_argument("--keep", type=int, required=True, help="snapshots to retain (>= 0)")
+    lifecycle_prune.add_argument("--history", default=None, help="ledger path (default: alongside the store)")
+    lifecycle_prune.add_argument("--dry-run", action="store_true", help="report the plan without rewriting the ledger")
+    lifecycle_sub.add_parser("vacuum", help="compact the store file (verified staging copy + atomic swap)")
+    lifecycle_sub.add_parser("fragmentation", help="report page/freelist statistics of the store file")
+
+    # W12 (SUB-122): deep diagnostics with structured repair suggestions —
+    # goes beyond `diagnose` (store/projection state) into environment,
+    # dependencies, permissions, integrity drills and performance probes.
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        help="ops: deep environment/dependency/permission/integrity/performance diagnostic (not a knowledge op)",
+    )
+    doctor_parser.add_argument(
+        "--format",
+        choices=("json", "markdown"),
+        default="json",
+        help="output format (default: json)",
+    )
+    doctor_parser.add_argument(
+        "--full-integrity",
+        action="store_true",
+        help="run PRAGMA integrity_check (expensive) in addition to quick_check",
+    )
+    doctor_parser.add_argument(
+        "--stale-after",
+        type=float,
+        default=300.0,
+        help="seconds after which an in-progress journal counts as stale (default 300)",
+    )
+
+    # W12 (SUB-122): store version migration and portable hashed bundles.
+    migrate_parser = subparsers.add_parser(
+        "migrate",
+        help="ops: inspect/plan/apply schema migrations; export/import portable hashed bundles (not a knowledge op)",
+    )
+    migrate_sub = migrate_parser.add_subparsers(dest="migrate_action", required=True)
+    migrate_sub.add_parser("plan", help="show the pending migration steps for --store")
+    migrate_sub.add_parser("apply", help="apply pending migrations to --store and verify the chain")
+    migrate_export = migrate_sub.add_parser("export", help="export --store as a portable hashed bundle")
+    migrate_export.add_argument("--dest", required=True, help="bundle directory (must not exist or be empty)")
+    migrate_import = migrate_sub.add_parser("import", help="verify and install a bundle")
+    migrate_import.add_argument("--bundle", required=True, help="bundle directory to install")
+    migrate_import.add_argument("--dest", default=None, help="destination store path (default: --store)")
+    migrate_import.add_argument("--overwrite", action="store_true", help="replace an existing destination store")
+    migrate_verify = migrate_sub.add_parser("verify", help="verify a bundle's manifest, hashes and payload")
+    migrate_verify.add_argument("--bundle", required=True, help="bundle directory to verify")
+
+    # W12 (SUB-122): multi-store status aggregation.
+    watchtower_parser = subparsers.add_parser(
+        "watchtower",
+        help="ops: aggregate the status of many stores into one report (not a knowledge op)",
+    )
+    watchtower_parser.add_argument("stores", nargs="*", help="store paths to probe (name defaults to the file stem)")
+    watchtower_parser.add_argument(
+        "--target",
+        action="append",
+        default=None,
+        metavar="NAME=PATH",
+        help="explicitly named store target (repeatable)",
+    )
+    watchtower_parser.add_argument(
+        "--format",
+        choices=("json", "markdown"),
+        default="json",
+        help="output format (default: json)",
+    )
+    watchtower_parser.add_argument(
+        "--stale-after",
+        type=float,
+        default=300.0,
+        help="seconds after which an in-progress journal counts as stale (default 300)",
     )
 
     # W7 SUB-101: loopback-only read-only web viewer. OPS surface only — not
@@ -753,6 +841,161 @@ def _diagnose_command(args: argparse.Namespace) -> int:
     return ops_diagnose.exit_code(report)
 
 
+def _lifecycle_command(args: argparse.Namespace) -> int:
+    """W12 (SUB-122): ``lifecycle record|trend|prune|vacuum|fragmentation``."""
+    from know_your_context.ops import lifecycle as ops_lifecycle
+    from know_your_context.store import EventStore
+
+    action = str(args.lifecycle_action)
+    try:
+        if action in {"record", "trend", "prune"}:
+            history_path = (
+                Path(args.history)
+                if getattr(args, "history", None)
+                else Path(args.store).resolve().parent / ops_lifecycle.DEFAULT_HISTORY_FILENAME
+            )
+            if action == "record":
+                store = EventStore(args.store)
+                try:
+                    snapshot = ops_lifecycle.record_health_snapshot(
+                        store, history_path=history_path, projection_root=args.output_root
+                    )
+                finally:
+                    store.close()
+                print(canonical_json(to_jsonable(snapshot.to_payload())))
+                return 0
+            history = ops_lifecycle.load_health_history(history_path)
+            if action == "trend":
+                trend = ops_lifecycle.analyze_health_trend(history)
+                print(canonical_json(to_jsonable(trend)))
+                return 0
+            report = ops_lifecycle.prune_health_history(history_path, keep=int(args.keep), dry_run=bool(args.dry_run))
+            print(canonical_json(to_jsonable(report)))
+            return 0
+        store = EventStore(args.store)
+        try:
+            if action == "vacuum":
+                report = ops_lifecycle.vacuum_store(store)
+                print(canonical_json(to_jsonable(report)))
+                return 0
+            report = ops_lifecycle.analyze_fragmentation(store)
+            print(canonical_json(to_jsonable(report)))
+            return 0
+        finally:
+            store.close()
+    except ops_lifecycle.LifecycleError as error:
+        _print_error(error)
+        return 1
+
+
+def _doctor_command(args: argparse.Namespace) -> int:
+    """W12 (SUB-122): ``doctor`` deep diagnostic; exit code from the report."""
+    from know_your_context.ops import doctor as ops_doctor
+    from know_your_context.store import EventStore
+
+    store = EventStore(args.store)
+    try:
+        report = ops_doctor.run_doctor(
+            store,
+            full_integrity=bool(args.full_integrity),
+            stale_after_seconds=float(args.stale_after),
+        )
+    finally:
+        store.close()
+    if args.format == "markdown":
+        print(ops_doctor.render_markdown(report))
+    else:
+        payload = {
+            "ok": report.ok,
+            "error_count": report.error_count,
+            "warning_count": report.warning_count,
+            "worst_severity": report.worst_severity,
+            "category_counts": report.category_counts,
+            "checked": list(report.checked),
+            "findings": [
+                {
+                    "code": finding.code,
+                    "category": finding.category,
+                    "severity": finding.severity,
+                    "message": finding.message,
+                    "suggestions": list(finding.suggestions),
+                    "details": finding.details,
+                }
+                for finding in report.findings
+            ],
+        }
+        print(canonical_json(to_jsonable(payload)))
+    return ops_doctor.exit_code(report)
+
+
+def _migrate_command(args: argparse.Namespace) -> int:
+    """W12 (SUB-122): ``migrate plan|apply|export|import|verify``."""
+    from know_your_context.backup import BackupError
+    from know_your_context.ops import migrate as ops_migrate
+    from know_your_context.store import EventStore
+
+    action = str(args.migrate_action)
+    try:
+        if action == "plan":
+            plan = ops_migrate.plan_migration(args.store)
+            print(canonical_json(to_jsonable(plan)))
+            return 0
+        if action == "apply":
+            report = ops_migrate.migrate_store(args.store)
+            print(canonical_json(to_jsonable(report)))
+            return 0
+        if action == "export":
+            store = EventStore(args.store)
+            try:
+                manifest = ops_migrate.export_bundle(store, args.dest)
+            finally:
+                store.close()
+            print(canonical_json(to_jsonable(manifest.to_payload())))
+            return 0
+        if action == "import":
+            dest = args.dest if args.dest is not None else args.store
+            report = ops_migrate.import_bundle(args.bundle, dest, overwrite=bool(args.overwrite))
+            print(canonical_json(to_jsonable(report)))
+            return 0
+        verification = ops_migrate.verify_bundle(args.bundle)
+        payload: dict[str, Any] = {
+            "ok": verification.ok,
+            "errors": list(verification.errors),
+            "manifest": verification.manifest.to_payload() if verification.manifest is not None else None,
+        }
+        print(canonical_json(to_jsonable(payload)))
+        return 0 if verification.ok else 1
+    except (ops_migrate.MigrateError, BackupError) as error:
+        _print_error(error)
+        return 1
+
+
+def _watchtower_command(args: argparse.Namespace) -> int:
+    """W12 (SUB-122): ``watchtower`` multi-store status aggregation."""
+    from know_your_context.ops import watchtower as ops_watchtower
+
+    targets: list[ops_watchtower.StoreTarget] = []
+    for raw in args.target or []:
+        if "=" not in raw:
+            _print_usage_error(f"--target must be NAME=PATH, got {raw!r}")
+            return 2
+        name, _, path = raw.partition("=")
+        targets.append(ops_watchtower.StoreTarget(name=name.strip(), store_path=path.strip()))
+    for positional in args.stores:
+        path = Path(positional)
+        targets.append(ops_watchtower.StoreTarget(name=path.stem, store_path=str(path)))
+    try:
+        report = ops_watchtower.aggregate_status(tuple(targets), stale_after_seconds=float(args.stale_after))
+    except ops_watchtower.WatchtowerError as error:
+        _print_error(error)
+        return 1
+    if args.format == "markdown":
+        print(ops_watchtower.render_markdown(report))
+    else:
+        print(canonical_json(to_jsonable(report)))
+    return ops_watchtower.exit_code(report)
+
+
 def _serve_superpower_command(args: argparse.Namespace) -> int:
     """Wave-7 SUB-100: detached superpower daemon + thin MCP stdio proxy."""
     import json as _json
@@ -944,6 +1187,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _metrics_command(args)
     if command == "diagnose":
         return _diagnose_command(args)
+    if command == "lifecycle":
+        return _lifecycle_command(args)
+    if command == "doctor":
+        return _doctor_command(args)
+    if command == "migrate":
+        return _migrate_command(args)
+    if command == "watchtower":
+        return _watchtower_command(args)
     if command == "webview":
         from know_your_context.serve.webview import main as webview_main
 
