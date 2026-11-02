@@ -533,6 +533,74 @@ class TestSessionLease:
             instance.shutdown("test-teardown")
             thread.join(timeout=15)
 
+    def test_in_flight_request_survives_the_lease_window(self, tmp_path: Path) -> None:
+        """SUB-132: the lease measures idleness, never in-flight work.
+
+        One slow write (4s) against a 2s lease: pre-fix the reaper closed the
+        connection mid-request and the client saw a bare EOF ('daemon closed
+        the connection' — the W15 storm flake). The lease must not reap a
+        session the daemon itself is keeping busy; once the response is on
+        the wire and the session goes idle, the lease reaps it as before.
+        """
+        config = make_config(
+            tmp_path,
+            idle_timeout_seconds=120.0,
+            max_agents=1,
+            session_lease_seconds=2.0,
+            mutation_delay_seconds=4.0,
+        )
+        instance = SuperpowerDaemon(config)
+        instance.start()
+        thread = threading.Thread(target=instance.serve_forever, daemon=True)
+        thread.start()
+        try:
+            holder = SocketClient(config.paths.socket, timeout=30.0)
+            try:
+                assert holder.request("ping")["result"] == {}
+                started = time.monotonic()
+                response = holder.call_tool(
+                    "knowledge_log_event", {"node": _node("n-lease-inflight")}, actor="lease-holder"
+                )
+                elapsed = time.monotonic() - started
+                # The in-flight write is answered, not EOF'd, even though it
+                # took 2x the lease window.
+                assert elapsed > config.session_lease_seconds, f"the drill never exceeded the lease ({elapsed:.1f}s)"
+                assert "result" in response and not response["result"].get("isError"), response
+                # The gate is not weakened: once idle, the session is reaped
+                # and the single slot is released — measured by a contender.
+                deadline = time.monotonic() + 15.0
+                admitted = False
+                while time.monotonic() < deadline and not admitted:
+                    try:
+                        probe = SocketClient(config.paths.socket, timeout=3.0)
+                    except (ConnectionError, OSError):
+                        time.sleep(0.2)
+                        continue
+                    try:
+                        admitted = "result" in probe.request("ping")
+                    except (ConnectionError, OSError):
+                        pass
+                    finally:
+                        probe.close()
+                    if not admitted:
+                        time.sleep(0.2)
+                assert admitted, "the idle session's slot was never released after its in-flight work"
+            finally:
+                holder.close()
+        finally:
+            instance.shutdown("test-teardown")
+            thread.join(timeout=15)
+        # The slow write committed (it was answered, not cut).
+        store = EventStore(config.db_path)
+        try:
+            with store.read() as conn:
+                rows = conn.execute(
+                    "SELECT COUNT(*) FROM event_log WHERE kind = 'domain' AND node_id = 'n-lease-inflight'"
+                ).fetchone()[0]
+        finally:
+            store.close()
+        assert int(rows) == 1
+
 
 class TestDrainAndForce:
     def test_graceful_drain_answers_in_flight_and_refuses_new(self, tmp_path: Path) -> None:
@@ -825,3 +893,72 @@ class TestCrashSafety:
             )
         finally:
             stop_daemon(config, timeout_seconds=15.0)
+
+
+class TestWatchdogStallDrill:
+    def test_in_flight_heavy_op_survives_a_watchdog_stall(self, tmp_path: Path) -> None:
+        """SUB-132 drill: a watchdog stall must never cut in-flight work.
+
+        A single ingest engineered to outlast watchdog_stall_seconds forces
+        the escalation path (suspect -> restart refused, because Python cannot
+        kill a live thread and duplicating a queue consumer is worse). The
+        in-flight connection must be answered, the worker must NOT be
+        restarted, and once the op finishes and beats resume the worker must
+        recover to healthy (a long legitimate op is an episode, not a life
+        sentence) with exactly one dead alert per episode.
+        """
+        config = make_config(
+            tmp_path,
+            idle_timeout_seconds=300.0,
+            session_lease_seconds=60.0,  # isolate the watchdog path from the lease path
+            read_publish_wait_seconds=1.0,  # keep stall > bounded read wait (fail-closed invariant)
+            watchdog_suspect_seconds=2.0,
+            watchdog_stall_seconds=4.0,
+            watchdog_check_interval_seconds=0.5,
+        )
+        instance = SuperpowerDaemon(config)
+        instance.start()
+        thread = threading.Thread(target=instance.serve_forever, daemon=True)
+        thread.start()
+        try:
+            root = Path(config.graph_root)
+            corpus = root / "stallcorpus"
+            corpus.mkdir(parents=True, exist_ok=True)
+            # Calibrated on this host: ~700 tiny files = ~7s of continuous
+            # heavy-lane work > watchdog_stall_seconds (4s).
+            for index in range(700):
+                (corpus / f"doc_{index:03d}.py").write_text(
+                    f"def doc_{index}():\n    return {index}\n", encoding="utf-8"
+                )
+            with SocketClient(config.paths.socket, timeout=120.0) as client:
+                assert client.request("ping")["result"] == {}
+                started = time.monotonic()
+                response = client.call_tool(
+                    "knowledge_ingest_directory", {"path": "stallcorpus", "max_files": 700}, actor="stall-drill"
+                )
+                elapsed = time.monotonic() - started
+                assert elapsed > config.watchdog_stall_seconds, (
+                    f"the drill never exceeded the stall threshold ({elapsed:.1f}s) — recalibrate the corpus"
+                )
+                # In-flight work is answered, never EOF'd, across the stall.
+                assert "result" in response and not response["result"].get("isError"), response
+                assert client.request("ping")["result"] == {}
+
+                def heavy_state() -> dict:
+                    return client.request("daemon.status")["result"]["worker_watchdog"]
+
+                section = heavy_state()
+                kinds = [a["kind"] for a in section["alerts"] if a["worker"] == "heavy"]
+                assert "suspect" in kinds and "dead" in kinds, f"the stall escalation never fired: {kinds}"
+                heavy = section["workers"]["heavy"]
+                assert heavy["restarts"] == 0, "a live busy worker must never be restarted"
+                # Exactly one dead alert per stall episode (no per-tick spam).
+                assert kinds.count("dead") == 1, kinds
+                # Recovery: once the op completes and beats resume, the worker
+                # returns to healthy — dead is not a life sentence.
+                assert wait_for(lambda: heavy_state()["workers"]["heavy"]["state"] == "healthy", timeout=10.0), (
+                    f"heavy worker stuck in {heavy_state()['workers']['heavy']['state']} after the op"
+                )
+        finally:
+            instance.shutdown("test-teardown")
+            thread.join(timeout=30)

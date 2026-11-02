@@ -1,0 +1,1 @@
+witness d: counter-signature archived after rollback.

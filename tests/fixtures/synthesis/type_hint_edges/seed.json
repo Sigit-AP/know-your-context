@@ -1,0 +1,30 @@
+{
+  "files": [
+    {
+      "path": "a.py"
+    }
+  ],
+  "refs": [
+    {
+      "kind": "type_hint",
+      "source_node_id": "m:init",
+      "target_name": "Engine"
+    }
+  ],
+  "symbols": [
+    {
+      "kind": "class",
+      "line": 1,
+      "name": "Engine",
+      "node_id": "cls:Engine",
+      "path": "a.py"
+    },
+    {
+      "kind": "method",
+      "line": 8,
+      "name": "__init__",
+      "node_id": "m:init",
+      "path": "a.py"
+    }
+  ]
+}

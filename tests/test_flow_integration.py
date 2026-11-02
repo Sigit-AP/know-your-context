@@ -254,6 +254,7 @@ class TestDaemonConfigFlowFields:
         [
             ("watchdog_suspect_seconds", 0.0),
             ("watchdog_stall_seconds", 5.0),  # below default suspect (15)
+            ("watchdog_stall_seconds", 20.0),  # below default read_publish_wait (30): stall inside a bounded read wait
             ("watchdog_max_restarts", 0),
             ("watchdog_restart_window_seconds", 0.0),
             ("watchdog_check_interval_seconds", 0.0),

@@ -1,0 +1,81 @@
+{
+  "cases": [
+    {
+      "kind": "contains",
+      "pipeline_produced": true,
+      "source": "file:a.py",
+      "target": "function:aaa"
+    },
+    {
+      "kind": "calls",
+      "pipeline_produced": true,
+      "source": "function:aaa",
+      "target": "function:bbb"
+    },
+    {
+      "kind": "imports",
+      "pipeline_produced": true,
+      "source": "function:aaa",
+      "target": "file:b.py"
+    },
+    {
+      "kind": "references",
+      "pipeline_produced": true,
+      "source": "function:aaa",
+      "target": "class:ccc"
+    },
+    {
+      "kind": "type_of",
+      "pipeline_produced": true,
+      "source": "function:aaa",
+      "target": "class:ccc"
+    },
+    {
+      "kind": "bridges",
+      "source": "n:a",
+      "symmetric": true,
+      "target": "n:b"
+    },
+    {
+      "kind": "exports",
+      "source": "module:m",
+      "target": "function:aaa"
+    },
+    {
+      "kind": "extends",
+      "source": "class:child",
+      "target": "class:parent"
+    },
+    {
+      "kind": "implements",
+      "source": "class:ccc",
+      "target": "interface:iii"
+    },
+    {
+      "kind": "returns",
+      "source": "function:aaa",
+      "target": "class:ccc"
+    },
+    {
+      "kind": "instantiates",
+      "source": "function:aaa",
+      "target": "class:ccc"
+    },
+    {
+      "kind": "overrides",
+      "source": "method:child",
+      "target": "method:parent"
+    },
+    {
+      "kind": "decorates",
+      "source": "function:deco",
+      "target": "function:aaa"
+    },
+    {
+      "kind": "navigates",
+      "source": "page:home",
+      "target": "page:detail"
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,12 @@
+{
+  "edges": [
+    {
+      "kind": "contains",
+      "provenance": "synthesis:method_class_containment",
+      "source": "cls:Widget",
+      "target": "m:render"
+    }
+  ],
+  "mode": "seed",
+  "pass": "method_class_containment"
+}

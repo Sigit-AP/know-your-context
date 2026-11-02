@@ -1,0 +1,9 @@
+Meeting notes 2026-11-02
+
+Attendees: builder, auditor.
+
+Decisions:
+1. Fixture corpus is manifest-driven.
+2. Every fixture is consumed by at least one test.
+
+Action items: extend synthesis scenarios next wave.

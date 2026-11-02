@@ -325,6 +325,50 @@ def build_parser() -> argparse.ArgumentParser:
     debt_propose.add_argument("node_id", help="node whose debt item becomes a proposal")
     _debt_config_args(debt_propose)
 
+    # W15 (SUB-130): deep code-intelligence graph ops over the universal
+    # code graph — transitive callers/callees, dependency paths, impact
+    # analysis, co-change from source-version history and layer boundary
+    # violations. OPS surface only — never knowledge ops, never MCP/HTTP.
+    codeintel_parser = subparsers.add_parser(
+        "codeintel",
+        help="ops: deep code-intelligence graph queries (not a knowledge op)",
+    )
+    codeintel_sub = codeintel_parser.add_subparsers(dest="codeintel_action", required=True)
+
+    def _codeintel_traversal_args(sub: argparse.ArgumentParser) -> None:
+        sub.add_argument("symbol", help="symbol name or node id")
+        sub.add_argument("--file", default=None, help="restrict resolution to this path")
+        sub.add_argument("--depth", type=int, default=8, help="max traversal depth (1..32, default 8)")
+        sub.add_argument("--limit", type=int, default=200, help="max entries (1..5000, default 200)")
+
+    ci_callers = codeintel_sub.add_parser("callers-of", help="transitive callers of a symbol")
+    _codeintel_traversal_args(ci_callers)
+    ci_callees = codeintel_sub.add_parser("callees-of", help="transitive callees of a symbol")
+    _codeintel_traversal_args(ci_callees)
+    ci_path = codeintel_sub.add_parser("dependency-path", help="shortest dependency path between two symbols")
+    ci_path.add_argument("source", help="source symbol name or node id")
+    ci_path.add_argument("target", help="target symbol name or node id")
+    ci_impact = codeintel_sub.add_parser("impact", help="what breaks when a symbol changes")
+    ci_impact.add_argument("symbol", help="symbol name or node id")
+    ci_impact.add_argument("--file", default=None, help="restrict resolution to this path")
+    ci_impact.add_argument("--depth", type=int, default=8, help="max traversal depth (1..32, default 8)")
+    ci_impact.add_argument("--limit", type=int, default=500, help="max entries (1..5000, default 500)")
+    ci_cochange = codeintel_sub.add_parser("co-change", help="files that change together (from source-version history)")
+    ci_cochange.add_argument("--min-support", type=int, default=2, help="min change sets containing both (default 2)")
+    ci_cochange.add_argument("--limit", type=int, default=100, help="max pairs (default 100)")
+    ci_boundary = codeintel_sub.add_parser("boundary-violations", help="cross-layer edges the policy does not allow")
+    ci_boundary.add_argument(
+        "--layers",
+        required=True,
+        help="layer spec: name:prefix[,prefix...];name2:prefix... (e.g. 'ui:ui,web;core:core,lib')",
+    )
+    ci_boundary.add_argument(
+        "--allow",
+        default="",
+        help="allowed cross-layer flows: from:to,from2:to2 (default: none)",
+    )
+    ci_boundary.add_argument("--limit", type=int, default=500, help="max violations (default 500)")
+
     # Mega-wave 2 OPS tooling (SUB-77 modules, wired by SUB-80): layered
     # configuration introspection, operational metrics, and the fail-closed
     # self-check. OPS surface only — never knowledge ops, never MCP/HTTP.
@@ -1287,6 +1331,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from know_your_context.ops.debt import run_debt_command
 
         return run_debt_command(args)
+    if command == "codeintel":
+        from know_your_context.ops.codeintel_cli import run_codeintel_command
+
+        return run_codeintel_command(args)
     if command == "config":
         return _config_command(args)
     if command == "metrics":

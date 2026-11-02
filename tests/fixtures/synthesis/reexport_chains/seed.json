@@ -1,0 +1,44 @@
+{
+  "edges": [
+    {
+      "kind": "imports",
+      "provenance": "resolver:two-phase:v1",
+      "source": "imp:a",
+      "target": "imp:b"
+    },
+    {
+      "kind": "imports",
+      "provenance": "resolver:two-phase:v1",
+      "source": "imp:b",
+      "target": "fn:thing"
+    }
+  ],
+  "files": [
+    {
+      "path": "a.py"
+    }
+  ],
+  "symbols": [
+    {
+      "kind": "import",
+      "line": 1,
+      "name": "api",
+      "node_id": "imp:a",
+      "path": "a.py"
+    },
+    {
+      "kind": "import",
+      "line": 1,
+      "name": "impl",
+      "node_id": "imp:b",
+      "path": "pkg/api.py"
+    },
+    {
+      "kind": "function",
+      "line": 3,
+      "name": "thing",
+      "node_id": "fn:thing",
+      "path": "pkg/impl.py"
+    }
+  ]
+}

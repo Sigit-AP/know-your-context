@@ -1,0 +1,1 @@
+field note gamma: witness quorum requires two signatures.

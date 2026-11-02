@@ -1,0 +1,12 @@
+{
+  "edges": [
+    {
+      "kind": "references",
+      "provenance": "synthesis:test_subject_edges",
+      "source": "file:test_widget.py",
+      "target": "file:widget.py"
+    }
+  ],
+  "mode": "pipeline",
+  "pass": "test_subject_edges"
+}

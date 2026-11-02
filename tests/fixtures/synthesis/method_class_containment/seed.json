@@ -1,0 +1,23 @@
+{
+  "files": [
+    {
+      "path": "a.py"
+    }
+  ],
+  "symbols": [
+    {
+      "kind": "class",
+      "line": 1,
+      "name": "Widget",
+      "node_id": "cls:Widget",
+      "path": "a.py"
+    },
+    {
+      "kind": "method",
+      "line": 5,
+      "name": "Widget.render",
+      "node_id": "m:render",
+      "path": "a.py"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "edges": [
+    {
+      "kind": "type_of",
+      "provenance": "synthesis:type_hint_edges",
+      "source": "m:init",
+      "target": "cls:Engine"
+    }
+  ],
+  "mode": "seed",
+  "pass": "type_hint_edges"
+}

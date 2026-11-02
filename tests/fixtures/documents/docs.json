@@ -1,0 +1,167 @@
+{
+  "documents": [
+    {
+      "headings": [
+        "Design Spec",
+        "Ingestion",
+        "Languages",
+        "Documents",
+        "Resolution",
+        "Exact matching",
+        "Retrieval"
+      ],
+      "language": "markdown",
+      "path": "spec-with-hierarchy.md"
+    },
+    {
+      "headings": [
+        "Link Catalogue",
+        "Anchors"
+      ],
+      "language": "markdown",
+      "path": "links-and-refs.md"
+    },
+    {
+      "headings": [
+        "Fixture Note",
+        "Purpose",
+        "See Also"
+      ],
+      "language": "markdown",
+      "path": "frontmatter.md"
+    },
+    {
+      "headings": [
+        "Code Blocks"
+      ],
+      "language": "markdown",
+      "path": "code-blocks.md"
+    },
+    {
+      "headings": [
+        "Tables and Lists",
+        "Tasks"
+      ],
+      "language": "markdown",
+      "path": "tables-and-lists.md"
+    },
+    {
+      "headings": [
+        "Level One",
+        "Level Two",
+        "Level Three",
+        "Level Four",
+        "Level Five",
+        "Level Six"
+      ],
+      "language": "markdown",
+      "path": "deep-nesting.md"
+    },
+    {
+      "headings": [
+        "\u00dcn\u00efcode D\u00f6cument",
+        "\u65e5\u672c\u8a9e"
+      ],
+      "language": "markdown",
+      "path": "unicode-content.md"
+    },
+    {
+      "headings": [
+        "Glossary",
+        "Terms",
+        "Conventions"
+      ],
+      "language": "markdown",
+      "path": "glossary.md"
+    },
+    {
+      "headings": [
+        "Changelog",
+        "1.2.3",
+        "1.2.2",
+        "1.2.1"
+      ],
+      "language": "markdown",
+      "path": "changelog-doc.md"
+    },
+    {
+      "headings": [
+        "Runbook",
+        "Restart",
+        "Rollback"
+      ],
+      "language": "markdown",
+      "path": "runbook.md"
+    },
+    {
+      "headings": [
+        "FAQ",
+        "Why fixtures instead of generated strings?",
+        "Why one manifest?"
+      ],
+      "language": "markdown",
+      "path": "faq.md"
+    },
+    {
+      "headings": [
+        "Minimal"
+      ],
+      "language": "markdown",
+      "path": "minimal.md"
+    },
+    {
+      "headings": [],
+      "language": "text",
+      "path": "release-notes.txt"
+    },
+    {
+      "headings": [],
+      "language": "text",
+      "path": "incident-report.txt"
+    },
+    {
+      "headings": [],
+      "language": "text",
+      "path": "design-notes.txt"
+    },
+    {
+      "headings": [],
+      "language": "text",
+      "path": "meeting-notes.txt"
+    },
+    {
+      "language": "pdf",
+      "pages": [
+        "W15 fixture report page one.",
+        "Page two: extraction is deterministic."
+      ],
+      "path": "two-page-report.pdf"
+    },
+    {
+      "language": "pdf",
+      "pages": [
+        "Memo: the corpus is manifest-driven."
+      ],
+      "path": "single-page-memo.pdf"
+    },
+    {
+      "language": "pdf",
+      "pages": [
+        "Spec section one: ingestion.",
+        "Spec section two: resolution.",
+        "Spec section three: retrieval.",
+        "Spec section four: audit."
+      ],
+      "path": "four-page-spec.pdf"
+    },
+    {
+      "language": "pdf",
+      "pages": [
+        "Contract summary: fourteen frozen operations.",
+        "Addenda: v3 ingestion, v4 extraction intake."
+      ],
+      "path": "contract-summary.pdf"
+    }
+  ],
+  "version": 1
+}

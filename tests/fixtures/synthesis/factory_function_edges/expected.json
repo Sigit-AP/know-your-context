@@ -1,0 +1,24 @@
+{
+  "edges": [
+    {
+      "kind": "references",
+      "provenance": "synthesis:factory_function_edges",
+      "source": {
+        "symbol": {
+          "kind": "function",
+          "name": "create_widget",
+          "path": "factory.py"
+        }
+      },
+      "target": {
+        "symbol": {
+          "kind": "class",
+          "name": "Widget",
+          "path": "factory.py"
+        }
+      }
+    }
+  ],
+  "mode": "pipeline",
+  "pass": "factory_functions"
+}

@@ -1,0 +1,12 @@
+{
+  "edges": [
+    {
+      "kind": "references",
+      "provenance": "synthesis:dependency_injection",
+      "source": "cls:Car",
+      "target": "cls:Engine"
+    }
+  ],
+  "mode": "seed",
+  "pass": "dependency_injection"
+}

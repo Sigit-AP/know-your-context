@@ -1,0 +1,274 @@
+{
+  "cases": [
+    {
+      "expected_signals": {
+        "n:a": [
+          "contradiction_flagged"
+        ],
+        "n:b": [
+          "contradiction_flagged"
+        ]
+      },
+      "links": [
+        {
+          "relation": "contradicts",
+          "source": "n:a",
+          "target": "n:b"
+        }
+      ],
+      "name": "contradiction_flagged_basic",
+      "nodes": [
+        {
+          "id": "n:a",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        },
+        {
+          "id": "n:b",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        }
+      ],
+      "unresolved_refs": []
+    },
+    {
+      "expected_signals": {},
+      "links": [
+        {
+          "relation": "contradicts",
+          "source": "n:a",
+          "target": "n:b"
+        },
+        {
+          "relation": "supersedes",
+          "source": "n:c",
+          "target": "n:b"
+        }
+      ],
+      "name": "contradiction_suppressed_by_supersedes",
+      "nodes": [
+        {
+          "id": "n:a",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        },
+        {
+          "id": "n:b",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        }
+      ],
+      "unresolved_refs": []
+    },
+    {
+      "expected_signals": {
+        "n:weak": [
+          "low_score"
+        ]
+      },
+      "links": [],
+      "name": "low_score_below_threshold",
+      "nodes": [
+        {
+          "id": "n:weak",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.1"
+          }
+        }
+      ],
+      "unresolved_refs": []
+    },
+    {
+      "expected_signals": {},
+      "links": [],
+      "name": "low_score_at_threshold_is_clean",
+      "nodes": [
+        {
+          "id": "n:edge",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.3"
+          }
+        }
+      ],
+      "unresolved_refs": []
+    },
+    {
+      "expected_signals": {
+        "n:old": [
+          "stale_access"
+        ]
+      },
+      "links": [],
+      "name": "stale_access_old_node",
+      "nodes": [
+        {
+          "id": "n:old",
+          "last_used_at": "2026-01-01T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        }
+      ],
+      "unresolved_refs": []
+    },
+    {
+      "expected_signals": {},
+      "links": [],
+      "name": "stale_access_fresh_node_is_clean",
+      "nodes": [
+        {
+          "id": "n:fresh",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        }
+      ],
+      "unresolved_refs": []
+    },
+    {
+      "expected_signals": {
+        "n:src": [
+          "unresolved_ref_old"
+        ]
+      },
+      "links": [],
+      "name": "unresolved_ref_old_pending",
+      "nodes": [
+        {
+          "id": "n:src",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        }
+      ],
+      "unresolved_refs": [
+        {
+          "first_seen": "2026-01-01T00:00:00+00:00",
+          "source_node_id": "n:src",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "expected_signals": {},
+      "links": [],
+      "name": "unresolved_ref_resolved_is_clean",
+      "nodes": [
+        {
+          "id": "n:src",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        }
+      ],
+      "unresolved_refs": [
+        {
+          "first_seen": "2026-01-01T00:00:00+00:00",
+          "source_node_id": "n:src",
+          "status": "resolved"
+        }
+      ]
+    },
+    {
+      "expected_signals": {
+        "n:bad": [
+          "contradiction_flagged",
+          "low_score",
+          "stale_access",
+          "unresolved_ref_old"
+        ],
+        "n:other": [
+          "contradiction_flagged"
+        ]
+      },
+      "links": [
+        {
+          "relation": "contradicts",
+          "source": "n:bad",
+          "target": "n:other"
+        }
+      ],
+      "name": "combined_signals_raise_priority",
+      "nodes": [
+        {
+          "id": "n:bad",
+          "last_used_at": "2026-01-01T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.1"
+          }
+        },
+        {
+          "id": "n:other",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.9"
+          }
+        }
+      ],
+      "unresolved_refs": [
+        {
+          "first_seen": "2026-01-01T00:00:00+00:00",
+          "source_node_id": "n:bad",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "budget": 2,
+      "expected_candidate_count": 3,
+      "expected_signals": {
+        "n:1": [
+          "low_score"
+        ],
+        "n:2": [
+          "low_score"
+        ],
+        "n:3": [
+          "low_score"
+        ]
+      },
+      "expected_truncated": true,
+      "links": [],
+      "name": "budget_truncates_overflow",
+      "nodes": [
+        {
+          "id": "n:1",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.1"
+          }
+        },
+        {
+          "id": "n:2",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.1"
+          }
+        },
+        {
+          "id": "n:3",
+          "last_used_at": "2026-11-02T00:00:00+00:00",
+          "scores": {
+            "confidence": "0.1"
+          }
+        }
+      ],
+      "unresolved_refs": []
+    }
+  ],
+  "now": "2026-11-02T00:00:00+00:00",
+  "version": 1
+}

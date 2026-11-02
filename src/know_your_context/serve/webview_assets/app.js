@@ -74,6 +74,7 @@
     if (name === "audit") return loadPanel("audit-body", "/api/audit?limit=100", renderAudit);
     if (name === "proposals") return loadPanel("proposals-body", "/api/proposals", renderProposals);
     if (name === "debt") return loadPanel("debt-body", "/api/debt", renderDebt);
+    if (name === "codeintel") return; // interactive form; runs on submit
   }
 
   function loadPanel(elementId, path, renderer) {
@@ -527,6 +528,101 @@
     });
     table(container, ["rank", "node", "action", "priority", "signals", "merge target"], rows);
   }
+
+  // ------------------------------------------------------------- code intel
+
+  function renderCodeintel(container, op, payload) {
+    if (payload.kind && payload.kind.indexOf("analytics.code_intel.") === 0) {
+      container.appendChild(el("p", null, payload.kind + " — nodes " + payload.node_count +
+        ", edges " + payload.edge_count + (payload.guards && payload.guards.length ?
+        " — GUARDS: " + payload.guards.join(", ") : "")));
+    }
+    if (op === "callers" || op === "callees" || op === "impact") {
+      if (payload.root) {
+        container.appendChild(el("p", null, "root: " + payload.root.name + " (" + payload.root.kind +
+          ") — " + payload.root.path + ":" + payload.root.line + " — total " + payload.total));
+      }
+      if (payload.impacted_files) {
+        container.appendChild(el("p", null, "impacted files (" + payload.impacted_file_count + "): " +
+          payload.impacted_files.join(", ")));
+      }
+      var rows = (payload.entries || []).map(function (entry) {
+        return ["d" + entry.depth, entry.name, entry.kind, entry.path + ":" + entry.line,
+          entry.via_edge_kind + (entry.via_line ? " @ " + entry.via_line : "")];
+      });
+      if (rows.length === 0) {
+        container.appendChild(el("p", "empty", "(no dependents/dependencies)"));
+        return;
+      }
+      table(container, ["depth", "name", "kind", "location", "via"], rows);
+      return;
+    }
+    if (op === "path") {
+      if (!payload.paths || payload.paths.length === 0) {
+        container.appendChild(el("p", "empty", "(no dependency path)"));
+        return;
+      }
+      payload.paths.forEach(function (path) {
+        container.appendChild(el("p", null, "cost " + path.cost + ": " + path.node_ids.join(" → ")));
+      });
+      return;
+    }
+    if (op === "co-change") {
+      container.appendChild(el("p", null, payload.change_set_count + " change sets, " +
+        payload.total_pairs + " pairs"));
+      var pairs = (payload.pairs || []).map(function (pair) {
+        return [pair.support, pair.file_a, pair.file_b, pair.confidence_a_to_b, pair.confidence_b_to_a];
+      });
+      if (pairs.length === 0) {
+        container.appendChild(el("p", "empty", "(no co-change pairs above the support threshold)"));
+        return;
+      }
+      table(container, ["support", "file a", "file b", "conf a→b", "conf b→a"], pairs);
+      return;
+    }
+    if (op === "boundary") {
+      container.appendChild(el("p", null, payload.total_violations + " violations, " +
+        payload.unlayered_nodes + " unlayered nodes, " + payload.skipped_unlayered_edges +
+        " skipped edges"));
+      var violations = (payload.violations || []).map(function (violation) {
+        return [violation.from_layer + " → " + violation.to_layer, violation.edge_kind,
+          violation.source_path, violation.target_path];
+      });
+      if (violations.length === 0) {
+        container.appendChild(el("p", "empty", "(no boundary violations)"));
+        return;
+      }
+      table(container, ["flow", "kind", "source", "target"], violations);
+    }
+  }
+
+  function runCodeintel(event) {
+    if (event) event.preventDefault();
+    var op = document.getElementById("codeintel-op").value;
+    var symbol = document.getElementById("codeintel-symbol").value.trim();
+    var target = document.getElementById("codeintel-target").value.trim();
+    var layers = document.getElementById("codeintel-layers").value.trim();
+    var container = document.getElementById("codeintel-body");
+    var path = "/api/codeintel?op=" + encodeURIComponent(op);
+    if (symbol) path += "&symbol=" + encodeURIComponent(symbol);
+    if (op === "path") {
+      path += "&source=" + encodeURIComponent(symbol) + "&target=" + encodeURIComponent(target);
+    }
+    if (op === "boundary" && layers) path += "&layers=" + encodeURIComponent(layers);
+    container.textContent = "";
+    container.appendChild(el("p", "empty", "loading…"));
+    api(path).then(function (payload) {
+      container.textContent = "";
+      renderCodeintel(container, op, payload);
+      setStatus("");
+    }).catch(function (error) {
+      container.textContent = "";
+      container.appendChild(el("p", "bad-badge", String(error.message || error)));
+      setStatus(String(error.message || error), true);
+    });
+  }
+
+  document.getElementById("codeintel-form").addEventListener("submit", runCodeintel);
 
   // ------------------------------------------------------------------ refs
 

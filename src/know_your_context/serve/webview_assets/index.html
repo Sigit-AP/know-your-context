@@ -18,6 +18,7 @@
     <button class="tab" data-tab="audit" type="button">Audit</button>
     <button class="tab" data-tab="proposals" type="button">Proposals</button>
     <button class="tab" data-tab="debt" type="button">Debt</button>
+    <button class="tab" data-tab="codeintel" type="button">Code Intel</button>
   </nav>
   <span id="status" role="status"></span>
 </header>
@@ -55,6 +56,23 @@
   <section id="view-audit" class="view"><div class="panel-json" id="audit-body"></div></section>
   <section id="view-proposals" class="view"><div class="panel-json" id="proposals-body"></div></section>
   <section id="view-debt" class="view"><div class="panel-json" id="debt-body"></div></section>
+  <section id="view-codeintel" class="view">
+    <form id="codeintel-form" autocomplete="off">
+      <select id="codeintel-op" aria-label="operation">
+        <option value="callers">callers of</option>
+        <option value="callees">callees of</option>
+        <option value="impact">impact of</option>
+        <option value="path">dependency path</option>
+        <option value="co-change">co-change</option>
+        <option value="boundary">boundary violations</option>
+      </select>
+      <input id="codeintel-symbol" type="search" placeholder="symbol or node id…" aria-label="symbol">
+      <input id="codeintel-target" type="search" placeholder="target (path op only)" aria-label="target">
+      <input id="codeintel-layers" type="text" placeholder="layers ui:ui,web;core:core (boundary only)" aria-label="layers">
+      <button type="submit">Run</button>
+    </form>
+    <div class="panel-json" id="codeintel-body"></div>
+  </section>
 </main>
 
 <script src="/static/app.js"></script>

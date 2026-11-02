@@ -1,0 +1,5 @@
+Design notes: fixture corpus
+
+Fixtures are real, minimal and valid in their language.
+Expectations are authored from language semantics.
+Determinism is asserted per fixture, not sampled.

@@ -1,0 +1,24 @@
+{
+  "edges": [
+    {
+      "kind": "references",
+      "provenance": "synthesis:framework_route_registration",
+      "source": {
+        "symbol": {
+          "kind": "function",
+          "name": "register",
+          "path": "app.py"
+        }
+      },
+      "target": {
+        "symbol": {
+          "kind": "import",
+          "name": "flask",
+          "path": "app.py"
+        }
+      }
+    }
+  ],
+  "mode": "pipeline",
+  "pass": "framework_route_registration"
+}

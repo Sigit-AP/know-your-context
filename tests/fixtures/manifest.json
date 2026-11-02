@@ -1,0 +1,10721 @@
+{
+  "fixtures": [
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "die"
+        ]
+      ],
+      "path": "ingest/bash/01-functions.sh"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "./lib.sh",
+        "${SCRIPT_DIR}/helpers.sh"
+      ],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/bash/02-sourcing.sh"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "constant",
+          "MAX_RETRIES"
+        ],
+        [
+          "constant",
+          "DEFAULT_TIMEOUT"
+        ],
+        [
+          "constant",
+          "PATH_PREFIX"
+        ],
+        [
+          "variable",
+          "counter"
+        ],
+        [
+          "function",
+          "bump"
+        ]
+      ],
+      "path": "ingest/bash/03-variables.sh"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "cleanup"
+        ],
+        [
+          "function",
+          "checked_run"
+        ],
+        [
+          "function",
+          "guarded"
+        ]
+      ],
+      "path": "ingest/bash/04-errors.sh"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "constant",
+          "NAMES"
+        ],
+        [
+          "function",
+          "ages_load"
+        ],
+        [
+          "function",
+          "first_name"
+        ],
+        [
+          "function",
+          "name_count"
+        ]
+      ],
+      "path": "ingest/bash/05-arrays.sh"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "count_lines"
+        ],
+        [
+          "function",
+          "total_lines"
+        ],
+        [
+          "function",
+          "list_logs"
+        ]
+      ],
+      "path": "ingest/bash/06-pipelines.sh"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "classify"
+        ],
+        [
+          "function",
+          "menu"
+        ]
+      ],
+      "path": "ingest/bash/07-case.sh"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "render_page"
+        ],
+        [
+          "function",
+          "render_raw"
+        ],
+        [
+          "function",
+          "diff_configs"
+        ]
+      ],
+      "path": "ingest/bash/08-here-docs.sh"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/bash/09-calls.sh"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "parse_args"
+        ]
+      ],
+      "path": "ingest/bash/10-getopts.sh"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "sum_all"
+        ],
+        [
+          "function",
+          "in_subshell"
+        ]
+      ],
+      "path": "ingest/bash/11-subshells.sh"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "prompt_name"
+        ],
+        [
+          "function",
+          "each_line"
+        ]
+      ],
+      "path": "ingest/bash/12-read-input.sh"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "function",
+          "on_err"
+        ],
+        [
+          "function",
+          "on_int"
+        ],
+        [
+          "function",
+          "install_traps"
+        ]
+      ],
+      "path": "ingest/bash/13-signal-traps.sh"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "bash",
+      "nodes": [
+        [
+          "constant",
+          "LOG_LEVEL"
+        ],
+        [
+          "function",
+          "_log"
+        ],
+        [
+          "function",
+          "log_info"
+        ],
+        [
+          "function",
+          "log_error"
+        ]
+      ],
+      "path": "ingest/bash/14-logging.sh"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "./lib.sh",
+        "other.sh"
+      ],
+      "language": "bash",
+      "nodes": [
+        [
+          "constant",
+          "K"
+        ],
+        [
+          "function",
+          "format_name"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/bash/sample.sh"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "clamp"
+        ],
+        [
+          "function",
+          "noop"
+        ],
+        [
+          "function",
+          "use_add"
+        ]
+      ],
+      "path": "ingest/c/01-functions.c"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "type",
+          "Number"
+        ],
+        [
+          "type",
+          "Colour"
+        ],
+        [
+          "function",
+          "origin"
+        ]
+      ],
+      "path": "ingest/c/02-structs.c"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "type",
+          "size_alias_t"
+        ],
+        [
+          "type",
+          "rect_t"
+        ],
+        [
+          "type",
+          "switch_t"
+        ],
+        [
+          "function",
+          "unit_square"
+        ]
+      ],
+      "path": "ingest/c/03-typedefs.c"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "stdio.h",
+        "stdlib.h",
+        "string.h",
+        "local.h",
+        "sub/util.h"
+      ],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/c/04-includes.c"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "constant",
+          "MAX_BUFFER"
+        ],
+        [
+          "function",
+          "shrink"
+        ]
+      ],
+      "path": "ingest/c/05-macros.c"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "sum_array"
+        ],
+        [
+          "function",
+          "swap"
+        ]
+      ],
+      "path": "ingest/c/06-pointers.c"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "errno.h",
+        "string.h"
+      ],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "parse_positive"
+        ],
+        [
+          "function",
+          "explain"
+        ]
+      ],
+      "path": "ingest/c/07-errors.c"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "bump"
+        ],
+        [
+          "function",
+          "next"
+        ],
+        [
+          "function",
+          "peek"
+        ]
+      ],
+      "path": "ingest/c/08-static.c"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/c/09-calls.c"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "string.h"
+      ],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "copy_into"
+        ],
+        [
+          "function",
+          "starts_with"
+        ]
+      ],
+      "path": "ingest/c/10-strings.c"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "classify"
+        ],
+        [
+          "function",
+          "retry_loop"
+        ]
+      ],
+      "path": "ingest/c/11-switch.c"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "type",
+          "Flags"
+        ],
+        [
+          "function",
+          "flags_default"
+        ],
+        [
+          "function",
+          "flags_ready"
+        ]
+      ],
+      "path": "ingest/c/12-bitfields.c"
+    },
+    {
+      "category": "functions",
+      "imports": [
+        "stdarg.h"
+      ],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "sum_n"
+        ],
+        [
+          "function",
+          "sum_three"
+        ]
+      ],
+      "path": "ingest/c/13-variadic.c"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "c",
+      "nodes": [
+        [
+          "function",
+          "factorial"
+        ],
+        [
+          "function",
+          "is_even"
+        ],
+        [
+          "function",
+          "is_odd"
+        ]
+      ],
+      "path": "ingest/c/14-recursion.c"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "local.h",
+        "stdio.h"
+      ],
+      "language": "c",
+      "nodes": [
+        [
+          "type",
+          "Thing"
+        ],
+        [
+          "constant",
+          "K"
+        ],
+        [
+          "function",
+          "format_name"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/c/sample.c"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "clamp"
+        ],
+        [
+          "function",
+          "use_add"
+        ]
+      ],
+      "path": "ingest/cpp/01-functions.cpp"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "Move"
+        ],
+        [
+          "method",
+          "Origin"
+        ],
+        [
+          "class",
+          "Named"
+        ],
+        [
+          "method",
+          "Name"
+        ]
+      ],
+      "path": "ingest/cpp/02-classes.cpp"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "class",
+          "FixedArray"
+        ],
+        [
+          "method",
+          "Size"
+        ],
+        [
+          "function",
+          "MaxOf"
+        ]
+      ],
+      "path": "ingest/cpp/03-templates.cpp"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "algorithm",
+        "memory",
+        "vector",
+        "detail/util.hpp"
+      ],
+      "language": "cpp",
+      "nodes": [
+        [
+          "function",
+          "count_positive"
+        ]
+      ],
+      "path": "ingest/cpp/04-includes.cpp"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "module",
+          "geometry"
+        ],
+        [
+          "type",
+          "Vec2"
+        ],
+        [
+          "function",
+          "Length"
+        ],
+        [
+          "module",
+          "detail"
+        ],
+        [
+          "function",
+          "Scale"
+        ],
+        [
+          "function",
+          "Hidden"
+        ]
+      ],
+      "path": "ingest/cpp/05-namespaces.cpp"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "class",
+          "Shape"
+        ],
+        [
+          "method",
+          "Area"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/cpp/06-inheritance.cpp"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "stdexcept",
+        "string"
+      ],
+      "language": "cpp",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "function",
+          "parse_or_throw"
+        ]
+      ],
+      "path": "ingest/cpp/07-errors.cpp"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "type",
+          "Size"
+        ],
+        [
+          "type",
+          "Level"
+        ],
+        [
+          "type",
+          "Payload"
+        ],
+        [
+          "function",
+          "AreaOf"
+        ]
+      ],
+      "path": "ingest/cpp/08-structs-enums.cpp"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "functional"
+      ],
+      "language": "cpp",
+      "nodes": [
+        [
+          "function",
+          "MakeAdder"
+        ],
+        [
+          "function",
+          "ApplyTwice"
+        ]
+      ],
+      "path": "ingest/cpp/09-lambdas.cpp"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/cpp/10-calls.cpp"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "class",
+          "Money"
+        ]
+      ],
+      "path": "ingest/cpp/11-operators.cpp"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "cpp",
+      "nodes": [
+        [
+          "function",
+          "Divide"
+        ]
+      ],
+      "path": "ingest/cpp/12-constexpr.cpp"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "cstdio"
+      ],
+      "language": "cpp",
+      "nodes": [
+        [
+          "constant",
+          "VERSION_MAJOR"
+        ],
+        [
+          "function",
+          "Report"
+        ]
+      ],
+      "path": "ingest/cpp/13-macros.cpp"
+    },
+    {
+      "category": "functions",
+      "imports": [
+        "utility"
+      ],
+      "language": "cpp",
+      "nodes": [
+        [
+          "function",
+          "Swap"
+        ],
+        [
+          "class",
+          "Buffer"
+        ],
+        [
+          "method",
+          "Size"
+        ],
+        [
+          "function",
+          "MakeBuffer"
+        ]
+      ],
+      "path": "ingest/cpp/14-references.cpp"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "local.hpp",
+        "vector"
+      ],
+      "language": "cpp",
+      "nodes": [
+        [
+          "module",
+          "ns"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "method",
+          "greet"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/cpp/sample.cpp"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/crystal/01-methods.cr"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "initialize"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "origin?"
+        ],
+        [
+          "method",
+          "build"
+        ]
+      ],
+      "path": "ingest/crystal/02-classes.cr"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "json",
+        "http/client",
+        "./local_helper",
+        "./sub/*"
+      ],
+      "language": "crystal",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/crystal/03-requires.cr"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "initialize"
+        ],
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "read_safe"
+        ]
+      ],
+      "path": "ingest/crystal/04-errors.cr"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "module",
+          "Geometry"
+        ],
+        [
+          "function",
+          "distance"
+        ],
+        [
+          "module",
+          "Deep"
+        ],
+        [
+          "function",
+          "value"
+        ],
+        [
+          "module",
+          "Taggable"
+        ]
+      ],
+      "path": "ingest/crystal/05-modules.cr"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "initialize"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "function",
+          "first"
+        ]
+      ],
+      "path": "ingest/crystal/06-generics.cr"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "method",
+          "speak"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "class",
+          "Dog"
+        ]
+      ],
+      "path": "ingest/crystal/07-inheritance.cr"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "function",
+          "each_pair"
+        ],
+        [
+          "function",
+          "make_adder"
+        ],
+        [
+          "function",
+          "apply_twice"
+        ]
+      ],
+      "path": "ingest/crystal/08-blocks.cr"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/crystal/09-calls.cr"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "class",
+          "Service"
+        ],
+        [
+          "method",
+          "handle"
+        ],
+        [
+          "function",
+          "dispatch"
+        ]
+      ],
+      "path": "ingest/crystal/10-macros.cr"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "function",
+          "initialize"
+        ],
+        [
+          "function",
+          "area"
+        ]
+      ],
+      "path": "ingest/crystal/11-structs.cr"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "bump"
+        ]
+      ],
+      "path": "ingest/crystal/12-constants.cr"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "function",
+          "produce"
+        ],
+        [
+          "function",
+          "consume"
+        ],
+        [
+          "function",
+          "fanout"
+        ]
+      ],
+      "path": "ingest/crystal/13-concurrency.cr"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "crystal",
+      "nodes": [
+        [
+          "function",
+          "classify"
+        ]
+      ],
+      "path": "ingest/crystal/14-case-when.cr"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "./util",
+        "json"
+      ],
+      "language": "crystal",
+      "nodes": [
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "module",
+          "Util"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/crystal/sample.cr"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "module",
+          "Demo"
+        ],
+        [
+          "class",
+          "Calculator"
+        ],
+        [
+          "method",
+          "Add"
+        ],
+        [
+          "method",
+          "Clamp"
+        ],
+        [
+          "method",
+          "Describe"
+        ]
+      ],
+      "path": "ingest/csharp/01-methods.cs"
+    },
+    {
+      "category": "async",
+      "imports": [
+        "System.Collections.Generic",
+        "System.Threading.Tasks"
+      ],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "Fetcher"
+        ],
+        [
+          "method",
+          "FetchOneAsync"
+        ],
+        [
+          "method",
+          "FetchAllAsync"
+        ]
+      ],
+      "path": "ingest/csharp/02-async.cs"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "interface",
+          "IShape"
+        ],
+        [
+          "method",
+          "Area"
+        ],
+        [
+          "interface",
+          "IRepository"
+        ],
+        [
+          "method",
+          "Find"
+        ],
+        [
+          "method",
+          "Save"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/csharp/03-interfaces.cs"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "System",
+        "System.Text",
+        "System.Math",
+        "System.Text.Json"
+      ],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "Report"
+        ],
+        [
+          "method",
+          "Render"
+        ]
+      ],
+      "path": "ingest/csharp/04-usings.cs"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "Unwrap"
+        ],
+        [
+          "class",
+          "Maybe"
+        ],
+        [
+          "method",
+          "FirstOrDefault"
+        ]
+      ],
+      "path": "ingest/csharp/05-generics.cs"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "ConfigException"
+        ],
+        [
+          "method",
+          "ConfigException"
+        ],
+        [
+          "class",
+          "Config"
+        ],
+        [
+          "method",
+          "Read"
+        ]
+      ],
+      "path": "ingest/csharp/06-errors.cs"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "class",
+          "Size"
+        ],
+        [
+          "method",
+          "Area"
+        ],
+        [
+          "type",
+          "Vec2"
+        ],
+        [
+          "type",
+          "Level"
+        ]
+      ],
+      "path": "ingest/csharp/07-records.cs"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "Add"
+        ]
+      ],
+      "path": "ingest/csharp/08-properties.cs"
+    },
+    {
+      "category": "calls",
+      "imports": [
+        "System.Linq"
+      ],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "Stats"
+        ],
+        [
+          "method",
+          "TotalEven"
+        ],
+        [
+          "method",
+          "items_where"
+        ]
+      ],
+      "path": "ingest/csharp/09-linq.cs"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "type",
+          "Transformer"
+        ],
+        [
+          "class",
+          "Pipeline"
+        ],
+        [
+          "method",
+          "Run"
+        ]
+      ],
+      "path": "ingest/csharp/10-delegates.cs"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "Runner"
+        ],
+        [
+          "method",
+          "Helper"
+        ],
+        [
+          "method",
+          "Run"
+        ]
+      ],
+      "path": "ingest/csharp/11-calls.cs"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "Lookup"
+        ],
+        [
+          "method",
+          "Find"
+        ],
+        [
+          "method",
+          "TryGet"
+        ]
+      ],
+      "path": "ingest/csharp/12-nullable.cs"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "module",
+          "Deep"
+        ],
+        [
+          "class",
+          "Outer"
+        ],
+        [
+          "class",
+          "Inner"
+        ],
+        [
+          "method",
+          "Value"
+        ],
+        [
+          "method",
+          "Make"
+        ]
+      ],
+      "path": "ingest/csharp/13-file-scoped-namespace.cs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "csharp",
+      "nodes": [
+        [
+          "class",
+          "TagAttribute"
+        ],
+        [
+          "class",
+          "Service"
+        ],
+        [
+          "method",
+          "Handle"
+        ]
+      ],
+      "path": "ingest/csharp/14-attributes.cs"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "System",
+        "System.Text.StringBuilder"
+      ],
+      "language": "csharp",
+      "nodes": [
+        [
+          "module",
+          "Example"
+        ],
+        [
+          "interface",
+          "IShape"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "method",
+          "Greet"
+        ]
+      ],
+      "path": "ingest/csharp/sample.cs"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ],
+        [
+          "function",
+          "clamp"
+        ]
+      ],
+      "path": "ingest/dart/01-functions.dart"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ]
+      ],
+      "path": "ingest/dart/02-classes.dart"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "dart:async",
+        "dart:math",
+        "package:collection/collection.dart",
+        "src/local.dart"
+      ],
+      "language": "dart",
+      "nodes": [
+        [
+          "function",
+          "bigger"
+        ]
+      ],
+      "path": "ingest/dart/03-imports.dart"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "toString"
+        ],
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "readSafe"
+        ]
+      ],
+      "path": "ingest/dart/04-errors.dart"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "function",
+          "fetchOne"
+        ],
+        [
+          "function",
+          "fetchAll"
+        ],
+        [
+          "function",
+          "countdown"
+        ],
+        [
+          "function",
+          "tickEvery"
+        ]
+      ],
+      "path": "ingest/dart/05-async.dart"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "function",
+          "first"
+        ],
+        [
+          "function",
+          "foldLeft"
+        ]
+      ],
+      "path": "ingest/dart/06-generics.dart"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "class",
+          "Walkable"
+        ],
+        [
+          "method",
+          "walk"
+        ],
+        [
+          "class",
+          "Swimmable"
+        ],
+        [
+          "class",
+          "Speaker"
+        ],
+        [
+          "class",
+          "Duck"
+        ]
+      ],
+      "path": "ingest/dart/07-mixins.dart"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "type",
+          "Level"
+        ],
+        [
+          "type",
+          "Direction"
+        ]
+      ],
+      "path": "ingest/dart/08-enums.dart"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/dart/09-calls.dart"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "function",
+          "pair"
+        ],
+        [
+          "function",
+          "pointRecord"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/dart/10-records.dart"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "function",
+          "demo"
+        ]
+      ],
+      "path": "ingest/dart/11-extensions.dart"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "function",
+          "makeCounter"
+        ],
+        [
+          "function",
+          "applyTwice"
+        ]
+      ],
+      "path": "ingest/dart/12-closures.dart"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "function",
+          "applyTransformer"
+        ]
+      ],
+      "path": "ingest/dart/13-typedefs.dart"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "dart",
+      "nodes": [
+        [
+          "class",
+          "Config"
+        ],
+        [
+          "method",
+          "init"
+        ],
+        [
+          "function",
+          "next"
+        ]
+      ],
+      "path": "ingest/dart/14-late-final.dart"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "dart:async",
+        "package:foo/foo.dart"
+      ],
+      "language": "dart",
+      "nodes": [
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "class",
+          "Walkable"
+        ],
+        [
+          "class",
+          "Demo"
+        ],
+        [
+          "function",
+          "topLevel"
+        ]
+      ],
+      "path": "ingest/dart/sample.dart"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-add"
+        ],
+        [
+          "function",
+          "demo-greet"
+        ],
+        [
+          "function",
+          "demo-variadic"
+        ],
+        [
+          "function",
+          "demo-clamp"
+        ]
+      ],
+      "path": "ingest/elisp/01-defuns.el"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "cl-lib",
+        "seq",
+        "subr-x"
+      ],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-joined"
+        ]
+      ],
+      "path": "ingest/elisp/02-requires.el"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-read-config"
+        ],
+        [
+          "function",
+          "demo-read-safe"
+        ]
+      ],
+      "path": "ingest/elisp/03-errors.el"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-make-counter"
+        ],
+        [
+          "function",
+          "demo-apply-twice"
+        ],
+        [
+          "function",
+          "demo-compose"
+        ]
+      ],
+      "path": "ingest/elisp/04-closures.el"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-run-with-log"
+        ]
+      ],
+      "path": "ingest/elisp/05-macros.el"
+    },
+    {
+      "category": "types",
+      "imports": [
+        "cl-lib"
+      ],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-point-origin-p"
+        ]
+      ],
+      "path": "ingest/elisp/06-structs.el"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-helper"
+        ],
+        [
+          "function",
+          "demo-run"
+        ]
+      ],
+      "path": "ingest/elisp/07-calls.el"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-target"
+        ],
+        [
+          "function",
+          "demo-around"
+        ],
+        [
+          "function",
+          "demo-command"
+        ]
+      ],
+      "path": "ingest/elisp/08-advice.el"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-next"
+        ]
+      ],
+      "path": "ingest/elisp/09-defvars.el"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "subr-x"
+      ],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-sluggify"
+        ],
+        [
+          "function",
+          "demo-count-words"
+        ]
+      ],
+      "path": "ingest/elisp/10-threading.el"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-on-save"
+        ],
+        [
+          "function",
+          "demo-enable"
+        ]
+      ],
+      "path": "ingest/elisp/11-hooks.el"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-classify"
+        ],
+        [
+          "function",
+          "demo-extract"
+        ]
+      ],
+      "path": "ingest/elisp/12-pcase.el"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-current-line"
+        ],
+        [
+          "function",
+          "demo-replace-all"
+        ],
+        [
+          "function",
+          "demo-with-buffer"
+        ]
+      ],
+      "path": "ingest/elisp/13-buffer-api.el"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "demo-schedule"
+        ],
+        [
+          "function",
+          "demo-cancel"
+        ]
+      ],
+      "path": "ingest/elisp/14-async-timers.el"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "cl-lib"
+      ],
+      "language": "elisp",
+      "nodes": [
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "helper"
+        ]
+      ],
+      "path": "ingest/elisp/sample.el"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_functions"
+        ],
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "clamp"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/erlang/01-functions.erl"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "lists",
+        "string"
+      ],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_imports"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/erlang/02-imports.erl"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_errors"
+        ],
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "read_safe"
+        ]
+      ],
+      "path": "ingest/erlang/03-errors.erl"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_records"
+        ],
+        [
+          "function",
+          "origin"
+        ],
+        [
+          "function",
+          "move"
+        ]
+      ],
+      "path": "ingest/erlang/04-records.erl"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_counter"
+        ],
+        [
+          "function",
+          "start_link"
+        ],
+        [
+          "function",
+          "bump"
+        ],
+        [
+          "function",
+          "init"
+        ],
+        [
+          "function",
+          "handle_call"
+        ],
+        [
+          "function",
+          "handle_cast"
+        ]
+      ],
+      "path": "ingest/erlang/05-otp-gen-server.erl"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_processes"
+        ],
+        [
+          "function",
+          "echo"
+        ],
+        [
+          "function",
+          "fanout"
+        ],
+        [
+          "function",
+          "spawn_echo"
+        ]
+      ],
+      "path": "ingest/erlang/06-processes.erl"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_funs"
+        ],
+        [
+          "function",
+          "make_counter"
+        ],
+        [
+          "function",
+          "apply_twice"
+        ],
+        [
+          "function",
+          "compose"
+        ]
+      ],
+      "path": "ingest/erlang/07-funs.erl"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_calls"
+        ],
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/erlang/08-calls.erl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_patterns"
+        ],
+        [
+          "function",
+          "classify"
+        ],
+        [
+          "function",
+          "greet_bin"
+        ]
+      ],
+      "path": "ingest/erlang/09-pattern-matching.erl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_lc"
+        ],
+        [
+          "function",
+          "pairs"
+        ],
+        [
+          "function",
+          "evens"
+        ],
+        [
+          "function",
+          "pythagorean"
+        ]
+      ],
+      "path": "ingest/erlang/10-list-comprehensions.erl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_macros"
+        ],
+        [
+          "function",
+          "limit"
+        ],
+        [
+          "function",
+          "report"
+        ]
+      ],
+      "path": "ingest/erlang/11-macros.erl"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_maps"
+        ],
+        [
+          "function",
+          "defaults"
+        ],
+        [
+          "function",
+          "merge_defaults"
+        ],
+        [
+          "function",
+          "keys_sorted"
+        ]
+      ],
+      "path": "ingest/erlang/12-maps.erl"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_sup"
+        ],
+        [
+          "function",
+          "start_link"
+        ],
+        [
+          "function",
+          "init"
+        ]
+      ],
+      "path": "ingest/erlang/13-supervision.erl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "demo_binaries"
+        ],
+        [
+          "function",
+          "encode_header"
+        ],
+        [
+          "function",
+          "decode_header"
+        ]
+      ],
+      "path": "ingest/erlang/14-binaries.erl"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "string"
+      ],
+      "language": "erlang",
+      "nodes": [
+        [
+          "module",
+          "greeter"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "helper"
+        ]
+      ],
+      "path": "ingest/erlang/sample.erl"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Functions"
+        ],
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "countdown"
+        ],
+        [
+          "function",
+          "clamp"
+        ]
+      ],
+      "path": "ingest/fsharp/01-functions.fs"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "System",
+        "System.IO",
+        "System.Text"
+      ],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Imports"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/fsharp/02-imports.fs"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Types"
+        ],
+        [
+          "function",
+          "area"
+        ]
+      ],
+      "path": "ingest/fsharp/03-types.fs"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Errors"
+        ],
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "readSafe"
+        ],
+        [
+          "function",
+          "guarded"
+        ]
+      ],
+      "path": "ingest/fsharp/04-errors.fs"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Async"
+        ],
+        [
+          "function",
+          "fetchOne"
+        ],
+        [
+          "function",
+          "fetchAll"
+        ],
+        [
+          "function",
+          "runParallel"
+        ]
+      ],
+      "path": "ingest/fsharp/05-async.fs"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Classes"
+        ],
+        [
+          "function",
+          "makeCircle"
+        ],
+        [
+          "function",
+          "makePoint"
+        ]
+      ],
+      "path": "ingest/fsharp/06-classes.fs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Pipelines"
+        ],
+        [
+          "function",
+          "doubled"
+        ],
+        [
+          "function",
+          "sumEven"
+        ]
+      ],
+      "path": "ingest/fsharp/07-pipelines.fs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.ActivePatterns"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/fsharp/08-active-patterns.fs"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Calls"
+        ],
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/fsharp/09-calls.fs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.CE"
+        ],
+        [
+          "function",
+          "wrapValue"
+        ]
+      ],
+      "path": "ingest/fsharp/10-computation-expr.fs"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Generics"
+        ],
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "function",
+          "first"
+        ],
+        [
+          "function",
+          "addGeneric"
+        ]
+      ],
+      "path": "ingest/fsharp/11-generics.fs"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Structure"
+        ],
+        [
+          "function",
+          "describe"
+        ],
+        [
+          "function",
+          "topLevel"
+        ]
+      ],
+      "path": "ingest/fsharp/12-module-structure.fs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Patterns"
+        ],
+        [
+          "function",
+          "classify"
+        ],
+        [
+          "function",
+          "lengthOf"
+        ]
+      ],
+      "path": "ingest/fsharp/13-pattern-matching.fs"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Demo.Units"
+        ],
+        [
+          "function",
+          "speed"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/fsharp/14-units.fsx"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "System",
+        "System.IO"
+      ],
+      "language": "fsharp",
+      "nodes": [
+        [
+          "module",
+          "Greeter"
+        ],
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "greet"
+        ]
+      ],
+      "path": "ingest/fsharp/sample.fs"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/gdscript/01-functions.gd"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "class",
+          "GameCharacter"
+        ],
+        [
+          "variable",
+          "speed"
+        ],
+        [
+          "constant",
+          "MAX_HEALTH"
+        ],
+        [
+          "function",
+          "move_by"
+        ],
+        [
+          "function",
+          "is_alive"
+        ]
+      ],
+      "path": "ingest/gdscript/02-classes.gd"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "CharacterBody2D"
+      ],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/gdscript/03-extends-imports.gd"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "variable",
+          "health"
+        ],
+        [
+          "function",
+          "take_damage"
+        ],
+        [
+          "function",
+          "_ready"
+        ],
+        [
+          "function",
+          "_on_died"
+        ]
+      ],
+      "path": "ingest/gdscript/04-signals.gd"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "read_safe"
+        ],
+        [
+          "function",
+          "checked_run"
+        ]
+      ],
+      "path": "ingest/gdscript/05-errors.gd"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "variable",
+          "elapsed"
+        ],
+        [
+          "function",
+          "_ready"
+        ],
+        [
+          "function",
+          "_process"
+        ],
+        [
+          "function",
+          "_physics_process"
+        ],
+        [
+          "function",
+          "_exit_tree"
+        ]
+      ],
+      "path": "ingest/gdscript/06-virtuals.gd"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "class",
+          "MathUtil"
+        ],
+        [
+          "constant",
+          "TAU_APPROX"
+        ],
+        [
+          "variable",
+          "counter"
+        ],
+        [
+          "function",
+          "clampf"
+        ],
+        [
+          "function",
+          "next_id"
+        ]
+      ],
+      "path": "ingest/gdscript/07-statics.gd"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "variable",
+          "health"
+        ],
+        [
+          "variable",
+          "title"
+        ],
+        [
+          "function",
+          "_set_title"
+        ]
+      ],
+      "path": "ingest/gdscript/08-properties.gd"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/gdscript/09-calls.gd"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "function",
+          "fetch_one"
+        ],
+        [
+          "function",
+          "fetch_all"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/gdscript/10-await.gd"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "function",
+          "classify"
+        ]
+      ],
+      "path": "ingest/gdscript/11-match.gd"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "function",
+          "speak"
+        ]
+      ],
+      "path": "ingest/gdscript/12-inheritance.gd"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "variable",
+          "names"
+        ],
+        [
+          "variable",
+          "scores"
+        ],
+        [
+          "function",
+          "add_name"
+        ],
+        [
+          "function",
+          "total_score"
+        ]
+      ],
+      "path": "ingest/gdscript/13-typed-arrays.gd"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "variable",
+          "tile_size"
+        ],
+        [
+          "variable",
+          "density"
+        ],
+        [
+          "function",
+          "_run"
+        ]
+      ],
+      "path": "ingest/gdscript/14-tool-script.gd"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "Node"
+      ],
+      "language": "gdscript",
+      "nodes": [
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "constant",
+          "MAX"
+        ],
+        [
+          "variable",
+          "speed"
+        ],
+        [
+          "function",
+          "greet"
+        ]
+      ],
+      "path": "ingest/gdscript/sample.gd"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "clamp"
+        ]
+      ],
+      "path": "ingest/gleam/01-functions.gleam"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "gleam/io",
+        "gleam/list",
+        "gleam/string",
+        "gleam/result",
+        "gleam/option"
+      ],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/gleam/02-imports.gleam"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "type",
+          "Shape"
+        ],
+        [
+          "type",
+          "Tree"
+        ],
+        [
+          "function",
+          "area"
+        ]
+      ],
+      "path": "ingest/gleam/03-custom-types.gleam"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "type",
+          "ConfigError"
+        ],
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "list_find"
+        ],
+        [
+          "function",
+          "read_or"
+        ]
+      ],
+      "path": "ingest/gleam/04-errors.gleam"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "gleam/list",
+        "gleam/string"
+      ],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "doubled"
+        ],
+        [
+          "function",
+          "sum_even"
+        ],
+        [
+          "function",
+          "sluggify"
+        ]
+      ],
+      "path": "ingest/gleam/05-pipelines.gleam"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "type",
+          "Box"
+        ],
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "function",
+          "unwrap"
+        ],
+        [
+          "function",
+          "first"
+        ]
+      ],
+      "path": "ingest/gleam/06-generics.gleam"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "type",
+          "Msg"
+        ],
+        [
+          "function",
+          "weight"
+        ],
+        [
+          "function",
+          "string_length"
+        ]
+      ],
+      "path": "ingest/gleam/07-case.gleam"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/gleam/08-calls.gleam"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/gleam/09-constants.gleam"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "unwrap_some"
+        ],
+        [
+          "function",
+          "head_or_zero"
+        ]
+      ],
+      "path": "ingest/gleam/10-let-assert.gleam"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "type",
+          "Counter"
+        ],
+        [
+          "function",
+          "new_counter"
+        ],
+        [
+          "function",
+          "bump"
+        ],
+        [
+          "function",
+          "value"
+        ]
+      ],
+      "path": "ingest/gleam/11-opaque.gleam"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "reverse"
+        ],
+        [
+          "function",
+          "now"
+        ]
+      ],
+      "path": "ingest/gleam/12-externals.gleam"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "factorial"
+        ],
+        [
+          "function",
+          "sum"
+        ],
+        [
+          "function",
+          "sum_loop"
+        ]
+      ],
+      "path": "ingest/gleam/13-recursion.gleam"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "gleam",
+      "nodes": [
+        [
+          "function",
+          "unimplemented_feature"
+        ],
+        [
+          "function",
+          "must_be_positive"
+        ]
+      ],
+      "path": "ingest/gleam/14-todos.gleam"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "gleam/io",
+        "gleam/string"
+      ],
+      "language": "gleam",
+      "nodes": [
+        [
+          "type",
+          "Config"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "helper"
+        ]
+      ],
+      "path": "ingest/gleam/sample.gleam"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "swap"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/go/01-functions.go"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "method",
+          "Origin"
+        ],
+        [
+          "method",
+          "Move"
+        ],
+        [
+          "function",
+          "NewPoint"
+        ]
+      ],
+      "path": "ingest/go/02-methods.go"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "interface",
+          "Named"
+        ],
+        [
+          "type",
+          "Circle"
+        ],
+        [
+          "method",
+          "Area"
+        ],
+        [
+          "method",
+          "Name"
+        ],
+        [
+          "function",
+          "TotalArea"
+        ]
+      ],
+      "path": "ingest/go/03-interfaces.go"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "fmt",
+        "strings",
+        "example.com/mod/util",
+        "example.com/mod/dot",
+        "example.com/mod/sideeffect"
+      ],
+      "language": "go",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "function",
+          "Describe"
+        ]
+      ],
+      "path": "ingest/go/04-imports.go"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "errors",
+        "fmt"
+      ],
+      "language": "go",
+      "nodes": [
+        [
+          "variable",
+          "ErrMissing"
+        ],
+        [
+          "type",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "Error"
+        ],
+        [
+          "function",
+          "ReadConfig"
+        ],
+        [
+          "function",
+          "MustRead"
+        ]
+      ],
+      "path": "ingest/go/05-errors.go"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "function",
+          "produce"
+        ],
+        [
+          "function",
+          "consume"
+        ],
+        [
+          "function",
+          "fanout"
+        ]
+      ],
+      "path": "ingest/go/06-goroutines.go"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "function",
+          "Identity"
+        ],
+        [
+          "type",
+          "Box"
+        ],
+        [
+          "method",
+          "Unwrap"
+        ],
+        [
+          "function",
+          "Map"
+        ]
+      ],
+      "path": "ingest/go/07-generics.go"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "constant",
+          "Limit"
+        ],
+        [
+          "constant",
+          "LevelLow"
+        ],
+        [
+          "constant",
+          "LevelHigh"
+        ],
+        [
+          "variable",
+          "DefaultName"
+        ],
+        [
+          "variable",
+          "counter"
+        ],
+        [
+          "function",
+          "Next"
+        ]
+      ],
+      "path": "ingest/go/08-constants.go"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "fmt"
+      ],
+      "language": "go",
+      "nodes": [
+        [
+          "function",
+          "guarded"
+        ],
+        [
+          "function",
+          "risky"
+        ]
+      ],
+      "path": "ingest/go/09-defer.go"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/go/10-calls.go"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "type",
+          "UserID"
+        ],
+        [
+          "type",
+          "Handler"
+        ],
+        [
+          "type",
+          "Config"
+        ],
+        [
+          "method",
+          "Valid"
+        ]
+      ],
+      "path": "ingest/go/11-type-aliases.go"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "function",
+          "makeCounter"
+        ],
+        [
+          "function",
+          "compose"
+        ]
+      ],
+      "path": "ingest/go/12-closures.go"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "go",
+      "nodes": [
+        [
+          "type",
+          "Logger"
+        ],
+        [
+          "method",
+          "Log"
+        ],
+        [
+          "type",
+          "Service"
+        ],
+        [
+          "method",
+          "Describe"
+        ]
+      ],
+      "path": "ingest/go/13-embedding.go"
+    },
+    {
+      "category": "module",
+      "imports": [
+        "os"
+      ],
+      "language": "go",
+      "nodes": [
+        [
+          "variable",
+          "env"
+        ],
+        [
+          "function",
+          "init"
+        ],
+        [
+          "function",
+          "Env"
+        ]
+      ],
+      "path": "ingest/go/14-init.go"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "example.com/mod",
+        "fmt"
+      ],
+      "language": "go",
+      "nodes": [
+        [
+          "module",
+          "main"
+        ],
+        [
+          "type",
+          "Thing"
+        ],
+        [
+          "interface",
+          "Iface"
+        ],
+        [
+          "function",
+          "topLevel"
+        ]
+      ],
+      "path": "ingest/go/sample.go"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Functions"
+        ],
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "clamp"
+        ]
+      ],
+      "path": "ingest/haskell/01-functions.hs"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Types"
+        ],
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "type",
+          "Colour"
+        ],
+        [
+          "type",
+          "UserId"
+        ],
+        [
+          "function",
+          "origin"
+        ]
+      ],
+      "path": "ingest/haskell/02-types.hs"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "Data.List",
+        "Data.Map",
+        "Data.Maybe",
+        "Data.Char",
+        "Data.Set"
+      ],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Imports"
+        ],
+        [
+          "function",
+          "useThem"
+        ]
+      ],
+      "path": "ingest/haskell/03-imports.hs"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Classes"
+        ],
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "method",
+          "nameOf"
+        ],
+        [
+          "type",
+          "Circle"
+        ],
+        [
+          "function",
+          "totalArea"
+        ]
+      ],
+      "path": "ingest/haskell/04-typeclasses.hs"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Errors"
+        ],
+        [
+          "type",
+          "ConfigError"
+        ],
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "readConfigDefault"
+        ]
+      ],
+      "path": "ingest/haskell/05-errors.hs"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.HigherOrder"
+        ],
+        [
+          "function",
+          "applyTwice"
+        ],
+        [
+          "function",
+          "compose2"
+        ],
+        [
+          "function",
+          "mapBoth"
+        ],
+        [
+          "function",
+          "fix2"
+        ]
+      ],
+      "path": "ingest/haskell/06-higher-order.hs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Monads"
+        ],
+        [
+          "function",
+          "safeDiv"
+        ],
+        [
+          "function",
+          "pipeline"
+        ],
+        [
+          "function",
+          "chained"
+        ]
+      ],
+      "path": "ingest/haskell/07-monads.hs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Patterns"
+        ],
+        [
+          "type",
+          "Tree"
+        ],
+        [
+          "function",
+          "depth"
+        ],
+        [
+          "function",
+          "classify"
+        ]
+      ],
+      "path": "ingest/haskell/08-pattern-matching.hs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Lazy"
+        ],
+        [
+          "function",
+          "naturals"
+        ],
+        [
+          "function",
+          "fibs"
+        ],
+        [
+          "function",
+          "take'"
+        ],
+        [
+          "function",
+          "isSorted"
+        ]
+      ],
+      "path": "ingest/haskell/09-lazy.hs"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Calls"
+        ],
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/haskell/10-calls.hs"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Records"
+        ],
+        [
+          "type",
+          "Config"
+        ],
+        [
+          "function",
+          "defaultConfig"
+        ],
+        [
+          "function",
+          "withLimit"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/haskell/11-records.hs"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Folds"
+        ],
+        [
+          "function",
+          "sum'"
+        ],
+        [
+          "function",
+          "reverse'"
+        ],
+        [
+          "function",
+          "scanSum"
+        ]
+      ],
+      "path": "ingest/haskell/12-folds.hs"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Gadt"
+        ],
+        [
+          "type",
+          "Expr"
+        ],
+        [
+          "function",
+          "eval"
+        ],
+        [
+          "function",
+          "render"
+        ]
+      ],
+      "path": "ingest/haskell/13-gadts-style.hs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Comprehensions"
+        ],
+        [
+          "function",
+          "pairs"
+        ],
+        [
+          "function",
+          "evens"
+        ],
+        [
+          "function",
+          "pythagorean"
+        ]
+      ],
+      "path": "ingest/haskell/14-list-comprehensions.hs"
+    },
+    {
+      "category": "module",
+      "imports": [
+        "Demo.Calls"
+      ],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo.Structure"
+        ],
+        [
+          "function",
+          "limit"
+        ],
+        [
+          "function",
+          "defaultName"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/haskell/15-module-structure.hs"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "Data.List",
+        "Data.Map"
+      ],
+      "language": "haskell",
+      "nodes": [
+        [
+          "module",
+          "Demo"
+        ],
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "interface",
+          "Greeter"
+        ],
+        [
+          "function",
+          "greetName"
+        ],
+        [
+          "function",
+          "topLevel"
+        ]
+      ],
+      "path": "ingest/haskell/sample.hs"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Functions"
+        ],
+        [
+          "method",
+          "add"
+        ],
+        [
+          "method",
+          "greet"
+        ],
+        [
+          "method",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/haxe/01-functions.hx"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "origin"
+        ],
+        [
+          "class",
+          "NamedPoint"
+        ]
+      ],
+      "path": "ingest/haxe/02-classes.hx"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "class",
+          "Circle"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "method",
+          "get_name"
+        ]
+      ],
+      "path": "ingest/haxe/03-interfaces.hx"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "haxe.io.Path",
+        "sys.FileSystem",
+        "sys.io.File",
+        "haxe.ds.StringMap",
+        "Math.max"
+      ],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Imports"
+        ],
+        [
+          "method",
+          "describe"
+        ]
+      ],
+      "path": "ingest/haxe/04-imports.hx"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "toString"
+        ],
+        [
+          "class",
+          "Config"
+        ],
+        [
+          "method",
+          "read"
+        ]
+      ],
+      "path": "ingest/haxe/05-errors.hx"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "type",
+          "Colour"
+        ],
+        [
+          "type",
+          "Msg"
+        ],
+        [
+          "class",
+          "Weights"
+        ],
+        [
+          "method",
+          "weight"
+        ]
+      ],
+      "path": "ingest/haxe/06-enums.hx"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "class",
+          "Util"
+        ],
+        [
+          "method",
+          "identity"
+        ],
+        [
+          "method",
+          "first"
+        ]
+      ],
+      "path": "ingest/haxe/07-generics.hx"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "make"
+        ],
+        [
+          "method",
+          "sizeOf"
+        ]
+      ],
+      "path": "ingest/haxe/08-typedefs.hx"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Calls"
+        ],
+        [
+          "method",
+          "helper"
+        ],
+        [
+          "method",
+          "run"
+        ]
+      ],
+      "path": "ingest/haxe/09-calls.hx"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Closures"
+        ],
+        [
+          "method",
+          "makeCounter"
+        ],
+        [
+          "method",
+          "applyTwice"
+        ],
+        [
+          "method",
+          "doubled"
+        ]
+      ],
+      "path": "ingest/haxe/10-lambdas.hx"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "next"
+        ]
+      ],
+      "path": "ingest/haxe/11-statics.hx"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Service"
+        ],
+        [
+          "method",
+          "handle"
+        ],
+        [
+          "method",
+          "handle2"
+        ]
+      ],
+      "path": "ingest/haxe/12-metadata.hx"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Render"
+        ],
+        [
+          "method",
+          "page"
+        ],
+        [
+          "method",
+          "banner"
+        ]
+      ],
+      "path": "ingest/haxe/13-string-interp.hx"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "DynamicAccess"
+        ],
+        [
+          "method",
+          "getField"
+        ],
+        [
+          "method",
+          "keys"
+        ],
+        [
+          "method",
+          "call0"
+        ]
+      ],
+      "path": "ingest/haxe/14-dynamic-access.hx"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "sys.FileSystem"
+      ],
+      "language": "haxe",
+      "nodes": [
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "method",
+          "greet"
+        ],
+        [
+          "interface",
+          "Runner"
+        ],
+        [
+          "method",
+          "run"
+        ]
+      ],
+      "path": "ingest/haxe/sample.hx"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "class",
+          "Calculator"
+        ],
+        [
+          "method",
+          "add"
+        ],
+        [
+          "method",
+          "clamp"
+        ],
+        [
+          "method",
+          "describe"
+        ]
+      ],
+      "path": "ingest/java/01-methods.java"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "class",
+          "Dog"
+        ],
+        [
+          "class",
+          "Puppy"
+        ],
+        [
+          "method",
+          "speak"
+        ]
+      ],
+      "path": "ingest/java/02-inheritance.java"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "interface",
+          "Named"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/java/03-interfaces.java"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "java.util.List",
+        "java.util.ArrayList",
+        "java.util.Objects.requireNonNull",
+        "java.lang.Math.max"
+      ],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "Imports"
+        ],
+        [
+          "method",
+          "bigger"
+        ]
+      ],
+      "path": "ingest/java/04-imports.java"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "class",
+          "Util"
+        ],
+        [
+          "method",
+          "maxOf"
+        ],
+        [
+          "method",
+          "singleton"
+        ]
+      ],
+      "path": "ingest/java/05-generics.java"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "java.io.BufferedReader",
+        "java.io.IOException"
+      ],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "ConfigException"
+        ],
+        [
+          "class",
+          "Config"
+        ],
+        [
+          "method",
+          "read"
+        ],
+        [
+          "method",
+          "firstLine"
+        ]
+      ],
+      "path": "ingest/java/06-errors.java"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "type",
+          "Level"
+        ],
+        [
+          "method",
+          "code"
+        ],
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "interface",
+          "Tag"
+        ]
+      ],
+      "path": "ingest/java/07-enums.java"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "Outer"
+        ],
+        [
+          "class",
+          "Nested"
+        ],
+        [
+          "method",
+          "value"
+        ],
+        [
+          "class",
+          "Inner"
+        ],
+        [
+          "method",
+          "bump"
+        ],
+        [
+          "method",
+          "makeTask"
+        ]
+      ],
+      "path": "ingest/java/08-nested.java"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "java.util.List",
+        "java.util.function.Function",
+        "java.util.stream.Collectors"
+      ],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "Transform"
+        ],
+        [
+          "method",
+          "doubled"
+        ],
+        [
+          "method",
+          "upper"
+        ],
+        [
+          "method",
+          "adder"
+        ]
+      ],
+      "path": "ingest/java/09-lambdas.java"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "Runner"
+        ],
+        [
+          "method",
+          "helper"
+        ],
+        [
+          "method",
+          "run"
+        ]
+      ],
+      "path": "ingest/java/10-calls.java"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "next"
+        ],
+        [
+          "method",
+          "create"
+        ],
+        [
+          "method",
+          "size"
+        ]
+      ],
+      "path": "ingest/java/11-statics.java"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "java.lang.annotation.Retention",
+        "java.lang.annotation.RetentionPolicy",
+        "java.lang.annotation.Target",
+        "java.lang.annotation.ElementType"
+      ],
+      "language": "java",
+      "nodes": [
+        [
+          "interface",
+          "Marker"
+        ],
+        [
+          "class",
+          "Service"
+        ],
+        [
+          "method",
+          "handle"
+        ]
+      ],
+      "path": "ingest/java/12-annotations.java"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "Render"
+        ],
+        [
+          "method",
+          "page"
+        ],
+        [
+          "method",
+          "classify"
+        ],
+        [
+          "method",
+          "describe"
+        ]
+      ],
+      "path": "ingest/java/13-strings.java"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "java.io.IOException"
+      ],
+      "language": "java",
+      "nodes": [
+        [
+          "class",
+          "AppException"
+        ],
+        [
+          "class",
+          "NotFound"
+        ],
+        [
+          "class",
+          "Store"
+        ],
+        [
+          "method",
+          "load"
+        ],
+        [
+          "method",
+          "loadSafe"
+        ]
+      ],
+      "path": "ingest/java/14-exceptions-hierarchy.java"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "java.util.List"
+      ],
+      "language": "java",
+      "nodes": [
+        [
+          "module",
+          "com.example"
+        ],
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "type",
+          "Choice"
+        ]
+      ],
+      "path": "ingest/java/sample.java"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/javascript/01-functions.js"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "function",
+          "fetchOne"
+        ],
+        [
+          "function",
+          "fetchAll"
+        ],
+        [
+          "function",
+          "main"
+        ]
+      ],
+      "path": "ingest/javascript/02-async.js"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "origin"
+        ],
+        [
+          "class",
+          "Named"
+        ],
+        [
+          "method",
+          "name"
+        ]
+      ],
+      "path": "ingest/javascript/03-classes.js"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "class",
+          "Dog"
+        ],
+        [
+          "method",
+          "speak"
+        ],
+        [
+          "method",
+          "create"
+        ]
+      ],
+      "path": "ingest/javascript/04-inheritance.js"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "fs",
+        "path",
+        "./mod.js"
+      ],
+      "language": "javascript",
+      "nodes": [
+        [
+          "import",
+          "fs"
+        ],
+        [
+          "import",
+          "path"
+        ],
+        [
+          "function",
+          "useThem"
+        ]
+      ],
+      "path": "ingest/javascript/05-imports.js"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "fs",
+        "path",
+        "./local.cjs"
+      ],
+      "language": "javascript",
+      "nodes": [
+        [
+          "constant",
+          "fs"
+        ],
+        [
+          "constant",
+          "path"
+        ],
+        [
+          "function",
+          "load"
+        ]
+      ],
+      "path": "ingest/javascript/06-require.cjs"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "constructor"
+        ],
+        [
+          "function",
+          "readConfig"
+        ]
+      ],
+      "path": "ingest/javascript/07-errors.js"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "function",
+          "double"
+        ],
+        [
+          "function",
+          "addAll"
+        ],
+        [
+          "function",
+          "makeGreeter"
+        ],
+        [
+          "variable",
+          "mutableCounter"
+        ]
+      ],
+      "path": "ingest/javascript/08-arrow-functions.js"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "function",
+          "countdown"
+        ],
+        [
+          "function",
+          "fibonacci"
+        ]
+      ],
+      "path": "ingest/javascript/09-generators.js"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "constant",
+          "VERSION"
+        ],
+        [
+          "constant",
+          "MAX_RETRIES"
+        ],
+        [
+          "variable",
+          "counter"
+        ],
+        [
+          "function",
+          "bump"
+        ],
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "size"
+        ]
+      ],
+      "path": "ingest/javascript/10-module-structure.js"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ],
+        [
+          "function",
+          "add"
+        ]
+      ],
+      "path": "ingest/javascript/11-calls.js"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "function",
+          "makeCounter"
+        ],
+        [
+          "function",
+          "step"
+        ],
+        [
+          "function",
+          "reset"
+        ],
+        [
+          "constant",
+          "id"
+        ]
+      ],
+      "path": "ingest/javascript/12-closures.js"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "constant",
+          "pair"
+        ],
+        [
+          "constant",
+          "config"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/javascript/13-destructuring.js"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "javascript",
+      "nodes": [
+        [
+          "class",
+          "Queue"
+        ],
+        [
+          "method",
+          "push"
+        ],
+        [
+          "function",
+          "drain"
+        ]
+      ],
+      "path": "ingest/javascript/14-prototypes.js"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "./mod.js",
+        "fs"
+      ],
+      "language": "javascript",
+      "nodes": [
+        [
+          "import",
+          "fs"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "method",
+          "greet"
+        ],
+        [
+          "function",
+          "formatName"
+        ],
+        [
+          "function",
+          "arrow"
+        ]
+      ],
+      "path": "ingest/javascript/sample.js"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ],
+        [
+          "function",
+          "countdown"
+        ]
+      ],
+      "path": "ingest/kotlin/01-functions.kt"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "origin"
+        ],
+        [
+          "class",
+          "User"
+        ],
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "next"
+        ]
+      ],
+      "path": "ingest/kotlin/02-classes.kt"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "method",
+          "speak"
+        ],
+        [
+          "class",
+          "Dog"
+        ],
+        [
+          "method",
+          "walk"
+        ]
+      ],
+      "path": "ingest/kotlin/03-inheritance.kt"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "kotlin.collections.List",
+        "java.util.Objects.requireNonNull",
+        "kotlin.math.max",
+        "java.util.ArrayList"
+      ],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "function",
+          "bigger"
+        ]
+      ],
+      "path": "ingest/kotlin/04-imports.kt"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "function",
+          "first"
+        ]
+      ],
+      "path": "ingest/kotlin/05-generics.kt"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "safeRead"
+        ]
+      ],
+      "path": "ingest/kotlin/06-errors.kt"
+    },
+    {
+      "category": "async",
+      "imports": [
+        "kotlin.coroutines.coroutineContext"
+      ],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "function",
+          "fetchOne"
+        ],
+        [
+          "function",
+          "fetchAll"
+        ]
+      ],
+      "path": "ingest/kotlin/07-coroutines.kt"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "class",
+          "Result"
+        ],
+        [
+          "class",
+          "Ok"
+        ],
+        [
+          "class",
+          "Err"
+        ],
+        [
+          "class",
+          "Level"
+        ],
+        [
+          "function",
+          "weight"
+        ]
+      ],
+      "path": "ingest/kotlin/08-sealed.kt"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "function",
+          "makeCounter"
+        ],
+        [
+          "function",
+          "mapPairs"
+        ],
+        [
+          "function",
+          "applyTwice"
+        ]
+      ],
+      "path": "ingest/kotlin/09-lambdas.kt"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/kotlin/10-calls.kt"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "class",
+          "Config"
+        ]
+      ],
+      "path": "ingest/kotlin/11-properties.kt"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "function",
+          "shout"
+        ],
+        [
+          "function",
+          "upto"
+        ],
+        [
+          "function",
+          "applyIf"
+        ]
+      ],
+      "path": "ingest/kotlin/12-extensions.kt"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "class",
+          "ConsoleLogger"
+        ],
+        [
+          "method",
+          "log"
+        ],
+        [
+          "class",
+          "Service"
+        ],
+        [
+          "method",
+          "work"
+        ]
+      ],
+      "path": "ingest/kotlin/13-delegation.kt"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "function",
+          "classify"
+        ]
+      ],
+      "path": "ingest/kotlin/14-when-guards.kt"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "kotlin.collections.List"
+      ],
+      "language": "kotlin",
+      "nodes": [
+        [
+          "module",
+          "com.example.demo"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "function",
+          "topLevel"
+        ]
+      ],
+      "path": "ingest/kotlin/sample.kt"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "clamp"
+        ],
+        [
+          "function",
+          "variadic"
+        ],
+        [
+          "function",
+          "useClamp"
+        ]
+      ],
+      "path": "ingest/lua/01-functions.lua"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "json",
+        "util",
+        "pkg.sub.mod"
+      ],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/lua/02-require.lua"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "farewell"
+        ]
+      ],
+      "path": "ingest/lua/03-tables.lua"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "read_safe"
+        ],
+        [
+          "function",
+          "guarded"
+        ]
+      ],
+      "path": "ingest/lua/04-errors.lua"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "new"
+        ],
+        [
+          "function",
+          "move"
+        ],
+        [
+          "function",
+          "origin"
+        ]
+      ],
+      "path": "ingest/lua/05-oop.lua"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "make_counter"
+        ],
+        [
+          "function",
+          "step"
+        ],
+        [
+          "function",
+          "reset"
+        ],
+        [
+          "function",
+          "compose"
+        ]
+      ],
+      "path": "ingest/lua/06-closures.lua"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "producer"
+        ],
+        [
+          "function",
+          "collect"
+        ]
+      ],
+      "path": "ingest/lua/07-coroutines.lua"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "new"
+        ]
+      ],
+      "path": "ingest/lua/08-metatables.lua"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/lua/09-calls.lua"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "sluggify"
+        ],
+        [
+          "function",
+          "page"
+        ]
+      ],
+      "path": "ingest/lua/10-strings.lua"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "range"
+        ],
+        [
+          "function",
+          "keys_sorted"
+        ]
+      ],
+      "path": "ingest/lua/11-iterators.lua"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "sum"
+        ],
+        [
+          "function",
+          "count_args"
+        ],
+        [
+          "function",
+          "tail"
+        ]
+      ],
+      "path": "ingest/lua/12-varargs.lua"
+    },
+    {
+      "category": "module",
+      "imports": [
+        "config",
+        "logger"
+      ],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "start"
+        ],
+        [
+          "function",
+          "stop"
+        ]
+      ],
+      "path": "ingest/lua/13-modules-init.lua"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "new"
+        ],
+        [
+          "function",
+          "is"
+        ],
+        [
+          "function",
+          "fail_missing"
+        ]
+      ],
+      "path": "ingest/lua/14-error-objects.lua"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "json",
+        "mod"
+      ],
+      "language": "lua",
+      "nodes": [
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/lua/sample.lua"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "doubled"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/nim/01-procs.nim"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "strutils",
+        "std/tables",
+        "sequtils",
+        "fileExists"
+      ],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/nim/02-imports.nim"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "function",
+          "newPoint"
+        ],
+        [
+          "function",
+          "origin"
+        ]
+      ],
+      "path": "ingest/nim/03-types.nim"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "type",
+          "ConfigError"
+        ],
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "safeRead"
+        ]
+      ],
+      "path": "ingest/nim/04-errors.nim"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "type",
+          "Animal"
+        ],
+        [
+          "function",
+          "speak"
+        ],
+        [
+          "function",
+          "makeDog"
+        ]
+      ],
+      "path": "ingest/nim/05-methods.nim"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "type",
+          "Box"
+        ],
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "function",
+          "unwrap"
+        ],
+        [
+          "function",
+          "first"
+        ]
+      ],
+      "path": "ingest/nim/06-generics.nim"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "withResource"
+        ],
+        [
+          "function",
+          "debug"
+        ],
+        [
+          "function",
+          "useTemplate"
+        ]
+      ],
+      "path": "ingest/nim/07-templates.nim"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "countdown"
+        ],
+        [
+          "function",
+          "chars"
+        ],
+        [
+          "function",
+          "collectDown"
+        ]
+      ],
+      "path": "ingest/nim/08-iterators.nim"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "next"
+        ]
+      ],
+      "path": "ingest/nim/09-constants.nim"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/nim/10-calls.nim"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "classify"
+        ],
+        [
+          "function",
+          "buildMode"
+        ]
+      ],
+      "path": "ingest/nim/11-case-when.nim"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "makeCounter"
+        ],
+        [
+          "function",
+          "step"
+        ],
+        [
+          "function",
+          "compose"
+        ],
+        [
+          "function",
+          "composed"
+        ]
+      ],
+      "path": "ingest/nim/12-closures.nim"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "type",
+          "Pair"
+        ],
+        [
+          "function",
+          "split"
+        ],
+        [
+          "function",
+          "useSplit"
+        ]
+      ],
+      "path": "ingest/nim/13-tuples.nim"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "nim",
+      "nodes": [
+        [
+          "function",
+          "toInt"
+        ],
+        [
+          "function",
+          "asInt"
+        ],
+        [
+          "function",
+          "raiseOrValue"
+        ]
+      ],
+      "path": "ingest/nim/14-converters.nim"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "strutils",
+        "tables"
+      ],
+      "language": "nim",
+      "nodes": [
+        [
+          "type",
+          "Greeter"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "helper"
+        ]
+      ],
+      "path": "ingest/nim/sample.nim"
+    },
+    {
+      "category": "functions",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "clampValue"
+        ],
+        [
+          "function",
+          "useAdd"
+        ]
+      ],
+      "path": "ingest/objc/01-functions.m"
+    },
+    {
+      "category": "classes",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "moveByX"
+        ]
+      ],
+      "path": "ingest/objc/02-class-interface.m"
+    },
+    {
+      "category": "typing",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/objc/03-protocols.m"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "Foundation/Foundation.h",
+        "UIKit/UIKit.h",
+        "LocalHelper.h",
+        "sub/Util.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "function",
+          "bootUi"
+        ]
+      ],
+      "path": "ingest/objc/04-imports.m"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "class",
+          "NSString"
+        ],
+        [
+          "method",
+          "shouted"
+        ],
+        [
+          "function",
+          "Shout"
+        ]
+      ],
+      "path": "ingest/objc/05-categories.m"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "function",
+          "applyTransformer"
+        ],
+        [
+          "function",
+          "doubledValues"
+        ]
+      ],
+      "path": "ingest/objc/06-blocks.m"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "function",
+          "writeText"
+        ]
+      ],
+      "path": "ingest/objc/07-errors.m"
+    },
+    {
+      "category": "types",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "type",
+          "Size2D"
+        ],
+        [
+          "type",
+          "Level"
+        ],
+        [
+          "function",
+          "areaOf"
+        ]
+      ],
+      "path": "ingest/objc/08-structs.m"
+    },
+    {
+      "category": "calls",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "function",
+          "runGreeting"
+        ]
+      ],
+      "path": "ingest/objc/09-selectors.m"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "class",
+          "Counter"
+        ],
+        [
+          "method",
+          "value"
+        ],
+        [
+          "method",
+          "bump"
+        ]
+      ],
+      "path": "ingest/objc/10-class-extension.m"
+    },
+    {
+      "category": "module",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "class",
+          "Config"
+        ],
+        [
+          "method",
+          "initWithName"
+        ]
+      ],
+      "path": "ingest/objc/11-properties.m"
+    },
+    {
+      "category": "typing",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "function",
+          "namesFrom"
+        ]
+      ],
+      "path": "ingest/objc/12-generics.m"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "function",
+          "totalLength"
+        ],
+        [
+          "function",
+          "defaultsMap"
+        ]
+      ],
+      "path": "ingest/objc/13-fast-enumeration.m"
+    },
+    {
+      "category": "classes",
+      "imports": [
+        "Foundation/Foundation.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "interface",
+          "WorkerDelegate"
+        ],
+        [
+          "class",
+          "Worker"
+        ],
+        [
+          "method",
+          "start"
+        ]
+      ],
+      "path": "ingest/objc/14-delegation.m"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "Foundation/Foundation.h",
+        "util.h"
+      ],
+      "language": "objc",
+      "nodes": [
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "method",
+          "greet"
+        ],
+        [
+          "function",
+          "helper_fn"
+        ]
+      ],
+      "path": "ingest/objc/sample.m"
+    },
+    {
+      "category": "functions",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/perl/01-subs.pl"
+    },
+    {
+      "category": "module",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "module",
+          "Demo::Util"
+        ],
+        [
+          "module",
+          "Demo::App"
+        ],
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/perl/02-packages.pl"
+    },
+    {
+      "category": "classes",
+      "imports": [
+        "parent"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "module",
+          "Demo::Animal"
+        ],
+        [
+          "function",
+          "new"
+        ],
+        [
+          "function",
+          "speak"
+        ],
+        [
+          "module",
+          "Demo::Dog"
+        ]
+      ],
+      "path": "ingest/perl/03-oo.pl"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "strict",
+        "warnings",
+        "JSON::PP",
+        "List::Util",
+        "Carp",
+        "Local::Helper"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/perl/04-imports.pl"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "read_safe"
+        ],
+        [
+          "function",
+          "checked"
+        ]
+      ],
+      "path": "ingest/perl/05-errors.pl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "build_index"
+        ],
+        [
+          "function",
+          "apply_all"
+        ],
+        [
+          "function",
+          "use_doubler"
+        ]
+      ],
+      "path": "ingest/perl/06-references.pl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "parse_line"
+        ],
+        [
+          "function",
+          "sluggify"
+        ]
+      ],
+      "path": "ingest/perl/07-regex.pl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "collected"
+        ],
+        [
+          "function",
+          "gather"
+        ]
+      ],
+      "path": "ingest/perl/08-context.pl"
+    },
+    {
+      "category": "calls",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/perl/09-calls.pl"
+    },
+    {
+      "category": "module",
+      "imports": [
+        "strict",
+        "warnings",
+        "autodie"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "slurp"
+        ],
+        [
+          "function",
+          "first_line"
+        ]
+      ],
+      "path": "ingest/perl/10-filehandles.pl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "pick"
+        ],
+        [
+          "function",
+          "without_keys"
+        ]
+      ],
+      "path": "ingest/perl/11-hashes.pl"
+    },
+    {
+      "category": "classes",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "module",
+          "Demo::Point"
+        ],
+        [
+          "function",
+          "new"
+        ],
+        [
+          "function",
+          "x"
+        ],
+        [
+          "function",
+          "y"
+        ],
+        [
+          "function",
+          "move"
+        ]
+      ],
+      "path": "ingest/perl/12-moose-lite.pl"
+    },
+    {
+      "category": "functions",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "evens"
+        ],
+        [
+          "function",
+          "doubled"
+        ],
+        [
+          "function",
+          "sorted_unique"
+        ]
+      ],
+      "path": "ingest/perl/13-map-grep.pl"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "strict",
+        "warnings"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "function",
+          "page"
+        ],
+        [
+          "function",
+          "raw_template"
+        ],
+        [
+          "function",
+          "commands"
+        ]
+      ],
+      "path": "ingest/perl/14-here-docs.pl"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "JSON::PP",
+        "strict"
+      ],
+      "language": "perl",
+      "nodes": [
+        [
+          "module",
+          "Demo"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/perl/sample.pl"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/php/01-functions.php"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "__construct"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "isOrigin"
+        ],
+        [
+          "method",
+          "build"
+        ]
+      ],
+      "path": "ingest/php/02-classes.php"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "method",
+          "speak"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "class",
+          "Dog"
+        ],
+        [
+          "class",
+          "Puppy"
+        ]
+      ],
+      "path": "ingest/php/03-inheritance.php"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "Vendor\\Pkg\\Thing",
+        "Vendor\\Pkg\\Other"
+      ],
+      "language": "php",
+      "nodes": [
+        [
+          "class",
+          "Boot"
+        ],
+        [
+          "method",
+          "run"
+        ]
+      ],
+      "path": "ingest/php/04-namespaces.php"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "type",
+          "Named"
+        ],
+        [
+          "method",
+          "name"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/php/05-interfaces.php"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "__construct"
+        ],
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "safeRead"
+        ]
+      ],
+      "path": "ingest/php/06-errors.php"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "interface",
+          "Log"
+        ],
+        [
+          "class",
+          "FileLog"
+        ],
+        [
+          "class",
+          "NullLog"
+        ],
+        [
+          "function",
+          "pickLog"
+        ],
+        [
+          "function",
+          "find"
+        ]
+      ],
+      "path": "ingest/php/07-generics-style.php"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "vendor/autoload.php",
+        "config/bootstrap.php",
+        "partials/header.php",
+        "partials/footer.php"
+      ],
+      "language": "php",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/php/08-includes.php"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "function",
+          "makeCounter"
+        ],
+        [
+          "function",
+          "applyTwice"
+        ]
+      ],
+      "path": "ingest/php/09-closures.php"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/php/10-calls.php"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "interface",
+          "HasLabel"
+        ],
+        [
+          "method",
+          "label"
+        ],
+        [
+          "type",
+          "Level"
+        ]
+      ],
+      "path": "ingest/php/11-enums.php"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "class",
+          "Base"
+        ],
+        [
+          "method",
+          "create"
+        ],
+        [
+          "method",
+          "whoAmI"
+        ],
+        [
+          "class",
+          "Child"
+        ]
+      ],
+      "path": "ingest/php/12-static-late.php"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "class",
+          "Tag"
+        ],
+        [
+          "method",
+          "__construct"
+        ],
+        [
+          "class",
+          "Service"
+        ],
+        [
+          "method",
+          "handle"
+        ]
+      ],
+      "path": "ingest/php/13-attributes.php"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "class",
+          "Render"
+        ],
+        [
+          "method",
+          "page"
+        ],
+        [
+          "method",
+          "raw"
+        ]
+      ],
+      "path": "ingest/php/14-heredoc.php"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "php",
+      "nodes": [
+        [
+          "function",
+          "booted"
+        ],
+        [
+          "function",
+          "retryBudget"
+        ]
+      ],
+      "path": "ingest/php/15-module-structure.php"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "local.php"
+      ],
+      "language": "php",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/php/sample.php"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Add-Numbers"
+        ],
+        [
+          "function",
+          "Get-Greeting"
+        ],
+        [
+          "function",
+          "Write-Twice"
+        ]
+      ],
+      "path": "ingest/powershell/01-functions.ps1"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "Move"
+        ],
+        [
+          "method",
+          "IsOrigin"
+        ],
+        [
+          "method",
+          "Build"
+        ]
+      ],
+      "path": "ingest/powershell/02-classes.ps1"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "System.Collections.Generic",
+        ".\\Helpers.psm1",
+        "Microsoft.PowerShell.Utility"
+      ],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Get-Stack"
+        ]
+      ],
+      "path": "ingest/powershell/03-imports.ps1"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "function",
+          "Read-Config"
+        ]
+      ],
+      "path": "ingest/powershell/04-errors.ps1"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "ConvertTo-Upper"
+        ],
+        [
+          "function",
+          "Measure-Total"
+        ]
+      ],
+      "path": "ingest/powershell/05-pipelines.ps1"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Remove-ItemSafely"
+        ],
+        [
+          "function",
+          "Get-EvenNumbers"
+        ]
+      ],
+      "path": "ingest/powershell/06-cmdletbinding.ps1"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "method",
+          "Speak"
+        ],
+        [
+          "class",
+          "Dog"
+        ]
+      ],
+      "path": "ingest/powershell/07-enum.ps1"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "New-Counter"
+        ],
+        [
+          "function",
+          "Invoke-Twice"
+        ]
+      ],
+      "path": "ingest/powershell/08-scriptblocks.ps1"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Get-Helper"
+        ],
+        [
+          "function",
+          "Invoke-Run"
+        ]
+      ],
+      "path": "ingest/powershell/09-calls.ps1"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Get-Page"
+        ],
+        [
+          "function",
+          "Get-RawTemplate"
+        ]
+      ],
+      "path": "ingest/powershell/10-here-strings.ps1"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Get-Counter"
+        ],
+        [
+          "function",
+          "Step-Counter"
+        ],
+        [
+          "function",
+          "Reset-Counter"
+        ]
+      ],
+      "path": "ingest/powershell/11-modules.psm1"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "New-StringMap"
+        ],
+        [
+          "function",
+          "Convert-ToIntList"
+        ]
+      ],
+      "path": "ingest/powershell/12-typing.ps1"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Invoke-BackgroundWork"
+        ],
+        [
+          "function",
+          "Wait-Work"
+        ]
+      ],
+      "path": "ingest/powershell/13-remoting.ps1"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Get-Classified"
+        ],
+        [
+          "function",
+          "Get-Direction"
+        ]
+      ],
+      "path": "ingest/powershell/14-switch.ps1"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "System.Collections"
+      ],
+      "language": "powershell",
+      "nodes": [
+        [
+          "function",
+          "Invoke-Greet"
+        ],
+        [
+          "function",
+          "Get-Helper"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "method",
+          "Greet"
+        ]
+      ],
+      "path": "ingest/powershell/sample.ps1"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/python/01-functions.py"
+    },
+    {
+      "category": "async",
+      "imports": [
+        "asyncio"
+      ],
+      "language": "python",
+      "nodes": [
+        [
+          "function",
+          "fetch_one"
+        ],
+        [
+          "function",
+          "fetch_all"
+        ],
+        [
+          "function",
+          "main"
+        ],
+        [
+          "import",
+          "asyncio"
+        ]
+      ],
+      "path": "ingest/python/02-async.py"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "origin"
+        ],
+        [
+          "class",
+          "Named"
+        ],
+        [
+          "method",
+          "name"
+        ]
+      ],
+      "path": "ingest/python/03-classes.py"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "class",
+          "Dog"
+        ],
+        [
+          "class",
+          "Puppy"
+        ],
+        [
+          "method",
+          "speak"
+        ]
+      ],
+      "path": "ingest/python/04-inheritance.py"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "os",
+        "os.path",
+        "collections as col",
+        "typing",
+        "pkg.sub.mod"
+      ],
+      "language": "python",
+      "nodes": [
+        [
+          "import",
+          "os"
+        ],
+        [
+          "import",
+          "typing"
+        ],
+        [
+          "import",
+          "mod"
+        ]
+      ],
+      "path": "ingest/python/05-imports.py"
+    },
+    {
+      "category": "typing",
+      "imports": [
+        "typing"
+      ],
+      "language": "python",
+      "nodes": [
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "__init__"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "function",
+          "pairwise"
+        ],
+        [
+          "constant",
+          "T"
+        ]
+      ],
+      "path": "ingest/python/06-typing.py"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "__init__"
+        ],
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "validate"
+        ]
+      ],
+      "path": "ingest/python/07-errors.py"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "variable",
+          "__version__"
+        ],
+        [
+          "constant",
+          "DEFAULT_TIMEOUT"
+        ],
+        [
+          "variable",
+          "retry_count"
+        ],
+        [
+          "class",
+          "Settings"
+        ],
+        [
+          "function",
+          "get_timeout"
+        ]
+      ],
+      "path": "ingest/python/08-module-structure.py"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "function",
+          "make_counter"
+        ],
+        [
+          "function",
+          "step"
+        ],
+        [
+          "function",
+          "reset"
+        ],
+        [
+          "function",
+          "compose"
+        ],
+        [
+          "function",
+          "composed"
+        ]
+      ],
+      "path": "ingest/python/09-nested.py"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "functools"
+      ],
+      "language": "python",
+      "nodes": [
+        [
+          "function",
+          "logged"
+        ],
+        [
+          "function",
+          "wrapper"
+        ],
+        [
+          "function",
+          "repeat"
+        ],
+        [
+          "function",
+          "decorator"
+        ],
+        [
+          "function",
+          "inner"
+        ],
+        [
+          "function",
+          "ping"
+        ]
+      ],
+      "path": "ingest/python/10-decorators.py"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/python/11-calls.py"
+    },
+    {
+      "category": "typing",
+      "imports": [
+        "dataclasses",
+        "typing"
+      ],
+      "language": "python",
+      "nodes": [
+        [
+          "class",
+          "User"
+        ],
+        [
+          "class",
+          "Size"
+        ],
+        [
+          "function",
+          "area"
+        ]
+      ],
+      "path": "ingest/python/12-dataclasses.py"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "function",
+          "countdown"
+        ],
+        [
+          "function",
+          "fibonacci"
+        ],
+        [
+          "class",
+          "Bag"
+        ],
+        [
+          "method",
+          "__iter__"
+        ],
+        [
+          "method",
+          "__len__"
+        ]
+      ],
+      "path": "ingest/python/13-generators.py"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "python",
+      "nodes": [
+        [
+          "class",
+          "Timer"
+        ],
+        [
+          "method",
+          "__enter__"
+        ],
+        [
+          "method",
+          "__exit__"
+        ],
+        [
+          "function",
+          "measure"
+        ],
+        [
+          "function",
+          "work"
+        ]
+      ],
+      "path": "ingest/python/14-context-managers.py"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "os",
+        "pkg.mod"
+      ],
+      "language": "python",
+      "nodes": [
+        [
+          "import",
+          "os"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "method",
+          "greet"
+        ],
+        [
+          "function",
+          "format_name"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/python/sample.py"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/ruby/01-methods.rb"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "initialize"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "origin?"
+        ],
+        [
+          "method",
+          "build"
+        ]
+      ],
+      "path": "ingest/ruby/02-classes.rb"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "class",
+          "Dog"
+        ],
+        [
+          "method",
+          "speak"
+        ],
+        [
+          "module",
+          "Walkable"
+        ],
+        [
+          "function",
+          "walk"
+        ],
+        [
+          "class",
+          "Puppy"
+        ]
+      ],
+      "path": "ingest/ruby/03-inheritance.rb"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "json",
+        "net/http",
+        "local_helper",
+        "sub/util"
+      ],
+      "language": "ruby",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/ruby/04-requires.rb"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "initialize"
+        ],
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "read_safe"
+        ]
+      ],
+      "path": "ingest/ruby/05-errors.rb"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "module",
+          "Geometry"
+        ],
+        [
+          "constant",
+          "PI_APPROX"
+        ],
+        [
+          "method",
+          "distance"
+        ],
+        [
+          "module",
+          "Deep"
+        ],
+        [
+          "method",
+          "value"
+        ],
+        [
+          "module",
+          "Taggable"
+        ],
+        [
+          "function",
+          "tags"
+        ]
+      ],
+      "path": "ingest/ruby/06-modules.rb"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "function",
+          "each_pair"
+        ],
+        [
+          "function",
+          "make_adder"
+        ],
+        [
+          "function",
+          "apply_twice"
+        ],
+        [
+          "constant",
+          "DOUBLE"
+        ]
+      ],
+      "path": "ingest/ruby/07-blocks.rb"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "constant",
+          "MAX_RETRIES"
+        ],
+        [
+          "constant",
+          "DEFAULTS"
+        ],
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "bump"
+        ]
+      ],
+      "path": "ingest/ruby/08-constants.rb"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/ruby/09-calls.rb"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "class",
+          "Dynamic"
+        ],
+        [
+          "method",
+          "method_missing"
+        ],
+        [
+          "method",
+          "respond_to_missing?"
+        ],
+        [
+          "class",
+          "Built"
+        ]
+      ],
+      "path": "ingest/ruby/10-metaprogramming.rb"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "class",
+          "Config"
+        ],
+        [
+          "method",
+          "load"
+        ],
+        [
+          "method",
+          "default"
+        ],
+        [
+          "method",
+          "initialize"
+        ]
+      ],
+      "path": "ingest/ruby/11-singleton.rb"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "class",
+          "Render"
+        ],
+        [
+          "method",
+          "page"
+        ],
+        [
+          "method",
+          "describe"
+        ]
+      ],
+      "path": "ingest/ruby/12-symbols.rb"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "class",
+          "Sized"
+        ],
+        [
+          "method",
+          "initialize"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "variable",
+          "Point3"
+        ]
+      ],
+      "path": "ingest/ruby/13-structs.rb"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "ruby",
+      "nodes": [
+        [
+          "class",
+          "Bag"
+        ],
+        [
+          "method",
+          "each"
+        ],
+        [
+          "method",
+          "add"
+        ]
+      ],
+      "path": "ingest/ruby/14-enumerable.rb"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "json",
+        "local"
+      ],
+      "language": "ruby",
+      "nodes": [
+        [
+          "module",
+          "Util"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "function",
+          "format_name"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/ruby/sample.rb"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "clamp"
+        ],
+        [
+          "function",
+          "first"
+        ]
+      ],
+      "path": "ingest/rust/01-functions.rs"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "type",
+          "Pair"
+        ],
+        [
+          "type",
+          "Marker"
+        ],
+        [
+          "method",
+          "new"
+        ],
+        [
+          "method",
+          "origin"
+        ]
+      ],
+      "path": "ingest/rust/02-structs.rs"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "type",
+          "Circle"
+        ],
+        [
+          "function",
+          "total_area"
+        ]
+      ],
+      "path": "ingest/rust/03-traits.rs"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "std::collections::HashMap",
+        "std::io::{Read, Write}",
+        "std::fmt as format",
+        "crate::inner::Thing",
+        "super::sibling::helper"
+      ],
+      "language": "rust",
+      "nodes": [
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/rust/04-imports.rs"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "std::fmt"
+      ],
+      "language": "rust",
+      "nodes": [
+        [
+          "type",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "fmt"
+        ],
+        [
+          "function",
+          "read_config"
+        ]
+      ],
+      "path": "ingest/rust/05-errors.rs"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "function",
+          "fetch_one"
+        ],
+        [
+          "function",
+          "fetch_all"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/rust/06-async.rs"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "type",
+          "Message"
+        ],
+        [
+          "function",
+          "weight"
+        ],
+        [
+          "type",
+          "Result2"
+        ]
+      ],
+      "path": "ingest/rust/07-enums.rs"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "module",
+          "outer"
+        ],
+        [
+          "constant",
+          "LIMIT"
+        ],
+        [
+          "module",
+          "inner"
+        ],
+        [
+          "function",
+          "deep"
+        ],
+        [
+          "function",
+          "call_deep"
+        ],
+        [
+          "constant",
+          "COUNTER"
+        ],
+        [
+          "function",
+          "next"
+        ]
+      ],
+      "path": "ingest/rust/08-modules.rs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "function",
+          "report"
+        ]
+      ],
+      "path": "ingest/rust/09-macros.rs"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/rust/10-calls.rs"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "function",
+          "doubled"
+        ],
+        [
+          "function",
+          "sum_even"
+        ],
+        [
+          "function",
+          "zip_names"
+        ]
+      ],
+      "path": "ingest/rust/11-iterators.rs"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "type",
+          "Cursor"
+        ],
+        [
+          "method",
+          "new"
+        ],
+        [
+          "method",
+          "next_byte"
+        ],
+        [
+          "function",
+          "longest"
+        ]
+      ],
+      "path": "ingest/rust/12-lifetimes.rs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "type",
+          "Event"
+        ],
+        [
+          "function",
+          "classify"
+        ],
+        [
+          "function",
+          "unwrap_or_zero"
+        ]
+      ],
+      "path": "ingest/rust/13-pattern-matching.rs"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "rust",
+      "nodes": [
+        [
+          "function",
+          "read_raw"
+        ],
+        [
+          "function",
+          "strlen"
+        ],
+        [
+          "function",
+          "ffi_len"
+        ]
+      ],
+      "path": "ingest/rust/14-unsafe-extern.rs"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "crate::mod2::thing",
+        "std::collections::HashMap"
+      ],
+      "language": "rust",
+      "nodes": [
+        [
+          "type",
+          "Thing"
+        ],
+        [
+          "type",
+          "Choice"
+        ],
+        [
+          "interface",
+          "T"
+        ],
+        [
+          "function",
+          "top_level"
+        ]
+      ],
+      "path": "ingest/rust/sample.rs"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ],
+        [
+          "function",
+          "curried"
+        ]
+      ],
+      "path": "ingest/scala/01-functions.scala"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "origin"
+        ],
+        [
+          "class",
+          "User"
+        ],
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "next"
+        ]
+      ],
+      "path": "ingest/scala/02-classes.scala"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "interface",
+          "Named"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/scala/03-traits.scala"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "scala.collection.mutable.ListBuffer",
+        "scala.math._"
+      ],
+      "language": "scala",
+      "nodes": [
+        [
+          "function",
+          "bigger"
+        ]
+      ],
+      "path": "ingest/scala/04-imports.scala"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "interface",
+          "Producer"
+        ],
+        [
+          "function",
+          "first"
+        ]
+      ],
+      "path": "ingest/scala/05-generics.scala"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "safeRead"
+        ]
+      ],
+      "path": "ingest/scala/06-errors.scala"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "interface",
+          "Msg"
+        ],
+        [
+          "class",
+          "Quit"
+        ],
+        [
+          "class",
+          "Move"
+        ],
+        [
+          "function",
+          "classify"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/scala/07-pattern-matching.scala"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "function",
+          "compare"
+        ],
+        [
+          "function",
+          "shout"
+        ],
+        [
+          "function",
+          "render"
+        ]
+      ],
+      "path": "ingest/scala/08-implicits.scala"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/scala/09-calls.scala"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "class",
+          "Token"
+        ],
+        [
+          "method",
+          "apply"
+        ],
+        [
+          "method",
+          "unapply"
+        ],
+        [
+          "function",
+          "parse"
+        ]
+      ],
+      "path": "ingest/scala/10-companion.scala"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "type",
+          "Colour"
+        ],
+        [
+          "type",
+          "Tree"
+        ],
+        [
+          "function",
+          "depth"
+        ]
+      ],
+      "path": "ingest/scala/11-enums.scala"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "function",
+          "pairwiseSum"
+        ],
+        [
+          "function",
+          "combinations"
+        ]
+      ],
+      "path": "ingest/scala/12-for-comprehensions.scala"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "class",
+          "Config"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "variable",
+          "name"
+        ],
+        [
+          "variable",
+          "debug"
+        ]
+      ],
+      "path": "ingest/scala/13-lazy.scala"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "scala",
+      "nodes": [
+        [
+          "interface",
+          "Container"
+        ],
+        [
+          "type",
+          "Pair"
+        ],
+        [
+          "class",
+          "IntBox"
+        ]
+      ],
+      "path": "ingest/scala/14-higher-kinded.scala"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "scala.collection.mutable.ListBuffer"
+      ],
+      "language": "scala",
+      "nodes": [
+        [
+          "module",
+          "com.example.demo"
+        ],
+        [
+          "interface",
+          "Greeter"
+        ],
+        [
+          "class",
+          "Demo"
+        ],
+        [
+          "class",
+          "Singleton"
+        ],
+        [
+          "function",
+          "topLevel"
+        ]
+      ],
+      "path": "ingest/scala/sample.scala"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "clamp"
+        ],
+        [
+          "function",
+          "addFree"
+        ]
+      ],
+      "path": "ingest/solidity/01-functions.sol"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Counter"
+        ],
+        [
+          "variable",
+          "value"
+        ],
+        [
+          "variable",
+          "owner"
+        ],
+        [
+          "method",
+          "bump"
+        ],
+        [
+          "method",
+          "reset"
+        ]
+      ],
+      "path": "ingest/solidity/02-contract.sol"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "./Token.sol",
+        "./lib/Math.sol",
+        "./interfaces/IERC20.sol",
+        "./Utils.sol"
+      ],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Importer"
+        ],
+        [
+          "method",
+          "boot"
+        ]
+      ],
+      "path": "ingest/solidity/03-imports.sol"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Vault"
+        ],
+        [
+          "variable",
+          "owner"
+        ],
+        [
+          "method",
+          "withdraw"
+        ]
+      ],
+      "path": "ingest/solidity/04-errors.sol"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "interface",
+          "IShape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "method",
+          "name"
+        ],
+        [
+          "interface",
+          "INamed"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/solidity/05-interfaces.sol"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "method",
+          "speak"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "class",
+          "Dog"
+        ],
+        [
+          "method",
+          "speak"
+        ],
+        [
+          "class",
+          "Puppy"
+        ]
+      ],
+      "path": "ingest/solidity/06-inheritance.sol"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "type",
+          "Level"
+        ],
+        [
+          "type",
+          "Order"
+        ],
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "store"
+        ]
+      ],
+      "path": "ingest/solidity/07-structs-enums.sol"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Ledger"
+        ],
+        [
+          "method",
+          "record"
+        ],
+        [
+          "method",
+          "pause"
+        ]
+      ],
+      "path": "ingest/solidity/08-events.sol"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Runner"
+        ],
+        [
+          "method",
+          "helper"
+        ],
+        [
+          "method",
+          "run"
+        ]
+      ],
+      "path": "ingest/solidity/09-calls.sol"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Access"
+        ],
+        [
+          "variable",
+          "owner"
+        ],
+        [
+          "method",
+          "configure"
+        ]
+      ],
+      "path": "ingest/solidity/10-modifiers.sol"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "function",
+          "equals"
+        ],
+        [
+          "function",
+          "isEmpty"
+        ],
+        [
+          "function",
+          "sum"
+        ]
+      ],
+      "path": "ingest/solidity/11-libraries.sol"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "LowLevel"
+        ],
+        [
+          "method",
+          "addAssembly"
+        ],
+        [
+          "method",
+          "selfBalance"
+        ]
+      ],
+      "path": "ingest/solidity/12-assembly.sol"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Proxy"
+        ],
+        [
+          "variable",
+          "implementation"
+        ]
+      ],
+      "path": "ingest/solidity/13-fallback.sol"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Ledger"
+        ],
+        [
+          "method",
+          "deposit"
+        ],
+        [
+          "method",
+          "approve"
+        ],
+        [
+          "method",
+          "balanceOf"
+        ]
+      ],
+      "path": "ingest/solidity/14-mappings.sol"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "./Token.sol"
+      ],
+      "language": "solidity",
+      "nodes": [
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "variable",
+          "name"
+        ],
+        [
+          "interface",
+          "IGreeter"
+        ]
+      ],
+      "path": "ingest/solidity/sample.sol"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "swap2"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/swift/01-functions.swift"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "build"
+        ]
+      ],
+      "path": "ingest/swift/02-classes.swift"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/swift/03-protocols.swift"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "Foundation",
+        "UIKit"
+      ],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/swift/04-imports.swift"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "function",
+          "first"
+        ]
+      ],
+      "path": "ingest/swift/05-generics.swift"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "safeRead"
+        ]
+      ],
+      "path": "ingest/swift/06-errors.swift"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "method",
+          "scale"
+        ],
+        [
+          "method",
+          "area"
+        ]
+      ],
+      "path": "ingest/swift/07-structs.swift"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "class",
+          "Direction"
+        ],
+        [
+          "class",
+          "Message"
+        ]
+      ],
+      "path": "ingest/swift/08-enums.swift"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "fetchOne"
+        ],
+        [
+          "function",
+          "fetchAll"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/swift/09-async.swift"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/swift/10-calls.swift"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "makeCounter"
+        ],
+        [
+          "function",
+          "applyTwice"
+        ],
+        [
+          "function",
+          "doubled"
+        ]
+      ],
+      "path": "ingest/swift/11-closures.swift"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "firstChar"
+        ],
+        [
+          "function",
+          "describe"
+        ],
+        [
+          "function",
+          "lengthOrZero"
+        ]
+      ],
+      "path": "ingest/swift/12-optionals.swift"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "shouted"
+        ],
+        [
+          "function",
+          "demo"
+        ]
+      ],
+      "path": "ingest/swift/13-extensions.swift"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "class",
+          "Clamped"
+        ],
+        [
+          "class",
+          "Settings"
+        ]
+      ],
+      "path": "ingest/swift/14-property-wrappers.swift"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "swift",
+      "nodes": [
+        [
+          "function",
+          "configured"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/swift/15-module-structure.swift"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "Foundation",
+        "UIKit"
+      ],
+      "language": "swift",
+      "nodes": [
+        [
+          "interface",
+          "Greeter"
+        ],
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "class",
+          "Demo"
+        ],
+        [
+          "function",
+          "topLevel"
+        ]
+      ],
+      "path": "ingest/swift/sample.swift"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "variadic"
+        ]
+      ],
+      "path": "ingest/typescript/01-functions.ts"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "function",
+          "fetchOne"
+        ],
+        [
+          "function",
+          "fetchAll"
+        ],
+        [
+          "function",
+          "main"
+        ]
+      ],
+      "path": "ingest/typescript/02-async.ts"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "origin"
+        ],
+        [
+          "class",
+          "Shape"
+        ],
+        [
+          "method",
+          "describe"
+        ]
+      ],
+      "path": "ingest/typescript/03-classes.ts"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "interface",
+          "Named"
+        ],
+        [
+          "interface",
+          "Circle"
+        ],
+        [
+          "function",
+          "totalArea"
+        ]
+      ],
+      "path": "ingest/typescript/04-interfaces.ts"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "fs",
+        "path",
+        "./mod"
+      ],
+      "language": "typescript",
+      "nodes": [
+        [
+          "import",
+          "fs"
+        ],
+        [
+          "import",
+          "path"
+        ],
+        [
+          "function",
+          "load"
+        ]
+      ],
+      "path": "ingest/typescript/05-imports.ts"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "class",
+          "Box"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "function",
+          "first"
+        ],
+        [
+          "type",
+          "Pair"
+        ]
+      ],
+      "path": "ingest/typescript/06-generics.ts"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "class",
+          "ConfigError"
+        ],
+        [
+          "method",
+          "constructor"
+        ],
+        [
+          "function",
+          "readConfig"
+        ]
+      ],
+      "path": "ingest/typescript/07-errors.ts"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "type",
+          "Id"
+        ],
+        [
+          "type",
+          "Callback"
+        ],
+        [
+          "type",
+          "Direction"
+        ],
+        [
+          "type",
+          "Colour"
+        ],
+        [
+          "constant",
+          "DEFAULT_DIRECTION"
+        ],
+        [
+          "function",
+          "turn"
+        ]
+      ],
+      "path": "ingest/typescript/08-type-aliases.ts"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "module",
+          "Geometry"
+        ],
+        [
+          "interface",
+          "PointLike"
+        ],
+        [
+          "function",
+          "distance"
+        ],
+        [
+          "module",
+          "Strings"
+        ],
+        [
+          "function",
+          "shout"
+        ]
+      ],
+      "path": "ingest/typescript/09-namespaces.ts"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "function",
+          "sealed"
+        ],
+        [
+          "class",
+          "Registry"
+        ],
+        [
+          "method",
+          "add"
+        ]
+      ],
+      "path": "ingest/typescript/10-decorators.ts"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/typescript/11-calls.ts"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "function",
+          "pad"
+        ],
+        [
+          "class",
+          "Converter"
+        ],
+        [
+          "method",
+          "convert"
+        ]
+      ],
+      "path": "ingest/typescript/12-overloads.ts"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "type",
+          "Props"
+        ],
+        [
+          "function",
+          "List"
+        ],
+        [
+          "constant",
+          "config"
+        ],
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/typescript/13-generic-arrows.ts"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "typescript",
+      "nodes": [
+        [
+          "type",
+          "Flag"
+        ],
+        [
+          "type",
+          "Level"
+        ],
+        [
+          "constant",
+          "LIMIT"
+        ],
+        [
+          "function",
+          "allowed"
+        ]
+      ],
+      "path": "ingest/typescript/14-enums-const.ts"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "./mod"
+      ],
+      "language": "typescript",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "type",
+          "Alias"
+        ],
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "function",
+          "formatName"
+        ]
+      ],
+      "path": "ingest/typescript/sample.ts"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "swap"
+        ],
+        [
+          "function",
+          "exported"
+        ]
+      ],
+      "path": "ingest/v/01-functions.v"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "os",
+        "strings",
+        "encoding.base64"
+      ],
+      "language": "v",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/v/02-imports.v"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "type",
+          "Point"
+        ],
+        [
+          "type",
+          "Colour"
+        ],
+        [
+          "function",
+          "move"
+        ],
+        [
+          "function",
+          "origin"
+        ]
+      ],
+      "path": "ingest/v/03-structs.v"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "type",
+          "Circle"
+        ],
+        [
+          "function",
+          "area"
+        ],
+        [
+          "function",
+          "total_area"
+        ]
+      ],
+      "path": "ingest/v/04-interfaces.v"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "function",
+          "read_config"
+        ],
+        [
+          "function",
+          "must_config"
+        ],
+        [
+          "function",
+          "try_config"
+        ]
+      ],
+      "path": "ingest/v/05-errors.v"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "module",
+          "demo"
+        ],
+        [
+          "constant",
+          "limit"
+        ],
+        [
+          "constant",
+          "name_a"
+        ],
+        [
+          "constant",
+          "name_b"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/v/06-constants.v"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "interface",
+          "Identifiable"
+        ],
+        [
+          "type",
+          "Account"
+        ],
+        [
+          "function",
+          "id"
+        ],
+        [
+          "function",
+          "identity"
+        ],
+        [
+          "function",
+          "use_account"
+        ]
+      ],
+      "path": "ingest/v/07-generics.v"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "function",
+          "make_counter"
+        ],
+        [
+          "function",
+          "use_counter"
+        ]
+      ],
+      "path": "ingest/v/08-closures.v"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "function",
+          "classify"
+        ]
+      ],
+      "path": "ingest/v/09-match.v"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/v/10-calls.v"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "function",
+          "produce"
+        ],
+        [
+          "function",
+          "fanout"
+        ]
+      ],
+      "path": "ingest/v/11-concurrency.v"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "os"
+      ],
+      "language": "v",
+      "nodes": [
+        [
+          "function",
+          "read_first"
+        ]
+      ],
+      "path": "ingest/v/12-defer.v"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "function",
+          "weight"
+        ]
+      ],
+      "path": "ingest/v/13-sum-types.v"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "v",
+      "nodes": [
+        [
+          "function",
+          "banner"
+        ],
+        [
+          "function",
+          "raw"
+        ]
+      ],
+      "path": "ingest/v/14-string-interp.v"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "os",
+        "strings"
+      ],
+      "language": "v",
+      "nodes": [
+        [
+          "module",
+          "main"
+        ],
+        [
+          "type",
+          "Greeter"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "constant",
+          "limit"
+        ]
+      ],
+      "path": "ingest/v/sample.v"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "try_parse"
+        ],
+        [
+          "function",
+          "bump"
+        ]
+      ],
+      "path": "ingest/vala/01-functions.vala"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "class",
+          "Point"
+        ],
+        [
+          "method",
+          "move"
+        ],
+        [
+          "method",
+          "is_origin"
+        ],
+        [
+          "method",
+          "build"
+        ]
+      ],
+      "path": "ingest/vala/02-classes.vala"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "GLib",
+        "Gee"
+      ],
+      "language": "vala",
+      "nodes": [
+        [
+          "class",
+          "Imports"
+        ],
+        [
+          "method",
+          "describe"
+        ]
+      ],
+      "path": "ingest/vala/03-usings.vala"
+    },
+    {
+      "category": "errors",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "class",
+          "ConfigLookup"
+        ],
+        [
+          "method",
+          "read_config"
+        ],
+        [
+          "method",
+          "read_safe"
+        ]
+      ],
+      "path": "ingest/vala/04-errors.vala"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "interface",
+          "Shape"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "class",
+          "Circle"
+        ]
+      ],
+      "path": "ingest/vala/05-interfaces.vala"
+    },
+    {
+      "category": "typing",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "class",
+          "Box<T>"
+        ],
+        [
+          "method",
+          "unwrap"
+        ],
+        [
+          "function",
+          "identity<T>"
+        ],
+        [
+          "function",
+          "first<T>"
+        ]
+      ],
+      "path": "ingest/vala/06-generics.vala"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "class",
+          "Emitter"
+        ],
+        [
+          "method",
+          "emit_change"
+        ],
+        [
+          "class",
+          "Listener"
+        ],
+        [
+          "method",
+          "connect_to"
+        ]
+      ],
+      "path": "ingest/vala/07-signals.vala"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "type",
+          "Size"
+        ],
+        [
+          "method",
+          "area"
+        ],
+        [
+          "type",
+          "Level"
+        ],
+        [
+          "method",
+          "to_string"
+        ]
+      ],
+      "path": "ingest/vala/08-structs-enums.vala"
+    },
+    {
+      "category": "calls",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/vala/09-calls.vala"
+    },
+    {
+      "category": "async",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "function",
+          "fetch_one"
+        ],
+        [
+          "function",
+          "run"
+        ],
+        [
+          "function",
+          "count_of"
+        ]
+      ],
+      "path": "ingest/vala/10-async.vala"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "function",
+          "apply"
+        ],
+        [
+          "function",
+          "apply_twice"
+        ]
+      ],
+      "path": "ingest/vala/11-delegates.vala"
+    },
+    {
+      "category": "classes",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "class",
+          "Animal"
+        ],
+        [
+          "method",
+          "speak"
+        ],
+        [
+          "method",
+          "describe"
+        ],
+        [
+          "class",
+          "Dog"
+        ]
+      ],
+      "path": "ingest/vala/12-inheritance.vala"
+    },
+    {
+      "category": "edge-nesting",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "function",
+          "make_counter"
+        ],
+        [
+          "function",
+          "apply_twice_vala"
+        ]
+      ],
+      "path": "ingest/vala/13-closures.vala"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "function",
+          "banner"
+        ],
+        [
+          "function",
+          "verbatim"
+        ],
+        [
+          "function",
+          "page"
+        ]
+      ],
+      "path": "ingest/vala/14-string-templates.vala"
+    },
+    {
+      "category": "module",
+      "imports": [],
+      "language": "vala",
+      "nodes": [
+        [
+          "function",
+          "next"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/vala/15-module-structure.vala"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "GLib"
+      ],
+      "language": "vala",
+      "nodes": [
+        [
+          "class",
+          "Greeter"
+        ],
+        [
+          "method",
+          "greet"
+        ],
+        [
+          "interface",
+          "Runner"
+        ],
+        [
+          "method",
+          "run"
+        ]
+      ],
+      "path": "ingest/vala/sample.vala"
+    },
+    {
+      "category": "functions",
+      "imports": [],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "add"
+        ],
+        [
+          "function",
+          "clamp"
+        ],
+        [
+          "function",
+          "useAdd"
+        ]
+      ],
+      "path": "ingest/zig/01-functions.zig"
+    },
+    {
+      "category": "imports",
+      "imports": [
+        "std",
+        "util.zig",
+        "lib/math.zig"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "boot"
+        ]
+      ],
+      "path": "ingest/zig/02-imports.zig"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "std"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "readConfig"
+        ],
+        [
+          "function",
+          "mustConfig"
+        ],
+        [
+          "function",
+          "tryConfig"
+        ]
+      ],
+      "path": "ingest/zig/03-errors.zig"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "makePoint"
+        ]
+      ],
+      "path": "ingest/zig/04-structs.zig"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "weight"
+        ],
+        [
+          "function",
+          "colourCode"
+        ]
+      ],
+      "path": "ingest/zig/05-enums-unions.zig"
+    },
+    {
+      "category": "typing",
+      "imports": [
+        "std"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "Stack"
+        ],
+        [
+          "function",
+          "useStack"
+        ]
+      ],
+      "path": "ingest/zig/06-generics.zig"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "firstChar"
+        ],
+        [
+          "function",
+          "firstOr"
+        ],
+        [
+          "function",
+          "describe"
+        ]
+      ],
+      "path": "ingest/zig/07-optionals.zig"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [
+        "std"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "fibN"
+        ],
+        [
+          "function",
+          "fib10"
+        ]
+      ],
+      "path": "ingest/zig/08-comptime.zig"
+    },
+    {
+      "category": "module",
+      "imports": [
+        "std"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "double"
+        ]
+      ],
+      "path": "ingest/zig/09-testing.zig"
+    },
+    {
+      "category": "calls",
+      "imports": [
+        "std"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "helper"
+        ],
+        [
+          "function",
+          "run"
+        ]
+      ],
+      "path": "ingest/zig/10-calls.zig"
+    },
+    {
+      "category": "errors",
+      "imports": [
+        "std"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "buffered"
+        ],
+        [
+          "function",
+          "withLock"
+        ]
+      ],
+      "path": "ingest/zig/11-defer.zig"
+    },
+    {
+      "category": "edge-syntax",
+      "imports": [],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "bump"
+        ],
+        [
+          "function",
+          "sumSlice"
+        ],
+        [
+          "function",
+          "firstPtr"
+        ]
+      ],
+      "path": "ingest/zig/12-pointers.zig"
+    },
+    {
+      "category": "async",
+      "imports": [
+        "std"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "dispatch"
+        ],
+        [
+          "function",
+          "spawnCount"
+        ]
+      ],
+      "path": "ingest/zig/13-async-notes.zig"
+    },
+    {
+      "category": "types",
+      "imports": [],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "flagsValue"
+        ],
+        [
+          "function",
+          "headerMagic"
+        ]
+      ],
+      "path": "ingest/zig/14-packed.zig"
+    },
+    {
+      "category": "sample",
+      "imports": [
+        "std",
+        "util.zig"
+      ],
+      "language": "zig",
+      "nodes": [
+        [
+          "function",
+          "greet"
+        ],
+        [
+          "function",
+          "helper"
+        ]
+      ],
+      "path": "ingest/zig/sample.zig"
+    }
+  ],
+  "generator": "w15-sub129",
+  "version": 1
+}

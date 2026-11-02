@@ -140,6 +140,68 @@ class UnresolvedRefError(StoreError):
     """An unresolved-ref lifecycle transition was requested illegally."""
 
 
+class StorageTuningError(StoreError):
+    """An invalid storage-tuning specification (typed, fail-closed)."""
+
+
+@dataclass(frozen=True)
+class StorageTuning:
+    """Hardware-aware pragma recipe for one store connection (W15).
+
+    ``StorageTuning.legacy()`` is the historical recipe exactly: no mmap, the
+    engine page size, ``synchronous = FULL``. Any other instance is built by
+    probing (see ``hardware.probe``/``hardware.tuning``) or passed explicitly;
+    pragmas change access mechanics, never results. ``page_size`` only takes
+    effect on a freshly created database — SQLite keeps an existing file's
+    page size, which is the honest, safe behavior.
+    """
+
+    mmap_bytes: int = 0
+    page_size: int | None = None
+    synchronous_normal: bool = False
+    source: str = "legacy"
+    notes: tuple[str, ...] = ()
+    cache_kib: int = 0
+
+    def __post_init__(self) -> None:
+        if self.mmap_bytes < 0:
+            raise StorageTuningError(f"mmap_bytes must be >= 0, got {self.mmap_bytes}")
+        if self.cache_kib < 0:
+            raise StorageTuningError(f"cache_kib must be >= 0, got {self.cache_kib}")
+        if self.page_size is not None:
+            allowed_page_sizes = {512 << shift for shift in range(8)}
+            if self.page_size not in allowed_page_sizes:
+                raise StorageTuningError(
+                    f"page_size must be None or a power of two in 512..65536, got {self.page_size}"
+                )
+
+    @classmethod
+    def legacy(cls) -> StorageTuning:
+        """The historical recipe: no mmap, engine page size, FULL sync."""
+        return cls(0, None, False, "legacy", ("historical pragma recipe",))
+
+
+def _resolve_storage_tuning(db_path: str) -> StorageTuning:
+    """Resolve the pragma recipe from the single hardware plan (fail-open).
+
+    Imported lazily so ``store`` stays importable without the hardware layer
+    and the connection recipe stays owned here. Any failure degrades to the
+    legacy recipe with an honest note rather than refusing to open.
+    """
+    if db_path == ":memory:":
+        return StorageTuning.legacy()
+    try:
+        from know_your_context.hardware.profile import hardware_plan
+        from know_your_context.ops.switches import load_switches
+    except ImportError as exc:  # pragma: no cover - defensive; package layout is fixed
+        return StorageTuning(0, None, False, "legacy", (f"hardware layer unavailable: {exc}",))
+
+    plan = hardware_plan(db_path).storage
+    hw_tuning_disabled = load_switches().hw_tuning_disabled()
+    source = "legacy" if hw_tuning_disabled else "probe"
+    return StorageTuning(plan.mmap_bytes, plan.page_size, plan.synchronous_normal, source, plan.notes, plan.cache_kib)
+
+
 # Same-process registry of open file-backed stores (final flow audit F-1):
 # backup/restore must know when a destination path is a *live* store so the
 # replace can be coordinated with the handle (close → swap → reopen) instead
@@ -404,10 +466,14 @@ class EventStore:
         *,
         migrations_dir: str | Path | None = None,
         busy_timeout_ms: int = 15000,
+        storage_tuning: StorageTuning | None = None,
     ) -> None:
         self.db_path = str(db_path)
         self._migrations_dir = Path(migrations_dir) if migrations_dir is not None else DEFAULT_MIGRATIONS_DIR
         self._busy_timeout_ms = int(busy_timeout_ms)
+        # None = resolve from knobs + hardware probe (fail-open to legacy);
+        # an explicit StorageTuning.legacy() pins the historical recipe.
+        self._storage_tuning = storage_tuning if storage_tuning is not None else _resolve_storage_tuning(self.db_path)
         if self.db_path != ":memory:":
             Path(self.db_path).expanduser().parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
@@ -417,13 +483,28 @@ class EventStore:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute(f"PRAGMA busy_timeout = {int(busy_timeout_ms)}")
         self._conn.execute("PRAGMA foreign_keys = ON")
+        tuning = self._storage_tuning
         if self.db_path != ":memory:":
+            # page_size only takes effect on a freshly created database; on an
+            # existing file SQLite keeps the recorded size (honest, no rewrite).
+            if tuning.page_size is not None:
+                self._conn.execute(f"PRAGMA page_size = {tuning.page_size}")
             self._conn.execute("PRAGMA journal_mode = WAL")
-        self._conn.execute("PRAGMA synchronous = FULL")
+        self._conn.execute("PRAGMA synchronous = NORMAL" if tuning.synchronous_normal else "PRAGMA synchronous = FULL")
+        if tuning.mmap_bytes > 0 and self.db_path != ":memory:":
+            self._conn.execute(f"PRAGMA mmap_size = {int(tuning.mmap_bytes)}")
+        if tuning.cache_kib > 0:
+            # Negative cache_size = KiB units (SQLite contract).
+            self._conn.execute(f"PRAGMA cache_size = {-int(tuning.cache_kib)}")
         self.migrate()
         if self.db_path != ":memory:":
             with _LIVE_STORES_LOCK:
                 _LIVE_STORES[os.path.realpath(self.db_path)] = self
+
+    @property
+    def applied_tuning(self) -> StorageTuning:
+        """The pragma recipe this connection actually opened with."""
+        return self._storage_tuning
 
     # ------------------------------------------------------------- lifecycle
 
@@ -455,6 +536,7 @@ class EventStore:
             self.db_path,
             migrations_dir=self._migrations_dir,
             busy_timeout_ms=self._busy_timeout_ms,
+            storage_tuning=self._storage_tuning,
         )
         self._conn = fresh._conn
         if self.db_path != ":memory:":

@@ -280,6 +280,18 @@ class DaemonConfig:
                 f"watchdog_stall_seconds ({self.watchdog_stall_seconds}) must be >= "
                 f"watchdog_suspect_seconds ({self.watchdog_suspect_seconds})"
             )
+        # Deadline separation (SUB-132): the read lane's longest BOUNDED
+        # silence is read_publish_wait_seconds (the freshness wait). A stall
+        # threshold inside that window would false-positive on healthy
+        # workers — fail closed on the ambiguity. (The heavy lane's ingests
+        # are unbounded by design; there the watchdog only alerts, because a
+        # live worker's restart is always refused.)
+        if float(self.watchdog_stall_seconds) <= float(self.read_publish_wait_seconds):
+            raise ConfigError(
+                f"watchdog_stall_seconds ({self.watchdog_stall_seconds}) must exceed "
+                f"read_publish_wait_seconds ({self.read_publish_wait_seconds}) — the read lane "
+                f"may legitimately wait that long for a publish"
+            )
         if int(self.watchdog_max_restarts) < 1:
             raise ConfigError("watchdog_max_restarts must be >= 1")
         if float(self.watchdog_restart_window_seconds) <= 0:

@@ -1,0 +1,24 @@
+{
+  "edges": [
+    {
+      "kind": "references",
+      "provenance": "synthesis:interface_implementation",
+      "source": {
+        "symbol": {
+          "kind": "class",
+          "name": "Circle",
+          "path": "shapes.ts"
+        }
+      },
+      "target": {
+        "symbol": {
+          "kind": "interface",
+          "name": "Shape",
+          "path": "shapes.ts"
+        }
+      }
+    }
+  ],
+  "mode": "pipeline",
+  "pass": "interface_implementation"
+}

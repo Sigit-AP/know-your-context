@@ -1,0 +1,603 @@
+{
+  "cases": [
+    {
+      "expected": [
+        {
+          "path": "pkg/util.py"
+        },
+        {
+          "path": "pkg/util/__init__.py"
+        },
+        {
+          "path": "pkg.py"
+        },
+        {
+          "path": "pkg/__init__.py"
+        }
+      ],
+      "fixture": "python/app_dotted.py",
+      "language": "python",
+      "source_path": "app.py",
+      "target": "pkg.util"
+    },
+    {
+      "expected": [
+        {
+          "path": "pkg/sibling.py"
+        },
+        {
+          "path": "pkg/sibling/__init__.py"
+        }
+      ],
+      "fixture": "python/mod_relative.py",
+      "language": "python",
+      "source_path": "pkg/mod.py",
+      "target": ".sibling"
+    },
+    {
+      "expected": [
+        {
+          "path": "pkg/shared.py"
+        },
+        {
+          "path": "pkg/shared/__init__.py"
+        }
+      ],
+      "fixture": "python/deep_relative.py",
+      "language": "python",
+      "source_path": "pkg/sub/mod.py",
+      "target": "..shared"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/util.js"
+        },
+        {
+          "path": "src/util.js.ts"
+        },
+        {
+          "path": "src/util.js.d.ts"
+        },
+        {
+          "path": "src/util.js.tsx"
+        },
+        {
+          "path": "src/util.js.js"
+        },
+        {
+          "path": "src/util.js.jsx"
+        },
+        {
+          "path": "src/util.js/index.ts"
+        },
+        {
+          "path": "src/util.js/index.d.ts"
+        },
+        {
+          "path": "src/util.js/index.tsx"
+        },
+        {
+          "path": "src/util.js/index.js"
+        },
+        {
+          "path": "src/util.js/index.jsx"
+        }
+      ],
+      "fixture": "javascript/app_relative.js",
+      "language": "javascript",
+      "source_path": "src/app.js",
+      "target": "./util.js"
+    },
+    {
+      "expected": [],
+      "fixture": "javascript/app_bare.js",
+      "language": "javascript",
+      "source_path": "src/app.js",
+      "target": "react"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/render.jsx"
+        },
+        {
+          "path": "src/render.jsx.ts"
+        },
+        {
+          "path": "src/render.jsx.d.ts"
+        },
+        {
+          "path": "src/render.jsx.tsx"
+        },
+        {
+          "path": "src/render.jsx.js"
+        },
+        {
+          "path": "src/render.jsx.jsx"
+        },
+        {
+          "path": "src/render.jsx/index.ts"
+        },
+        {
+          "path": "src/render.jsx/index.d.ts"
+        },
+        {
+          "path": "src/render.jsx/index.tsx"
+        },
+        {
+          "path": "src/render.jsx/index.js"
+        },
+        {
+          "path": "src/render.jsx/index.jsx"
+        }
+      ],
+      "fixture": "javascriptreact/component.jsx",
+      "language": "javascriptreact",
+      "source_path": "src/component.jsx",
+      "target": "./render.jsx"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/lib/util"
+        },
+        {
+          "path": "src/lib/util.ts"
+        },
+        {
+          "path": "src/lib/util.d.ts"
+        },
+        {
+          "path": "src/lib/util.tsx"
+        },
+        {
+          "path": "src/lib/util.js"
+        },
+        {
+          "path": "src/lib/util.jsx"
+        },
+        {
+          "path": "src/lib/util/index.ts"
+        },
+        {
+          "path": "src/lib/util/index.d.ts"
+        },
+        {
+          "path": "src/lib/util/index.tsx"
+        },
+        {
+          "path": "src/lib/util/index.js"
+        },
+        {
+          "path": "src/lib/util/index.jsx"
+        }
+      ],
+      "fixture": "typescript/app_relative.ts",
+      "language": "typescript",
+      "source_path": "src/app.ts",
+      "target": "./lib/util"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/helpers"
+        },
+        {
+          "path": "src/helpers.ts"
+        },
+        {
+          "path": "src/helpers.d.ts"
+        },
+        {
+          "path": "src/helpers.tsx"
+        },
+        {
+          "path": "src/helpers.js"
+        },
+        {
+          "path": "src/helpers.jsx"
+        },
+        {
+          "path": "src/helpers/index.ts"
+        },
+        {
+          "path": "src/helpers/index.d.ts"
+        },
+        {
+          "path": "src/helpers/index.tsx"
+        },
+        {
+          "path": "src/helpers/index.js"
+        },
+        {
+          "path": "src/helpers/index.jsx"
+        }
+      ],
+      "fixture": "typescriptreact/view.ts",
+      "language": "typescriptreact",
+      "source_path": "src/view.tsx",
+      "target": "./helpers"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/util/helper.rs"
+        },
+        {
+          "path": "src/util/helper/mod.rs"
+        },
+        {
+          "path": "util/helper.rs"
+        },
+        {
+          "path": "util/helper/mod.rs"
+        }
+      ],
+      "fixture": "rust/main_crate.rs",
+      "language": "rust",
+      "source_path": "src/main.rs",
+      "target": "crate::util::helper"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/sibling.rs"
+        },
+        {
+          "path": "src/sibling/mod.rs"
+        }
+      ],
+      "fixture": "rust/child_super.rs",
+      "language": "rust",
+      "source_path": "src/a/b.rs",
+      "target": "super::sibling"
+    },
+    {
+      "expected": [],
+      "fixture": "rust/external_std.rs",
+      "language": "rust",
+      "source_path": "src/main.rs",
+      "target": "std::collections::HashMap"
+    },
+    {
+      "expected": [
+        {
+          "is_dir": true,
+          "path": "example.com/mod/pkg"
+        },
+        {
+          "is_dir": true,
+          "path": "mod/pkg"
+        },
+        {
+          "is_dir": true,
+          "path": "pkg"
+        }
+      ],
+      "fixture": "go/main_hosted.go",
+      "language": "go",
+      "source_path": "main.go",
+      "target": "example.com/mod/pkg"
+    },
+    {
+      "expected": [
+        {
+          "is_dir": true,
+          "path": "fmt"
+        }
+      ],
+      "fixture": "go/main_std.go",
+      "language": "go",
+      "source_path": "main.go",
+      "target": "fmt"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/local.h"
+        },
+        {
+          "path": "local.h"
+        }
+      ],
+      "fixture": "c/main_quoted.c",
+      "language": "c",
+      "source_path": "src/main.c",
+      "target": "local.h"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/sub/util.h"
+        },
+        {
+          "path": "sub/util.h"
+        }
+      ],
+      "fixture": "c/main_nested.c",
+      "language": "c",
+      "source_path": "src/main.c",
+      "target": "sub/util.h"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/detail/util.hpp"
+        },
+        {
+          "path": "detail/util.hpp"
+        }
+      ],
+      "fixture": "cpp/app_quoted.cpp",
+      "language": "cpp",
+      "source_path": "src/app.cpp",
+      "target": "detail/util.hpp"
+    },
+    {
+      "expected": [
+        {
+          "path": "contracts/Token.sol"
+        }
+      ],
+      "fixture": "solidity/token_relative.sol",
+      "language": "solidity",
+      "source_path": "contracts/Importer.sol",
+      "target": "./Token.sol"
+    },
+    {
+      "expected": [
+        {
+          "path": "src/util.cr"
+        }
+      ],
+      "fixture": "crystal/main_relative.cr",
+      "language": "crystal",
+      "source_path": "src/main.cr",
+      "target": "./util"
+    },
+    {
+      "expected": [
+        {
+          "path": "json.cr"
+        },
+        {
+          "path": "src/json.cr"
+        }
+      ],
+      "fixture": "crystal/main_bare.cr",
+      "language": "crystal",
+      "source_path": "src/main.cr",
+      "target": "json"
+    },
+    {
+      "expected": [
+        {
+          "path": "com/example/Util.java"
+        }
+      ],
+      "fixture": "java/Util.java",
+      "language": "java",
+      "source_path": "demo/Boot.java",
+      "target": "com.example.Util"
+    },
+    {
+      "expected": [
+        {
+          "path": "System/Text.cs"
+        }
+      ],
+      "fixture": "csharp/Boot.cs",
+      "language": "csharp",
+      "source_path": "Boot.cs",
+      "target": "System.Text"
+    },
+    {
+      "expected": [
+        {
+          "path": "util/helper.rb"
+        },
+        {
+          "path": "lib/util/helper.rb"
+        }
+      ],
+      "fixture": "ruby/boot.rb",
+      "language": "ruby",
+      "source_path": "boot.rb",
+      "target": "util/helper"
+    },
+    {
+      "expected": [
+        {
+          "path": "Vendor/Pkg/Thing.php"
+        },
+        {
+          "path": "src/Vendor/Pkg/Thing.php"
+        }
+      ],
+      "fixture": "php/Boot.php",
+      "language": "php",
+      "source_path": "Boot.php",
+      "target": "Vendor\\Pkg\\Thing"
+    },
+    {
+      "expected": [
+        {
+          "path": "pkg/sub/mod.lua"
+        },
+        {
+          "path": "pkg/sub/mod/init.lua"
+        }
+      ],
+      "fixture": "lua/init_mod.lua",
+      "language": "lua",
+      "source_path": "init.lua",
+      "target": "pkg.sub.mod"
+    },
+    {
+      "expected": [
+        {
+          "path": "Data/List.hs"
+        },
+        {
+          "path": "src/Data/List.hs"
+        }
+      ],
+      "fixture": "haskell/Boot.hs",
+      "language": "haskell",
+      "source_path": "Boot.hs",
+      "target": "Data.List"
+    },
+    {
+      "expected": [
+        {
+          "path": "JSON/PP.pm"
+        },
+        {
+          "path": "lib/JSON/PP.pm"
+        }
+      ],
+      "fixture": "perl/boot.pl",
+      "language": "perl",
+      "source_path": "boot.pl",
+      "target": "JSON::PP"
+    },
+    {
+      "expected": [
+        {
+          "path": "com/example/Util.scala"
+        }
+      ],
+      "fixture": "scala/Boot.scala",
+      "language": "scala",
+      "source_path": "demo/Boot.scala",
+      "target": "com.example.Util"
+    },
+    {
+      "expected": [
+        {
+          "path": "com/example/Util.kt"
+        }
+      ],
+      "fixture": "kotlin/Boot.kt",
+      "language": "kotlin",
+      "source_path": "demo/Boot.kt",
+      "target": "com.example.Util"
+    },
+    {
+      "expected": [
+        {
+          "path": "com/example/deep/Util.java"
+        }
+      ],
+      "fixture": "java/Deep.java",
+      "language": "java",
+      "source_path": "demo/Boot2.java",
+      "target": "com.example.deep.Util"
+    },
+    {
+      "expected": [
+        {
+          "path": "System/Collections/Generic.cs"
+        }
+      ],
+      "fixture": "csharp/Boot2.cs",
+      "language": "csharp",
+      "source_path": "Boot2.cs",
+      "target": "System.Collections.Generic"
+    },
+    {
+      "expected": [
+        {
+          "path": "vendor/pkg/thing.rb"
+        },
+        {
+          "path": "lib/vendor/pkg/thing.rb"
+        }
+      ],
+      "fixture": "ruby/boot2.rb",
+      "language": "ruby",
+      "source_path": "boot2.rb",
+      "target": "vendor/pkg/thing"
+    },
+    {
+      "expected": [
+        {
+          "path": "Vendor/Pkg/Sub/Thing.php"
+        },
+        {
+          "path": "src/Vendor/Pkg/Sub/Thing.php"
+        }
+      ],
+      "fixture": "php/Boot2.php",
+      "language": "php",
+      "source_path": "Boot2.php",
+      "target": "Vendor\\Pkg\\Sub\\Thing"
+    },
+    {
+      "expected": [
+        {
+          "path": "json.lua"
+        },
+        {
+          "path": "json/init.lua"
+        }
+      ],
+      "fixture": "lua/init2.lua",
+      "language": "lua",
+      "source_path": "init2.lua",
+      "target": "json"
+    },
+    {
+      "expected": [
+        {
+          "path": "Data/Map/Strict.hs"
+        },
+        {
+          "path": "src/Data/Map/Strict.hs"
+        }
+      ],
+      "fixture": "haskell/Boot2.hs",
+      "language": "haskell",
+      "source_path": "Boot2.hs",
+      "target": "Data.Map.Strict"
+    },
+    {
+      "expected": [
+        {
+          "path": "File/Spec/Functions.pm"
+        },
+        {
+          "path": "lib/File/Spec/Functions.pm"
+        }
+      ],
+      "fixture": "perl/boot2.pl",
+      "language": "perl",
+      "source_path": "boot2.pl",
+      "target": "File::Spec::Functions"
+    },
+    {
+      "expected": [
+        {
+          "path": "com/example/deep/Util.scala"
+        }
+      ],
+      "fixture": "scala/Boot2.scala",
+      "language": "scala",
+      "source_path": "demo/Boot2.scala",
+      "target": "com.example.deep.Util"
+    },
+    {
+      "expected": [
+        {
+          "path": "com/example/deep/Util.kt"
+        }
+      ],
+      "fixture": "kotlin/Boot2.kt",
+      "language": "kotlin",
+      "source_path": "demo/Boot2.kt",
+      "target": "com.example.deep.Util"
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,50 @@
+{
+  "edges": [
+    {
+      "kind": "imports",
+      "provenance": "resolver:two-phase:v1",
+      "source": "imp:app",
+      "target": "file:pkg/__init__.py"
+    },
+    {
+      "kind": "imports",
+      "provenance": "resolver:two-phase:v1",
+      "source": "imp:init",
+      "target": "fn:thing"
+    }
+  ],
+  "files": [
+    {
+      "path": "app.py"
+    },
+    {
+      "path": "pkg/__init__.py"
+    },
+    {
+      "path": "pkg/impl.py"
+    }
+  ],
+  "symbols": [
+    {
+      "kind": "import",
+      "line": 1,
+      "name": "pkg",
+      "node_id": "imp:app",
+      "path": "app.py"
+    },
+    {
+      "kind": "import",
+      "line": 1,
+      "name": "impl",
+      "node_id": "imp:init",
+      "path": "pkg/__init__.py"
+    },
+    {
+      "kind": "function",
+      "line": 2,
+      "name": "thing",
+      "node_id": "fn:thing",
+      "path": "pkg/impl.py"
+    }
+  ]
+}

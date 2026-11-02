@@ -1,0 +1,42 @@
+{
+  "edges": [
+    {
+      "kind": "references",
+      "provenance": "synthesis:event_handler_wiring",
+      "source": {
+        "symbol": {
+          "kind": "function",
+          "name": "emit_order_created",
+          "path": "events.py"
+        }
+      },
+      "target": {
+        "symbol": {
+          "kind": "function",
+          "name": "on_order_created",
+          "path": "events.py"
+        }
+      }
+    },
+    {
+      "kind": "references",
+      "provenance": "synthesis:event_handler_wiring",
+      "source": {
+        "symbol": {
+          "kind": "function",
+          "name": "dispatch_payment_failed",
+          "path": "events.py"
+        }
+      },
+      "target": {
+        "symbol": {
+          "kind": "function",
+          "name": "handle_payment_failed",
+          "path": "events.py"
+        }
+      }
+    }
+  ],
+  "mode": "pipeline",
+  "pass": "event_handler_wiring"
+}

@@ -1,0 +1,7 @@
+Release 1.2.3
+
+- deterministic extraction across 33 languages
+- two-phase resolution with parked refs
+- document ingestion for markdown, plaintext and PDF
+
+Known issues: none blocking.

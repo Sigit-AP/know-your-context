@@ -1,0 +1,12 @@
+{
+  "edges": [
+    {
+      "kind": "calls",
+      "provenance": "synthesis:module_member_calls",
+      "source": "fn:main",
+      "target": "fn:helper"
+    }
+  ],
+  "mode": "seed",
+  "pass": "module_member_calls"
+}

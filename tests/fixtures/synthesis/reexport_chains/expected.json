@@ -1,0 +1,12 @@
+{
+  "edges": [
+    {
+      "kind": "references",
+      "provenance": "synthesis:reexport_chains",
+      "source": "imp:a",
+      "target": "fn:thing"
+    }
+  ],
+  "mode": "seed",
+  "pass": "reexport_chains"
+}

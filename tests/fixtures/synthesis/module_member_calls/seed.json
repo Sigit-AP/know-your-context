@@ -1,0 +1,43 @@
+{
+  "edges": [
+    {
+      "kind": "imports",
+      "provenance": "resolver:two-phase:v1",
+      "source": "fn:main",
+      "target": "file:pkg/util.py"
+    }
+  ],
+  "files": [
+    {
+      "path": "main.py"
+    },
+    {
+      "path": "pkg/util.py"
+    }
+  ],
+  "refs": [
+    {
+      "failure_reason": "no_resolution",
+      "kind": "calls",
+      "source_node_id": "fn:main",
+      "status": "failed",
+      "target_name": "helper"
+    }
+  ],
+  "symbols": [
+    {
+      "kind": "function",
+      "line": 4,
+      "name": "main",
+      "node_id": "fn:main",
+      "path": "main.py"
+    },
+    {
+      "kind": "function",
+      "line": 2,
+      "name": "helper",
+      "node_id": "fn:helper",
+      "path": "pkg/util.py"
+    }
+  ]
+}

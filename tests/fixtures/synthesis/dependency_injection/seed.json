@@ -1,0 +1,43 @@
+{
+  "edges": [
+    {
+      "kind": "contains",
+      "source": "cls:Car",
+      "target": "m:init"
+    },
+    {
+      "kind": "type_of",
+      "provenance": "synthesis:type_hint_edges",
+      "source": "m:init",
+      "target": "cls:Engine"
+    }
+  ],
+  "files": [
+    {
+      "path": "a.py"
+    }
+  ],
+  "symbols": [
+    {
+      "kind": "class",
+      "line": 1,
+      "name": "Car",
+      "node_id": "cls:Car",
+      "path": "a.py"
+    },
+    {
+      "kind": "method",
+      "line": 2,
+      "name": "__init__",
+      "node_id": "m:init",
+      "path": "a.py"
+    },
+    {
+      "kind": "class",
+      "line": 9,
+      "name": "Engine",
+      "node_id": "cls:Engine",
+      "path": "a.py"
+    }
+  ]
+}

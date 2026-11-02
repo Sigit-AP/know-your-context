@@ -666,9 +666,17 @@ class _SessionToken:
 
     ``now`` is the DST seam (production: ``time.monotonic``; simulation:
     virtual time), so the lease can be replayed deterministically.
+
+    ``in_flight`` counts requests the daemon is actively answering for this
+    session. The session lease measures *idleness*: a session whose silence
+    is the daemon itself working on its request is not abandoned, so the
+    reaper must never close it mid-request (SUB-132 — the W15 storm flake:
+    a >lease response latency produced a bare EOF, 'daemon closed the
+    connection'). A dead client with in-flight work frees its slot anyway:
+    the response write fails and the session thread exits.
     """
 
-    __slots__ = ("_now", "alive", "last_seen", "session_id")
+    __slots__ = ("_inflight", "_inflight_lock", "_now", "alive", "last_seen", "session_id")
 
     def __init__(self, session_id: str, *, now: Callable[[], float] = time.monotonic) -> None:
         assert str(session_id), "session_id must be a non-empty string"
@@ -676,9 +684,29 @@ class _SessionToken:
         self._now = now
         self.last_seen = self._now()
         self.session_id = session_id
+        self._inflight = 0
+        self._inflight_lock = threading.Lock()
 
     def beat(self) -> None:
         self.last_seen = self._now()
+
+    def begin_request(self) -> None:
+        with self._inflight_lock:
+            self._inflight += 1
+
+    def end_request(self) -> None:
+        with self._inflight_lock:
+            assert self._inflight > 0, "session request ended without a matching begin"
+            self._inflight -= 1
+        # Answering is also activity: idleness is measured from the last
+        # observed traffic in either direction, so a just-answered session is
+        # not instantly reapable while the client turns around.
+        self.beat()
+
+    @property
+    def in_flight(self) -> int:
+        with self._inflight_lock:
+            return self._inflight
 
 
 @dataclass
@@ -1732,13 +1760,20 @@ class SuperpowerDaemon:
                 return
 
     def _reap_expired_sessions(self) -> None:
-        """Session lease: an unheartbeated session loses its slot (W7 #6)."""
+        """Session lease: an unheartbeated session loses its slot (W7 #6).
+
+        The lease measures *idleness*, never in-flight work (SUB-132): a
+        session whose silence is the daemon itself answering its request is
+        not abandoned — closing it mid-request was the W15 storm EOF flake.
+        Such a session is deferred, not hidden: once the response is on the
+        wire, the lease applies from that last activity as before.
+        """
         now = time.monotonic()
         with self._sessions_lock:
             expired = [
                 (connection, token)
                 for connection, token in self._session_sockets.items()
-                if now - token.last_seen > self._config.session_lease_seconds
+                if now - token.last_seen > self._config.session_lease_seconds and token.in_flight == 0
             ]
         for connection, token in expired:
             token.alive = False  # queued work of the dead session is dropped at the gates
@@ -1755,8 +1790,11 @@ class SuperpowerDaemon:
 
     def _assert_no_expired_sessions_locked(self, now: float) -> None:
         """Post-reap invariant (caller holds ``_sessions_lock``): no live
-        token in the registry may be past its lease."""
+        IDLE token in the registry may be past its lease. In-flight sessions
+        are exempt by construction (the daemon is their silence's cause)."""
         for token in self._session_sockets.values():
+            if token.in_flight > 0:
+                continue
             assert not token.alive or now - token.last_seen <= self._config.session_lease_seconds, (
                 f"session {token.session_id} survived the reaper past its lease {self._config.session_lease_seconds}s"
             )
@@ -1816,11 +1854,13 @@ class SuperpowerDaemon:
                 self._last_activity = time.monotonic()
                 token.beat()  # any request renews the session lease
                 self._inflight_begin()
+                token.begin_request()  # the lease exempts in-flight work (SUB-132)
                 try:
                     response = self._dispatch(envelope, token)
                     if response is not None:
                         rpc.write_message(writer, response)
                 finally:
+                    token.end_request()
                     self._inflight_end()
         except ConnectionError, OSError:
             return

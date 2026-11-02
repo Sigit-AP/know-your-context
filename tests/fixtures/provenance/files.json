@@ -1,0 +1,17 @@
+{
+  "files": [
+    "field-note-alpha.txt",
+    "field-note-beta.txt",
+    "field-note-delta.txt",
+    "field-note-gamma.txt",
+    "ledger-entry-1.txt",
+    "ledger-entry-2.txt",
+    "ledger-entry-3.txt",
+    "ledger-entry-4.txt",
+    "witness-a.txt",
+    "witness-b.txt",
+    "witness-c.txt",
+    "witness-d.txt"
+  ],
+  "version": 1
+}

@@ -1,0 +1,53 @@
+{
+  "edges": [
+    {
+      "kind": "calls",
+      "metadata": "{\"ref_id\": $ref0}",
+      "provenance": "resolver:two-phase:v1",
+      "source": "fn:registrar",
+      "target": "fn:callback"
+    },
+    {
+      "kind": "calls",
+      "provenance": "resolver:two-phase:v1",
+      "source": "fn:caller",
+      "target": "fn:registrar"
+    }
+  ],
+  "files": [
+    {
+      "path": "a.py"
+    }
+  ],
+  "refs": [
+    {
+      "kind": "function_ref",
+      "source_node_id": "fn:registrar",
+      "status": "resolved",
+      "target_name": "handle"
+    }
+  ],
+  "symbols": [
+    {
+      "kind": "function",
+      "line": 1,
+      "name": "on_event",
+      "node_id": "fn:registrar",
+      "path": "a.py"
+    },
+    {
+      "kind": "function",
+      "line": 5,
+      "name": "handle",
+      "node_id": "fn:callback",
+      "path": "a.py"
+    },
+    {
+      "kind": "function",
+      "line": 9,
+      "name": "dispatch_all",
+      "node_id": "fn:caller",
+      "path": "a.py"
+    }
+  ]
+}

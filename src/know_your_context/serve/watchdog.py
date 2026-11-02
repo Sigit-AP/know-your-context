@@ -17,9 +17,12 @@ This module provides the tiered middle ground:
   ``suspect`` (silent ≥ suspect_seconds — alert only) → ``restart`` (silent
   ≥ stall_seconds, or thread gone — budgeted restart) → ``dead`` (budget
   exhausted or restart failed — terminal, alerted). A fresh beat while
-  ``suspect`` recovers the worker. ``drain_all`` gives every registered
-  worker a bounded stop and reports each outcome — nothing is silently
-  abandoned.
+  ``suspect`` recovers the worker; a fresh beat on a non-terminal ``dead``
+  worker (restart was refused because it is alive — a long legitimate
+  operation is an episode, not a life sentence) also recovers it, and a
+  refused restart alerts once per episode, never per tick. ``drain_all``
+  gives every registered worker a bounded stop and reports each outcome —
+  nothing is silently abandoned.
 
 Invariant asserts: heartbeat monotonicity, restart-budget accounting, drain
 completeness (every registered worker appears exactly once in the report).
@@ -479,11 +482,17 @@ class Watchdog:
             crashed = not worker.is_alive()
             if crashed or silence >= self._policy.stall_seconds:
                 reason = "crashed" if crashed else f"silent {silence:.1f}s"
+                pre_state = worker.state
+                pre_terminal = worker.terminal
                 if worker.restart():
                     worker.mark_state(WorkerState.HEALTHY)
                     actions.append(WatchdogAction(worker.name, "restart", reason))
                     self._alert(worker.name, "restart")
-                else:
+                elif (worker.terminal and not pre_terminal) or pre_state is not WorkerState.DEAD:
+                    # Report the transition INTO dead, and always report budget
+                    # exhaustion (terminal) — but a live busy worker whose
+                    # restart keeps being refused alerts once per episode, not
+                    # per tick: per-tick repeats are spam, not signal (SUB-132).
                     worker.mark_state(WorkerState.DEAD)
                     actions.append(WatchdogAction(worker.name, "dead", f"{reason}; restart refused"))
                     self._alert(worker.name, "dead")
@@ -495,6 +504,14 @@ class Watchdog:
             elif worker.state is WorkerState.SUSPECT:
                 worker.mark_state(WorkerState.HEALTHY)
                 actions.append(WatchdogAction(worker.name, "recovered", "fresh heartbeat"))
+            elif worker.state is WorkerState.DEAD:
+                # A live worker marked dead by a refused restart during a long
+                # legitimate operation beats again once the op completes:
+                # dead was an episode, not a life sentence (SUB-132). A
+                # crashed worker never reaches here — ``crashed`` above keeps
+                # it in the restart path until the budget decides.
+                worker.mark_state(WorkerState.HEALTHY)
+                actions.append(WatchdogAction(worker.name, "recovered", "fresh heartbeat after refused restart"))
         return actions
 
     def _alert(self, name: str, kind: str) -> None:

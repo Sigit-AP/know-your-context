@@ -1,0 +1,7 @@
+Incident 2026-10-30
+
+Summary: a wave shipped with red CI because local gates were narrower.
+
+Resolution: gate invocations now mirror CI exactly.
+
+Follow-ups: pin the gate list in the project playbook.

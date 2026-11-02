@@ -1,0 +1,12 @@
+{
+  "edges": [
+    {
+      "kind": "calls",
+      "provenance": "synthesis:callback_edges",
+      "source": "fn:caller",
+      "target": "fn:callback"
+    }
+  ],
+  "mode": "seed",
+  "pass": "callback_edges"
+}

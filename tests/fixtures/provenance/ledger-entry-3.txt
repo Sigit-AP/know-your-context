@@ -1,0 +1,1 @@
+ledger 3: node event projected into the graph.

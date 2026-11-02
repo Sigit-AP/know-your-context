@@ -371,6 +371,44 @@ class TestWatchdogCheckOnce:
         clock.advance(9999.0)
         assert dog.check_once() == []
 
+    def test_refused_restart_alerts_dead_once_per_episode(self) -> None:
+        """A live busy worker (restart refused) alerts dead once, not per tick."""
+        clock = _ScriptedClock()
+        policy = WatchdogPolicy(suspect_seconds=5.0, stall_seconds=10.0)
+        alerts: list[tuple[str, str]] = []
+        dog = Watchdog(policy=policy, now=clock, on_alert=lambda name, kind: alerts.append((name, kind)))
+        worker = _FakeWorker("w", clock)
+        worker.restart_result = False  # live-and-busy: restart refused
+        worker.heartbeat.beat()
+        dog.register(worker)
+        clock.advance(11.0)
+        actions = dog.check_once()
+        assert [a.kind for a in actions] == ["dead"]
+        clock.advance(11.0)  # still silent: same episode, no repeated alert
+        assert dog.check_once() == []
+        assert alerts == [("w", "dead")]
+
+    def test_dead_live_worker_recovers_on_fresh_beat(self) -> None:
+        """A long legitimate op marks a live worker dead (restart refused);
+        when beats resume the worker recovers — dead is an episode, not a
+        life sentence (SUB-132)."""
+        clock = _ScriptedClock()
+        policy = WatchdogPolicy(suspect_seconds=5.0, stall_seconds=10.0)
+        dog = Watchdog(policy=policy, now=clock)
+        worker = _FakeWorker("w", clock)
+        worker.restart_result = False
+        worker.heartbeat.beat()
+        dog.register(worker)
+        clock.advance(11.0)
+        dog.check_once()
+        assert worker.state is WorkerState.DEAD
+        assert not worker.terminal
+        worker.heartbeat.beat()  # the long op finished; beats resume
+        clock.advance(0.5)
+        actions = dog.check_once()
+        assert [a.kind for a in actions] == ["recovered"]
+        assert worker.state is WorkerState.HEALTHY
+
     def test_suspect_recovers_on_fresh_beat(self) -> None:
         clock = _ScriptedClock()
         policy = WatchdogPolicy(suspect_seconds=5.0, stall_seconds=10.0)
