@@ -19,7 +19,7 @@ from know_your_context.hardware.probe import HardwareProfile, probe_hardware, re
 from know_your_context.hardware.tuning import TuningPlan, plan_storage_tuning
 from know_your_context.ops.switches import load_knobs, load_switches
 
-__all__ = ["HardwarePlan", "hardware_plan", "reset_plan_cache"]
+__all__ = ["HISTORICAL_IO_BUFFER_BYTES", "HardwarePlan", "hardware_plan", "io_buffer_bytes", "reset_plan_cache"]
 
 
 @dataclass(frozen=True)
@@ -44,8 +44,55 @@ class HardwarePlan:
             mem_per_worker_bytes=self.mem_per_worker_bytes,
         )
 
+    def queue_scale(self) -> int:
+        """RAM-derived multiplier for bounded queues (SUB-135 integration).
+
+        One step per started 4 GiB of MemAvailable, capped at 16; unknown RAM
+        (non-Linux procfs) or small hosts return 1, so bounded queues keep
+        their historical sizes exactly — scale-UP only, never a reduction.
+        """
+        if self.mem_available_bytes <= 0:
+            return 1
+        return max(1, min(16, -(-self.mem_available_bytes // (4 * 1024**3))))
+
+    def io_buffer_bytes(self) -> int:
+        """Streaming I/O buffer for backup/projection/ops, from the disk profile."""
+        return self.storage.profile.io_buffer_bytes
+
+    def query_cache_entries(self) -> int:
+        """retrieval_v2 query-cache capacity derived from the cache policy.
+
+        Follows ``storage.cache_kib`` (itself ⅛ of MemAvailable, capped):
+        0 (tuning off / unknown RAM / small store) means the cache stays OFF
+        and lookups keep the historical uncached behavior byte-identical.
+        """
+        cache_kib = self.storage.cache_kib
+        if cache_kib <= 0:
+            return 0
+        return min(16384, max(128, cache_kib // 16))
+
 
 _PLAN_CACHE: dict[str | None, HardwarePlan] = {}
+
+#: Historical streaming I/O buffer (``1 << 20``) — the fallback when the
+#: plan is unavailable or hw tuning is switched off.
+HISTORICAL_IO_BUFFER_BYTES = 1024 * 1024
+
+
+def io_buffer_bytes(path: str | Path | None = None) -> int:
+    """Streaming I/O buffer for backup/projection/ops, from the single plan.
+
+    SSD and UNKNOWN keep the historical 1 MiB; rotational devices scale up to
+    4 MiB (fewer syscalls, seeks amortized) — scale-UP only. Kill switch
+    ``KNOW_YOUR_CONTEXT_DISABLE_HW_TUNING`` or any detection failure returns
+    the historical buffer.
+    """
+    try:
+        if load_switches().hw_tuning_disabled():
+            return HISTORICAL_IO_BUFFER_BYTES
+        return max(HISTORICAL_IO_BUFFER_BYTES, hardware_plan(path).io_buffer_bytes())
+    except Exception:  # noqa: BLE001 - a buffer hint must never break I/O
+        return HISTORICAL_IO_BUFFER_BYTES
 
 
 def hardware_plan(

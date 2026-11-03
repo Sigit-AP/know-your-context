@@ -23,8 +23,10 @@ hard gates applied last (codegraph §2.1 step 5). Final ordering is total:
 from __future__ import annotations
 
 import sqlite3
+import threading
+from collections import OrderedDict
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from know_your_context.retrieval_v2.fts import FTS_TABLE, build_fts_query, ensure_fts_index
 from know_your_context.retrieval_v2.query import ParsedQuery, parse_query
@@ -67,6 +69,10 @@ class LookupConfig:
     bm25_name: float = 20.0
     bm25_kind: float = 5.0
     bm25_path: float = 1.0
+    # SUB-135: query result cache capacity. None → derive from the hardware
+    # plan's cache policy (aggressive when RAM is large); 0 → cache off, the
+    # historical uncached behavior byte-identical.
+    query_cache_entries: int | None = None
 
     def __post_init__(self) -> None:
         _validate_limit(self.limit, "limit")
@@ -84,6 +90,12 @@ class LookupConfig:
         ):
             if not isinstance(value, (int, float)) or value < 0:
                 raise LookupError(f"{label} must be a number >= 0, got {value!r}")
+        if self.query_cache_entries is not None and (
+            isinstance(self.query_cache_entries, bool)
+            or not isinstance(self.query_cache_entries, int)
+            or self.query_cache_entries < 0
+        ):
+            raise LookupError(f"query_cache_entries must be an int >= 0 or None, got {self.query_cache_entries!r}")
 
 
 @dataclass(frozen=True)
@@ -125,19 +137,75 @@ class SymbolLookup:
     applied after the canonical sort and *before* limit truncation, so
     outcome-boosted nodes can enter the top-N. Default ``None`` keeps the
     historical behavior byte-identical.
+
+    Query cache (SUB-135): an LRU over final results, capacity from the
+    hardware plan's cache policy (``LookupConfig.query_cache_entries=None`` →
+    plan; 0 → off = historical). Keys carry the store path, the store's
+    knowledge high-watermark (a write can never serve a stale hit), the
+    parsed query and the limit. An active experience reranker bypasses the
+    cache — its ledger moves independently of the store watermark.
     """
 
     def __init__(self, config: LookupConfig | None = None, *, experience: ExperienceReranker | None = None) -> None:
         self._config = config if config is not None else LookupConfig()
         self._experience = experience
+        self._cache_capacity = self._resolve_cache_capacity()
+        self._cache: OrderedDict[tuple[Any, ...], tuple[ScoredSymbol, ...]] = OrderedDict()
+        self._cache_lock = threading.Lock()
+        self._cache_hits = 0
+        self._cache_evictions = 0
+
+    def _resolve_cache_capacity(self) -> int:
+        """Cache capacity from the single HardwarePlan; 0 = off (historical)."""
+        if self._config.query_cache_entries is not None:
+            return self._config.query_cache_entries
+        try:
+            from know_your_context.hardware.profile import hardware_plan
+            from know_your_context.ops.switches import load_switches
+
+            if load_switches().hw_tuning_disabled():
+                return 0
+            return hardware_plan(None).query_cache_entries()
+        except Exception:  # noqa: BLE001 - detection failure must never break lookups
+            return 0
 
     @property
-    def config(self) -> LookupConfig:
-        return self._config
+    def cache_capacity(self) -> int:
+        """The resolved query-cache capacity (0 = off)."""
+        return self._cache_capacity
 
     @property
-    def experience(self) -> ExperienceReranker | None:
-        return self._experience
+    def cache_stats(self) -> dict[str, int]:
+        """Observability for the query cache: size, hits, evictions."""
+        with self._cache_lock:
+            return {"size": len(self._cache), "hits": self._cache_hits, "evictions": self._cache_evictions}
+
+    def _cache_key(self, store: EventStore, parsed: ParsedQuery, limit: int) -> tuple[Any, ...] | None:
+        """The watermark-stamped key; ``None`` when the watermark is unreadable
+        (fail-safe: an unreadable freshness token means no caching, never a
+        possibly-stale hit).
+
+        Freshness token: ``event_high_watermark`` — every mutation that can
+        touch the ``symbols`` table (ingest writes, daemon write lane) is
+        audit-journaled, which moves the event watermark. (The *knowledge*
+        watermark only tracks committed knowledge events; ingestion is
+        proposal-only and does not move it.)
+        """
+        try:
+            watermark = store.event_high_watermark()
+        except Exception:  # noqa: BLE001 - cache is opportunistic, never a failure source
+            return None
+        return (
+            str(store.db_path),
+            watermark,
+            parsed.text,
+            parsed.terms,
+            parsed.kinds,
+            parsed.languages,
+            parsed.path_filters,
+            parsed.name_filters,
+            limit,
+        )
 
     def search(
         self, store: EventStore, query: str | ParsedQuery, *, limit: int | None = None
@@ -146,6 +214,31 @@ class SymbolLookup:
         effective_limit = self._config.limit if limit is None else limit
         _validate_limit(effective_limit, "limit")
         parsed = parse_query(query) if isinstance(query, str) else query
+
+        cache_key: tuple[Any, ...] | None = None
+        if self._cache_capacity > 0 and self._experience is None:
+            cache_key = self._cache_key(store, parsed, effective_limit)
+            if cache_key is not None:
+                with self._cache_lock:
+                    hit = self._cache.get(cache_key)
+                    if hit is not None:
+                        self._cache.move_to_end(cache_key)
+                        self._cache_hits += 1
+                        return hit
+        result = self._search_uncached(store, parsed, effective_limit)
+        if cache_key is not None:
+            with self._cache_lock:
+                self._cache[cache_key] = result
+                self._cache.move_to_end(cache_key)
+                while len(self._cache) > self._cache_capacity:
+                    self._cache.popitem(last=False)
+                    self._cache_evictions += 1
+        return result
+
+    def _search_uncached(
+        self, store: EventStore, parsed: ParsedQuery, effective_limit: int
+    ) -> tuple[ScoredSymbol, ...]:
+        """The historical search body, unchanged byte-for-byte."""
         language_map: dict[str, str] | None = None
         if parsed.languages:
             language_map = self._language_map(store)
@@ -177,6 +270,14 @@ class SymbolLookup:
             # node outside the baseline top-N can still enter it.
             gated = list(self._experience.rerank(gated, query=parsed.text).hits)
         return tuple(gated[:effective_limit])
+
+    @property
+    def config(self) -> LookupConfig:
+        return self._config
+
+    @property
+    def experience(self) -> ExperienceReranker | None:
+        return self._experience
 
     # ------------------------------------------------------------ channels
 

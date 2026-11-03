@@ -1579,15 +1579,43 @@ class EventStore:
             )
         return cursor.rowcount > 0
 
-    def add_graph_edges(self, edges: Iterable[Mapping[str, Any]]) -> int:
+    def add_graph_edges(self, edges: Iterable[Mapping[str, Any]], *, batch_size: int | None = None) -> int:
         """Insert a batch of edges in one transaction; returns the inserted count.
 
         Each entry carries ``source``, ``target``, ``kind`` and optional
         ``line``/``col``/``metadata``/``provenance``. Iteration order is the
         insertion order, so a deterministic caller gets deterministic rowids.
+
+        ``batch_size`` (SUB-135, additive): when set, rows flush through
+        ``executemany`` in chunks of that size (the disk profile's
+        group-commit batch) inside the SAME transaction — insertion order
+        and the returned count are unchanged.
         """
+        if batch_size is not None and (isinstance(batch_size, bool) or batch_size < 1):
+            raise StoreError(f"batch_size must be an int >= 1, got {batch_size!r}")
         inserted = 0
         with self.transaction() as conn:
+            if batch_size:
+                rows = [
+                    (
+                        str(edge["source"]),
+                        str(edge["target"]),
+                        str(edge["kind"]),
+                        edge.get("line"),
+                        edge.get("col"),
+                        edge.get("metadata"),
+                        edge.get("provenance"),
+                    )
+                    for edge in edges
+                ]
+                for start in range(0, len(rows), batch_size):
+                    cursor = conn.executemany(
+                        "INSERT OR IGNORE INTO graph_edges (source, target, kind, line, col, metadata, provenance) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        rows[start : start + batch_size],
+                    )
+                    inserted += max(cursor.rowcount, 0)
+                return inserted
             for edge in edges:
                 cursor = conn.execute(
                     "INSERT OR IGNORE INTO graph_edges (source, target, kind, line, col, metadata, provenance) "

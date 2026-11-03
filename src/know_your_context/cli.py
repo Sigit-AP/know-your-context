@@ -164,10 +164,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     superpower.add_argument("--daemon-foreground", action="store_true", help=argparse.SUPPRESS)
     serve_parser.add_argument(
-        "--max-agents", type=int, default=50, help="superpower: concurrent agent cap (default 50)"
+        "--max-agents",
+        type=int,
+        default=None,
+        help="superpower: concurrent agent cap (default: hardware-derived, historical floor 50)",
     )
     serve_parser.add_argument(
-        "--read-pool-size", type=int, default=8, help="superpower: read-only pool size (default 8)"
+        "--read-pool-size",
+        type=int,
+        default=None,
+        help="superpower: read-only pool size (default: hardware-derived, historical floor 8)",
     )
     serve_parser.add_argument(
         "--idle-timeout",
@@ -1107,14 +1113,19 @@ def _serve_superpower_command(args: argparse.Namespace) -> int:
     from know_your_context.serve.superpower import DaemonUnavailable, run_daemon, spawn_daemon
 
     try:
-        config = DaemonConfig(
-            db_path=args.store,
-            graph_root=args.output_root,
-            max_agents=args.max_agents,
-            read_pool_size=args.read_pool_size,
-            idle_timeout_seconds=args.idle_timeout,
-            capability_mode=args.capability_mode,
-        )
+        kwargs: dict[str, Any] = {
+            "db_path": args.store,
+            "graph_root": args.output_root,
+            "idle_timeout_seconds": args.idle_timeout,
+            "capability_mode": args.capability_mode,
+        }
+        # None = the operator did not ask; the hardware plan derives it
+        # (scale-up only from the historical default).
+        if args.max_agents is not None:
+            kwargs["max_agents"] = args.max_agents
+        if args.read_pool_size is not None:
+            kwargs["read_pool_size"] = args.read_pool_size
+        config = DaemonConfig(**kwargs)
     except ConfigError as error:
         _print_usage_error(f"invalid superpower configuration: {error}")
         return 2

@@ -57,11 +57,15 @@ explicit self-vote for asynchronous convergence.
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Iterable, Mapping
+import time
+from collections.abc import Callable, Iterable, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 from typing import Any
 
+from know_your_context.analytics.hardware import analytics_workers, consult_gpu_offload
 from know_your_context.domain import quantize_score
+from know_your_context.hardware.gpu_gate import GpuOffloadDecision
 
 __all__ = [
     "DEFAULT_HOP_ATTENUATION",
@@ -221,6 +225,8 @@ def detect_communities(
     *,
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
     hop_attenuation: float = DEFAULT_HOP_ATTENUATION,
+    workers: int | None = None,
+    offload_observer: Callable[[GpuOffloadDecision], None] | None = None,
 ) -> dict[str, Any]:
     """Partition the graph into communities; output is canonical and artifact-ready.
 
@@ -232,11 +238,25 @@ def detect_communities(
     penalty; the default keeps bridge-linked clusters apart. ``0`` disables
     attenuation (plain LPA with self-vote — bridge graphs merge), values
     >= 0.5 weaken in-community consolidation.
+
+    ``workers`` (SUB-135): the per-community hub/label/cohesion computation
+    is independent per community; with more than one worker it fans out and
+    merges in canonical community order — the result is byte-identical at
+    any worker count. ``None`` derives the count from the hardware plan
+    (kill switch / probe failure → 1, the historical sequential path).
+
+    ``offload_observer`` (SUB-135): after the CPU run, the batch is evaluated
+    against the measured GPU-offload gate (``hardware.gpu_gate``) and the
+    decision is reported here. There is no GPU kernel; the CPU path stands.
     """
     if max_iterations < 1:
         raise ValueError("max_iterations must be >= 1")
     if not 0.0 <= hop_attenuation <= 1.0:
         raise ValueError("hop_attenuation must be in [0, 1]")
+    if workers is not None and (isinstance(workers, bool) or workers < 1):
+        raise ValueError(f"workers must be an int >= 1 or None, got {workers!r}")
+    effective_workers = analytics_workers() if workers is None else workers
+    started = time.perf_counter()
 
     node_list = list(nodes)
     link_list = list(links)
@@ -253,22 +273,30 @@ def detect_communities(
 
     ordered_groups = sorted(groups.values(), key=lambda members: (-len(members), members[0]))
 
-    communities: list[dict[str, Any]] = []
-    for community_id, members in enumerate(ordered_groups):
+    def _community_block(members: list[str]) -> dict[str, Any]:
         hub = min(members, key=lambda member: (-degrees[member], member))
         raw_label = labels_by_id.get(hub)
         label = raw_label if isinstance(raw_label, str) and raw_label else hub
-        communities.append(
-            {
-                "id": community_id,
-                "size": len(members),
-                "label": label,
-                "label_node_id": hub,
-                "membership_sig": membership_signature(members),
-                "cohesion": _cohesion(members, link_list),
-                "members": list(members),
-            }
-        )
+        return {
+            "size": len(members),
+            "label": label,
+            "label_node_id": hub,
+            "membership_sig": membership_signature(members),
+            "cohesion": _cohesion(members, link_list),
+            "members": list(members),
+        }
+
+    if effective_workers > 1 and len(ordered_groups) > 1:
+        # Pure per-community blocks; assembled in the canonical group order.
+        with ThreadPoolExecutor(max_workers=effective_workers, thread_name_prefix="kys-communities") as pool:
+            blocks = list(pool.map(_community_block, ordered_groups))
+    else:
+        blocks = [_community_block(members) for members in ordered_groups]
+
+    communities: list[dict[str, Any]] = []
+    for community_id, block in enumerate(blocks):
+        communities.append({"id": community_id, **block})
+    consult_gpu_offload(nodes=len(node_ids), edges=len(link_list), started=started, observer=offload_observer)
 
     return {
         "schema_version": SCHEMA_VERSION,

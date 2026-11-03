@@ -112,9 +112,14 @@ class RecoveryReport:
 
 
 def _sha256(path: Path) -> str:
+    # SUB-135: the read buffer follows the disk profile (SSD/UNKNOWN keep the
+    # historical 1 MiB; HDD scales to 4 MiB) via the single HardwarePlan.
+    from know_your_context.hardware.profile import io_buffer_bytes
+
+    buffer = io_buffer_bytes(path)
     digest = hashlib.sha256()
     with open(path, "rb") as handle:
-        for chunk in iter(lambda: handle.read(1 << 20), b""):
+        for chunk in iter(lambda: handle.read(buffer), b""):
             digest.update(chunk)
     return digest.hexdigest()
 
@@ -338,7 +343,9 @@ class ProtectedBackupReceipt:
 
 
 def _sha256_of(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    # Streamed (not read_bytes) so the disk-profile buffer applies on large
+    # artifacts too (SUB-135); identical digest either way.
+    return _sha256(path)
 
 
 def _activate_backup_dir(stage: Path, dest: Path) -> None:

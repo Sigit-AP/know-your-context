@@ -198,7 +198,7 @@ def budget_table(config: DaemonConfig) -> tuple[BudgetEntry, ...]:
         ),
         BudgetEntry(
             "listener_backlog",
-            LISTENER_BACKLOG,
+            int(config.listener_backlog),
             "pending connects",
             "SuperpowerDaemon._bind_socket",
             "kernel-side refusal/queueing",

@@ -91,9 +91,14 @@ def _fsync_file(path: Path) -> None:
 
 
 def _sha256(path: Path) -> str:
+    # SUB-135: the read buffer follows the disk profile via the single
+    # HardwarePlan (SSD/UNKNOWN keep the historical 1 MiB; HDD scales up).
+    from know_your_context.hardware.profile import io_buffer_bytes
+
+    buffer = io_buffer_bytes(path)
     digest = hashlib.sha256()
     with open(path, "rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+        for chunk in iter(lambda: handle.read(buffer), b""):
             digest.update(chunk)
     return digest.hexdigest()
 

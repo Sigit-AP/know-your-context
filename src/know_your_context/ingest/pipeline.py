@@ -61,8 +61,10 @@ from __future__ import annotations
 import hashlib
 import os
 import sqlite3
+import threading
 import time
 from collections.abc import Mapping
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
@@ -401,6 +403,61 @@ class IngestionReport:
         }
 
 
+# ------------------------------------------------------- hardware integration
+
+
+#: Serializes extraction calls whose thread-safety we cannot prove (custom
+#: injected extractors, the document lane, and the Rust kernel bridge). The
+#: default module extractor on the pure-Python walker builds a fresh parser
+#: per call and runs unlocked.
+_EXTRACT_SERIAL_LOCK = threading.Lock()
+
+
+def _hardware_ingest_params(store: EventStore) -> tuple[int, int]:
+    """``(extraction workers, commit batch)`` from the single HardwarePlan.
+
+    Kill switches: ``KNOW_YOUR_CONTEXT_DISABLE_HW_AUTOSCALER`` → 1 worker
+    (sequential, historical); ``KNOW_YOUR_CONTEXT_DISABLE_HW_TUNING`` →
+    per-file commits (historical). A failed probe keeps the historical
+    ``(1, 1)`` — ingestion never breaks on hardware detection.
+    """
+    try:
+        from know_your_context.hardware.profile import hardware_plan
+        from know_your_context.ops.switches import load_switches
+
+        switches = load_switches()
+        db_path = str(getattr(store, "db_path", ":memory:"))
+        plan = hardware_plan(None if db_path == ":memory:" else db_path)
+        workers = 1 if switches.hw_autoscaler_disabled() else max(1, plan.base_workers())
+        batch = 1 if switches.hw_tuning_disabled() else max(1, int(plan.storage.profile.group_commit_batch))
+        return (workers, batch)
+    except Exception:  # noqa: BLE001 - fail-open to the historical recipe
+        return (1, 1)
+
+
+@dataclass(frozen=True)
+class _WorkItem:
+    """One file that needs content work (extraction); store decisions wait."""
+
+    relpath: str
+    real_path: Path
+    size: int
+    mtime: int
+    language: str
+    document_language: str | None
+    extraction_version: int
+
+
+@dataclass(frozen=True)
+class _Analyzed:
+    """Pure outcome of read + hash + extract for one file (no store access)."""
+
+    failure_code: str | None
+    content: bytes | None
+    sha256: str | None
+    extraction: Any | None
+
+
 # ------------------------------------------------------- dependency loading
 
 
@@ -616,18 +673,66 @@ class IngestionPipeline:
         proposals_nodes: list[GraphNode] = []
         proposals_edges: list[GraphEdge] = []
 
-        for abs_path, relpath in entries:
-            if stats["scanned"] >= self._budget.max_files:
-                guards.append("max_files")
-                break
-            stats["scanned"] += 1
+        # Hardware integration (SUB-135): extraction workers follow the
+        # plan's cores/RAM advice; the commit batch follows the disk profile.
+        # Both phases keep the CANONICAL walk order for every store read,
+        # digest token, report entry and write — only the pure content work
+        # (read/hash/decode/parse) fans out. Kill switches restore the
+        # historical (1 worker, per-file commit) path byte-identically.
+        workers, commit_batch = _hardware_ingest_params(self._store)
+        serial_extraction = self._extraction_needs_serial(extractor)
+
+        selected = entries[: self._budget.max_files]
+        if len(entries) > self._budget.max_files:
+            guards.append("max_files")
+        stats["scanned"] = len(selected)
+
+        # Phase A (canonical, cheap): path/size/language gates + the tracked
+        # fast-path. Produces terminal reports or content work items.
+        terminal: dict[int, tuple[FileReport, bytes]] = {}
+        work: dict[int, _WorkItem] = {}
+        for index, (abs_path, relpath) in enumerate(selected):
             seen.add(relpath)
-            entry = self._ingest_one(
-                root,
-                abs_path,
-                relpath,
-                extractor=extractor,
-                extraction_version=extraction_version,
+            terminal_out, item = self._preflight(
+                root, abs_path, relpath, extraction_version=extraction_version, incremental=incremental
+            )
+            if terminal_out is not None:
+                report, token = terminal_out
+                stats["failed" if report.status == "failed" else "skipped"] += 1
+                terminal[index] = (report, token)
+            else:
+                assert item is not None
+                work[index] = item
+
+        # Phase B (pure, parallel): read + hash + decode + extract. No store
+        # access, no shared mutable state — results stay a pure function of
+        # the input bytes and land in canonical order.
+        analyzed = self._analyze_all(work, extractor=extractor, workers=workers, serial=serial_extraction)
+
+        # Phase C (canonical): digest tokens, budget checks and store writes,
+        # in walk order; commits flush in disk-profile batches.
+        pending: list[Any] = []
+
+        def _flush() -> None:
+            if not pending:
+                return
+            with self._store.transaction() as conn:
+                for write in pending:
+                    write(conn)
+            pending.clear()
+
+        for index in range(len(selected)):
+            relpath = selected[index][1]
+            if index in terminal:
+                report, token = terminal[index]
+                digest.update(token)
+                reports.append(report)
+                continue
+            item = work[index]
+            outcome = analyzed[index]
+            report = self._commit_analyzed(
+                item,
+                outcome,
                 incremental=incremental,
                 stats=stats,
                 totals=totals,
@@ -635,8 +740,12 @@ class IngestionPipeline:
                 introduced_tails=introduced_tails,
                 proposals_nodes=proposals_nodes,
                 proposals_edges=proposals_edges,
+                pending=pending,
+                flush=_flush,
+                flush_when=commit_batch,
             )
-            reports.append(entry)
+            reports.append(report)
+        _flush()
 
         if is_dir:
             stats["deleted"] = self._delete_missing(seen, digest) if incremental else 0
@@ -712,14 +821,155 @@ class IngestionPipeline:
 
     # ------------------------------------------------------------- per file
 
-    def _ingest_one(
+    def _preflight(
         self,
         root: Path,
         abs_path: Path,
         relpath: str,
         *,
-        extractor: Any,
         extraction_version: int,
+        incremental: bool,
+    ) -> tuple[tuple[FileReport, bytes] | None, _WorkItem | None]:
+        """Phase A: cheap canonical gates before any content work.
+
+        Returns ``(terminal, None)`` — a finished FileReport plus its digest
+        token — or ``(None, work item)`` for a file that needs extraction.
+        The tracked fast-path (store read) lives here so unchanged files
+        never reach the content phase at all.
+        """
+        try:
+            real = abs_path.resolve(strict=True)
+            if not real.is_relative_to(root):
+                raise PathOutsideRootError(f"{relpath!r} resolves outside the ingestion root")
+        except PathOutsideRootError:
+            return (
+                FileReport(relpath=relpath, status="failed", error_code="PATH_OUTSIDE_ROOT"),
+                f"{relpath}\0ERROR:PATH_OUTSIDE_ROOT\n".encode(),
+            ), None
+        except OSError:
+            return (
+                FileReport(relpath=relpath, status="failed", error_code="PATH_NOT_READABLE"),
+                f"{relpath}\0ERROR:PATH_NOT_READABLE\n".encode(),
+            ), None
+
+        stat = real.stat()
+        size = int(stat.st_size)
+        mtime = int(stat.st_mtime)
+        if size > self._budget.max_file_bytes:
+            return (
+                FileReport(relpath=relpath, status="failed", size=size, error_code="FILE_TOO_LARGE"),
+                f"{relpath}\0ERROR:FILE_TOO_LARGE\n".encode(),
+            ), None
+        language = detect_language(relpath)
+        if language is None:
+            return (
+                FileReport(relpath=relpath, status="failed", size=size, error_code="UNSUPPORTED_MEDIA_TYPE"),
+                f"{relpath}\0ERROR:UNSUPPORTED_MEDIA_TYPE\n".encode(),
+            ), None
+
+        # W3 (SUB-90): document formats are bytes-based (a PDF never decodes
+        # as UTF-8) and route to the document extractor; they version against
+        # DOCUMENT_EXTRACTION_VERSION, not the code extractor's counter.
+        document_language = language if language in _DOCUMENT_LANGUAGES else None
+        effective_version = extraction_version
+        if document_language is not None and _document_extractor is not None:
+            effective_version = int(getattr(_document_extractor, "DOCUMENT_EXTRACTION_VERSION", extraction_version))
+
+        tracked = self._store.get_file(relpath) if incremental else None
+        if (
+            tracked is not None
+            and tracked.size == size
+            and tracked.mtime == mtime
+            and tracked.extraction_version == effective_version
+        ):
+            return (
+                FileReport(relpath=relpath, status="skipped", language=language, sha256=tracked.sha256, size=size),
+                f"{relpath}\0{tracked.sha256}\n".encode(),
+            ), None
+        return None, _WorkItem(relpath, real, size, mtime, language, document_language, effective_version)
+
+    def _extraction_needs_serial(self, extractor: Any) -> bool:
+        """Conservative thread-safety: only the default module extractor on the
+        pure-Python walker (fresh parser per call) runs unlocked; a custom
+        extractor or the Rust kernel bridge serializes through a lock."""
+        try:
+            from know_your_context.ingest import extractor as default_module
+
+            if extractor is not default_module:
+                return True
+            from know_your_context.ingest import kernel_bridge
+
+            return bool(kernel_bridge.kernel_available())
+        except Exception:  # noqa: BLE001 - unknown means serial (safe)
+            return True
+
+    def _analyze_all(
+        self,
+        work: dict[int, _WorkItem],
+        *,
+        extractor: Any,
+        workers: int,
+        serial: bool,
+    ) -> dict[int, _Analyzed]:
+        """Phase B: pure read+hash+decode+extract, canonical order preserved.
+
+        With ``workers == 1`` (kill switch, tiny walk, or probe failure) this
+        is exactly the historical inline path.
+        """
+        if not work:
+            return {}
+        indexes = list(work)  # dicts preserve insertion (canonical walk) order
+        if workers <= 1 or len(indexes) <= 1:
+            return {index: self._analyze_one(work[index], extractor=extractor, serial=serial) for index in indexes}
+        analyzed: dict[int, _Analyzed] = {}
+        window = workers * 4  # bounded in-flight content: 4 files per worker
+        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="kys-ingest") as pool:
+            for start in range(0, len(indexes), window):
+                chunk = indexes[start : start + window]
+                outcomes = pool.map(lambda i: self._analyze_one(work[i], extractor=extractor, serial=serial), chunk)
+                analyzed.update(zip(chunk, outcomes, strict=True))
+        return analyzed
+
+    def _analyze_one(self, item: _WorkItem, *, extractor: Any, serial: bool) -> _Analyzed:
+        """Pure content work for one file; never touches the store."""
+        relpath = item.relpath
+        try:
+            content = item.real_path.read_bytes()
+        except OSError:
+            return _Analyzed("PATH_NOT_READABLE", None, None, None)
+        sha256 = hashlib.sha256(content).hexdigest()
+
+        if item.document_language is not None and _document_extractor is not None:
+            # W3 (SUB-90) document lane: raw bytes in, ExtractionResult-shaped
+            # result out (file root + document/section/page/paragraph nodes).
+            try:
+                with _EXTRACT_SERIAL_LOCK:
+                    extraction = _document_extractor.extract_document(relpath, content, language=item.document_language)
+            except Exception as error:  # noqa: BLE001 - per-file failure never aborts the walk
+                code = getattr(error, "code", None)
+                return _Analyzed(code if isinstance(code, str) else "EXTRACTION_FAILED", content, sha256, None)
+            return _Analyzed(None, content, sha256, extraction)
+
+        try:
+            source = content.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            return _Analyzed("DECODE_ERROR", content, sha256, None)
+        try:
+            if serial:
+                with _EXTRACT_SERIAL_LOCK:
+                    extraction = extractor.extract_source(relpath, source, language=None, generated_hint=False)
+            else:
+                extraction = extractor.extract_source(relpath, source, language=None, generated_hint=False)
+        except Exception as error:  # noqa: BLE001 - per-file failure never aborts the walk
+            code = getattr(error, "code", None)
+            return _Analyzed(code if isinstance(code, str) else "EXTRACTION_FAILED", content, sha256, None)
+        return _Analyzed(None, content, sha256, extraction)
+
+    def _commit_analyzed(
+        self,
+        item: _WorkItem,
+        outcome: _Analyzed,
+        *,
         incremental: bool,
         stats: dict[str, int],
         totals: dict[str, int],
@@ -727,104 +977,60 @@ class IngestionPipeline:
         introduced_tails: set[str] | None,
         proposals_nodes: list[GraphNode],
         proposals_edges: list[GraphEdge],
+        pending: list[Any],
+        flush: Any,
+        flush_when: int,
     ) -> FileReport:
-        try:
-            real = abs_path.resolve(strict=True)
-            if not real.is_relative_to(root):
-                raise PathOutsideRootError(f"{relpath!r} resolves outside the ingestion root")
-        except PathOutsideRootError:
-            stats["failed"] += 1
-            digest.update(f"{relpath}\0ERROR:PATH_OUTSIDE_ROOT\n".encode())
-            return FileReport(relpath=relpath, status="failed", error_code="PATH_OUTSIDE_ROOT")
-        except OSError:
-            stats["failed"] += 1
+        """Phase C: digest token, budget gate and queued store write (canonical).
+
+        Writes queue as closures and flush in ``flush_when``-file batches
+        (disk profile) inside ONE transaction; ``flush_when == 1`` is the
+        historical per-file transaction. A budget stop flushes every
+        completed file BEFORE raising, preserving "rows before the boundary
+        stay committed" exactly.
+        """
+        relpath = item.relpath
+        if outcome.failure_code == "PATH_NOT_READABLE":
+            # The file never yielded content — the historical error token.
             digest.update(f"{relpath}\0ERROR:PATH_NOT_READABLE\n".encode())
-            return FileReport(relpath=relpath, status="failed", error_code="PATH_NOT_READABLE")
-
-        stat = real.stat()
-        size = int(stat.st_size)
-        mtime = int(stat.st_mtime)
-        if size > self._budget.max_file_bytes:
             stats["failed"] += 1
-            digest.update(f"{relpath}\0ERROR:FILE_TOO_LARGE\n".encode())
-            return FileReport(relpath=relpath, status="failed", size=size, error_code="FILE_TOO_LARGE")
-        language = detect_language(relpath)
-        if language is None:
+            return FileReport(
+                relpath=relpath, status="failed", language=item.language, size=item.size, error_code="PATH_NOT_READABLE"
+            )
+        assert outcome.sha256 is not None  # every other analyzed file was read
+        digest.update(f"{relpath}\0{outcome.sha256}\n".encode())
+        if outcome.failure_code is not None:
             stats["failed"] += 1
-            digest.update(f"{relpath}\0ERROR:UNSUPPORTED_MEDIA_TYPE\n".encode())
-            return FileReport(relpath=relpath, status="failed", size=size, error_code="UNSUPPORTED_MEDIA_TYPE")
+            return FileReport(
+                relpath=relpath,
+                status="failed",
+                language=item.language,
+                size=item.size,
+                error_code=outcome.failure_code,
+            )
 
-        # W3 (SUB-90): document formats are bytes-based (a PDF never decodes
-        # as UTF-8) and route to the document extractor; they version against
-        # DOCUMENT_EXTRACTION_VERSION, not the code extractor's counter.
-        document_language = language if language in _DOCUMENT_LANGUAGES else None
-        if document_language is not None and _document_extractor is not None:
-            extraction_version = int(getattr(_document_extractor, "DOCUMENT_EXTRACTION_VERSION", extraction_version))
-
+        extraction = outcome.extraction
+        assert outcome.content is not None
         tracked = self._store.get_file(relpath) if incremental else None
         if (
             tracked is not None
-            and tracked.size == size
-            and tracked.mtime == mtime
-            and tracked.extraction_version == extraction_version
+            and tracked.sha256 == outcome.sha256
+            and tracked.extraction_version == item.extraction_version
         ):
-            stats["skipped"] += 1
-            digest.update(f"{relpath}\0{tracked.sha256}\n".encode())
-            return FileReport(relpath=relpath, status="skipped", language=language, sha256=tracked.sha256, size=size)
-
-        try:
-            content = real.read_bytes()
-        except OSError:
-            stats["failed"] += 1
-            digest.update(f"{relpath}\0ERROR:PATH_NOT_READABLE\n".encode())
-            return FileReport(
-                relpath=relpath, status="failed", language=language, size=size, error_code="PATH_NOT_READABLE"
-            )
-        sha256 = hashlib.sha256(content).hexdigest()
-        digest.update(f"{relpath}\0{sha256}\n".encode())
-
-        if tracked is not None and tracked.sha256 == sha256 and tracked.extraction_version == extraction_version:
             # Pre-filter suspect confirmed unchanged: resync the stat fields.
             self._store.upsert_file(
                 path=relpath,
-                sha256=sha256,
-                size=size,
-                mtime=mtime,
-                language=language,
+                sha256=outcome.sha256,
+                size=item.size,
+                mtime=item.mtime,
+                language=item.language,
                 generated_hint=tracked.generated_hint,
-                extraction_version=extraction_version,
+                extraction_version=item.extraction_version,
             )
             stats["skipped"] += 1
-            return FileReport(relpath=relpath, status="skipped", language=language, sha256=sha256, size=size)
-
-        if document_language is not None and _document_extractor is not None:
-            # W3 (SUB-90) document lane: raw bytes in, ExtractionResult-shaped
-            # result out (file root + document/section/page/paragraph nodes).
-            try:
-                extraction = _document_extractor.extract_document(relpath, content, language=document_language)
-            except Exception as error:  # noqa: BLE001 - per-file failure never aborts the walk
-                stats["failed"] += 1
-                code = getattr(error, "code", None)
-                if not isinstance(code, str):
-                    code = "EXTRACTION_FAILED"
-                return FileReport(relpath=relpath, status="failed", language=language, size=size, error_code=code)
-        else:
-            try:
-                source = content.decode("utf-8-sig")
-            except UnicodeDecodeError:
-                stats["failed"] += 1
-                return FileReport(
-                    relpath=relpath, status="failed", language=language, size=size, error_code="DECODE_ERROR"
-                )
-
-            try:
-                extraction = extractor.extract_source(relpath, source, language=None, generated_hint=False)
-            except Exception as error:  # noqa: BLE001 - per-file failure never aborts the walk
-                stats["failed"] += 1
-                code = getattr(error, "code", None)
-                if not isinstance(code, str):
-                    code = "EXTRACTION_FAILED"
-                return FileReport(relpath=relpath, status="failed", language=language, size=size, error_code=code)
+            return FileReport(
+                relpath=relpath, status="skipped", language=item.language, sha256=outcome.sha256, size=item.size
+            )
 
         nodes_all = _normalize_nodes(extraction)
         edges = _normalize_edges(extraction)
@@ -834,10 +1040,18 @@ class IngestionPipeline:
         # once and never pollutes the symbol lookup surface.
         file_id = file_node_id(relpath)
         nodes = [node for node in nodes_all if node["node_id"] != file_id]
-        self._check_budget(totals, nodes=len(nodes) + 1, edges=len(edges), refs=len(refs))
+        try:
+            self._check_budget(totals, nodes=len(nodes) + 1, edges=len(edges), refs=len(refs))
+        except IngestionBudgetError:
+            flush()  # every completed file before the boundary stays committed
+            raise
 
-        generated = bool(getattr(extraction, "generated_hint", False)) or is_generated_hint(relpath, content)
-        with self._store.transaction() as conn:
+        generated = bool(getattr(extraction, "generated_hint", False)) or is_generated_hint(relpath, outcome.content)
+        write_language = str(getattr(extraction, "language", item.language))
+        write_version = int(getattr(extraction, "extraction_version", item.extraction_version))
+        write_sha = outcome.sha256
+
+        def _write(conn: sqlite3.Connection) -> None:
             if tracked is not None:
                 self._cascade_file(conn, relpath)
             self._write_batch(
@@ -846,13 +1060,17 @@ class IngestionPipeline:
                 nodes=nodes,
                 edges=edges,
                 refs=refs,
-                sha256=sha256,
-                size=size,
-                mtime=mtime,
-                language=str(getattr(extraction, "language", language)),
+                sha256=write_sha,
+                size=item.size,
+                mtime=item.mtime,
+                language=write_language,
                 generated=generated,
-                extraction_version=int(getattr(extraction, "extraction_version", extraction_version)),
+                extraction_version=write_version,
             )
+
+        pending.append(_write)
+        if len(pending) >= flush_when:
+            flush()
         stats["proposed"] += 1
         totals["nodes"] += len(nodes) + 1
         totals["edges"] += len(edges)
@@ -863,12 +1081,12 @@ class IngestionPipeline:
         return FileReport(
             relpath=relpath,
             status="proposed",
-            language=language,
+            language=item.language,
             nodes=len(nodes) + 1,
             edges=len(edges),
             refs=len(refs),
-            sha256=sha256,
-            size=size,
+            sha256=outcome.sha256,
+            size=item.size,
         )
 
     def _check_budget(self, totals: Mapping[str, int], *, nodes: int, edges: int, refs: int) -> None:

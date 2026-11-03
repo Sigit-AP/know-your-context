@@ -45,6 +45,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -231,13 +232,77 @@ def _ref_row(row: sqlite3.Row) -> UnresolvedRefRow:
 
 
 def _edge_exists(store: EventStore, source: str, target: str, kind: str) -> bool:
-    """Identity-level existence, provenance-agnostic (the non-overwrite rule)."""
+    """Identity-level existence, provenance-agnostic (the non-overwrite rule).
+
+    SUB-135: when the running Synthesizer prefetched the existing-edge key
+    set (hardware plan, disk-profile batch), membership answers there — one
+    paginated read instead of a query per candidate. The kill-switched /
+    fallback path keeps the historical per-candidate query.
+    """
+    existing = _RUN_CONTEXT.existing
+    if existing is not None:
+        return (source, target, kind) in existing
     with store.read() as conn:
         row = conn.execute(
             "SELECT 1 FROM graph_edges WHERE source = ? AND target = ? AND kind = ? LIMIT 1",
             (source, target, kind),
         ).fetchone()
     return row is not None
+
+
+# ------------------------------------------------------- hardware integration
+
+
+class _RunContext(threading.local):
+    """Per-thread synthesis run state: prefetched edge keys + insert batch."""
+
+    existing: set[tuple[str, str, str]] | None = None
+    batch_size: int = 0
+
+
+_RUN_CONTEXT = _RunContext()
+
+
+def _synthesis_hardware(store: EventStore) -> tuple[int, bool]:
+    """``(insert batch, prefetch enabled)`` from the single HardwarePlan.
+
+    The batch is the disk profile's group-commit size (SSD 32 / HDD 128 /
+    UNKNOWN 64). Kill switch ``KNOW_YOUR_CONTEXT_DISABLE_HW_TUNING`` or a
+    failed probe returns ``(0, False)`` — the historical per-candidate,
+    per-statement path, byte-identical.
+    """
+    try:
+        from know_your_context.hardware.profile import hardware_plan
+        from know_your_context.ops.switches import load_switches
+
+        if load_switches().hw_tuning_disabled():
+            return (0, False)
+        db_path = str(getattr(store, "db_path", ":memory:"))
+        plan = hardware_plan(None if db_path == ":memory:" else db_path)
+        return (max(1, int(plan.storage.profile.group_commit_batch)), True)
+    except Exception:  # noqa: BLE001 - fail-open to the historical recipe
+        return (0, False)
+
+
+def _load_existing_edge_keys(store: EventStore, batch_size: int) -> set[tuple[str, str, str]]:
+    """One paginated read of the whole edge key set (batch = disk profile).
+
+    The table is static for the duration of the load (the caller holds the
+    only writer thread), so OFFSET pagination over ORDER BY keys is stable.
+    """
+    keys: set[tuple[str, str, str]] = set()
+    offset = 0
+    with store.read() as conn:
+        while True:
+            rows = conn.execute(
+                "SELECT source, target, kind FROM graph_edges ORDER BY source, target, kind LIMIT ? OFFSET ?",
+                (batch_size, offset),
+            ).fetchall()
+            if not rows:
+                return keys
+            for row in rows:
+                keys.add((str(row["source"]), str(row["target"]), str(row["kind"])))
+            offset += len(rows)
 
 
 def _metadata(pass_name: str, confidence: str, **extra: object) -> str:
@@ -281,7 +346,13 @@ class _Pass:
 
     def insert(self, store: EventStore) -> int:
         ordered = [self.payloads[key] for key in sorted(self.payloads)]
-        self.inserted = store.add_graph_edges(ordered) if ordered else 0
+        # SUB-135: the insert flush follows the disk profile's batch when the
+        # plan provided one — executemany chunks inside the SAME transaction,
+        # so insertion order (rowids) and counts are unchanged.
+        batch_size = _RUN_CONTEXT.batch_size
+        self.inserted = store.add_graph_edges(ordered, batch_size=batch_size or None) if ordered else 0
+        if _RUN_CONTEXT.existing is not None:
+            _RUN_CONTEXT.existing.update(self.payloads)
         if self.after_insert is not None:
             self.after_insert(store)
         return self.inserted
@@ -1032,14 +1103,27 @@ class Synthesizer:
 
     def run(self, store: EventStore) -> SynthesisReport:
         self._disabled_by_env = load_switches().synthesis_passes_disabled()
-        reports: list[PassReport] = []
-        for name in SYNTH_PASS_ORDER:
-            if name in self._disabled_by_env or not self._config.is_enabled(name):
-                reports.append(PassReport(name, 0, 0, 0, 0, 0))
-                continue
-            result = _PASS_RUNNERS[name](store, self._config)
-            result.insert(store)  # one transaction per pass + post-insert hook
-            reports.append(result.report())
+        # SUB-135: one HardwarePlan consult per run. With the plan enabled we
+        # prefetch the existing-edge key set (one paginated read, batch from
+        # the disk profile) and flush inserts in disk-profile batches; the
+        # kill-switched/fallback path keeps the historical per-candidate
+        # queries and per-statement inserts. Results are identical either way
+        # (pinned by tests/test_synthesis_hardware.py).
+        batch_size, prefetch = _synthesis_hardware(store)
+        _RUN_CONTEXT.batch_size = batch_size
+        _RUN_CONTEXT.existing = _load_existing_edge_keys(store, batch_size) if prefetch else None
+        try:
+            reports: list[PassReport] = []
+            for name in SYNTH_PASS_ORDER:
+                if name in self._disabled_by_env or not self._config.is_enabled(name):
+                    reports.append(PassReport(name, 0, 0, 0, 0, 0))
+                    continue
+                result = _PASS_RUNNERS[name](store, self._config)
+                result.insert(store)  # one transaction per pass + post-insert hook
+                reports.append(result.report())
+        finally:
+            _RUN_CONTEXT.existing = None
+            _RUN_CONTEXT.batch_size = 0
         return SynthesisReport(
             passes=tuple(reports),
             emitted=sum(entry.emitted for entry in reports),

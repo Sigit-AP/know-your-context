@@ -44,6 +44,10 @@ class DiskProfile:
     flush_cadence_ms: int
     group_commit_batch: int
     page_size_hint: int
+    #: Streaming I/O buffer (hashing, artifact copies, artifact writes).
+    #: SSD/UNKNOWN keep the historical 1 MiB; rotational devices scale up to
+    #: 4 MiB so big sequential reads amortize seeks (scale-up, never down).
+    io_buffer_bytes: int = 1024 * 1024
 
 
 #: HDD: bigger group-commit batches and a lazier flush cadence turn random
@@ -52,7 +56,9 @@ class DiskProfile:
 #: size — without evidence we change nothing structural.
 DISK_PROFILES: dict[DiskKind, DiskProfile] = {
     DiskKind.SSD: DiskProfile(DiskKind.SSD, flush_cadence_ms=25, group_commit_batch=32, page_size_hint=4096),
-    DiskKind.HDD: DiskProfile(DiskKind.HDD, flush_cadence_ms=100, group_commit_batch=128, page_size_hint=8192),
+    DiskKind.HDD: DiskProfile(
+        DiskKind.HDD, flush_cadence_ms=100, group_commit_batch=128, page_size_hint=8192, io_buffer_bytes=4 * 1024**2
+    ),
     DiskKind.UNKNOWN: DiskProfile(DiskKind.UNKNOWN, flush_cadence_ms=50, group_commit_batch=64, page_size_hint=4096),
 }
 

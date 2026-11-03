@@ -90,9 +90,35 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
     conn.execute(f"CREATE TABLE IF NOT EXISTS {META_TABLE} (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
 
 
+def _build_cache_kib(store: EventStore) -> int:
+    """Page cache for the FTS build, from the single HardwarePlan (SUB-135).
+
+    The build is the heaviest scan retrieval_v2 performs; giving it the
+    plan's aggressive cache (⅛ MemAvailable, capped) keeps the working set
+    in memory. Kill switch / detection failure / small stores → 0: the
+    connection keeps whatever the store recipe already applied.
+    """
+    try:
+        from know_your_context.hardware.profile import hardware_plan
+        from know_your_context.ops.switches import load_switches
+
+        if load_switches().hw_tuning_disabled():
+            return 0
+        db_path = str(getattr(store, "db_path", ":memory:"))
+        plan = hardware_plan(None if db_path == ":memory:" else db_path)
+        return max(0, int(plan.storage.cache_kib))
+    except Exception:  # noqa: BLE001 - a cache hint must never break the build
+        return 0
+
+
 def rebuild_fts_index(store: EventStore) -> int:
     """Drop and re-index every symbol row; returns the indexed row count."""
     with store.transaction() as conn:
+        cache_kib = _build_cache_kib(store)
+        if cache_kib > 0:
+            # Negative cache_size = KiB units (SQLite contract); same pragma
+            # shape the store recipe applies at open (SUB-134).
+            conn.execute(f"PRAGMA cache_size = {-cache_kib}")
         _ensure_schema(conn)
         # external-content tables reject raw DELETE; the FTS5 'rebuild'
         # command atomically clears the index and repopulates from symbols

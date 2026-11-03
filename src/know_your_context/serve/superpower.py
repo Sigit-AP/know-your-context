@@ -79,7 +79,6 @@ from know_your_context.serve.budgets import (
     ADAPTER_CACHE_CAP,
     BUCKET_CACHE_CAP,
     LATENCY_RESERVOIR_CAP,
-    LISTENER_BACKLOG,
     STATS_ACTOR_CAP,
     assert_static_budgets,
 )
@@ -1708,7 +1707,7 @@ class SuperpowerDaemon:
             listener.close()
             raise
         os.chmod(self._paths.socket, 0o600)
-        listener.listen(LISTENER_BACKLOG)
+        listener.listen(int(self._config.listener_backlog))
         self._listener = listener
 
     # -------------------------------------------------------------- acceptor

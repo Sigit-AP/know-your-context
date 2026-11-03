@@ -30,12 +30,16 @@ node pair count once):
 from __future__ import annotations
 
 import random
+import time
 from collections import deque
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal, localcontext
 from typing import Any
 
+from know_your_context.analytics.hardware import analytics_workers, consult_gpu_offload
 from know_your_context.domain import DECIMAL_PRECISION, PrimaryDomain
+from know_your_context.hardware.gpu_gate import GpuOffloadDecision
 from know_your_context.scoring import serialize_score
 
 _BETWEENNESS_SEED = 0x4B5953  # fixed seed ("KYS"); never derived from input order
@@ -305,6 +309,8 @@ def compute_centrality(
     pagerank_iterations: int = DEFAULT_PAGERANK_ITERATIONS,
     closeness_cutoff: int = DEFAULT_CLOSENESS_CUTOFF,
     top: int | None = None,
+    workers: int | None = None,
+    offload_observer: Callable[[GpuOffloadDecision], None] | None = None,
 ) -> dict[str, Any]:
     """Run the centrality suite globally and per primary domain (P1..P7).
 
@@ -314,6 +320,16 @@ def compute_centrality(
     keeps all nodes). The result is a pure function of the graph content and
     the explicit parameters — never of input ordering, wall time, or global
     RNG state.
+
+    ``workers`` (SUB-135): the global suite and the seven domain suites are
+    independent; with more than one worker they compute concurrently and
+    merge in the fixed canonical order — the result is byte-identical at any
+    worker count. ``None`` derives the count from the hardware plan
+    (kill switch / probe failure → 1, the historical sequential path).
+
+    ``offload_observer`` (SUB-135): after the CPU run, the batch is evaluated
+    against the measured GPU-offload gate (``hardware.gpu_gate``) and the
+    decision is reported here. There is no GPU kernel; the CPU path stands.
     """
     if betweenness_samples < 1:
         raise ValueError("betweenness_samples must be >= 1")
@@ -323,6 +339,10 @@ def compute_centrality(
         raise ValueError("closeness_cutoff must be >= 1")
     if top is not None and top < 1:
         raise ValueError("top must be >= 1 when given")
+    if workers is not None and (isinstance(workers, bool) or workers < 1):
+        raise ValueError(f"workers must be an int >= 1 or None, got {workers!r}")
+    effective_workers = analytics_workers() if workers is None else workers
+    started = time.perf_counter()
     node_ids, domains, links, dropped = _prepare_graph(graph)
     params = {
         "betweenness_samples": betweenness_samples,
@@ -330,16 +350,8 @@ def compute_centrality(
         "closeness_cutoff": closeness_cutoff,
         "top": top,
     }
-    guards, rankings = _suite(
-        node_ids,
-        links,
-        betweenness_samples=betweenness_samples,
-        pagerank_iterations=pagerank_iterations,
-        closeness_cutoff=closeness_cutoff,
-        top=top,
-    )
-    domain_blocks: dict[str, Any] = {}
-    for domain in PrimaryDomain:
+
+    def _domain_block(domain: PrimaryDomain) -> tuple[str, dict[str, Any]]:
         members = tuple(node_id for node_id in node_ids if domains.get(node_id) == domain.value)
         member_set = set(members)
         sub_links = tuple(link for link in links if link[0] in member_set and link[2] in member_set)
@@ -351,7 +363,35 @@ def compute_centrality(
             closeness_cutoff=closeness_cutoff,
             top=top,
         )
-        domain_blocks[domain.value] = {"node_count": len(members), "guards": sub_guards, **sub_rankings}
+        return domain.value, {"node_count": len(members), "guards": sub_guards, **sub_rankings}
+
+    if effective_workers > 1:
+        # The suites are pure functions of disjoint inputs; the executor only
+        # changes WHERE they run — assembly order stays enum-canonical.
+        with ThreadPoolExecutor(max_workers=effective_workers, thread_name_prefix="kys-analytics") as pool:
+            global_future = pool.submit(
+                _suite,
+                node_ids,
+                links,
+                betweenness_samples=betweenness_samples,
+                pagerank_iterations=pagerank_iterations,
+                closeness_cutoff=closeness_cutoff,
+                top=top,
+            )
+            domain_results = list(pool.map(_domain_block, PrimaryDomain))
+        guards, rankings = global_future.result()
+        domain_blocks = dict(domain_results)
+    else:
+        guards, rankings = _suite(
+            node_ids,
+            links,
+            betweenness_samples=betweenness_samples,
+            pagerank_iterations=pagerank_iterations,
+            closeness_cutoff=closeness_cutoff,
+            top=top,
+        )
+        domain_blocks = dict(_domain_block(domain) for domain in PrimaryDomain)
+    consult_gpu_offload(nodes=len(node_ids), edges=len(links), started=started, observer=offload_observer)
     return {
         "schema_version": 1,
         "kind": "analytics.centrality",

@@ -19,7 +19,11 @@ from know_your_context.ops.switches import load_switches
 from know_your_context.serve.rpc import MAX_FRAME_BYTES
 
 __all__ = [
+    "DEFAULT_AUDIT_QUEUE_SIZE",
+    "DEFAULT_GROUP_COMMIT_BATCH",
+    "DEFAULT_HEAVY_QUEUE_SIZE",
     "DEFAULT_IDLE_TIMEOUT_SECONDS",
+    "DEFAULT_LISTENER_BACKLOG",
     "DEFAULT_LIVENESS_HEARTBEAT_SECONDS",
     "DEFAULT_LIVENESS_STALL_SECONDS",
     "DEFAULT_MAX_AGENTS",
@@ -30,6 +34,7 @@ __all__ = [
     "DEFAULT_RETRY_AFTER_MS",
     "DEFAULT_SPAWN_TIMEOUT_SECONDS",
     "DEFAULT_WRITE_QUEUE_SIZE",
+    "HARDWARE_AUTO",
     "HARD_MAX_AGENTS",
     "HARD_MAX_READ_POOL",
     "MIN_FRAME_BYTES",
@@ -44,6 +49,18 @@ DEFAULT_READ_POOL_SIZE = 8
 HARD_MAX_READ_POOL = 64
 DEFAULT_WRITE_QUEUE_SIZE = 256
 DEFAULT_READ_QUEUE_SIZE = 512
+DEFAULT_HEAVY_QUEUE_SIZE = 16
+DEFAULT_AUDIT_QUEUE_SIZE = 2048
+DEFAULT_GROUP_COMMIT_BATCH = 8
+DEFAULT_LISTENER_BACKLOG = 128
+#: listen() backlog ceiling even on big-RAM hosts (the kernel clamps to
+#: somaxconn anyway; this keeps the static budget honest).
+HARD_MAX_LISTENER_BACKLOG = 4096
+#: Sentinel for DaemonConfig capacity fields: "the operator did not say —
+#: derive from the hardware plan (scale-up only from the historical default)".
+#: An explicit integer is always honored verbatim, including one that happens
+#: to equal the historical default.
+HARDWARE_AUTO = -1
 DEFAULT_IDLE_TIMEOUT_SECONDS = 300.0
 DEFAULT_SPAWN_TIMEOUT_SECONDS = 15.0
 DEFAULT_LIVENESS_HEARTBEAT_SECONDS = 0.5
@@ -117,10 +134,14 @@ class DaemonConfig:
     db_path: Path | str
     graph_root: Path | str
     runtime_dir: Path | str | None = None
-    max_agents: int = DEFAULT_MAX_AGENTS
-    read_pool_size: int = DEFAULT_READ_POOL_SIZE
-    write_queue_size: int = DEFAULT_WRITE_QUEUE_SIZE
-    read_queue_size: int = DEFAULT_READ_QUEUE_SIZE
+    # Capacity fields default to HARDWARE_AUTO (-1): "the operator did not
+    # say — derive from the single HardwarePlan, scale-up only from the
+    # historical default" (SUB-135). An explicit integer is always honored
+    # verbatim, even one equal to the historical default.
+    max_agents: int = HARDWARE_AUTO
+    read_pool_size: int = HARDWARE_AUTO
+    write_queue_size: int = HARDWARE_AUTO
+    read_queue_size: int = HARDWARE_AUTO
     # Fairness (operator requirement W7): per-agent queue quotas — one
     # spamming agent fills only its own lane; round-robin drain keeps every
     # other agent scheduled.
@@ -132,13 +153,13 @@ class DaemonConfig:
     agent_rate_per_second: float = 100.0
     agent_burst: int = 200
     # Heavy lane (ingest v3): single preemptible worker, small queue.
-    heavy_queue_size: int = 16
+    heavy_queue_size: int = HARDWARE_AUTO
     per_actor_heavy_cap: int = 4
     # Audit lane (Tiger Style static budget): the read lanes forward their
     # journal appends through this bounded queue on the single writer. The
     # bound must absorb one begin+complete burst per read worker; overflow
     # is blocking backpressure (the writer drains audit first every loop).
-    audit_queue_size: int = 2048
+    audit_queue_size: int = HARDWARE_AUTO
     # Session lease: a session with no heartbeat/request within this window is
     # closed and its slot released (the stdio proxy heartbeats transparently).
     session_lease_seconds: float = 30.0
@@ -146,8 +167,11 @@ class DaemonConfig:
     # W-millisecond window into ONE SQLite transaction (savepoint nesting),
     # amortizing fsync. Kill switch: KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT=1.
     group_commit: bool = True
-    group_commit_batch: int = 8
+    group_commit_batch: int = HARDWARE_AUTO
     group_commit_window_seconds: float = 0.002
+    # listen() backlog on the AF_UNIX rendezvous socket (SUB-135: follows
+    # the hardware plan's RAM scale when left at HARDWARE_AUTO).
+    listener_backlog: int = HARDWARE_AUTO
     # Graceful drain: on shutdown, new work is refused typed while in-flight
     # items finish within this budget.
     drain_timeout_seconds: float = 10.0
@@ -189,6 +213,9 @@ class DaemonConfig:
     # DST hook (SUB-124): a seed makes the proxy reconnect backoff stream
     # reproducible in simulation; None = per-call nondeterministic jitter.
     proxy_retry_seed: int | None = None
+    # SUB-135: what the hardware plan derivation actually changed (empty when
+    # every value stayed historical). Announcement, never silent.
+    hardware_notes: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "db_path", Path(self.db_path))
@@ -204,7 +231,89 @@ class DaemonConfig:
             object.__setattr__(self, "runtime_dir", Path(self.db_path).expanduser().resolve().parent / "superpower")
         else:
             object.__setattr__(self, "runtime_dir", Path(self.runtime_dir))
+        self._apply_hardware_sizing()
         self._validate()
+
+    def _apply_hardware_sizing(self) -> None:
+        """Derive capacity from the single HardwarePlan (SUB-135, scale-up only).
+
+        A field left at its historical default is *auto* and follows the plan
+        (``max(default, derived)``, so small hosts keep the historical sizing
+        exactly); an explicitly non-default value is honored verbatim. Kill
+        switches: ``KNOW_YOUR_CONTEXT_DISABLE_HW_AUTOSCALER`` freezes worker
+        and queue sizing, ``KNOW_YOUR_CONTEXT_DISABLE_HW_TUNING`` freezes the
+        disk-profile group-commit batch. A failed probe keeps the historical
+        recipe. Every derivation is announced in :attr:`hardware_notes`.
+        """
+        switches = load_switches()
+        autoscaler_off = switches.hw_autoscaler_disabled()
+        tuning_off = switches.hw_tuning_disabled()
+        auto_fields = {
+            "max_agents": DEFAULT_MAX_AGENTS,
+            "read_pool_size": DEFAULT_READ_POOL_SIZE,
+            "write_queue_size": DEFAULT_WRITE_QUEUE_SIZE,
+            "read_queue_size": DEFAULT_READ_QUEUE_SIZE,
+            "heavy_queue_size": DEFAULT_HEAVY_QUEUE_SIZE,
+            "audit_queue_size": DEFAULT_AUDIT_QUEUE_SIZE,
+            "group_commit_batch": DEFAULT_GROUP_COMMIT_BATCH,
+            "listener_backlog": DEFAULT_LISTENER_BACKLOG,
+        }
+        # An explicit operator value is honored verbatim, even one equal to
+        # the historical default; HARDWARE_AUTO means "derive from the plan".
+        auto = {field for field in auto_fields if int(getattr(self, field)) == HARDWARE_AUTO}
+        for field, historical in auto_fields.items():
+            if field not in auto:
+                continue
+            object.__setattr__(self, field, historical)
+        if autoscaler_off and tuning_off:
+            object.__setattr__(
+                self,
+                "hardware_notes",
+                ("hardware sizing frozen by kill switches (autoscaler + tuning); historical recipe",),
+            )
+            return
+        try:
+            from know_your_context.hardware.profile import hardware_plan
+
+            plan = hardware_plan(Path(self.db_path))
+        except Exception as error:  # noqa: BLE001 - a probe failure must never break daemon config
+            object.__setattr__(
+                self,
+                "hardware_notes",
+                (f"hardware plan unavailable ({error}); fallback to historical sizing",),
+            )
+            return
+
+        notes: list[str] = []
+
+        def _bump(field: str, derived: int) -> None:
+            """Scale-up only, and only for fields the operator left AUTO."""
+            if field not in auto:
+                return
+            historical = auto_fields[field]
+            if derived > historical:
+                object.__setattr__(self, field, derived)
+                notes.append(f"{field}: {historical} -> {derived} (hardware plan)")
+
+        if not autoscaler_off:
+            scale = plan.queue_scale()
+            workers = plan.base_workers()
+            _bump("read_pool_size", min(HARD_MAX_READ_POOL, max(2, workers)))
+            _bump("write_queue_size", DEFAULT_WRITE_QUEUE_SIZE * scale)
+            _bump("read_queue_size", DEFAULT_READ_QUEUE_SIZE * scale)
+            _bump("heavy_queue_size", DEFAULT_HEAVY_QUEUE_SIZE * scale)
+            # 256 audit slots per read worker preserves the historical ratio
+            # (2048 for 8 readers); the >= 2x pool invariant always holds.
+            _bump("audit_queue_size", max(DEFAULT_AUDIT_QUEUE_SIZE, 256 * workers))
+            _bump("listener_backlog", min(HARD_MAX_LISTENER_BACKLOG, DEFAULT_LISTENER_BACKLOG * scale))
+            _bump("max_agents", min(HARD_MAX_AGENTS, max(DEFAULT_MAX_AGENTS, workers * 8)))
+        else:
+            notes.append("autoscaler kill switch: pool/queue/backlog/agent sizing stays historical")
+        if not tuning_off:
+            _bump("group_commit_batch", plan.storage.profile.group_commit_batch)
+        else:
+            notes.append("hw tuning kill switch: group-commit batch stays historical")
+        object.__setattr__(self, "hardware_notes", tuple(notes))
 
     def _validate(self) -> None:
         if str(self.db_path) == ":memory:":
@@ -242,6 +351,10 @@ class DaemonConfig:
             raise ConfigError("session_lease_seconds must be positive")
         if int(self.group_commit_batch) < 1:
             raise ConfigError("group_commit_batch must be >= 1")
+        if not 1 <= int(self.listener_backlog) <= HARD_MAX_LISTENER_BACKLOG:
+            raise ConfigError(
+                f"listener_backlog must be in [1, {HARD_MAX_LISTENER_BACKLOG}], got {self.listener_backlog}"
+            )
         if float(self.group_commit_window_seconds) < 0:
             raise ConfigError("group_commit_window_seconds must be >= 0")
         if float(self.drain_timeout_seconds) <= 0:

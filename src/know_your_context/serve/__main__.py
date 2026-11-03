@@ -49,8 +49,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--runtime-dir", default=None, help="daemon runtime directory (default: <store dir>/superpower)"
     )
-    parser.add_argument("--max-agents", type=int, default=50)
-    parser.add_argument("--read-pool-size", type=int, default=8)
+    parser.add_argument("--max-agents", type=int, default=None)
+    parser.add_argument("--read-pool-size", type=int, default=None)
     parser.add_argument(
         "--idle-timeout", type=float, default=300.0, help="seconds of no clients before the daemon exits"
     )
@@ -75,10 +75,14 @@ def _config_from_args(args: argparse.Namespace) -> DaemonConfig:
         "db_path": args.db,
         "graph_root": args.graph_root,
         "runtime_dir": args.runtime_dir,
-        "max_agents": args.max_agents,
-        "read_pool_size": args.read_pool_size,
         "idle_timeout_seconds": args.idle_timeout,
     }
+    # None = the operator did not ask; the hardware plan derives it (scale-up
+    # only from the historical default).
+    if args.max_agents is not None:
+        kwargs["max_agents"] = args.max_agents
+    if args.read_pool_size is not None:
+        kwargs["read_pool_size"] = args.read_pool_size
     if args.max_token_budget is not None:
         kwargs["max_token_budget"] = args.max_token_budget
     return DaemonConfig(**kwargs)

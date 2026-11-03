@@ -207,6 +207,25 @@ def _now_iso() -> str:
     return datetime.now(UTC).isoformat()
 
 
+def _artifact_buffering(path: str | Path) -> int:
+    """Write buffering for projection artifacts, from the single HardwarePlan.
+
+    ``-1`` (Python's default buffer) when hw tuning is off or detection fails
+    — the historical behavior byte-identical; otherwise the disk profile's
+    buffer (SSD/UNKNOWN 1 MiB, HDD 4 MiB). Content on disk never changes;
+    only syscall batching.
+    """
+    try:
+        from know_your_context.hardware.profile import io_buffer_bytes
+        from know_your_context.ops.switches import load_switches
+
+        if load_switches().hw_tuning_disabled():
+            return -1
+        return int(io_buffer_bytes(path))
+    except Exception:  # noqa: BLE001 - a buffering hint must never break a write
+        return -1
+
+
 # ------------------------------------------------------- summary enrichment
 #
 # Ruling "Opsi A" (operator, 2026-10-25): at projection time a node label is
@@ -413,7 +432,9 @@ class FragmentCache:
     def put(self, key: str, fragment: Mapping[str, Any]) -> None:
         self._dir.mkdir(parents=True, exist_ok=True)
         tmp = self._dir / f"{key}.json.tmp-{os.getpid()}"
-        with open(tmp, "w", encoding="utf-8") as handle:
+        # SUB-135: write buffering follows the disk profile via the single
+        # HardwarePlan; the content on disk is identical either way.
+        with open(tmp, "w", encoding="utf-8", buffering=_artifact_buffering(self._dir)) as handle:
             handle.write(canonical_json(fragment))
             handle.flush()
             os.fsync(handle.fileno())
@@ -1115,7 +1136,9 @@ class GraphProjector:
         except OSError:
             pass
         tmp = path.with_name(f"{path.name}.tmp-{os.getpid()}")
-        with open(tmp, "wb") as handle:
+        # SUB-135: write buffering follows the disk profile via the single
+        # HardwarePlan; the content on disk is identical either way.
+        with open(tmp, "wb", buffering=_artifact_buffering(path)) as handle:
             handle.write(data)
             handle.flush()
             os.fsync(handle.fileno())
