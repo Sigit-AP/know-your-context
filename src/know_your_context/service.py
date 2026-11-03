@@ -1304,11 +1304,30 @@ class KnowledgeService:
         repair path runs once. If even that repair cannot produce a readable
         generation the response is marked ``stale=True`` instead of failing a
         write that already committed.
+
+        W16 (SUB-137): the metadata only ever reads two manifest fields, so
+        coverage is answered at manifest level — same coverage checks as
+        ``_try_snapshot`` (watermark bounds, projection version, the F-2
+        lying-manifest guard) plus the same validation gate (verdict-cached,
+        so ~1ms for a just-published generation) — without parsing graph.json
+        or building a traversal. The full snapshot build stays on the
+        content-serving read path.
         """
         required = self._store.knowledge_high_watermark()
-        try:
-            snapshot = self._snapshot(required)
-        except StaleProjectionUnavailable:
+        meta = self._meta_from_active_manifest(audit_event_id, required)
+        if meta is not None:
+            return meta
+        with self._repair_lock:
+            # Re-check under the lock: a concurrent repair may have covered it.
+            meta = self._meta_from_active_manifest(audit_event_id, required)
+            if meta is None and time.monotonic() >= self._repair_unavailable_until:
+                self._repair_projection_once()
+                meta = self._meta_from_active_manifest(audit_event_id, required)
+                if meta is None:
+                    self._repair_unavailable_until = time.monotonic() + self._repair_cooldown_seconds
+                else:
+                    self._repair_unavailable_until = 0.0
+        if meta is None:
             return {
                 "audit_event_id": audit_event_id,
                 "projection_version": self._store.projection_version(),
@@ -1316,11 +1335,31 @@ class KnowledgeService:
                 "source_knowledge_high_watermark": required,
                 "stale": True,
             }
+        return meta
+
+    def _meta_from_active_manifest(self, audit_event_id: str, required: int) -> dict[str, Any] | None:
+        """The covering-generation metadata, or None when the active
+        projection does not verifiably cover *required* (same refusal
+        conditions as ``_try_snapshot``, minus the graph parse)."""
+        manifest = self._projector.active_manifest()
+        generation = self._projector.active_generation_dir()
+        if manifest is None or generation is None:
+            return None
+        manifest_watermark = int(manifest.get("source_knowledge_high_watermark", -1))
+        store_watermark = self._store.knowledge_high_watermark()
+        if manifest_watermark > store_watermark:
+            return None  # F-2: a manifest ahead of the store is lying
+        if manifest_watermark < required:
+            return None
+        if manifest.get("projection_version") != self._store.projection_version():
+            return None
+        if not self._validator.validate(generation, manifest).ok:
+            return None
         return {
             "audit_event_id": audit_event_id,
-            "projection_version": snapshot.projection_version,
+            "projection_version": str(manifest["projection_version"]),
             "required_knowledge_watermark": required,
-            "source_knowledge_high_watermark": snapshot.watermark,
+            "source_knowledge_high_watermark": manifest_watermark,
             "stale": False,
         }
 

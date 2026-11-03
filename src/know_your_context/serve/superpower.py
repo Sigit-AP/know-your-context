@@ -156,6 +156,8 @@ _STALE_CODE = "STALE_PROJECTION"
 _ADMIN_PREFIX = "daemon."
 # Kill switches (W7 attention-to-detail: every optimization is switchable).
 _NO_GROUP_COMMIT_ENV = "KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT"
+# W16 (SUB-137): audit-drain batching kill switch (see _drain_audit).
+_NO_AUDIT_BATCH_ENV = "KNOW_YOUR_CONTEXT_NO_AUDIT_BATCH"
 
 _LOGGER = logging.getLogger("know_your_context.serve.superpower")
 
@@ -787,6 +789,10 @@ class _WriteArbiter:
         # against it so a client ack can never be delivered pre-COMMIT.
         self._batch_transaction_open = False
         self._group_commit_enabled = bool(config.group_commit) and os.environ.get(_NO_GROUP_COMMIT_ENV) != "1"
+        self._audit_batch_enabled = os.environ.get(_NO_AUDIT_BATCH_ENV) != "1"
+        # W16 (SUB-137): receipts of audit items drained INSIDE an open
+        # group-commit batch wait here until the batch commits.
+        self._pending_audit: list[tuple[Future, Any]] = []
 
     # ------------------------------------------------------------ lifecycle
 
@@ -799,6 +805,7 @@ class _WriteArbiter:
         self._stop.set()
         if self._started:
             self._thread.join(timeout=15.0)
+        self._flush_pending_audit(error=ShuttingDown("the daemon is shutting down"))
         for item in self._write_q.drain():
             if not item.future.done():
                 item.future.set_exception(ShuttingDown("the daemon is shutting down"))
@@ -925,16 +932,22 @@ class _WriteArbiter:
                     # domain append and audit joins it via savepoints
                     # (EventStore.transaction reentrancy). A failing member
                     # rolls back only its own savepoint — the batch survives.
+                    # W16: the audit lane drains BETWEEN members so read lanes
+                    # wait at most one member (~one rebuild) for their journal
+                    # receipts; those receipts stay deferred until the COMMIT.
                     assert not self._batch_transaction_open
                     assert self._executing == 0
                     self._executing = len(batch)
                     self._batch_transaction_open = True
+                    batch_error: BaseException | None = None
                     try:
                         with self._store.transaction():
                             for member in batch:
                                 self._execute_mutation(member)
+                                self._drain_audit()
                     except BaseException as error:  # noqa: BLE001 - the outer commit failed
                         # Nothing in the batch committed; every member fails.
+                        batch_error = error
                         for member in batch:
                             if member.error is None:
                                 member.error = error
@@ -942,6 +955,7 @@ class _WriteArbiter:
                         self._batch_transaction_open = False
                         self._executing = 0
                     # Resolve only after COMMIT: an ack implies durability.
+                    self._flush_pending_audit(error=batch_error)
                     for member in batch:
                         self._resolve_mutation(member)
                 else:
@@ -954,6 +968,11 @@ class _WriteArbiter:
                     finally:
                         self._executing = 0
                 self._dirty = True
+                # W16 (SUB-137): read lanes block on their journal receipts;
+                # draining again between the batch and the publish halves
+                # their worst-case wait (instrumented storm: audit round
+                # trips p50 ~52ms when the writer drained once per loop).
+                self._drain_audit()
             if self._dirty or self._publish_requested:
                 self._publish_now()
         self._drain_audit()
@@ -1041,22 +1060,85 @@ class _WriteArbiter:
         self.request_publish()
 
     def _drain_audit(self) -> None:
+        items: list[tuple[Callable[[], Any], Future]] = []
         while True:
             try:
                 audit_item = self._audit_q.get_nowait()
             except queue.Empty:
-                return
+                break
             if audit_item is None:
                 continue
-            fn, future = audit_item
-            try:
-                result = fn()
-            except BaseException as error:  # noqa: BLE001 - surfaced to the waiting lane
+            items.append(audit_item)
+        if not items:
+            return
+        if self._batch_transaction_open:
+            # Inside an open group-commit batch the items join via savepoints
+            # and their receipts DEFER to the batch commit (ack ⇒ durable).
+            for fn, future in items:
+                try:
+                    result = fn()
+                except BaseException as error:  # noqa: BLE001 - its savepoint rolled back
+                    if not future.done():
+                        future.set_exception(error)
+                else:
+                    self._pending_audit.append((future, result))
+            return
+        if not self._audit_batch_enabled or len(items) == 1:
+            for fn, future in items:
+                self._run_audit_item(fn, future)
+            return
+        # W16 (SUB-137): join the whole drain into ONE outer transaction.
+        # Audit callables use ``EventStore.transaction`` (reentrant: savepoints
+        # inside the outer scope), so ordering is preserved, a failing item
+        # rolls back only its own savepoint, and receipts resolve only after
+        # the shared COMMIT lands — an audit receipt still implies durability.
+        # Contract: audit callables must scope their writes in
+        # ``store.transaction`` (every AuditLog method does); a callable that
+        # wrote unscoped would leak partial writes into the shared commit.
+        succeeded: list[tuple[Future, Any]] = []
+        try:
+            with self._store.transaction():
+                for fn, future in items:
+                    try:
+                        result = fn()
+                    except BaseException as error:  # noqa: BLE001 - its savepoint rolled back
+                        if not future.done():
+                            future.set_exception(error)
+                    else:
+                        succeeded.append((future, result))
+        except BaseException as error:  # noqa: BLE001 - the shared commit failed: nothing is durable
+            for future, _result in succeeded:
                 if not future.done():
                     future.set_exception(error)
+            return
+        for future, result in succeeded:
+            if not future.done():
+                future.set_result(result)
+
+    def _flush_pending_audit(self, error: BaseException | None = None) -> None:
+        """Resolve the deferred mid-batch receipts after the batch COMMIT.
+
+        On a commit failure every deferred receipt fails with the batch's
+        error: nothing was durably written, so nothing may be acknowledged.
+        """
+        pending, self._pending_audit = self._pending_audit, []
+        for future, result in pending:
+            if future.done():
+                continue
+            if error is not None:
+                future.set_exception(error)
             else:
-                if not future.done():
-                    future.set_result(result)
+                future.set_result(result)
+
+    def _run_audit_item(self, fn: Callable[[], Any], future: Future) -> None:
+        try:
+            result = fn()
+        except BaseException as error:  # noqa: BLE001 - surfaced to the waiting lane
+            if not future.done():
+                future.set_exception(error)
+        else:
+            if not future.done():
+                future.set_result(result)
 
     def _publish_now(self) -> None:
         try:

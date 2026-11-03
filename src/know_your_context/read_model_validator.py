@@ -16,8 +16,10 @@ through the pinned Graphify loader with direction and confidence restored.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import threading
 from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -27,7 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from know_your_context.domain import canonical_json
 from know_your_context.exporters.orchestrator import ArtifactSchema
-from know_your_context.graphify_adapter import ACCEPTED_SCHEMA_VERSIONS, GraphifyAdapter
+from know_your_context.graphify_adapter import ACCEPTED_SCHEMA_VERSIONS, ADAPTER_VERSION, GraphifyAdapter
 from know_your_context.security import SECRET_PATTERNS
 
 __all__ = [
@@ -64,10 +66,60 @@ _ID_RE = re.compile(r"^[\w.:-]+$", re.UNICODE)
 # before the leading slash must not be a scheme/authority character).
 _ABS_PATH_RE = re.compile(r"(?<![\w@:+/.-])/(?:[\w@.+-]+/){2,}[\w@.+-]+")
 _DRIVE_RE = re.compile(r"(?<![\w@:+/.-])[A-Za-z]:[\\/]")
+
+
 # Secret shapes come from ``know_your_context.security.SECRET_PATTERNS`` (audit
 # wave-1 finding F4): one shared list covers JWT, bearer, github_pat, Slack
 # xox[r/s], private-key blocks and credential assignments — the validator can
 # never drift narrower than the redaction surface.
+#
+# W16 (SUB-137): the per-pattern loop ran all nine patterns over every
+# artifact's full text on every publish (61% of ``validate()`` was regex
+# search). A clean artifact cannot match any single pattern unless it matches
+# their scoped-flag alternation, so one prefilter scan short-circuits the
+# loop; a prefilter hit falls back to the exact per-pattern order so the
+# reported category is unchanged. Verdicts are byte-identical either way.
+def _combine_secret_patterns() -> re.Pattern[str]:
+    parts: list[str] = []
+    for _name, pattern in SECRET_PATTERNS:
+        body = pattern.pattern
+        flags = "i" if pattern.flags & re.IGNORECASE else ""
+        # A leading GLOBAL inline-flag group (e.g. ``(?i)``) is illegal inside
+        # an alternation branch; promote it to the branch's scoped flags.
+        global_flags = re.match(r"^\(\?([aimsx]+)\)", body)
+        if global_flags:
+            flags = "".join(sorted(set(flags + global_flags.group(1))))
+            body = body[global_flags.end() :]
+        if flags:
+            body = f"(?{flags}:{body})"
+        parts.append(f"(?:{body})")
+    return re.compile("|".join(parts))
+
+
+_SECRET_ANY = _combine_secret_patterns()
+
+# W16 (SUB-137): validation verdict memoization. ``validate`` is a pure
+# function of (validator config, supplied manifest, manifest bytes on disk,
+# artifact bytes on disk) — the cache key is the sha256 over exactly those
+# bytes, so changed content is a cache MISS by construction and a cached
+# verdict can never describe bytes that are not on disk right now. Under the
+# 50-agent storm the same generation was re-validated ~10x per publish
+# (rebuild + writer snapshot + one per read worker); the repeat validations
+# measured ~25ms each, 61% of it full-text regex scans.
+VALIDATION_CACHE_MAXSIZE = 64
+_VALIDATION_CACHE: dict[str, ValidationReport] = {}
+_VALIDATION_CACHE_LOCK = threading.Lock()
+
+
+def clear_validation_cache() -> None:
+    """Drop every cached verdict (tests, and operators after a rules change)."""
+    with _VALIDATION_CACHE_LOCK:
+        _VALIDATION_CACHE.clear()
+
+
+def validation_cache_size() -> int:
+    with _VALIDATION_CACHE_LOCK:
+        return len(_VALIDATION_CACHE)
 
 
 class CollapsedLink(BaseModel):
@@ -131,10 +183,82 @@ class ReadModelValidator:
 
         Raises ``FileNotFoundError`` if the directory does not exist; every
         other violation is collected into the report.
+
+        W16: verdicts are memoized by the sha256 of every input byte (see
+        ``VALIDATION_CACHE_MAXSIZE``); identical content yields the identical
+        report without re-running the scans, and changed content misses by
+        construction.
         """
         generation_dir = Path(generation_dir)
         if not generation_dir.is_dir():
             raise FileNotFoundError(f"generation directory {generation_dir} does not exist")
+        key = self._cache_key(generation_dir, manifest)
+        if key is not None:
+            with _VALIDATION_CACHE_LOCK:
+                cached = _VALIDATION_CACHE.get(key)
+            if cached is not None:
+                return cached
+        report = self._validate_uncached(generation_dir, manifest)
+        if key is not None:
+            with _VALIDATION_CACHE_LOCK:
+                if len(_VALIDATION_CACHE) >= VALIDATION_CACHE_MAXSIZE:
+                    _VALIDATION_CACHE.clear()  # bounded reset: exact, never grows past the cap
+                _VALIDATION_CACHE[key] = report
+        return report
+
+    def _cache_key(self, generation_dir: Path, manifest: Mapping[str, Any]) -> str | None:
+        """sha256 over every byte the verdict depends on; None = do not cache.
+
+        The key covers the validator configuration (accepted schema versions,
+        forbidden roots, export schema registry, pinned adapter), the supplied
+        manifest in canonical form, the manifest bytes on disk, and every
+        artifact's current bytes (or a MISSING marker). Unsafe export names
+        are recorded as markers — never read — so key-building cannot escape
+        the generation directory.
+        """
+
+        def _feed(digest: Any, payload: bytes | None) -> None:
+            if payload is None:
+                digest.update(b"\x00MISSING\x00")
+                return
+            digest.update(len(payload).to_bytes(8, "big"))
+            digest.update(payload)
+
+        try:
+            digest = hashlib.sha256()
+            config = repr(
+                (
+                    sorted(self._accepted_schema_versions),
+                    self._forbidden_roots,
+                    sorted(self._export_schemas),
+                    type(self._adapter).__qualname__,
+                    ADAPTER_VERSION,
+                )
+            ).encode("utf-8")
+            _feed(digest, config)
+            _feed(digest, (canonical_json(dict(manifest)) + "\n").encode("utf-8"))
+            try:
+                _feed(digest, (generation_dir / "manifest.json").read_bytes())
+            except OSError:
+                _feed(digest, None)
+            names: list[str] = list(HASHED_ARTIFACTS)
+            raw_exports: Any = manifest.get("export_artifacts")
+            if isinstance(raw_exports, Mapping):
+                names.extend(sorted(str(name) for name in raw_exports))
+            for name in names:
+                if _ABS_PATH_RE.search(name) or ".." in name or name.startswith("/"):
+                    _feed(digest, f"UNSAFE:{name}".encode())
+                    continue
+                try:
+                    _feed(digest, (generation_dir / name).read_bytes())
+                except OSError:
+                    _feed(digest, None)
+            return digest.hexdigest()
+        except Exception:  # noqa: BLE001 - caching must never break validation
+            return None
+
+    def _validate_uncached(self, generation_dir: Path, manifest: Mapping[str, Any]) -> ValidationReport:
+        """The full validation body (every check, every scan), uncached."""
         errors: list[str] = []
 
         # --------------------------------------------------- manifest binding
@@ -314,16 +438,17 @@ class ReadModelValidator:
             match = _ABS_PATH_RE.search(text)
             if match is not None:
                 errors.append(f"artifact {name} contains an absolute path {match.group(0)!r}")
-            for secret_name, pattern in SECRET_PATTERNS:
-                secret = pattern.search(text)
-                if secret is not None:
-                    # Wave-2 F7(b): never echo secret material — not even an
-                    # 8-char prefix. Category + node location is enough.
-                    errors.append(
-                        f"artifact {name} contains a secret-shaped string (category: {secret_name})"
-                        + self._secret_node_location(name, graph, pattern)
-                    )
-                    break
+            if _SECRET_ANY.search(text) is not None:
+                for secret_name, pattern in SECRET_PATTERNS:
+                    secret = pattern.search(text)
+                    if secret is not None:
+                        # Wave-2 F7(b): never echo secret material — not even an
+                        # 8-char prefix. Category + node location is enough.
+                        errors.append(
+                            f"artifact {name} contains a secret-shaped string (category: {secret_name})"
+                            + self._secret_node_location(name, graph, pattern)
+                        )
+                        break
 
         return ValidationReport(
             ok=not errors,

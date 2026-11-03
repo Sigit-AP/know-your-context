@@ -573,12 +573,12 @@ class TestSessionLease:
                 while time.monotonic() < deadline and not admitted:
                     try:
                         probe = SocketClient(config.paths.socket, timeout=3.0)
-                    except (ConnectionError, OSError):
+                    except ConnectionError, OSError:
                         time.sleep(0.2)
                         continue
                     try:
                         admitted = "result" in probe.request("ping")
-                    except (ConnectionError, OSError):
+                    except ConnectionError, OSError:
                         pass
                     finally:
                         probe.close()
@@ -924,9 +924,12 @@ class TestWatchdogStallDrill:
             root = Path(config.graph_root)
             corpus = root / "stallcorpus"
             corpus.mkdir(parents=True, exist_ok=True)
-            # Calibrated on this host: ~700 tiny files = ~7s of continuous
-            # heavy-lane work > watchdog_stall_seconds (4s).
-            for index in range(700):
+            # Calibrated on this host post-W16 perf work: ~1500 tiny files
+            # = ~8s of continuous heavy-lane work > watchdog_stall_seconds (4s).
+            # (Was 700 files ≈ 7s; the audit-batch + projection optimizations
+            # roughly halved per-file cost, so the corpus must grow to keep
+            # the drill above the stall threshold.)
+            for index in range(1500):
                 (corpus / f"doc_{index:03d}.py").write_text(
                     f"def doc_{index}():\n    return {index}\n", encoding="utf-8"
                 )
@@ -934,7 +937,7 @@ class TestWatchdogStallDrill:
                 assert client.request("ping")["result"] == {}
                 started = time.monotonic()
                 response = client.call_tool(
-                    "knowledge_ingest_directory", {"path": "stallcorpus", "max_files": 700}, actor="stall-drill"
+                    "knowledge_ingest_directory", {"path": "stallcorpus", "max_files": 1500}, actor="stall-drill"
                 )
                 elapsed = time.monotonic() - started
                 assert elapsed > config.watchdog_stall_seconds, (

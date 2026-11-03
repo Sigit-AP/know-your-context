@@ -46,6 +46,7 @@ import unicodedata
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from datetime import UTC, datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -458,6 +459,58 @@ class FragmentCache:
         return sorted(path.stem for path in self._dir.glob("*.json"))
 
 
+# W16 (SUB-137): ``_secret_category`` is a pure function of its text, but a
+# rebuild at watermark W re-scans the fields of events 1..W-1 that have not
+# changed since the last publish — under a write storm the writer thread
+# measured ~52% of its rebuild CPU in these repeated scans (py-spy evidence
+# in docs/recovery/w16-perf.md). The raw scan therefore runs behind a
+# statically bounded memoization wrapper; the wrapper is module-level so the
+# seam is testable (monkeypatch the raw scanner, clear the cache), and the
+# cache never changes a result — only how often it is computed.
+_SECRET_SCAN_CACHE_MAXSIZE = 8192
+
+
+def _raw_secret_category(text: str) -> str | None:
+    """The shared SECRET_PATTERNS category matching *text*, or ``None``.
+
+    Wave-3 W3-4: matching runs over the raw text AND the normalized
+    redaction match view (NFKC + control/format strip + homoglyph
+    fold), so a zero-width-split, fullwidth or homoglyph-obfuscated
+    secret shape in a node field is quarantined exactly like its
+    plaintext form.
+
+    SUB-43 S-2: a third pass runs over the *compact token view* — the
+    match view reduced to the pinned-pattern alphabet (letters, digits,
+    ``_-.``) with every separator and punctuation character dropped.
+    A secret split across field boundaries or fused into the enriched
+    label by the ``" — "`` join re-forms there, so both halves of one
+    key can never publish side by side in a single node. Patterns that
+    require whitespace or ``[:=]`` (bearer, credential assignment,
+    private-key blocks) simply cannot match this view; the split-N-way
+    family beyond one join point is a documented design boundary.
+    """
+    for name, pattern in SECRET_PATTERNS:
+        if pattern.search(text) is not None:
+            return name
+    view = _redaction_match_view(text)
+    if view != text:
+        for name, pattern in SECRET_PATTERNS:
+            if pattern.search(view) is not None:
+                return name
+    compact = "".join(char for char in view if char in _COMPACT_TOKEN_ALPHABET)
+    if compact != view:
+        for name, pattern in SECRET_PATTERNS:
+            if pattern.search(compact) is not None:
+                return name
+    return None
+
+
+@lru_cache(maxsize=_SECRET_SCAN_CACHE_MAXSIZE)
+def _secret_category_scan(text: str) -> str | None:
+    """Memoized ``_raw_secret_category``: same text, same category, always."""
+    return _raw_secret_category(text)
+
+
 class GraphProjector:
     """The single serialized projector for one corpus root."""
 
@@ -603,36 +656,12 @@ class GraphProjector:
     def _secret_category(text: str) -> str | None:
         """The shared SECRET_PATTERNS category matching *text*, or ``None``.
 
-        Wave-3 W3-4: matching runs over the raw text AND the normalized
-        redaction match view (NFKC + control/format strip + homoglyph
-        fold), so a zero-width-split, fullwidth or homoglyph-obfuscated
-        secret shape in a node field is quarantined exactly like its
-        plaintext form.
-
-        SUB-43 S-2: a third pass runs over the *compact token view* — the
-        match view reduced to the pinned-pattern alphabet (letters, digits,
-        ``_-.``) with every separator and punctuation character dropped.
-        A secret split across field boundaries or fused into the enriched
-        label by the ``" — "`` join re-forms there, so both halves of one
-        key can never publish side by side in a single node. Patterns that
-        require whitespace or ``[:=]`` (bearer, credential assignment,
-        private-key blocks) simply cannot match this view; the split-N-way
-        family beyond one join point is a documented design boundary.
+        Pure function of the text (see ``_raw_secret_category`` for the
+        matching contract); answered through the bounded module-level
+        memoization cache (W16) so repeat publishes never re-scan unchanged
+        fields.
         """
-        for name, pattern in SECRET_PATTERNS:
-            if pattern.search(text) is not None:
-                return name
-        view = _redaction_match_view(text)
-        if view != text:
-            for name, pattern in SECRET_PATTERNS:
-                if pattern.search(view) is not None:
-                    return name
-        compact = "".join(char for char in view if char in _COMPACT_TOKEN_ALPHABET)
-        if compact != view:
-            for name, pattern in SECRET_PATTERNS:
-                if pattern.search(compact) is not None:
-                    return name
-        return None
+        return _secret_category_scan(text)
 
     def _joined_secret_category(self, values: Sequence[str]) -> str | None:
         """Secret category of the cross-field joined views, or ``None``.
@@ -1138,7 +1167,12 @@ class GraphProjector:
         tmp = path.with_name(f"{path.name}.tmp-{os.getpid()}")
         # SUB-135: write buffering follows the disk profile via the single
         # HardwarePlan; the content on disk is identical either way.
-        with open(tmp, "wb", buffering=_artifact_buffering(path)) as handle:
+        # W16 (SUB-137): probe anchor is the STABLE output root, not the
+        # artifact file — every rebuild writes into a fresh generation
+        # directory, so anchoring on the artifact path defeated the per-path
+        # plan cache and re-probed the hardware (GPU scan included) once per
+        # artifact per publish (measured: 21 probes for 3 rebuilds).
+        with open(tmp, "wb", buffering=_artifact_buffering(self._output_root)) as handle:
             handle.write(data)
             handle.flush()
             os.fsync(handle.fileno())

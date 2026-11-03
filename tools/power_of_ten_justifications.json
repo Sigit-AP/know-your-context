@@ -1,0 +1,1156 @@
+{
+ "version": 1,
+ "policy": "NASA/JPL Power-of-Ten mapping for this codebase; see tools/power_of_ten.py docstring and docs/recovery/w16-modelbased.md. Ratchet entries record the measured baseline: the code may improve, never regress. A stale entry fails the gate.",
+ "entries": [
+  {
+   "rule": "POT4",
+   "file": "domain.py",
+   "scope": "storage_payload",
+   "detail": "direct",
+   "reason": "Recursion mirrors the payload's container nesting; depth is bounded by the canonical-JSON payload tree (finite, validated before storage)."
+  },
+  {
+   "rule": "POT4",
+   "file": "http_api.py",
+   "scope": "to_jsonable",
+   "detail": "direct",
+   "reason": "Recursion mirrors the response payload's container depth; payloads are finite JSON-shaped structures built from bounded rows."
+  },
+  {
+   "rule": "POT4",
+   "file": "ingest/extractor.py",
+   "scope": "TreeSitterExtractor._declare",
+   "detail": "mutual",
+   "reason": "Mutual recursion with _variable_declared walks one file's scope nesting; bounded by lexical nesting depth."
+  },
+  {
+   "rule": "POT4",
+   "file": "ingest/extractor.py",
+   "scope": "TreeSitterExtractor._member_name",
+   "detail": "direct",
+   "reason": "Recursion walks one attribute chain; bounded by the dotted-access depth of one expression."
+  },
+  {
+   "rule": "POT4",
+   "file": "ingest/extractor.py",
+   "scope": "TreeSitterExtractor._resolve_name",
+   "detail": "direct",
+   "reason": "Recursion walks one dotted name's segments/scope chain; bounded by the identifier length in one file."
+  },
+  {
+   "rule": "POT4",
+   "file": "ingest/extractor.py",
+   "scope": "TreeSitterExtractor._variable_declared",
+   "detail": "mutual",
+   "reason": "Mutual recursion with _declare walks one scope chain; bounded by the lexical nesting depth of one file."
+  },
+  {
+   "rule": "POT4",
+   "file": "ingest/extractor.py",
+   "scope": "TreeSitterExtractor._walk",
+   "detail": "direct",
+   "reason": "Recursion mirrors the tree-sitter parse-tree depth of one source file; a file's AST is finite."
+  },
+  {
+   "rule": "POT4",
+   "file": "mcp_server.py",
+   "scope": "_check_property",
+   "detail": "direct",
+   "reason": "Recursion mirrors the frozen tool-schema nesting; the 17 schemas are static and shallow."
+  },
+  {
+   "rule": "POT4",
+   "file": "mcp_server.py",
+   "scope": "_validate_object",
+   "detail": "mutual",
+   "reason": "Mutual recursion with _check_property over the static tool schemas; bounded by schema nesting depth."
+  },
+  {
+   "rule": "POT4",
+   "file": "ops/config.py",
+   "scope": "_flatten",
+   "detail": "direct",
+   "reason": "Recursion mirrors config mapping nesting; config trees are operator-authored and shallow."
+  },
+  {
+   "rule": "POT4",
+   "file": "projection.py",
+   "scope": "GraphProjector._quarantine_secret_nodes._scan",
+   "detail": "direct",
+   "reason": "Recursion walks the projection directory tree; depth is bounded by the fixed artifact layout."
+  },
+  {
+   "rule": "POT4",
+   "file": "read_model_validator.py",
+   "scope": "ReadModelValidator._secret_node_location._hits",
+   "detail": "direct",
+   "reason": "Recursion walks one read-model entry's nested fields; bounded by the artifact's JSON depth."
+  },
+  {
+   "rule": "POT4",
+   "file": "security/__init__.py",
+   "scope": "redact_value",
+   "detail": "direct",
+   "reason": "Recursion mirrors the redacted value's container depth; bounded by the payload tree being scrubbed."
+  },
+  {
+   "rule": "POT5",
+   "file": "backup.py",
+   "scope": "recover_projection",
+   "detail": "heal_lying_projection_watermark",
+   "reason": "The call site already proved the marker lies (manifest ahead of store); the healed-or-not bool changes nothing before the rebuild that follows."
+  },
+  {
+   "rule": "POT5",
+   "file": "observability.py",
+   "scope": "check_readiness",
+   "detail": "heal_lying_projection_watermark",
+   "reason": "Health reporting is best-effort by contract ('health never raises'); the heal bool is subsumed by the state the probe reports."
+  },
+  {
+   "rule": "POT5",
+   "file": "ops/report_cli.py",
+   "scope": "run_report_command",
+   "detail": "_write_bytes_atomic",
+   "reason": "Both writes must land or raise; the changed-or-not bool is an optimization hint the CLI does not branch on.",
+   "count": 2
+  },
+  {
+   "rule": "POT5",
+   "file": "projection.py",
+   "scope": "GraphProjector._build_generation",
+   "detail": "_write_if_changed",
+   "reason": "Artifact durability is guaranteed by the fsync sequence below; the changed-or-not bool is informational only.",
+   "count": 2
+  },
+  {
+   "rule": "POT5",
+   "file": "retrieval_v2/lookup.py",
+   "scope": "SymbolLookup._fts_channel",
+   "detail": "ensure_fts_index",
+   "reason": "Index creation is idempotent; if it failed, the very next FTS query fails loud with the real error."
+  },
+  {
+   "rule": "POT5",
+   "file": "serve/superpower.py",
+   "scope": "spawn_daemon",
+   "detail": "_recover_stale_lock",
+   "reason": "The spawn loop re-checks liveness and retries; the recovered-or-not bool is folded into the next poll iteration."
+  },
+  {
+   "rule": "POT5",
+   "file": "serve/watchdog.py",
+   "scope": "Watchdog._loop",
+   "detail": "check_once",
+   "reason": "The watchdog loop acts on exceptions, not the per-check bool; the value is for direct probes, the loop re-checks every interval."
+  },
+  {
+   "rule": "POT5",
+   "file": "serve/webview.py",
+   "scope": "AsyncWebviewServer.stop",
+   "detail": "unregister",
+   "reason": "Teardown is best-effort inside finally; whether the watchdog entry existed does not change shutdown."
+  },
+  {
+   "rule": "POT5",
+   "file": "service.py",
+   "scope": "KnowledgeService._repair_projection_once",
+   "detail": "heal_lying_projection_watermark",
+   "reason": "The ahead-check proved the lie before the call; the bool duplicates what the guard already established."
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/algorithms.py",
+   "scope": "compute_louvain",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 146
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/bridges.py",
+   "scope": "find_bridges",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 127
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/centrality.py",
+   "scope": "compute_centrality",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 101
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/code_intel.py",
+   "scope": "boundary_violations",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 112
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/code_intel.py",
+   "scope": "co_change",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 92
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/code_intel.py",
+   "scope": "dependency_path",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 72
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/communities.py",
+   "scope": "detect_communities",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 89
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/components.py",
+   "scope": "analyze_components",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 72
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/cycles.py",
+   "scope": "find_cycles",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 125
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/debt.py",
+   "scope": "build_debt_queue",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 187
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/generation_diff.py",
+   "scope": "diff_generations",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 66
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/generation_diff.py",
+   "scope": "render_diff_markdown",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 86
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/health.py",
+   "scope": "analyze_corpus_health",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 168
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/paths.py",
+   "scope": "find_k_shortest_paths",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 70
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/query_tools.py",
+   "scope": "find_near_duplicates",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 112
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/query_tools.py",
+   "scope": "subtree_nodes",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 65
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/query_trace.py",
+   "scope": "build_query_trace",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 90
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/review_signals.py",
+   "scope": "collect_review_signals",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 153
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/timeline.py",
+   "scope": "build_timeline",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 135
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/timeline.py",
+   "scope": "render_timeline_markdown",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 66
+  },
+  {
+   "rule": "POT2",
+   "file": "analytics/timeline.py",
+   "scope": "sparkline",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 65
+  },
+  {
+   "rule": "POT3",
+   "file": "audit.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT2",
+   "file": "backup.py",
+   "scope": "backup_protected_artifacts",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 85
+  },
+  {
+   "rule": "POT2",
+   "file": "backup.py",
+   "scope": "diagnose_projection",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 63
+  },
+  {
+   "rule": "POT3",
+   "file": "backup.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.04
+  },
+  {
+   "rule": "POT2",
+   "file": "cli.py",
+   "scope": "build_parser",
+   "reason": "Argument-parser table: one branch per CLI verb; breadth, not nesting depth. Ratchet baseline, may shrink only.",
+   "lines": 648
+  },
+  {
+   "rule": "POT2",
+   "file": "cli.py",
+   "scope": "main",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 83
+  },
+  {
+   "rule": "POT3",
+   "file": "contracts.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT3",
+   "file": "domain.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT3",
+   "file": "events.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/book.py",
+   "scope": "build_book",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 108
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/builtin.py",
+   "scope": "build_registry",
+   "reason": "Static exporter registry table. Ratchet baseline, may shrink only.",
+   "lines": 189
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/builtin.py",
+   "scope": "gather_context",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 65
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/gexf.py",
+   "scope": "roundtrip_gexf",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 81
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/graphml_svg.py",
+   "scope": "to_svg",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 76
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/html_view.py",
+   "scope": "_build_payload",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 107
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/html_view.py",
+   "scope": "render_html_view",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 94
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/mermaid.py",
+   "scope": "roundtrip_mermaid",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 73
+  },
+  {
+   "rule": "POT2",
+   "file": "exporters/summary.py",
+   "scope": "roundtrip_summary",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 74
+  },
+  {
+   "rule": "POT2",
+   "file": "fragment_generator.py",
+   "scope": "FragmentGenerator.generate",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 86
+  },
+  {
+   "rule": "POT2",
+   "file": "graph_model.py",
+   "scope": "propose_primary_splits",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 100
+  },
+  {
+   "rule": "POT2",
+   "file": "hardware/gpu_gate.py",
+   "scope": "decide_gpu_offload",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 108
+  },
+  {
+   "rule": "POT2",
+   "file": "hardware/probe.py",
+   "scope": "probe_disk_kind",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 75
+  },
+  {
+   "rule": "POT2",
+   "file": "hardware/probe.py",
+   "scope": "probe_gpu",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 79
+  },
+  {
+   "rule": "POT2",
+   "file": "hardware/tuning.py",
+   "scope": "plan_storage_tuning",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 61
+  },
+  {
+   "rule": "POT2",
+   "file": "http_api.py",
+   "scope": "BoundaryMiddleware.__call__",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 92
+  },
+  {
+   "rule": "POT2",
+   "file": "http_api.py",
+   "scope": "create_app",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 87
+  },
+  {
+   "rule": "POT2",
+   "file": "http_api.py",
+   "scope": "run_ingest_verb",
+   "reason": "Single ingest verb orchestration over the pipeline phases. Ratchet baseline, may shrink only.",
+   "lines": 189
+  },
+  {
+   "rule": "POT2",
+   "file": "http_api.py",
+   "scope": "serve",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 62
+  },
+  {
+   "rule": "POT2",
+   "file": "importer.py",
+   "scope": "SeedImporter.import_directory",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 98
+  },
+  {
+   "rule": "POT2",
+   "file": "importer.py",
+   "scope": "SeedImporter.import_file",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 138
+  },
+  {
+   "rule": "POT3",
+   "file": "importer.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT2",
+   "file": "improvement.py",
+   "scope": "apply_improvement",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 89
+  },
+  {
+   "rule": "POT2",
+   "file": "improvement.py",
+   "scope": "merge_nodes",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 69
+  },
+  {
+   "rule": "POT2",
+   "file": "improvement.py",
+   "scope": "rollback_improvement",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 67
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/diffuzz.py",
+   "scope": "shrink",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 64
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/documents.py",
+   "scope": "_extract_markdown",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 136
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/documents.py",
+   "scope": "_extract_pdf",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 112
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/documents.py",
+   "scope": "_extract_plaintext",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 67
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/documents.py",
+   "scope": "_scan_markdown",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 68
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/extractor.py",
+   "scope": "TreeSitterExtractor._variable_declared",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 74
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/fuzzgen.py",
+   "scope": "_draw_plan",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 66
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/pipeline.py",
+   "scope": "IngestionPipeline._commit_analyzed",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 123
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/pipeline.py",
+   "scope": "IngestionPipeline._preflight",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 66
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/pipeline.py",
+   "scope": "IngestionPipeline._run",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 150
+  },
+  {
+   "rule": "POT2",
+   "file": "mcp_server.py",
+   "scope": "_tool_schemas",
+   "reason": "Static schema table for the 17 frozen MCP verbs; declarative literals. Ratchet baseline, may shrink only.",
+   "lines": 291
+  },
+  {
+   "rule": "POT2",
+   "file": "mcp_server.py",
+   "scope": "main",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 88
+  },
+  {
+   "rule": "POT3",
+   "file": "mcp_server.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT2",
+   "file": "observability.py",
+   "scope": "check_readiness",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 63
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/diagnose.py",
+   "scope": "run_diagnostics",
+   "reason": "Linear diagnostic probe sequence; each probe independent. Ratchet baseline, may shrink only.",
+   "lines": 289
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/doctor.py",
+   "scope": "run_doctor",
+   "reason": "Linear sequence of independent health probes over one report dict. Ratchet baseline, may shrink only.",
+   "lines": 407
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/export_cli.py",
+   "scope": "run_export_command",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 85
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/lifecycle.py",
+   "scope": "HealthSnapshot.from_payload",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 63
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/lifecycle.py",
+   "scope": "prune_health_history",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 69
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/lifecycle.py",
+   "scope": "vacuum_store",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 61
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/metrics.py",
+   "scope": "render_markdown",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 76
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/report_cli.py",
+   "scope": "run_report_command",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 61
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/retention.py",
+   "scope": "plan_retention",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 74
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/switches.py",
+   "scope": "load_knobs",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 81
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/switches.py",
+   "scope": "load_switches",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 122
+  },
+  {
+   "rule": "POT3",
+   "file": "ops/switches.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT2",
+   "file": "ops/watchtower.py",
+   "scope": "probe_store",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 71
+  },
+  {
+   "rule": "POT2",
+   "file": "projection.py",
+   "scope": "GraphProjector._build_generation",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 211
+  },
+  {
+   "rule": "POT2",
+   "file": "projection.py",
+   "scope": "GraphProjector._extraction",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 113
+  },
+  {
+   "rule": "POT2",
+   "file": "projection.py",
+   "scope": "GraphProjector._quarantine_secret_nodes",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 92
+  },
+  {
+   "rule": "POT3",
+   "file": "projection.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.05
+  },
+  {
+   "rule": "POT2",
+   "file": "read_model_validator.py",
+   "scope": "ReadModelValidator._validate_uncached",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 200
+  },
+  {
+   "rule": "POT2",
+   "file": "relearn.py",
+   "scope": "RelearnEngine._apply_mutation",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 68
+  },
+  {
+   "rule": "POT2",
+   "file": "relearn.py",
+   "scope": "RelearnEngine._replay_receipt",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 68
+  },
+  {
+   "rule": "POT2",
+   "file": "relearn.py",
+   "scope": "RelearnEngine._verified_backup",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 78
+  },
+  {
+   "rule": "POT2",
+   "file": "relearn.py",
+   "scope": "RelearnEngine.apply",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 94
+  },
+  {
+   "rule": "POT2",
+   "file": "relearn.py",
+   "scope": "RelearnEngine.rollback",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 90
+  },
+  {
+   "rule": "POT2",
+   "file": "report/graph_report.py",
+   "scope": "_explanations",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 72
+  },
+  {
+   "rule": "POT2",
+   "file": "report/graph_report.py",
+   "scope": "answer_question",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 118
+  },
+  {
+   "rule": "POT2",
+   "file": "report/graph_report.py",
+   "scope": "render_graph_analysis_markdown",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 76
+  },
+  {
+   "rule": "POT2",
+   "file": "report/report_v2.py",
+   "scope": "build_graph_report",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 134
+  },
+  {
+   "rule": "POT2",
+   "file": "report/report_v2.py",
+   "scope": "render_markdown",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 71
+  },
+  {
+   "rule": "POT2",
+   "file": "resolve/name_matcher.py",
+   "scope": "NameMatchResolver.resolve_unmatched",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 68
+  },
+  {
+   "rule": "POT2",
+   "file": "resolve/synthesis.py",
+   "scope": "_run_callback_edges",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 66
+  },
+  {
+   "rule": "POT2",
+   "file": "resolve/synthesis.py",
+   "scope": "_run_module_member_calls",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 64
+  },
+  {
+   "rule": "POT2",
+   "file": "retrieval.py",
+   "scope": "BudgetedTraversal.traverse",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 78
+  },
+  {
+   "rule": "POT2",
+   "file": "retrieval_v2/context.py",
+   "scope": "assemble_context",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 79
+  },
+  {
+   "rule": "POT2",
+   "file": "retrieval_v2/experience.py",
+   "scope": "ExperienceLedger.sync_from_store",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 68
+  },
+  {
+   "rule": "POT2",
+   "file": "retrieval_v2/lookup.py",
+   "scope": "SymbolLookup._fts_channel",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 63
+  },
+  {
+   "rule": "POT2",
+   "file": "review.py",
+   "scope": "ReviewEngine.review",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 65
+  },
+  {
+   "rule": "POT2",
+   "file": "runtime_guard.py",
+   "scope": "verify_runtime",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 91
+  },
+  {
+   "rule": "POT2",
+   "file": "scoring.py",
+   "scope": "ScoringConfig.load",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 107
+  },
+  {
+   "rule": "POT2",
+   "file": "scoring.py",
+   "scope": "score_items",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 220
+  },
+  {
+   "rule": "POT3",
+   "file": "security/__init__.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT2",
+   "file": "security/provenance.py",
+   "scope": "verify_provenance",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 79
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/budgets.py",
+   "scope": "budget_table",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 161
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/daemon_config.py",
+   "scope": "DaemonConfig._apply_hardware_sizing",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 80
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/daemon_config.py",
+   "scope": "DaemonConfig._validate",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 107
+  },
+  {
+   "rule": "POT3",
+   "file": "serve/daemon_config.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT3",
+   "file": "serve/middleware.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/pipeline_stages.py",
+   "scope": "StagedPipelineRunner._execute",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 73
+  },
+  {
+   "rule": "POT3",
+   "file": "serve/rpc.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.0
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/simulation.py",
+   "scope": "Simulation.run",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 236
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/superpower.py",
+   "scope": "SuperpowerDaemon._session_main",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 74
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/superpower.py",
+   "scope": "spawn_daemon",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 91
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/superpower.py",
+   "scope": "stop_daemon",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 77
+  },
+  {
+   "rule": "POT3",
+   "file": "serve/superpower.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.27
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/webview.py",
+   "scope": "WebviewApp.codeintel_payload",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 73
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/webview.py",
+   "scope": "WebviewApp.ledger_experience_payload",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 64
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/webview.py",
+   "scope": "WebviewServer._make_handler",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 431
+  },
+  {
+   "rule": "POT2",
+   "file": "serve/webview.py",
+   "scope": "WebviewServer._make_handler._Handler._dispatch_api",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 163
+  },
+  {
+   "rule": "POT2",
+   "file": "service.py",
+   "scope": "KnowledgeService.__init__",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 62
+  },
+  {
+   "rule": "POT2",
+   "file": "service.py",
+   "scope": "KnowledgeService._query",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 143
+  },
+  {
+   "rule": "POT2",
+   "file": "service.py",
+   "scope": "KnowledgeService.affected",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 65
+  },
+  {
+   "rule": "POT2",
+   "file": "service.py",
+   "scope": "KnowledgeService.explain",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 69
+  },
+  {
+   "rule": "POT2",
+   "file": "service.py",
+   "scope": "KnowledgeService.get_subtree",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 98
+  },
+  {
+   "rule": "POT2",
+   "file": "service.py",
+   "scope": "KnowledgeService.review",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 76
+  },
+  {
+   "rule": "POT2",
+   "file": "service.py",
+   "scope": "KnowledgeService.rollback",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 82
+  },
+  {
+   "rule": "POT3",
+   "file": "service.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.04
+  },
+  {
+   "rule": "POT2",
+   "file": "source_registry.py",
+   "scope": "SourceRegistry.detect_change",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 68
+  },
+  {
+   "rule": "POT2",
+   "file": "store.py",
+   "scope": "EventStore.append_domain",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 66
+  },
+  {
+   "rule": "POT2",
+   "file": "store.py",
+   "scope": "EventStore.commit",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 75
+  },
+  {
+   "rule": "POT2",
+   "file": "store.py",
+   "scope": "EventStore.insert_event",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 95
+  },
+  {
+   "rule": "POT3",
+   "file": "store.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
+   "density": 0.03
+  },
+  {
+   "rule": "POT2",
+   "file": "viz/layout.py",
+   "scope": "_force_directed",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 97
+  },
+  {
+   "rule": "POT2",
+   "file": "viz/layout.py",
+   "scope": "_radial_forest",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 85
+  },
+  {
+   "rule": "POT2",
+   "file": "viz/layout.py",
+   "scope": "layout",
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
+   "lines": 65
+  }
+ ]
+}
