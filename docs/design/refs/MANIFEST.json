@@ -1,0 +1,552 @@
+[
+ {
+  "ref": "ref-01.png",
+  "cand": 1,
+  "query": "admin-panel-dark",
+  "title": "Modern Analytics Dashboard UI \u2022 SaaS Admin Panel \u2022 Dark Mode",
+  "shot_url": "https://dribbble.com/shots/27600236-Modern-Analytics-Dashboard-UI-SaaS-Admin-Panel-Dark-Mode",
+  "cdn": "https://cdn.dribbble.com/userupload/48535129/file/e088bb8d88e237da9bc29b58c7c7981a.png",
+  "desc": "dark SaaS analytics dashboard Overview (KPI cards, AI query bar, insights)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-02.png",
+  "cand": 2,
+  "query": "analytics-metrics-dark-dashboard",
+  "title": "Dark Dashboard UI \u2014 SaaS Startup Metrics & Analytics Panel",
+  "shot_url": "https://dribbble.com/shots/27207977-Dark-Dashboard-UI-SaaS-Startup-Metrics-Analytics-Panel",
+  "cdn": "https://cdn.dribbble.com/userupload/47145700/file/e8c2fe40b6f8f81f871063ec195dafab.png",
+  "desc": "dark 'Metric' growth analytics dashboard (KPI cards, revenue line, activity table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-03.png",
+  "cand": 3,
+  "query": "dark-dashboard",
+  "title": "AI Management Dashboard \ud83d\udc7d",
+  "shot_url": "https://dribbble.com/shots/24141125-AI-Management-Dashboard",
+  "cdn": "https://cdn.dribbble.com/userupload/14487982/file/still-ebea2e5032519faa673078043a562443.png",
+  "desc": "dark campaign/finance dashboard (balance, line chart, campaigns table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-04.png",
+  "cand": 5,
+  "query": "monitoring-dashboard-dark",
+  "title": "Orbit | ML model monitoring dashboard | Dark UI",
+  "shot_url": "https://dribbble.com/shots/27229207-Orbit-ML-model-monitoring-dashboard-Dark-UI",
+  "cdn": "https://cdn.dribbble.com/userupload/47216141/file/3cc89bdfc311cd45d721a0ee5f2913c8.png",
+  "desc": "dark ML observability 'Orbit' (fleet KPIs, alerts banner, model health table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-05.png",
+  "cand": 6,
+  "query": "network-graph-dark-dashboard",
+  "title": "Conversion Funnel Analytics Dashboard for SaaS Growth Teams",
+  "shot_url": "https://dribbble.com/shots/27503641-Conversion-Funnel-Analytics-Dashboard-for-SaaS-Growth-Teams",
+  "cdn": "https://cdn.dribbble.com/userupload/48180202/file/d2c8bf5663458dee01518efddbb9dd7b.png",
+  "desc": "light SaaS funnels analytics (KPI cards, conversion funnel, trend chart)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-06.png",
+  "cand": 9,
+  "query": "settings-dark-ui",
+  "title": "General Settings \ud83e\ude84 Dark UI",
+  "shot_url": "https://dribbble.com/shots/24680275-General-Settings-Dark-UI",
+  "cdn": "https://cdn.dribbble.com/userupload/16059003/file/original-f077fbbb87f0288e10af79eeb31f49d3.png",
+  "desc": "dark org settings page (sidebar nav, toggles, publishing)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-07.png",
+  "cand": 10,
+  "query": "table-ui-dark",
+  "title": "AI Pricing Table UI - Dark Mode",
+  "shot_url": "https://dribbble.com/shots/27283487-AI-Pricing-Table-UI-Dark-Mode",
+  "cdn": "https://cdn.dribbble.com/userupload/47403926/file/88530a96ef612fd9bfa0f1774f7abd01.png",
+  "desc": "dark pricing page (3 tiers, toggles, feature checklist)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-08.jpg",
+  "cand": 11,
+  "query": "wizard-flow-ui",
+  "title": "PayVault \u2013 Add Payment Method (Select Payer)",
+  "shot_url": "https://dribbble.com/shots/27053431-PayVault-Add-Payment-Method-Select-Payer",
+  "cdn": "https://cdn.dribbble.com/userupload/46623269/file/1100d3ab16d72500bee11097c30f6a77.jpg",
+  "desc": "fintech 'PayVault' wizard step 1 (3-step progress, selectable payer list)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-09.png",
+  "cand": 12,
+  "query": "activity-log-dark-ui",
+  "title": "Smart Lock UI \u2014 Front Door Security Widget",
+  "shot_url": "https://dribbble.com/shots/27493793-Smart-Lock-UI-Front-Door-Security-Widget",
+  "cdn": "https://cdn.dribbble.com/userupload/48145222/file/2bfb9b1bb22cf06bc75bfa95827ca1aa.png",
+  "desc": "dark smart-lock panel (status pills, activity list)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-10.png",
+  "cand": 13,
+  "query": "admin-panel-dark",
+  "title": "AI SaaS Dashboard Design, Modern Analytics Admin Panel (Dark UI)",
+  "shot_url": "https://dribbble.com/shots/27104250-AI-SaaS-Dashboard-Design-Modern-Analytics-Admin-Panel-Dark-UI",
+  "cdn": "https://cdn.dribbble.com/userupload/46796220/file/still-30b3a5eac592f704ef188a7b015c91e4.png",
+  "desc": "dark 'NeuralAI' AI platform dashboard (KPI cards, area chart, bar chart)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-11.png",
+  "cand": 14,
+  "query": "analytics-metrics-dark-dashboard",
+  "title": "AI Platform Landing Page & Interactive Graphics",
+  "shot_url": "https://dribbble.com/shots/27813296-AI-Platform-Landing-Page-Interactive-Graphics",
+  "cdn": "https://cdn.dribbble.com/userupload/49331184/file/still-c48f71347366eef6473d9c44acb70066.png",
+  "desc": "dark BuildClub landing sections (feature cards, dashboard widgets)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-12.png",
+  "cand": 15,
+  "query": "dark-dashboard",
+  "title": "AI Summarization Dashboard | Dark UI",
+  "shot_url": "https://dribbble.com/shots/26836487-AI-Summarization-Dashboard-Dark-UI",
+  "cdn": "https://cdn.dribbble.com/userupload/45908959/file/e5ba114b417d5e5bbd68359a9f3b5baf.png",
+  "desc": "dark 'Content AI' summarization dashboard (stat cards, table, usage gauge)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-13.jpg",
+  "cand": 16,
+  "query": "log-viewer-ui",
+  "title": "MarkAI - AI for Marketing Web App (Management Campaign)",
+  "shot_url": "https://dribbble.com/shots/26848651-MarkAI-AI-for-Marketing-Web-App-Management-Campaign",
+  "cdn": "https://cdn.dribbble.com/userupload/45949082/file/721920628fef34ab722df3780ab832f1.jpg",
+  "desc": "dark 'SMD' server monitoring (KPI cards, response-time chart, server table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-14.png",
+  "cand": 17,
+  "query": "monitoring-dashboard-dark",
+  "title": "Server Monitoring Dashboard \u2013 Dark Mode",
+  "shot_url": "https://dribbble.com/shots/27291706-Server-Monitoring-Dashboard-Dark-Mode",
+  "cdn": "https://cdn.dribbble.com/userupload/47431081/file/5de8b44468a4a26827e8fa9b3b9bf50e.png",
+  "desc": "'MarkAI' Create Campaign wizard modal (2-step, selectable cards)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-15.png",
+  "cand": 18,
+  "query": "network-graph-dark-dashboard",
+  "title": "Business Reporting & Executive Insights Dashboard",
+  "shot_url": "https://dribbble.com/shots/27493792-Business-Reporting-Executive-Insights-Dashboard",
+  "cdn": "https://cdn.dribbble.com/userupload/48145220/file/36eff105c034c7b9b061642ee155bf75.png",
+  "desc": "light 'RevenuePulse AI' reports page (stat cards, report library, heatmap)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-16.png",
+  "cand": 19,
+  "query": "node-graph-ui",
+  "title": "AI-Powered Knowledge Graph -Relationship Network UI Design",
+  "shot_url": "https://dribbble.com/shots/27859804-AI-Powered-Knowledge-Graph-Relationship-Network-UI-Design",
+  "cdn": "https://cdn.dribbble.com/userupload/49507882/file/1fa66a0a1e5e411195d1568670bffd02.png",
+  "desc": "'TWINIZE' corporate relationship network graph + AI chat panel",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-17.png",
+  "cand": 20,
+  "query": "search-interface-dark-ui",
+  "title": "Search UI: Dark Mode",
+  "shot_url": "https://dribbble.com/shots/26707825-Search-UI-Dark-Mode",
+  "cdn": "https://cdn.dribbble.com/userupload/45496240/file/81e7a4679302ded4c962ca6006c91cf5.png",
+  "desc": "dark \u2318K command palette (app tabs, filter chips, results list, kbd footer)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-18.jpg",
+  "cand": 22,
+  "query": "table-ui-dark",
+  "title": "Network Requests Analytics Dashboard UI Design for Developers",
+  "shot_url": "https://dribbble.com/shots/27383461-Network-Requests-Analytics-Dashboard-UI-Design-for-Developers",
+  "cdn": "https://cdn.dribbble.com/userupload/47754851/file/66d2e743a2f1d361a7132ee3132517a8.webp",
+  "desc": "light Sentry-like observability Insights (3 bar charts, domain table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-19.png",
+  "cand": 23,
+  "query": "wizard-flow-ui",
+  "title": "SaaS Automation Builder Create Trigger Flow UI | Closr",
+  "shot_url": "https://dribbble.com/shots/27338560-SaaS-Automation-Builder-Create-Trigger-Flow-UI-Closr",
+  "cdn": "https://cdn.dribbble.com/userupload/47595463/file/70faf02707c99a571cc08eb49971edc4.png",
+  "desc": "'Create trigger' workflow modal (radio cards, target tabs, recurrence)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-20.jpg",
+  "cand": 26,
+  "query": "analytics-metrics-dark-dashboard",
+  "title": "Dashboard Metrics",
+  "shot_url": "https://dribbble.com/shots/26785253-Dashboard-Metrics",
+  "cdn": "https://cdn.dribbble.com/userupload/45743941/file/7198b28647c388224231a9038fbc9253.jpg",
+  "desc": "dark funnel metrics (donut charts, KPI stats, area chart with tooltip)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-21.png",
+  "cand": 27,
+  "query": "dark-dashboard",
+  "title": "Crypto Dashboard | Dark Mode Design",
+  "shot_url": "https://dribbble.com/shots/26108398-Crypto-Dashboard-Dark-Mode-Design",
+  "cdn": "https://cdn.dribbble.com/userupload/43577505/file/original-393eff4b75cce50ac5ed373b6e298cf8.png",
+  "desc": "dark 'LumenTrade' crypto dashboard (fundraising cards, portfolio chart, activity table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-22.jpg",
+  "cand": 28,
+  "query": "log-viewer-ui",
+  "title": "MarkAI - AI for Marketing Dashboard (Image Generator)",
+  "shot_url": "https://dribbble.com/shots/26577050-MarkAI-AI-for-Marketing-Dashboard-Image-Generator",
+  "cdn": "https://cdn.dribbble.com/userupload/45072034/file/90cf7a488eeaea19a1b6fbe644e2af1a.jpg",
+  "desc": "'MarkAI' image generator (settings panel, prompt bar, gallery)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-23.png",
+  "cand": 30,
+  "query": "network-graph-dark-dashboard",
+  "title": "AI-Powered Analytics Dashboard - Business Intelligence & Growth",
+  "shot_url": "https://dribbble.com/shots/27479358-AI-Powered-Analytics-Dashboard-Business-Intelligence-Growth",
+  "cdn": "https://cdn.dribbble.com/userupload/48092853/file/b0376e908960819fab36ebf4f15b3a30.png",
+  "desc": "light 'RevenuePulse AI' overview (6 KPI cards, donut, funnel, radar, risk table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-24.jpg",
+  "cand": 34,
+  "query": "table-ui-dark",
+  "title": "Bittensor Blockchain Explorer \u2014 Crypto Analytics Dashboard UI",
+  "shot_url": "https://dribbble.com/shots/27414954-Bittensor-Blockchain-Explorer-Crypto-Analytics-Dashboard-UI",
+  "cdn": "https://cdn.dribbble.com/userupload/47865131/file/c88223820cf271a9a287d5e7f379bef1.jpg",
+  "desc": "dark 'TaoScan' block explorer (ticker bar, KPI cards, price chart, subnets table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-25.jpg",
+  "cand": 35,
+  "query": "wizard-flow-ui",
+  "title": "Horizon \u2014 Create New Shipment Flow Dashboard",
+  "shot_url": "https://dribbble.com/shots/26964105-Horizon-Create-New-Shipment-Flow-Dashboard",
+  "cdn": "https://cdn.dribbble.com/userupload/46320385/file/a7eccc988e9ebe81abce0bf7fc3618b1.jpg",
+  "desc": "'Horizon' logistics create-shipment wizard (3-step stepper, form, summary)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-26.png",
+  "cand": 36,
+  "query": "activity-log-dark-ui",
+  "title": "AI Agent Web Design UI",
+  "shot_url": "https://dribbble.com/shots/27616203-AI-Agent-Web-Design-UI",
+  "cdn": "https://cdn.dribbble.com/userupload/48595269/file/be3bac6df964ccfcf76b490354ada0d7.png",
+  "desc": "'Luminai' AI creative ops landing (hero, prompt input, stats)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-27.png",
+  "cand": 39,
+  "query": "dark-dashboard",
+  "title": "Fitness trainer dashboard\ud83c\udfcb",
+  "shot_url": "https://dribbble.com/shots/24613603-Fitness-trainer-dashboard",
+  "cdn": "https://cdn.dribbble.com/userupload/15867754/file/still-93bb12f01981cdc60c991ae40e25982e.png",
+  "desc": "dark fitness dashboard (stat row, donut, heart-rate graph, goal cards)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-28.jpg",
+  "cand": 40,
+  "query": "log-viewer-ui",
+  "title": "MarkAI - AI for Marketing Web App (Chatting with AI)",
+  "shot_url": "https://dribbble.com/shots/26836296-MarkAI-AI-for-Marketing-Web-App-Chatting-with-AI",
+  "cdn": "https://cdn.dribbble.com/userupload/45908375/file/3355a124b7b19d37647006112c358632.jpg",
+  "desc": "'MarkAI' AI chat dashboard (sidebar tools, chat input, quick actions)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-29.png",
+  "cand": 41,
+  "query": "monitoring-dashboard-dark",
+  "title": "Project Monitoring Dashboard Interface Dark Mode - Manageryo",
+  "shot_url": "https://dribbble.com/shots/24468365-Project-Monitoring-Dashboard-Interface-Dark-Mode-Manageryo",
+  "cdn": "https://cdn.dribbble.com/userupload/15442924/file/original-b0f3541c72d6b872e8fe87cb54166965.png",
+  "desc": "dark 'Manageryo' project admin (KPI cards, bar chart, heatmap, table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-30.png",
+  "cand": 42,
+  "query": "network-graph-dark-dashboard",
+  "title": "Business Reporting & Executive Insights Dashboard",
+  "shot_url": "https://dribbble.com/shots/27496886-Business-Reporting-Executive-Insights-Dashboard",
+  "cdn": "https://cdn.dribbble.com/userupload/48156164/file/e0adf132b161ed8422e018e50309167a.png",
+  "desc": "dark 'RevenuePulse AI' reports page variant (library, scheduled, heatmap)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-31.png",
+  "cand": 43,
+  "query": "node-graph-ui",
+  "title": "Design Case Study #9 - Knowledge Graph",
+  "shot_url": "https://dribbble.com/shots/27796641-Design-Case-Study-9-Knowledge-Graph",
+  "cdn": "https://cdn.dribbble.com/userupload/49268469/file/still-9ea88f15e89b7cccac648955b8d6b11a.png",
+  "desc": "dark knowledge-graph notes UI (clusters, filters, list/graph toggle)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-32.jpg",
+  "cand": 46,
+  "query": "table-ui-dark",
+  "title": "Smart Mentorship Platform UI \u2013 Admin Analytics Dashboard Design",
+  "shot_url": "https://dribbble.com/shots/27376095-Smart-Mentorship-Platform-UI-Admin-Analytics-Dashboard-Design",
+  "cdn": "https://cdn.dribbble.com/userupload/47728111/file/86efafc96692ffe0302116cf35da1efd.jpg",
+  "desc": "'I-Mentor' mentorship admin (stat tiles, heatmap, engagement, user table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-33.png",
+  "cand": 47,
+  "query": "wizard-flow-ui",
+  "title": "Creation Wizard - New Order Flow",
+  "shot_url": "https://dribbble.com/shots/18881999-Creation-Wizard-New-Order-Flow",
+  "cdn": "https://cdn.dribbble.com/userupload/3175619/file/original-3d1f9df8758dccb45999150ab5be66a9.png",
+  "desc": "'Rechain' new-order form (3-step wizard, variants, attachments)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-34.png",
+  "cand": 49,
+  "query": "admin-panel-dark",
+  "title": "Digital Selling SaaS - Admin Panel Activity",
+  "shot_url": "https://dribbble.com/shots/19956133-Digital-Selling-SaaS-Admin-Panel-Activity",
+  "cdn": "https://cdn.dribbble.com/userupload/40485462/file/original-41c0852fc75ab5a814478d8f65b3df83.png",
+  "desc": "dark orders admin (tabs, search/sort/filter, status pills, pagination)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-35.png",
+  "cand": 51,
+  "query": "dark-dashboard",
+  "title": "Dark Dashboard - Lookscout Design System",
+  "shot_url": "https://dribbble.com/shots/27093088-Dark-Dashboard-Lookscout-Design-System",
+  "cdn": "https://cdn.dribbble.com/userupload/46758485/file/14b0eed61d7359580f94efb0e1907015.png",
+  "desc": "dark SaaS admin two-state (KPI cards, line chart, users table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-36.jpg",
+  "cand": 52,
+  "query": "log-viewer-ui",
+  "title": "MarkAI - AI for Marketing Web App (Usage Dashboard)",
+  "shot_url": "https://dribbble.com/shots/27043886-MarkAI-AI-for-Marketing-Web-App-Usage-Dashboard",
+  "cdn": "https://cdn.dribbble.com/userupload/46591472/file/4891fff3841e8e1c1a8270ee1ca292c0.jpg",
+  "desc": "'MarkAI' Usage Settings (stat cards, line+bar charts, activity table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-37.png",
+  "cand": 53,
+  "query": "monitoring-dashboard-dark",
+  "title": "VoltEdge - Solar & Battery Monitoring Dashboard",
+  "shot_url": "https://dribbble.com/shots/27510564-VoltEdge-Solar-Battery-Monitoring-Dashboard",
+  "cdn": "https://cdn.dribbble.com/userupload/48207705/file/a65a4eaf02a1aef72d3bb3151f394335.png",
+  "desc": "dark solar/energy monitoring (gauge, flow diagram, stats, multi-line chart)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-38.png",
+  "cand": 55,
+  "query": "node-graph-ui",
+  "title": "Workflow Creation",
+  "shot_url": "https://dribbble.com/shots/26917236-Workflow-Creation",
+  "cdn": "https://cdn.dribbble.com/userupload/46166763/file/a843b48bf68980f03b21d1f4c9d50b6e.png",
+  "desc": "node-based workflow builder (Extractor\u2192Summarize\u2192Dashboard, dotted canvas)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-39.png",
+  "cand": 56,
+  "query": "search-interface-dark-ui",
+  "title": "AirFly - Flight Booking Website UI Design",
+  "shot_url": "https://dribbble.com/shots/27319305-AirFly-Flight-Booking-Website-UI-Design",
+  "cdn": "https://cdn.dribbble.com/userupload/47526754/file/1e6d66bf3fdd75a1875345cb39356947.png",
+  "desc": "dark 'AirFly' flight booking landing (search form, result cards)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-40.png",
+  "cand": 57,
+  "query": "settings-dark-ui",
+  "title": "NEXA 02 All-Terrain Robot UI \u2013 Rock Mode Dashboard",
+  "shot_url": "https://dribbble.com/shots/27147945-NEXA-02-All-Terrain-Robot-UI-Rock-Mode-Dashboard",
+  "cdn": "https://cdn.dribbble.com/userupload/46945589/file/still-9db04b0b35cd934afbc1d559610dca9f.png",
+  "desc": "'NEXA 02' product landing (mode tabs, spec stat cards)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-41.png",
+  "cand": 58,
+  "query": "table-ui-dark",
+  "title": "Dark Mode Dashboard \u2013 Real-Time Analytic",
+  "shot_url": "https://dribbble.com/shots/26086321-Dark-Mode-Dashboard-Real-Time-Analytic",
+  "cdn": "https://cdn.dribbble.com/userupload/43507872/file/original-df7180b18e97f8487d50bd65cba0a013.png",
+  "desc": "dark 'Quantico' e-commerce admin (KPI sparklines, donut, bar, transactions table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-42.png",
+  "cand": 60,
+  "query": "activity-log-dark-ui",
+  "title": "Agentic AI Command Center & Agent Cloud",
+  "shot_url": "https://dribbble.com/shots/27446289-Agentic-AI-Command-Center-Agent-Cloud",
+  "cdn": "https://cdn.dribbble.com/userupload/47975148/file/still-137057faee0fd1534aac206dc3704254.png",
+  "desc": "dark 'Aether Agent Cloud' (metric cards around orb, agent state legend)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-43.png",
+  "cand": 61,
+  "query": "admin-panel-dark",
+  "title": "Top Dark Mode Dashboard Designs, Templates & Examples",
+  "shot_url": "https://dribbble.com/shots/27456244-Top-Dark-Mode-Dashboard-Designs-Templates-Examples",
+  "cdn": "https://cdn.dribbble.com/userupload/48010067/file/2c563de7c684aeb3fd41a71694be3c43.png",
+  "desc": "collage: 6 dark admin dashboards (sidebars, stat cards, charts)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-44.png",
+  "cand": 63,
+  "query": "dark-dashboard",
+  "title": "AI Dashboard Design for Control AI Policy Platform",
+  "shot_url": "https://dribbble.com/shots/27388009-AI-Dashboard-Design-for-Control-AI-Policy-Platform",
+  "cdn": "https://cdn.dribbble.com/userupload/47771391/file/still-45273075adfca6b784cfbbaaf73829fe.png",
+  "desc": "dark 'Control AI' policy platform (radial law graph, detail panel, chat dock)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-45.png",
+  "cand": 66,
+  "query": "network-graph-dark-dashboard",
+  "title": "AI-Powered Analytics Dashboard - Business Intelligence & Growth",
+  "shot_url": "https://dribbble.com/shots/27479829-AI-Powered-Analytics-Dashboard-Business-Intelligence-Growth",
+  "cdn": "https://cdn.dribbble.com/userupload/48094829/file/b9e353e3fe0613ef4cd4c3e45f9c9917.png",
+  "desc": "dark 'RevenuePulse AI' overview dark variant (6 KPIs, donut, funnel, risk table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-46.png",
+  "cand": 67,
+  "query": "node-graph-ui",
+  "title": "AI Workflow Automation SaaS \u2014 Decision Tree Builder UI | SAY Des",
+  "shot_url": "https://dribbble.com/shots/27296349-AI-Workflow-Automation-SaaS-Decision-Tree-Builder-UI-SAY-Des",
+  "cdn": "https://cdn.dribbble.com/userupload/47447180/file/e25608f58268a9cf4954bf665af21fc4.png",
+  "desc": "'PINCH AI' decision-tree workflow builder (If/Elif branches, policy cards)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-47.png",
+  "cand": 70,
+  "query": "table-ui-dark",
+  "title": "Dark mode",
+  "shot_url": "https://dribbble.com/shots/19500238-Dark-mode",
+  "cdn": "https://cdn.dribbble.com/userupload/3670325/file/07852300899d1d9db878b15c765b9e12.png",
+  "desc": "research data repository viewer split dark/light (metadata, sortable table, activity feed)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-48.jpg",
+  "cand": 71,
+  "query": "wizard-flow-ui",
+  "title": "Accessible UI Design Patterns 01\u201405",
+  "shot_url": "https://dribbble.com/shots/27371993-Accessible-UI-Design-Patterns-01-05",
+  "cdn": "https://cdn.dribbble.com/userupload/47713762/file/f450a0291709b4d609fda463160064eb.jpg",
+  "desc": "accessible UI pattern sheet (breadcrumb states, autocomplete states)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-49.png",
+  "cand": 72,
+  "query": "activity-log-dark-ui",
+  "title": "Crypto Portfolio & Asset Management Platform \u2014 Modern Web UI/UX",
+  "shot_url": "https://dribbble.com/shots/27812216-Crypto-Portfolio-Asset-Management-Platform-Modern-Web-UI-UX",
+  "cdn": "https://cdn.dribbble.com/userupload/49327599/file/e511a1d38069b794a9722c58b1a98c14.png",
+  "desc": "dark 'TokenEra' crypto landing + portfolio dashboard (assets table)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-50.png",
+  "cand": 73,
+  "query": "activity-log-dark-ui",
+  "title": "Conversational AI Assistant Platform \u2014 Modern SaaS Web UI/UX",
+  "shot_url": "https://dribbble.com/shots/27810787-Conversational-AI-Assistant-Platform-Modern-SaaS-Web-UI-UX",
+  "cdn": "https://cdn.dribbble.com/userupload/49321883/file/ac19faee8b7516057cf2d47db89635b7.png",
+  "desc": "dark AI chat landing + embedded 3-panel chat app",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-51.png",
+  "cand": 74,
+  "query": "activity-log-dark-ui",
+  "title": "Pet Activity Tracker Dashboard UI Design",
+  "shot_url": "https://dribbble.com/shots/27299964-Pet-Activity-Tracker-Dashboard-UI-Design",
+  "cdn": "https://cdn.dribbble.com/userupload/47459232/file/73930182257c9527c25ad7b4521ced52.png",
+  "desc": "'PawTrack' pet activity dashboard (bar chart, stat cards, table, heatmap)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-52.png",
+  "cand": 77,
+  "query": "node-graph-ui",
+  "title": "AI Telemetry & Evaluation Widgets",
+  "shot_url": "https://dribbble.com/shots/27755724-AI-Telemetry-Evaluation-Widgets",
+  "cdn": "https://cdn.dribbble.com/userupload/49113563/file/9753bade7af290ef77d681d16a2ec0b3.png",
+  "desc": "dark AI model leaderboard (mono table, score bars, sparklines, status bar)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-53.png",
+  "cand": 79,
+  "query": "log-viewer-ui",
+  "title": "AI Workspace & Team Collaboration Platform",
+  "shot_url": "https://dribbble.com/shots/27834878-AI-Workspace-Team-Collaboration-Platform",
+  "cdn": "https://cdn.dribbble.com/userupload/49414554/file/f538c75bbfe93f76888f5cbdf41a0639.png",
+  "desc": "'RELAY' team workspace landing (hero, task card, feature chips)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-54.png",
+  "cand": 82,
+  "query": "network-graph-dark-dashboard",
+  "title": "Live SOC Dashboard for Threat Detection & Resp",
+  "shot_url": "https://dribbble.com/shots/27558527-Live-SOC-Dashboard-for-Threat-Detection-Resp",
+  "cdn": "https://cdn.dribbble.com/userupload/48384037/file/a72cc407c0e54d99451cdfa3b4284157.png",
+  "desc": "dark 'Sentinel Harbor' SOC (network attack map, risk gauge, hunting stats)",
+  "verdict": "ACCEPT"
+ },
+ {
+  "ref": "ref-55.jpg",
+  "cand": 85,
+  "query": "settings-dark-ui",
+  "title": "Dark settings form \u2014 Untitled UI",
+  "shot_url": "https://dribbble.com/shots/27302168-Dark-settings-form-Untitled-UI",
+  "cdn": "https://cdn.dribbble.com/userupload/47466600/file/5e70721d63bee7d2a6c263365a89800f.jpg",
+  "desc": "dark 'Integrations' settings page (ID inputs, verify links, upload dropzone)",
+  "verdict": "ACCEPT"
+ }
+]
