@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Analytics (Clean Spacious)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#0B0D11',
+            panel: '#12151B',
+            'panel-subtle': '#161A22',
+            surface: '#1A1E26',
+            border: '#2A313E',
+            'border-subtle': '#1E232E',
+            primary: '#3B82F6',
+            'primary-subtle': '#1E293B',
+            emerald: '#10B981',
+            amber: '#F59E0B',
+            rose: '#EF4444',
+            purple: '#8B5CF6',
+            cyan: '#06B6D4'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    };
+
+    function switchTab(viewId) {
+      document.getElementById('view-active').classList.add('hidden');
+      document.getElementById('view-skeleton').classList.add('hidden');
+      document.getElementById('view-empty').classList.add('hidden');
+
+      document.getElementById('btn-active').classList.remove('bg-surface', 'text-white', 'border-border');
+      document.getElementById('btn-active').classList.add('text-zinc-400', 'border-transparent');
+      document.getElementById('btn-skeleton').classList.remove('bg-surface', 'text-white', 'border-border');
+      document.getElementById('btn-skeleton').classList.add('text-zinc-400', 'border-transparent');
+      document.getElementById('btn-empty').classList.remove('bg-surface', 'text-white', 'border-border');
+      document.getElementById('btn-empty').classList.add('text-zinc-400', 'border-transparent');
+
+      if (viewId === 'active') {
+        document.getElementById('view-active').classList.remove('hidden');
+        document.getElementById('btn-active').classList.add('bg-surface', 'text-white', 'border-border');
+        document.getElementById('btn-active').classList.remove('text-zinc-400', 'border-transparent');
+      } else if (viewId === 'skeleton') {
+        document.getElementById('view-skeleton').classList.remove('hidden');
+        document.getElementById('btn-skeleton').classList.add('bg-surface', 'text-white', 'border-border');
+        document.getElementById('btn-skeleton').classList.remove('text-zinc-400', 'border-transparent');
+      } else if (viewId === 'empty') {
+        document.getElementById('view-empty').classList.remove('hidden');
+        document.getElementById('btn-empty').classList.add('bg-surface', 'text-white', 'border-border');
+        document.getElementById('btn-empty').classList.remove('text-zinc-400', 'border-transparent');
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D11;
+      color: #E2E8F0;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #0B0D11;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #2A313E;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="bg-base text-zinc-100 flex min-h-screen antialiased select-none">
+
+  <!-- PERSISTENT LEFT SIDEBAR (12 NAV ITEMS EXACTLY) -->
+  <aside class="w-60 flex-shrink-0 bg-panel border-r border-border flex flex-col justify-between h-screen sticky top-0 z-40">
+    <div class="flex flex-col">
+      <!-- App Brand Title -->
+      <div class="h-14 px-5 border-b border-border flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-2.5 h-2.5 bg-primary rounded-none"></div>
+          <span class="font-bold text-sm tracking-tight text-white uppercase">Know Your Context</span>
+        </div>
+        <span class="font-mono text-[10px] text-zinc-400 bg-panel-subtle px-1.5 py-0.5 border border-border">v2.4</span>
+      </div>
+
+      <!-- 12 Navigation Items -->
+      <nav class="p-3 space-y-1">
+        <!-- 1. Overview -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          <span>Overview</span>
+        </a>
+        <!-- 2. Activity -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h3.75l2.25-6 4.5 12 2.25-6h3.75"/></svg>
+          <span>Activity</span>
+        </a>
+        <!-- 3. Graph -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 7.5l7.5 7.5M8 7.5l7.5-1M12 15.5V9"/></svg>
+          <span>Graph</span>
+        </a>
+        <!-- 4. Search -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          <span>Search</span>
+        </a>
+        <!-- 5. Metrics -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+          <span>Metrics</span>
+        </a>
+        <!-- 6. Health -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Health</span>
+        </a>
+        <!-- 7. Analytics (ACTIVE / HIGHLIGHTED) -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-primary bg-surface border-l-2 border-primary">
+          <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"/></svg>
+          <span>Analytics</span>
+          <span class="ml-auto w-1.5 h-1.5 bg-primary"></span>
+        </a>
+        <!-- 8. Audit -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+          <span>Audit</span>
+        </a>
+        <!-- 9. Proposals -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Proposals</span>
+          <span class="ml-auto font-mono text-[10px] bg-panel-subtle text-zinc-400 px-1.5 py-0.5 border border-border">3</span>
+        </a>
+        <!-- 10. Debt -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+          <span>Debt</span>
+          <span class="ml-auto font-mono text-[10px] bg-panel-subtle text-amber px-1.5 py-0.5 border border-border">12</span>
+        </a>
+        <!-- 11. System -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.7 7.4m12.6 4.15a4.5 4.5 0 00-.9-2.7L18.3 7.4"/></svg>
+          <span>System</span>
+        </a>
+        <!-- 12. Setup -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-surface/50 transition-colors">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Setup</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Cluster Telemetry Status Footer in Sidebar -->
+    <div class="p-4 border-t border-border bg-panel-subtle/50 text-[11px] font-mono space-y-2">
+      <div class="flex items-center justify-between text-zinc-400">
+        <span class="text-zinc-400">CLUSTER</span>
+        <span class="text-zinc-200">node-01.local</span>
+      </div>
+      <div class="flex items-center justify-between text-zinc-400">
+        <span class="text-zinc-400">ENGINE</span>
+        <span class="text-emerald flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 bg-emerald inline-block"></span>
+          DuckDB+BLAS
+        </span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="flex-1 flex flex-col min-w-0 bg-base">
+
+    <!-- TOP TELEMETRY STRIP (Clean hairline, monospaced metadata) -->
+    <header class="h-14 border-b border-border px-8 flex items-center justify-between bg-panel/60 sticky top-0 z-30 backdrop-blur-sm">
+      <div class="flex items-center gap-6 font-mono text-xs">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 bg-emerald"></span>
+          <span class="text-zinc-400">RAFT:</span>
+          <span class="text-zinc-200 font-semibold">QUORUM (3/3)</span>
+        </div>
+        <div class="h-3 w-px bg-border"></div>
+        <div class="flex items-center gap-2">
+          <span class="text-zinc-400">EPOCH:</span>
+          <span class="text-zinc-300">0x8F4E</span>
+        </div>
+        <div class="h-3 w-px bg-border"></div>
+        <div class="flex items-center gap-2">
+          <span class="text-zinc-400">PARTITION ENGINE:</span>
+          <span class="text-primary font-medium">Louvain Modularity</span>
+        </div>
+      </div>
+
+      <!-- State Previews Switcher (Specification: 'no nodes' empty state; three-column skeleton while computing) -->
+      <div class="flex items-center gap-2 font-mono text-xs">
+        <span class="text-[11px] text-zinc-400 uppercase tracking-wider mr-1">Preview States:</span>
+        <div class="flex border border-border bg-panel p-0.5">
+          <button id="btn-active" onclick="switchTab('active')" class="px-3 py-1 text-xs font-mono bg-surface text-white border border-border transition-colors">
+            Active Data
+          </button>
+          <button id="btn-skeleton" onclick="switchTab('skeleton')" class="px-3 py-1 text-xs font-mono text-zinc-400 hover:text-zinc-200 border border-transparent transition-colors">
+            Computing Skeleton
+          </button>
+          <button id="btn-empty" onclick="switchTab('empty')" class="px-3 py-1 text-xs font-mono text-zinc-400 hover:text-zinc-200 border border-transparent transition-colors">
+            Empty (0 Nodes)
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY - CLEAN SPACIOUS LAYOUT -->
+    <div class="flex-1 p-10 max-w-[1200px] w-full mx-auto space-y-10">
+
+      <!-- SECTION 1: CLEAN HERO HEADER & STATS -->
+      <div class="space-y-6">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <h1 class="text-2xl font-bold tracking-tight text-white">Graph Structure Intelligence</h1>
+            <span class="font-mono text-xs px-2.5 py-0.5 border border-border text-zinc-400 bg-panel">Louvain Partitioning</span>
+          </div>
+          <p class="text-sm text-zinc-400 font-normal max-w-2xl leading-relaxed">
+            Deterministic spectral modularity analysis, 12-decimal eigenvector centrality convergence, and inter-cluster bridge edge telemetry across local node graph partitions.
+          </p>
+        </div>
+
+        <!-- 1. Header Stats (node_count 1,284 / total 1,284 · partial=false) -->
+        <div class="grid grid-cols-4 gap-4">
+          <!-- Stat 1: Primary Specified Node Metric -->
+          <div class="bg-panel border border-border p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs text-zinc-400 font-mono mb-2">
+              <span class="tracking-wide">NODE COUNT</span>
+              <span class="text-emerald flex items-center gap-1.5 text-[10px]">
+                <span class="w-1.5 h-1.5 bg-emerald"></span> COMPLETE
+              </span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-3xl font-bold font-mono text-white tracking-tight">1,284</span>
+              <span class="text-sm font-mono text-zinc-400">/ 1,284 total</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-border flex items-center justify-between font-mono text-[11px] text-zinc-400">
+              <span>PARTIAL ENGINE:</span>
+              <span class="text-zinc-200">partial=false</span>
+            </div>
+          </div>
+
+          <!-- Stat 2: Modularity Q -->
+          <div class="bg-panel border border-border p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs text-zinc-400 font-mono mb-2">
+              <span class="tracking-wide">MODULARITY (Q)</span>
+              <span class="text-primary text-[10px]">OPTIMAL DENSITY</span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-3xl font-bold font-mono text-white tracking-tight">0.7428</span>
+              <span class="text-xs font-mono text-zinc-400">resolution: 1.0</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-border flex items-center justify-between font-mono text-[11px] text-zinc-400">
+              <span>PARTITION CLUSTERS:</span>
+              <span class="text-zinc-200">6 Communities (C1..C6)</span>
+            </div>
+          </div>
+
+          <!-- Stat 3: Cut Edge Ratio -->
+          <div class="bg-panel border border-border p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs text-zinc-400 font-mono mb-2">
+              <span class="tracking-wide">CUT EDGE RATIO</span>
+              <span class="text-cyan text-[10px]">LOW COUPLING</span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-3xl font-bold font-mono text-white tracking-tight">0.038</span>
+              <span class="text-xs font-mono text-zinc-400">(12 / 3,917 inter-edges)</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-border flex items-center justify-between font-mono text-[11px] text-zinc-400">
+              <span>INTER-CLUSTER BOUNDARY:</span>
+              <span class="text-zinc-200">12 Emitted Bridges</span>
+            </div>
+          </div>
+
+          <!-- Stat 4: BLAS Solver Latency -->
+          <div class="bg-panel border border-border p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs text-zinc-400 font-mono mb-2">
+              <span class="tracking-wide">ENGINE RUNTIME</span>
+              <span class="text-zinc-400 text-[10px]">CONVERGED</span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-3xl font-bold font-mono text-white tracking-tight">4.2ms</span>
+              <span class="text-xs font-mono text-zinc-400">DuckDB+GraphBLAS</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-border flex items-center justify-between font-mono text-[11px] text-zinc-400">
+              <span>EIGEN POWER ITERATIONS:</span>
+              <span class="text-zinc-200">14 passes (res &lt; 1e-12)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW STATE A: ACTIVE DATA (Default) -->
+      <div id="view-active" class="space-y-10">
+        
+        <!-- MAIN THREE-COLUMN GRAPH ARCHITECTURE GRID -->
+        <div class="grid grid-cols-12 gap-8 items-start">
+
+          <!-- COLUMN 1: CENTRALITY LEADERBOARD (4 cols) -->
+          <!-- Spec: rank, node id (mono), 12-decimal score (0.828000000000), domain chip P1..P7 -->
+          <section class="col-span-4 bg-panel border border-border p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <h2 class="text-sm font-bold text-white tracking-tight uppercase flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 bg-primary"></span>
+                  Centrality Leaderboard
+                </h2>
+                <p class="text-xs text-zinc-400 mt-0.5">Eigenvector / PageRank convergence</p>
+              </div>
+              <span class="font-mono text-[11px] bg-panel-subtle text-zinc-300 px-2 py-0.5 border border-border">Top 10 Nodes</span>
+            </div>
+
+            <!-- Domain Chips Filter (P1..P7) -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scroll font-mono text-[10px]">
+              <span class="px-2 py-0.5 bg-surface text-white border border-border font-medium">ALL</span>
+              <span class="px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200 border border-border hover:bg-surface">P1 Core</span>
+              <span class="px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200 border border-border hover:bg-surface">P2 Ingest</span>
+              <span class="px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200 border border-border hover:bg-surface">P3 Vector</span>
+              <span class="px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200 border border-border hover:bg-surface">P4 Schema</span>
+              <span class="px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200 border border-border hover:bg-surface">P5 Sec</span>
+              <span class="px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200 border border-border hover:bg-surface">P7 Eval</span>
+            </div>
+
+            <!-- Leaderboard Items List -->
+            <div class="space-y-2.5">
+              
+              <!-- Row 1: heuristics-catalog (exact 12-decimal score 0.828000000000) -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#01</span>
+                    <span class="font-mono font-semibold text-white">heuristics-catalog</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20">P2 Ingest</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-emerald font-semibold">0.828000000000</span>
+                </div>
+              </div>
+
+              <!-- Row 2: retrieval-core -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#02</span>
+                    <span class="font-mono font-semibold text-white">retrieval-core</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-blue-950 text-blue-300 border border-blue-800">P1 Core</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.794210984120</span>
+                </div>
+              </div>
+
+              <!-- Row 3: store.acquire_mutation -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#03</span>
+                    <span class="font-mono font-semibold text-white">store.acquire_mutation</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-blue-950 text-blue-300 border border-blue-800">P1 Core</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.741008451992</span>
+                </div>
+              </div>
+
+              <!-- Row 4: schema-contract-04 -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#04</span>
+                    <span class="font-mono font-semibold text-white">schema-contract-04</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-amber/10 text-amber border border-amber/20">P4 Schema</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.698301140023</span>
+                </div>
+              </div>
+
+              <!-- Row 5: vector-indexer-p3 -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#05</span>
+                    <span class="font-mono font-semibold text-white">vector-indexer-p3</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-cyan/10 text-cyan border border-cyan/20">P3 Vector</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.641920849100</span>
+                </div>
+              </div>
+
+              <!-- Row 6: lease-arbiter -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#06</span>
+                    <span class="font-mono font-semibold text-white">lease-arbiter</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-purple/10 text-purple border border-purple/20">P5 Sec</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.589140229341</span>
+                </div>
+              </div>
+
+              <!-- Row 7: wal-checkpoint -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#07</span>
+                    <span class="font-mono font-semibold text-white">wal-checkpoint</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-purple/10 text-purple border border-purple/20">P5 Sec</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.521884019284</span>
+                </div>
+              </div>
+
+              <!-- Row 8: eval-loop-async -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#08</span>
+                    <span class="font-mono font-semibold text-white">eval-loop-async</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-emerald/10 text-emerald border border-emerald/20">P7 Eval</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.487190412891</span>
+                </div>
+              </div>
+
+              <!-- Row 9: kg-entity-4402 -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#09</span>
+                    <span class="font-mono font-semibold text-white">kg-entity-4402</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20">P2 Ingest</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.432019481200</span>
+                </div>
+              </div>
+
+              <!-- Row 10: raft_consensus_v2 -->
+              <div class="p-3 bg-panel-subtle border border-border/80 hover:border-primary/50 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-zinc-400 text-[11px]">#10</span>
+                    <span class="font-mono font-semibold text-white">raft_consensus_v2</span>
+                  </div>
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 bg-purple/10 text-purple border border-purple/20">P5 Sec</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-2">
+                  <span class="text-zinc-400">SCORE:</span>
+                  <span class="text-zinc-200 font-semibold">0.398410291444</span>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- COLUMN 2: COMMUNITIES COLUMN (4 cols) -->
+          <!-- Spec: community cards C1..C6 with member counts and member node chips -->
+          <section class="col-span-4 bg-panel border border-border p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <h2 class="text-sm font-bold text-white tracking-tight uppercase flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 bg-emerald"></span>
+                  Graph Communities
+                </h2>
+                <p class="text-xs text-zinc-400 mt-0.5">Louvain Partitions C1..C6</p>
+              </div>
+              <span class="font-mono text-[11px] bg-panel-subtle text-emerald px-2 py-0.5 border border-border">6 Partitions</span>
+            </div>
+
+            <!-- Community Cards C1..C6 Stack -->
+            <div class="space-y-3.5">
+              
+              <!-- C1: Execution Orchestration & Store -->
+              <div class="p-3.5 bg-panel-subtle border border-border hover:border-emerald/40 transition-colors space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500"></span>
+                    <span class="text-xs font-semibold text-white">C1: Execution Orchestration</span>
+                  </div>
+                  <span class="font-mono text-xs text-zinc-300 font-semibold">342 nodes <span class="text-[10px] text-zinc-400 font-normal">(26.6%)</span></span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">retrieval-core</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">store.acquire_mutation</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">GraphStoreContext</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">agent-2.executor</span>
+                  <span class="font-mono text-[10px] text-zinc-400 self-center pl-1">+338 more</span>
+                </div>
+              </div>
+
+              <!-- C2: Heuristics & Ontology Catalog -->
+              <div class="p-3.5 bg-panel-subtle border border-border hover:border-emerald/40 transition-colors space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-emerald"></span>
+                    <span class="text-xs font-semibold text-white">C2: Heuristics & Ontology</span>
+                  </div>
+                  <span class="font-mono text-xs text-zinc-300 font-semibold">218 nodes <span class="text-[10px] text-zinc-400 font-normal">(17.0%)</span></span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">heuristics-catalog</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">kg-entity-4402</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">concept_419</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">edge_rel_882</span>
+                  <span class="font-mono text-[10px] text-zinc-400 self-center pl-1">+214 more</span>
+                </div>
+              </div>
+
+              <!-- C3: Vector Space & KNN Embeddings -->
+              <div class="p-3.5 bg-panel-subtle border border-border hover:border-emerald/40 transition-colors space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-cyan"></span>
+                    <span class="text-xs font-semibold text-white">C3: Vector Space & KNN</span>
+                  </div>
+                  <span class="font-mono text-xs text-zinc-300 font-semibold">189 nodes <span class="text-[10px] text-zinc-400 font-normal">(14.7%)</span></span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">vector-indexer-p3</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">dag:subgraph_tier2</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">hnsw_cosine_level0</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">sub-139.embedder</span>
+                  <span class="font-mono text-[10px] text-zinc-400 self-center pl-1">+185 more</span>
+                </div>
+              </div>
+
+              <!-- C4: JSON-LD Schema & Invariant Contracts -->
+              <div class="p-3.5 bg-panel-subtle border border-border hover:border-emerald/40 transition-colors space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-amber"></span>
+                    <span class="text-xs font-semibold text-white">C4: JSON-LD Schema & Invariants</span>
+                  </div>
+                  <span class="font-mono text-xs text-zinc-300 font-semibold">156 nodes <span class="text-[10px] text-zinc-400 font-normal">(12.1%)</span></span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">schema-contract-04</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">strict_json_ld_v5</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">shacl_invariants</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">validator_hook</span>
+                  <span class="font-mono text-[10px] text-zinc-400 self-center pl-1">+152 more</span>
+                </div>
+              </div>
+
+              <!-- C5: Consensus, Leases & Fencing -->
+              <div class="p-3.5 bg-panel-subtle border border-border hover:border-emerald/40 transition-colors space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-purple"></span>
+                    <span class="text-xs font-semibold text-white">C5: Consensus & Leases</span>
+                  </div>
+                  <span class="font-mono text-xs text-zinc-300 font-semibold">112 nodes <span class="text-[10px] text-zinc-400 font-normal">(8.7%)</span></span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">lease-arbiter</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">wal-checkpoint</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">raft_consensus_v2</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">fencing_token_mgr</span>
+                  <span class="font-mono text-[10px] text-zinc-400 self-center pl-1">+108 more</span>
+                </div>
+              </div>
+
+              <!-- C6: Evaluation & Feedback Loop -->
+              <div class="p-3.5 bg-panel-subtle border border-border hover:border-emerald/40 transition-colors space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-rose"></span>
+                    <span class="text-xs font-semibold text-white">C6: Evaluation & Telemetry</span>
+                  </div>
+                  <span class="font-mono text-xs text-zinc-300 font-semibold">267 nodes <span class="text-[10px] text-zinc-400 font-normal">(20.8%)</span></span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">eval-loop-async</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">inference-runtime-p6</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">metric-probe-01</span>
+                  <span class="font-mono text-[11px] bg-surface text-zinc-300 px-2 py-0.5 border border-border">feedback_recorder</span>
+                  <span class="font-mono text-[10px] text-zinc-400 self-center pl-1">+263 more</span>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- COLUMN 3: BRIDGES COLUMN (4 cols) -->
+          <!-- Spec: table of bridge edges between communities; counts candidates 41 / emitted 12; by_kind breakdown depends_on 7, contradicts 2, supersedes 3 -->
+          <section class="col-span-4 bg-panel border border-border p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <h2 class="text-sm font-bold text-white tracking-tight uppercase flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 bg-cyan"></span>
+                  Community Bridges
+                </h2>
+                <p class="text-xs text-zinc-400 mt-0.5">Inter-cluster cut edge routing</p>
+              </div>
+              <span class="font-mono text-[11px] bg-panel-subtle text-cyan px-2 py-0.5 border border-border">Threshold ≥ 0.70</span>
+            </div>
+
+            <!-- Counts & Breakdown Widget (Specification: candidates 41 / emitted 12; depends_on 7, contradicts 2, supersedes 3) -->
+            <div class="bg-panel-subtle border border-border p-3.5 space-y-3 font-mono">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-zinc-400">CANDIDATES:</span>
+                <span class="text-white font-bold">41</span>
+                <span class="text-zinc-400 mx-1">/</span>
+                <span class="text-zinc-400">EMITTED:</span>
+                <span class="text-cyan font-bold">12</span>
+                <span class="text-[10px] text-zinc-400">(29.3%)</span>
+              </div>
+              
+              <!-- by_kind Breakdown badges -->
+              <div class="grid grid-cols-3 gap-2 pt-2 border-t border-border text-center text-[10px]">
+                <div class="bg-surface p-1.5 border border-border">
+                  <div class="text-blue-400 font-bold text-xs">7</div>
+                  <div class="text-zinc-400 text-[9px] uppercase mt-0.5">depends_on</div>
+                </div>
+                <div class="bg-surface p-1.5 border border-border">
+                  <div class="text-rose font-bold text-xs">2</div>
+                  <div class="text-zinc-400 text-[9px] uppercase mt-0.5">contradicts</div>
+                </div>
+                <div class="bg-surface p-1.5 border border-border">
+                  <div class="text-amber font-bold text-xs">3</div>
+                  <div class="text-zinc-400 text-[9px] uppercase mt-0.5">supersedes</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table of Bridge Edges -->
+            <div class="border border-border bg-panel-subtle overflow-hidden">
+              <table class="w-full text-left font-mono text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-border bg-surface text-zinc-400 text-[10px] uppercase">
+                    <th class="py-2 px-3 font-medium">Source → Target</th>
+                    <th class="py-2 px-2 font-medium">Path</th>
+                    <th class="py-2 px-2 font-medium">Relation</th>
+                    <th class="py-2 px-2 font-medium text-right">Wt</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-border/60 text-[11px]">
+                  
+                  <!-- 1. depends_on -->
+                  <tr class="hover:bg-surface/50">
+                    <td class="py-2.5 px-3">
+                      <div class="text-zinc-200 font-medium truncate max-w-[130px]">heuristics-catalog</div>
+                      <div class="text-zinc-400 text-[10px]">retrieval-core</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-zinc-400 text-[10px]">C2→C1</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-blue-400 font-medium">depends_on</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-zinc-300">0.94</td>
+                  </tr>
+
+                  <!-- 2. depends_on -->
+                  <tr class="hover:bg-surface/50">
+                    <td class="py-2.5 px-3">
+                      <div class="text-zinc-200 font-medium truncate max-w-[130px]">vector-indexer-p3</div>
+                      <div class="text-zinc-400 text-[10px]">heuristics-catalog</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-zinc-400 text-[10px]">C3→C2</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-blue-400 font-medium">depends_on</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-zinc-300">0.91</td>
+                  </tr>
+
+                  <!-- 3. depends_on -->
+                  <tr class="hover:bg-surface/50">
+                    <td class="py-2.5 px-3">
+                      <div class="text-zinc-200 font-medium truncate max-w-[130px]">schema-contract-04</div>
+                      <div class="text-zinc-400 text-[10px]">store.acquire_mutation</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-zinc-400 text-[10px]">C4→C1</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-blue-400 font-medium">depends_on</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-zinc-300">0.89</td>
+                  </tr>
+
+                  <!-- 4. depends_on -->
+                  <tr class="hover:bg-surface/50">
+                    <td class="py-2.5 px-3">
+                      <div class="text-zinc-200 font-medium truncate max-w-[130px]">eval-loop-async</div>
+                      <div class="text-zinc-400 text-[10px]">vector-indexer-p3</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-zinc-400 text-[10px]">C6→C3</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-blue-400 font-medium">depends_on</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-zinc-300">0.87</td>
+                  </tr>
+
+                  <!-- 5. contradicts [ALERT 1 of 2] -->
+                  <tr class="bg-rose/5 hover:bg-rose/10">
+                    <td class="py-2.5 px-3">
+                      <div class="text-rose font-medium truncate max-w-[130px]">eval_worker_pool</div>
+                      <div class="text-zinc-400 text-[10px]">store.acquire_mutation</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-rose text-[10px]">C6→C1</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-rose font-bold">contradicts</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-rose font-semibold">0.65</td>
+                  </tr>
+
+                  <!-- 6. contradicts [ALERT 2 of 2] -->
+                  <tr class="bg-rose/5 hover:bg-rose/10">
+                    <td class="py-2.5 px-3">
+                      <div class="text-rose font-medium truncate max-w-[130px]">compat.read_uncommitted</div>
+                      <div class="text-zinc-400 text-[10px]">schema-contract-04</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-rose text-[10px]">C1→C4</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-rose font-bold">contradicts</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-rose font-semibold">0.72</td>
+                  </tr>
+
+                  <!-- 7. supersedes [1 of 3] -->
+                  <tr class="hover:bg-surface/50">
+                    <td class="py-2.5 px-3">
+                      <div class="text-zinc-200 font-medium truncate max-w-[130px]">heuristics-catalog</div>
+                      <div class="text-zinc-400 text-[10px]">heuristics-v1 (archived)</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-zinc-400 text-[10px]">C2→C2*</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-amber font-medium">supersedes</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-zinc-300">1.00</td>
+                  </tr>
+
+                  <!-- 8. supersedes [2 of 3] -->
+                  <tr class="hover:bg-surface/50">
+                    <td class="py-2.5 px-3">
+                      <div class="text-zinc-200 font-medium truncate max-w-[130px]">store.acquire_mutation</div>
+                      <div class="text-zinc-400 text-[10px]">legacy_store_lock_v1</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-zinc-400 text-[10px]">C1→C5</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-amber font-medium">supersedes</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-zinc-300">1.00</td>
+                  </tr>
+
+                  <!-- 9. supersedes [3 of 3] -->
+                  <tr class="hover:bg-surface/50">
+                    <td class="py-2.5 px-3">
+                      <div class="text-zinc-200 font-medium truncate max-w-[130px]">strict_json_ld_v5</div>
+                      <div class="text-zinc-400 text-[10px]">schema_v4_legacy</div>
+                    </td>
+                    <td class="py-2.5 px-2 text-zinc-400 text-[10px]">C4→C4*</td>
+                    <td class="py-2.5 px-2">
+                      <span class="text-[10px] text-amber font-medium">supersedes</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right text-zinc-300">0.96</td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- VIEW STATE B: THREE-COLUMN SKELETON WHILE COMPUTING (Hidden by default) -->
+      <div id="view-skeleton" class="hidden space-y-10">
+        <div class="bg-panel border border-border p-4 flex items-center justify-between font-mono text-xs text-zinc-400">
+          <div class="flex items-center gap-3">
+            <span class="w-2 h-2 bg-primary animate-pulse"></span>
+            <span class="text-zinc-200">Executing Sparse GraphBLAS Power Iteration & Louvain Modularity Sweep...</span>
+          </div>
+          <span class="text-zinc-400">ETA: ~3.8ms</span>
+        </div>
+
+        <div class="grid grid-cols-12 gap-8 items-start">
+          <!-- Skeleton Col 1 -->
+          <div class="col-span-4 bg-panel border border-border p-6 space-y-4">
+            <div class="h-4 bg-surface w-40 animate-pulse"></div>
+            <div class="h-3 bg-panel-subtle w-24"></div>
+            <div class="space-y-3 pt-4">
+              <div class="h-14 bg-surface animate-pulse"></div>
+              <div class="h-14 bg-surface animate-pulse"></div>
+              <div class="h-14 bg-surface animate-pulse"></div>
+              <div class="h-14 bg-surface animate-pulse"></div>
+              <div class="h-14 bg-surface animate-pulse"></div>
+            </div>
+          </div>
+          <!-- Skeleton Col 2 -->
+          <div class="col-span-4 bg-panel border border-border p-6 space-y-4">
+            <div class="h-4 bg-surface w-36 animate-pulse"></div>
+            <div class="h-3 bg-panel-subtle w-28"></div>
+            <div class="space-y-3 pt-4">
+              <div class="h-20 bg-surface animate-pulse"></div>
+              <div class="h-20 bg-surface animate-pulse"></div>
+              <div class="h-20 bg-surface animate-pulse"></div>
+              <div class="h-20 bg-surface animate-pulse"></div>
+            </div>
+          </div>
+          <!-- Skeleton Col 3 -->
+          <div class="col-span-4 bg-panel border border-border p-6 space-y-4">
+            <div class="h-4 bg-surface w-44 animate-pulse"></div>
+            <div class="h-3 bg-panel-subtle w-32"></div>
+            <div class="space-y-3 pt-4">
+              <div class="h-16 bg-surface animate-pulse"></div>
+              <div class="h-28 bg-surface animate-pulse"></div>
+              <div class="h-28 bg-surface animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW STATE C: 'NO NODES' EMPTY STATE (Hidden by default) -->
+      <div id="view-empty" class="hidden bg-panel border border-border p-16 text-center space-y-6">
+        <div class="w-12 h-12 border border-border bg-panel-subtle mx-auto flex items-center justify-center">
+          <svg class="w-6 h-6 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.007"/></svg>
+        </div>
+        <div class="space-y-2 max-w-md mx-auto">
+          <h3 class="text-base font-bold text-white uppercase tracking-tight">No Graph Nodes Indexed</h3>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            The local knowledge DAG contains 0 nodes and 0 edges. Spectral partitioning and centrality eigenvectors require an ingested AST graph topology.
+          </p>
+        </div>
+        <div class="pt-2">
+          <button class="px-4 py-2 bg-surface hover:bg-border text-white text-xs font-mono border border-border uppercase tracking-wider transition-colors">
+            Trigger AST Ingestion Daemon
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PERSISTENT FOOTER AUDIT BAR -->
+    <footer class="h-10 border-t border-border px-8 bg-panel flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-auto">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 bg-emerald"></span>
+          <span>RESIDUAL: &lt; 1e-12</span>
+        </div>
+        <div class="h-3 w-px bg-border"></div>
+        <div>DAMPING: 0.85</div>
+        <div class="h-3 w-px bg-border"></div>
+        <div>INVARIANTS: <span class="text-emerald">11/11 PASS</span></div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 bg-rose"></span>
+          <span class="text-zinc-200">2 Contradiction Edges</span>
+        </div>
+        <div class="h-3 w-px bg-border"></div>
+        <div>VIEWPORT: 1440x900 CLEAN SPACIOUS</div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

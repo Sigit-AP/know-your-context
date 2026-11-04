@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context // Setup Lifecycle</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-on-surface": "#2d3037",
+            "error": "#ffb4ab",
+            "surface-container-high": "#272a30",
+            "primary": "#adc6ff",
+            "on-error-container": "#ffdad6",
+            "on-primary-container": "#00285d",
+            "surface-container-highest": "#32353b",
+            "outline-variant": "#424754",
+            "tertiary-fixed-dim": "#4edea3",
+            "surface-container-low": "#191c22",
+            "on-error": "#690005",
+            "inverse-primary": "#005ac2",
+            "surface-container-lowest": "#0b0e14",
+            "on-surface-variant": "#c2c6d6",
+            "on-primary": "#002e6a",
+            "on-background": "#e1e2eb",
+            "surface-variant": "#32353b",
+            "surface-bright": "#363940",
+            "on-primary-fixed": "#001a42",
+            "on-tertiary-fixed": "#002113",
+            "secondary-fixed": "#acedff",
+            "outline": "#8c909f",
+            "secondary-fixed-dim": "#4cd7f6",
+            "on-secondary-fixed": "#001f26",
+            "inverse-surface": "#e1e2eb",
+            "surface-dim": "#101319",
+            "primary-fixed-dim": "#adc6ff",
+            "surface": "#101319",
+            "on-secondary-container": "#00424e",
+            "tertiary": "#4edea3",
+            "on-tertiary": "#003824",
+            "on-tertiary-fixed-variant": "#005236",
+            "tertiary-container": "#00a572",
+            "surface-container": "#1d2026",
+            "background": "#101319",
+            "secondary-container": "#03b5d3",
+            "on-tertiary-container": "#00311f",
+            "primary-fixed": "#d8e2ff",
+            "primary-container": "#4d8eff",
+            "on-secondary-fixed-variant": "#004e5c",
+            "secondary": "#4cd7f6",
+            "tertiary-fixed": "#6ffbbe",
+            "on-secondary": "#003640",
+            "on-surface": "#e1e2eb",
+            "error-container": "#93000a",
+            "surface-tint": "#adc6ff",
+            "on-primary-fixed-variant": "#004395"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-lg": "0.75rem",
+            "gutter-mobile": "0.25rem",
+            "space-sm": "0.25rem",
+            "space-xs": "0.125rem",
+            "space-md": "0.5rem",
+            "gutter": "0.5rem",
+            "margin": "0.75rem",
+            "margin-mobile": "0.5rem",
+            "space-xl": "1rem"
+          },
+          "fontFamily": {
+            "label-md": ["JetBrains Mono"],
+            "code-lg": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "body-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "code-md": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 14px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    /* Custom scrollbars for high-density console */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0e14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #424754;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #8c909f;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased overflow-hidden h-screen w-screen flex flex-col select-none">
+<!-- TOP TELEMETRY BAR (Exact Shared Component Specification) -->
+<header class="flex justify-between items-center h-10 px-space-xl w-full border-b border-outline-variant bg-surface-container-low shrink-0 z-20">
+<!-- Left telemetry cluster & brand indication -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-sm pr-space-md border-r border-outline-variant">
+<span class="w-2 h-2 rounded-full bg-tertiary inline-block animate-pulse"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Know Your Context</span>
+</div>
+<div class="flex items-center gap-space-md font-code-md text-code-md">
+<span class="text-on-surface-variant font-code-md text-code-md">Cluster: <span class="text-on-surface">local-daemon</span></span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface-variant font-code-md text-code-md">Graph: <span class="text-on-surface">main-ctx</span></span>
+<span class="text-outline-variant">/</span>
+<span class="text-tertiary font-code-md text-code-md flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Lease: synchronized
+        </span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface-variant font-code-md text-code-md">Phase: <span class="text-secondary font-medium">LIFECYCLE_PROVISIONING</span></span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface-variant font-code-md text-code-md">Merkle: <span class="text-primary">0x8F4E...c3b1</span></span>
+</div>
+</div>
+<!-- Right Quick Actions -->
+<div class="flex items-center gap-space-sm">
+<button class="h-7 px-space-md bg-surface-container hover:bg-surface-container-high border border-outline-variant rounded flex items-center gap-space-xs text-on-surface font-code-md text-code-md transition-colors duration-100 ease-in-out active:scale-98">
+<span class="material-symbols-outlined text-on-surface-variant">terminal</span>
+<span>Webview CLI</span>
+</button>
+<button class="h-7 px-space-md bg-surface-container hover:bg-surface-container-high border border-outline-variant rounded flex items-center gap-space-xs text-on-surface font-code-md text-code-md transition-colors duration-100 ease-in-out active:scale-98">
+<span class="material-symbols-outlined text-on-surface-variant">output</span>
+<span>Export State Manifest</span>
+</button>
+<button class="h-7 px-space-md bg-primary-container hover:bg-inverse-primary text-on-background border border-primary font-code-md text-code-md font-medium rounded flex items-center gap-space-xs transition-colors duration-100 ease-in-out active:scale-98">
+<span class="material-symbols-outlined text-primary">play_arrow</span>
+<span>Trigger Provisioning</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm ml-space-xs bg-surface-container-lowest px-1 py-0.5 rounded">F5</span>
+</button>
+<div class="h-4 w-px bg-outline-variant mx-space-xs"></div>
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors" title="Filter &amp; Tuning">
+<span class="material-symbols-outlined">tune</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors" title="Notifications">
+<span class="material-symbols-outlined">notifications_none</span>
+</button>
+</div>
+</header>
+<!-- WORKSPACE BODY WITH SPLIT DOCKED SIDEBAR -->
+<div class="flex flex-1 overflow-hidden">
+<!-- PERSISTENT LEFT SIDEBAR (SideNavBar shared component execution) -->
+<aside class="flex flex-col h-full w-64 bg-surface-container-lowest border-r border-outline-variant select-none shrink-0">
+<!-- Brand & Status Drawer Header -->
+<div class="p-space-md border-b border-outline-variant flex items-center justify-between">
+<div>
+<div class="text-headline-sm font-headline-sm text-on-surface tracking-tight">Know Your Context</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant">local-kg // v0.9.4</div>
+</div>
+<div class="w-3 h-3 rounded-full border border-tertiary flex items-center justify-center" title="Knowledge graph runtime status indicator icon">
+<div class="w-1.5 h-1.5 rounded-full bg-tertiary"></div>
+</div>
+</div>
+<!-- Navigation 12 Items List -->
+<nav class="flex-1 py-space-sm overflow-y-auto space-y-0.5">
+<!-- 1. Overview -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- 2. Activity -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">pulse_alert</span>
+<span>Activity</span>
+</a>
+<!-- 3. Graph -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span>Graph</span>
+</a>
+<!-- 4. Search -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">search</span>
+<span>Search</span>
+</a>
+<!-- 5. Metrics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span>Metrics</span>
+</a>
+<!-- 6. Health -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span>Health</span>
+</a>
+<!-- 7. Analytics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analytics</span>
+</a>
+<!-- 8. Audit -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span>Audit</span>
+</a>
+<!-- 9. Proposals -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span>Proposals</span>
+</a>
+<!-- 10. Debt -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">warning</span>
+<span>Debt</span>
+</a>
+<!-- 11. System -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dns</span>
+<span>System</span>
+</a>
+<!-- 12. Setup [ACTIVE TARGET] -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm bg-surface-container text-primary font-medium border-l-2 border-primary transition-colors duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-primary">settings</span>
+<span>Setup</span>
+</a>
+</nav>
+<!-- Sidebar Footers & Local Engine Sync CTA -->
+<div class="p-space-md border-t border-outline-variant space-y-space-sm">
+<button class="w-full h-7 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-primary font-code-md text-code-md rounded flex items-center justify-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-primary">sync</span>
+<span>Sync Local Engine</span>
+</button>
+<div class="flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm px-1">
+<a class="flex items-center gap-1 hover:text-on-surface" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Docs</span>
+</a>
+<a class="flex items-center gap-1 hover:text-on-surface" href="#">
+<span class="material-symbols-outlined">terminal</span>
+<span>v0.9.4-local</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- MAIN OPERATIONS CANVAS -->
+<main class="flex-1 flex flex-col overflow-hidden bg-surface">
+<!-- CONTEXT & STATUS HEADER -->
+<section class="border-b border-outline-variant bg-surface-container-low px-space-xl py-space-md shrink-0">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<h1 class="text-headline-md font-headline-md text-on-surface">Setup &amp; Runtime Lifecycle</h1>
+<!-- Status Pill -->
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary-container/20 border border-secondary-container text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+              INSTALL_IN_PROGRESS
+            </span>
+<span class="font-code-sm text-code-sm text-outline">Target Node: localhost:8741</span>
+</div>
+<!-- Pre-install state switcher & warning simulator toggles -->
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center bg-surface-container border border-outline-variant rounded p-0.5 text-code-sm font-code-sm">
+<span class="px-2 py-0.5 text-on-surface-variant">Profile:</span>
+<button class="px-2 py-0.5 bg-surface-container-high text-primary rounded font-medium">CLEAN_INSTALL</button>
+<button class="px-2 py-0.5 text-on-surface-variant hover:text-on-surface">RESUME_LEADER</button>
+</div>
+<button class="h-6 px-2 bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:text-on-surface text-code-sm font-code-sm rounded flex items-center gap-1" id="toggleAlert">
+<span class="material-symbols-outlined">tune</span>
+<span>Toggle State Alert</span>
+</button>
+</div>
+</div>
+<!-- Honest banner slot for corrupt file recovery (STATE_ALERT) -->
+<div class="mt-space-md flex items-center justify-between px-space-md py-1.5 bg-surface-container border border-outline-variant rounded text-code-sm font-code-sm" id="stateAlertBanner">
+<div class="flex items-center gap-space-md">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">
+              VALIDATED
+            </span>
+<span class="text-on-surface font-code-sm text-code-sm">
+<span class="text-primary font-medium">STATE_ALERT:</span> Recovered progress ledger from backup journal seq #10420 (0 corruptions)
+            </span>
+</div>
+<div class="flex items-center gap-space-md text-on-surface-variant font-code-sm text-code-sm">
+<span>Journal Offset: +4096B</span>
+<span class="text-outline-variant">|</span>
+<span>Integrity: 100% SHA-256</span>
+</div>
+</div>
+</section>
+<!-- FOUR MAIN MODULES SPLIT GRID (Fluid Viewport Fill) -->
+<div class="flex-1 p-space-md grid grid-cols-12 gap-space-md overflow-y-auto">
+<!-- MODULE 1: Vertical Stepper of Install Steps (5 Cols) -->
+<section class="col-span-5 flex flex-col bg-surface-container-low border border-outline-variant rounded overflow-hidden">
+<div class="h-8 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between shrink-0">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary">play_circle</span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Lifecycle Pipeline Execution</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Step 5 of 5 active</span>
+</div>
+<div class="p-space-md flex-1 space-y-space-md overflow-y-auto">
+<!-- Step 1: INIT_STORE -->
+<div class="p-space-md bg-surface-container-lowest border border-outline-variant rounded flex gap-space-md">
+<div class="flex flex-col items-center">
+<div class="w-5 h-5 rounded border border-tertiary bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="w-px flex-1 bg-outline-variant my-1"></div>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md text-on-surface font-semibold">1. INIT_STORE</span>
+<div class="flex items-center gap-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-label-md">1.2s</span>
+<span class="px-1.5 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">DONE</span>
+</div>
+</div>
+<p class="font-code-sm text-code-sm text-on-surface-variant">
+                  SQLite WAL initialized at <span class="text-on-surface">/var/run/kyc.db</span>, page size 4096B
+                </p>
+</div>
+</div>
+<!-- Step 2: HARDWARE_PROBE -->
+<div class="p-space-md bg-surface-container-lowest border border-outline-variant rounded flex gap-space-md">
+<div class="flex flex-col items-center">
+<div class="w-5 h-5 rounded border border-tertiary bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="w-px flex-1 bg-outline-variant my-1"></div>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md text-on-surface font-semibold">2. HARDWARE_PROBE</span>
+<div class="flex items-center gap-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-label-md">0.8s</span>
+<span class="px-1.5 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">DONE</span>
+</div>
+</div>
+<p class="font-code-sm text-code-sm text-on-surface-variant">
+                  AVX-512 detected, 16 vCPU AMD EPYC, 64 GB RAM, direct-io NVMe
+                </p>
+</div>
+</div>
+<!-- Step 3: CHAIN_VERIFICATION -->
+<div class="p-space-md bg-surface-container-lowest border border-outline-variant rounded flex gap-space-md">
+<div class="flex flex-col items-center">
+<div class="w-5 h-5 rounded border border-tertiary bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="w-px flex-1 bg-outline-variant my-1"></div>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md text-on-surface font-semibold">3. CHAIN_VERIFICATION</span>
+<div class="flex items-center gap-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-label-md">2.1s</span>
+<span class="px-1.5 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">DONE</span>
+</div>
+</div>
+<p class="font-code-sm text-code-sm text-on-surface-variant">
+                  SHA-256 HMAC 1,521 events validated, Merkle root monotonic
+                </p>
+</div>
+</div>
+<!-- Step 4: PROJECTION_BUILD -->
+<div class="p-space-md bg-surface-container-lowest border border-outline-variant rounded flex gap-space-md">
+<div class="flex flex-col items-center">
+<div class="w-5 h-5 rounded border border-tertiary bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="w-px flex-1 bg-outline-variant my-1"></div>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md text-on-surface font-semibold">4. PROJECTION_BUILD</span>
+<div class="flex items-center gap-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-label-md">4.7s</span>
+<span class="px-1.5 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">DONE</span>
+</div>
+</div>
+<p class="font-code-sm text-code-sm text-on-surface-variant">
+                  1,284 nodes &amp; 3,917 directed edges compiled into DuckDB AST index
+                </p>
+</div>
+</div>
+<!-- Step 5: WEBVIEW_START (RUNNING) -->
+<div class="p-space-md bg-surface-container-lowest border-2 border-primary rounded flex gap-space-md">
+<div class="flex flex-col items-center">
+<div class="w-5 h-5 rounded border border-primary bg-primary/10 flex items-center justify-center text-primary animate-spin">
+<span class="material-symbols-outlined">sync</span>
+</div>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md text-primary font-semibold">5. WEBVIEW_START</span>
+<div class="flex items-center gap-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-label-md">elapsed 1.4s</span>
+<span class="px-1.5 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/20 border border-secondary text-secondary animate-pulse">RUNNING</span>
+</div>
+</div>
+<p class="font-code-sm text-code-sm text-on-surface">
+                  Spawning local web socket daemon on port 8741
+                </p>
+<div class="w-full bg-surface-container h-1 rounded overflow-hidden mt-2">
+<div class="bg-primary h-full w-3/4"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: SPLIT INTO MODULE 2, MODULE 3, MODULE 4 (7 Cols) -->
+<div class="col-span-7 flex flex-col gap-space-md overflow-hidden">
+<!-- MODULE 2: Webview Runtime Preference Card -->
+<section class="bg-surface-container-low border border-outline-variant rounded overflow-hidden shrink-0">
+<div class="h-8 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary">tune</span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Webview Runtime Preference</span>
+</div>
+<span class="font-code-sm text-code-sm text-tertiary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>HTTP 200 OK
+              </span>
+</div>
+<div class="p-space-md grid grid-cols-2 gap-space-md bg-surface-container-lowest">
+<!-- Parameters Column 1 -->
+<div class="space-y-2">
+<div class="flex items-center justify-between h-7 px-2 bg-surface-container border border-outline-variant rounded">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">enabled</span>
+<span class="font-code-sm text-code-sm text-tertiary font-semibold">true (active toggle)</span>
+</div>
+<div class="flex items-center justify-between h-7 px-2 bg-surface-container border border-outline-variant rounded">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">port</span>
+<span class="font-code-sm text-code-sm text-primary px-1.5 py-0.5 bg-surface-container-high rounded border border-outline-variant">8741</span>
+</div>
+<div class="flex items-center justify-between h-7 px-2 bg-surface-container border border-outline-variant rounded">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">IPC Socket Path</span>
+<span class="font-code-sm text-code-sm text-on-surface truncate">/tmp/kyc-webview.sock</span>
+</div>
+</div>
+<!-- Parameters Column 2 -->
+<div class="space-y-2">
+<div class="flex items-center justify-between h-7 px-2 bg-surface-container border border-outline-variant rounded">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">updated_at</span>
+<span class="font-code-sm text-code-sm text-on-surface">2026-11-04T11:33:12Z</span>
+</div>
+<div class="flex items-center justify-between h-7 px-2 bg-surface-container border border-outline-variant rounded">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">live_refresh_seconds</span>
+<span class="font-code-sm text-code-sm text-on-surface">2.0</span>
+</div>
+<div class="flex items-center justify-between h-7 px-2 bg-surface-container border border-outline-variant rounded">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Bound Interface</span>
+<span class="font-code-sm text-code-sm text-secondary">127.0.0.1 (Loopback only)</span>
+</div>
+</div>
+</div>
+<!-- Control Button Group -->
+<div class="h-9 px-space-md bg-surface-container border-t border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<button class="h-6 px-2.5 bg-primary-container text-on-background border border-primary text-label-md font-label-md rounded flex items-center gap-1 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>Webview ON
+                </button>
+<button class="h-6 px-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant border border-outline-variant text-label-md font-label-md rounded">
+                  Webview OFF
+                </button>
+</div>
+<div class="flex items-center gap-space-sm font-code-sm text-code-sm text-on-surface-variant">
+<span>Direct IPC: <span class="text-tertiary">ESTABLISHED</span></span>
+<span class="text-outline-variant">|</span>
+<button class="text-primary hover:underline">Re-bind Socket</button>
+</div>
+</div>
+</section>
+<!-- MODULE 3: 'Frozen Contracts' Specification Panel -->
+<section class="flex-1 bg-surface-container-low border border-outline-variant rounded flex flex-col overflow-hidden">
+<div class="h-8 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between shrink-0">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary">policy</span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Frozen Contracts Specification (14 Strict OPS)</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">IMMUTABLE_ROOT</span>
+</div>
+<!-- Frozen contracts grid -->
+<div class="p-space-md flex-1 overflow-y-auto space-y-space-md">
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- 1. query [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">query</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Read AST graph traversal</span>
+</div>
+<!-- 2. get-node [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">get-node</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Atomic entity hydration</span>
+</div>
+<!-- 3. get-subtree [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">get-subtree</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Subgraph boundary projection</span>
+</div>
+<!-- 4. log-event [v2] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">log-event</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">v2</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Append-only HMAC ledger</span>
+</div>
+<!-- 5. record-outcome [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">record-outcome</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Heuristic telemetry reg</span>
+</div>
+<!-- 6. evaluate [v2] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">evaluate</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">v2</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Quorum rule verification</span>
+</div>
+<!-- 7. review [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">review</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Operator proposal triage</span>
+</div>
+<!-- 8. propose-improvement [v2] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">propose-improvement</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">v2</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Mutation batch proposal</span>
+</div>
+<!-- 9. apply-improvement [v2] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">apply-improvement</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">v2</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Fenced write-lease run</span>
+</div>
+<!-- 10. rollback [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">rollback</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Monotonic state rewind</span>
+</div>
+<!-- 11. path [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">path</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Shortest path &amp; topological</span>
+</div>
+<!-- 12. explain [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">explain</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">DAG provenance derivation</span>
+</div>
+<!-- 13. affected [v2] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">affected</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-tertiary/10 border border-tertiary text-tertiary">v2</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Invalidation radius scan</span>
+</div>
+<!-- 14. god-nodes [v1] -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container-lowest border border-outline-variant rounded">
+<div class="flex items-center gap-1.5">
+<span class="font-code-md text-code-md text-on-surface font-semibold">god-nodes</span>
+<span class="px-1 py-0.2 rounded text-label-sm font-label-sm bg-secondary-container/10 border border-secondary text-secondary">v1</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Centrality &amp; bridge analysis</span>
+</div>
+</div>
+<!-- Ops Section Extended -->
+<div class="p-space-sm bg-surface-container border border-outline-variant rounded">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Ops Operations Contracts:</span>
+<span class="font-code-sm text-code-sm text-outline">fenced execution mode</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-code-sm text-code-sm text-on-surface bg-surface-container-lowest px-1.5 py-0.5 rounded border border-outline-variant">
+                    ops.snapshot_wal <span class="text-tertiary">[v2]</span>
+</span>
+<span class="font-code-sm text-code-sm text-on-surface bg-surface-container-lowest px-1.5 py-0.5 rounded border border-outline-variant">
+                    ops.lease_arbitrate <span class="text-tertiary">[v2]</span>
+</span>
+<span class="font-code-sm text-code-sm text-on-surface bg-surface-container-lowest px-1.5 py-0.5 rounded border border-outline-variant">
+                    ops.relearn_sync <span class="text-secondary">[v1]</span>
+</span>
+</div>
+</div>
+<!-- Crucial Note Callout -->
+<div class="p-2 bg-surface-container-lowest border-l-2 border-primary text-code-sm font-code-sm text-on-surface-variant">
+<span class="text-primary font-semibold">NOTE:</span> New capability lands in new addendum contracts, never in the frozen set.
+              </div>
+</div>
+</section>
+<!-- MODULE 4: Export Manifest Panel -->
+<section class="bg-surface-container-low border border-outline-variant rounded overflow-hidden shrink-0">
+<div class="h-8 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Export Manifest</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">5 signed binaries verified</span>
+</div>
+<!-- Dense Telemetry Table (Strict 28px height rows) -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-7 bg-surface-container text-on-surface-variant font-label-md text-label-md border-b border-outline-variant">
+<th class="px-space-md font-semibold">ARTIFACT_NAME</th>
+<th class="px-space-md font-semibold">SHA256_HASH</th>
+<th class="px-space-md font-semibold text-right">SIZE</th>
+<th class="px-space-md font-semibold text-center">VERSION</th>
+<th class="px-space-md font-semibold text-right">REVISION_EPOCH</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-code-sm text-code-sm">
+<!-- Row 1 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-space-md font-code-md text-code-md text-on-surface truncate">kyc_kernel_runtime.elf</td>
+<td class="px-space-md text-on-surface-variant font-mono">a7f9c2e1...8f4e</td>
+<td class="px-space-md text-right text-on-surface">34.2 MiB</td>
+<td class="px-space-md text-center text-primary">v0.9.4-local</td>
+<td class="px-space-md text-right text-secondary">#10418</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-space-md font-code-md text-code-md text-on-surface truncate">schema_contracts_v1_v2.json</td>
+<td class="px-space-md text-on-surface-variant font-mono">3e1189ac...99a0</td>
+<td class="px-space-md text-right text-on-surface">184 KiB</td>
+<td class="px-space-md text-center text-primary">v2.1.0</td>
+<td class="px-space-md text-right text-secondary">#10420</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-space-md font-code-md text-code-md text-on-surface truncate">duckdb_ast_symbols.idx</td>
+<td class="px-space-md text-on-surface-variant font-mono">b3d810aa...409f</td>
+<td class="px-space-md text-right text-on-surface">46.2 MiB</td>
+<td class="px-space-md text-center text-primary">v5.0.2</td>
+<td class="px-space-md text-right text-secondary">#10421</td>
+</tr>
+<!-- Row 4 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-space-md font-code-md text-code-md text-on-surface truncate">event_ledger_monotonic.wal</td>
+<td class="px-space-md text-on-surface-variant font-mono">c18e409f...8f2c</td>
+<td class="px-space-md text-right text-on-surface">14.8 MiB</td>
+<td class="px-space-md text-center text-primary">v1.0.0</td>
+<td class="px-space-md text-right text-secondary">#10419</td>
+</tr>
+<!-- Row 5 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-space-md font-code-md text-code-md text-on-surface truncate">webview_client_bundle.js</td>
+<td class="px-space-md text-on-surface-variant font-mono">55ac400d...e1a0</td>
+<td class="px-space-md text-right text-on-surface">4.1 MiB</td>
+<td class="px-space-md text-center text-primary">v0.9.4</td>
+<td class="px-space-md text-right text-secondary">#10415</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer actions -->
+<div class="h-9 px-space-md bg-surface-container border-t border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<button class="h-6 px-2 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-on-surface font-code-md text-code-md rounded flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-tertiary">verified</span>
+<span>Verify Manifest Signatures</span>
+</button>
+<button class="h-6 px-2 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-on-surface font-code-md text-code-md rounded flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-primary">download</span>
+<span>Export Manifest (JSON-LD)</span>
+</button>
+</div>
+<span class="font-code-sm text-code-sm text-outline">Signature digest: Blake3</span>
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+<script>
+    // Lightweight toggle for the corrupt state warning banner simulator
+    const toggleBtn = document.getElementById('toggleAlert');
+    const alertBanner = document.getElementById('stateAlertBanner');
+    toggleBtn.addEventListener('click', () => {
+      if (alertBanner.style.display === 'none') {
+        alertBanner.style.display = 'flex';
+      } else {
+        alertBanner.style.display = 'none';
+      }
+    });
+  </script>
+</body></html>

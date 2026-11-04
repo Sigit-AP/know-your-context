@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Knowledge Debt Queue</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-surface": "#e1e2eb",
+            "secondary-fixed-dim": "#4cd7f6",
+            "error": "#ffb4ab",
+            "outline": "#8c909f",
+            "on-primary-fixed": "#001a42",
+            "on-secondary-fixed-variant": "#004e5c",
+            "surface-container": "#1d2026",
+            "on-primary-container": "#00285d",
+            "tertiary-container": "#00a572",
+            "primary-fixed-dim": "#adc6ff",
+            "background": "#101319",
+            "on-secondary": "#003640",
+            "on-primary": "#002e6a",
+            "surface": "#101319",
+            "on-surface": "#e1e2eb",
+            "surface-container-highest": "#32353b",
+            "surface-container-lowest": "#0b0e14",
+            "on-secondary-container": "#00424e",
+            "tertiary": "#4edea3",
+            "on-background": "#e1e2eb",
+            "on-error": "#690005",
+            "secondary-container": "#03b5d3",
+            "surface-container-high": "#272a30",
+            "secondary-fixed": "#acedff",
+            "on-tertiary": "#003824",
+            "secondary": "#4cd7f6",
+            "surface-bright": "#363940",
+            "surface-tint": "#adc6ff",
+            "surface-container-low": "#191c22",
+            "on-surface-variant": "#c2c6d6",
+            "on-error-container": "#ffdad6",
+            "on-tertiary-fixed": "#002113",
+            "on-tertiary-fixed-variant": "#005236",
+            "on-primary-fixed-variant": "#004395",
+            "outline-variant": "#424754",
+            "surface-variant": "#32353b",
+            "surface-dim": "#101319",
+            "primary-fixed": "#d8e2ff",
+            "primary-container": "#4d8eff",
+            "tertiary-fixed-dim": "#4edea3",
+            "error-container": "#93000a",
+            "on-secondary-fixed": "#001f26",
+            "inverse-primary": "#005ac2",
+            "inverse-on-surface": "#2d3037",
+            "tertiary-fixed": "#6ffbbe",
+            "primary": "#adc6ff",
+            "on-tertiary-container": "#00311f"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          spacing: {
+            "space-xl": "1rem",
+            "space-lg": "0.75rem",
+            "gutter-mobile": "0.25rem",
+            "gutter": "0.5rem",
+            "space-xs": "0.125rem",
+            "space-sm": "0.25rem",
+            "margin": "0.75rem",
+            "margin-mobile": "0.5rem",
+            "space-md": "0.5rem"
+          },
+          fontFamily: {
+            "headline-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "code-lg": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-lg": ["Inter"]
+          },
+          fontSize: {
+            "headline-sm": ["1rem", { lineHeight: "1.375rem", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-md": ["1.25rem", { lineHeight: "1.625rem", letterSpacing: "-0.015em", fontWeight: "600" }],
+            "body-lg": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "-0.005em", fontWeight: "400" }],
+            "code-sm": ["0.6875rem", { lineHeight: "0.9375rem", letterSpacing: "0em", fontWeight: "400" }],
+            "code-md": ["0.75rem", { lineHeight: "1.125rem", letterSpacing: "-0.005em", fontWeight: "500" }],
+            "body-sm": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0em", fontWeight: "400" }],
+            "code-lg": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "-0.01em", fontWeight: "500" }],
+            "body-md": ["0.8125rem", { lineHeight: "1.125rem", letterSpacing: "0em", fontWeight: "400" }],
+            "label-md": ["0.6875rem", { lineHeight: "0.875rem", letterSpacing: "0.04em", fontWeight: "600" }],
+            "label-sm": ["0.625rem", { lineHeight: "0.75rem", letterSpacing: "0.06em", fontWeight: "600" }],
+            "headline-lg": ["1.5rem", { lineHeight: "1.875rem", letterSpacing: "-0.02em", fontWeight: "600" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    body {
+      background-color: #0b0e14;
+      color: #e1e2eb;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    /* Hairline borders using outline-variant token (#424754) */
+    .hairline-border {
+      border: 1px solid #424754;
+    }
+    .hairline-border-b {
+      border-bottom: 1px solid #424754;
+    }
+    .hairline-border-r {
+      border-right: 1px solid #424754;
+    }
+    .hairline-border-t {
+      border-top: 1px solid #424754;
+    }
+    .hairline-border-l {
+      border-left: 1px solid #424754;
+    }
+    /* Hide scrollbars for clean minimal chrome */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col bg-surface-container-lowest text-on-surface select-none overflow-hidden">
+<!-- TOP COMPACT TELEMETRY BAR (Anchored from Shared Components JSON) -->
+<header class="flex justify-between items-center h-10 px-space-xl w-full border-b border-outline-variant bg-surface-container-low select-none shrink-0 z-20">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-sm text-label-md font-label-md text-on-surface tracking-wider">
+<span class="w-2 h-2 rounded-full bg-tertiary inline-block"></span>
+<span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">Know Your Context</span>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-space-md">
+<span class="text-on-surface-variant font-code-md text-code-md">Cluster: local-daemon</span>
+<span class="text-outline-variant text-code-sm font-code-sm">/</span>
+<span class="text-primary font-code-md text-code-md border-b border-primary pb-space-xs">Graph: main-ctx</span>
+<span class="text-outline-variant text-code-sm font-code-sm">/</span>
+<span class="text-on-surface-variant font-code-md text-code-md">Lease: synchronized</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-sm mr-space-md">
+<button class="h-7 w-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors">
+<span class="material-symbols-outlined text-base">notifications_none</span>
+</button>
+<button class="h-7 w-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors">
+<span class="material-symbols-outlined text-base">terminal</span>
+</button>
+<button class="h-7 w-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors">
+<span class="material-symbols-outlined text-base">tune</span>
+</button>
+</div>
+<button class="h-7 px-space-md bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-md text-code-md rounded-lg flex items-center gap-space-xs transition-colors">
+<span>Freeze Graph</span>
+</button>
+<button class="h-7 px-space-md bg-primary-container hover:bg-inverse-primary text-on-primary font-code-md text-code-md rounded-lg flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-sm">flash_on</span>
+<span>Execute Mutation</span>
+</button>
+</div>
+</header>
+<!-- MAIN APP CONTAINER (SIDEBAR + MAIN CANVAS) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- DESKTOP DRAWER SIDEBAR (Anchored from Shared Components JSON: exactly 12 items, active on Debt) -->
+<aside class="flex flex-col h-full w-64 bg-surface-container-lowest border-r border-outline-variant select-none shrink-0 z-10 justify-between">
+<div class="flex flex-col">
+<!-- Sidebar Brand Sub-header -->
+<div class="px-space-md py-space-md border-b border-outline-variant/60 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm text-on-surface tracking-tight">Know Your Context</span>
+<span class="text-code-sm font-code-sm text-outline">local-kg // v0.9.4</span>
+</div>
+<span class="material-symbols-outlined text-tertiary text-sm" title="Knowledge graph runtime status indicator icon">hub</span>
+</div>
+<!-- 12 Navigation Items -->
+<nav class="flex flex-col py-space-sm gap-px">
+<!-- 1: Overview -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">dashboard</span>
+<span class="text-label-sm font-label-sm">Overview</span>
+</a>
+<!-- 2: Activity -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">pulse_alert</span>
+<span class="text-label-sm font-label-sm">Activity</span>
+</a>
+<!-- 3: Graph -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">account_tree</span>
+<span class="text-label-sm font-label-sm">Graph</span>
+</a>
+<!-- 4: Search -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">search</span>
+<span class="text-label-sm font-label-sm">Search</span>
+</a>
+<!-- 5: Metrics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">query_stats</span>
+<span class="text-label-sm font-label-sm">Metrics</span>
+</a>
+<!-- 6: Health -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">health_and_safety</span>
+<span class="text-label-sm font-label-sm">Health</span>
+</a>
+<!-- 7: Analytics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">analytics</span>
+<span class="text-label-sm font-label-sm">Analytics</span>
+</a>
+<!-- 8: Audit -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">policy</span>
+<span class="text-label-sm font-label-sm">Audit</span>
+</a>
+<!-- 9: Proposals -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">assignment_turned_in</span>
+<span class="text-label-sm font-label-sm">Proposals</span>
+</a>
+<!-- 10: Debt (ACTIVE ITEM: style_active_navigation mapping) -->
+<a class="flex items-center justify-between px-space-md py-space-sm bg-surface-container text-primary font-medium border-l-2 border-primary transition-colors duration-150" href="#">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-base text-primary">warning</span>
+<span class="text-label-sm font-label-sm text-primary">Debt</span>
+</div>
+<span class="px-1.5 py-0.5 bg-surface-container-highest border border-outline-variant font-code-sm text-code-sm text-primary rounded">12</span>
+</a>
+<!-- 11: System -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">dns</span>
+<span class="text-label-sm font-label-sm">System</span>
+</a>
+<!-- 12: Setup -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base">settings</span>
+<span class="text-label-sm font-label-sm">Setup</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-space-md border-t border-outline-variant flex flex-col gap-space-sm">
+<button class="w-full h-8 px-space-md bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-md text-code-md rounded-lg flex items-center justify-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-sm">sync</span>
+<span>Sync Local Engine</span>
+</button>
+<div class="flex items-center justify-between text-outline text-code-sm font-code-sm pt-space-xs">
+<span class="flex items-center gap-1 hover:text-on-surface-variant cursor-pointer">
+<span class="material-symbols-outlined text-xs">help</span> Docs
+          </span>
+<span class="font-code-sm text-code-sm text-outline">v0.9.4-local</span>
+</div>
+</div>
+</aside>
+<!-- MAIN CONTENT VIEWPORT (DIRECTION B - CLEAN SPACIOUS, RELAXED RHYTHM, AIRY) -->
+<main class="flex-1 flex flex-col overflow-y-auto no-scrollbar bg-surface-container-lowest">
+<!-- 1. HEADER BAR & BREADCRUMBS -->
+<section class="px-8 pt-8 pb-6 border-b border-outline-variant bg-surface-container-lowest shrink-0">
+<div class="flex flex-col gap-4 max-w-7xl mx-auto">
+<!-- Top Row: Breadcrumb & Kill-switch -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-label-sm font-label-sm text-outline tracking-wider">
+<span>RUNTIME REPAIR</span>
+<span class="text-outline-variant">//</span>
+<span class="text-secondary font-code-md text-code-md">KNOWLEDGE DEBT QUEUE</span>
+</div>
+<!-- Kill-switch badge -->
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-low border border-outline-variant rounded-lg">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="font-code-md text-code-md text-on-surface font-semibold tracking-wide">KYC_DEBT_QUEUE = ON</span>
+</div>
+</div>
+<!-- Middle Row: Title & Action Cluster -->
+<div class="flex items-start justify-between">
+<div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">Knowledge Debt Backlog</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant mt-1">
+                Prioritized structural anomalies, unreferenced subgraphs, and heuristic entropy awaiting mutation proposals.
+              </p>
+</div>
+<div class="flex items-center gap-3">
+<button class="h-8 px-3.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant text-on-surface font-code-md text-code-md rounded-lg flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm">refresh</span>
+<span>Recompute Priority [F5]</span>
+</button>
+<button class="h-8 px-3.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant text-on-surface font-code-md text-code-md rounded-lg flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>Export Debt Ledger (JSON)</span>
+</button>
+<button class="h-8 px-4 bg-primary text-on-primary-fixed hover:bg-primary-fixed font-code-md text-code-md font-semibold rounded-lg flex items-center gap-2 shadow-none transition-colors">
+<span class="material-symbols-outlined text-sm">difference</span>
+<span>Propose Bulk Mutation</span>
+</button>
+</div>
+</div>
+<!-- Bottom Row: Header Metadata Metric Badges -->
+<div class="flex flex-wrap items-center gap-3 pt-2">
+<div class="px-2.5 py-1 bg-surface-container border border-outline-variant rounded-lg flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-outline">STATUS</span>
+<span class="font-code-md text-code-md text-secondary font-medium">12 items active</span>
+</div>
+<div class="px-2.5 py-1 bg-surface-container border border-outline-variant rounded-lg flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-outline">ACCUMULATED SCORE</span>
+<span class="font-code-md text-code-md text-primary font-medium">Total Score: 84.6 pts</span>
+</div>
+<div class="px-2.5 py-1 bg-surface-container border border-outline-variant rounded-lg flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-outline">BUDGET IMPACT</span>
+<span class="font-code-md text-code-md text-on-surface font-medium">$18.40 (14.2k tokens)</span>
+</div>
+<div class="px-2.5 py-1 bg-surface-container border border-outline-variant rounded-lg flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-outline">MEDIAN AGE</span>
+<span class="font-code-md text-code-md text-on-surface font-medium">18.4d</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. LEDGER STATE & SIMULATION BANNER SLOT -->
+<section class="px-8 py-4 border-b border-outline-variant bg-surface-container-low shrink-0">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+<!-- Monotonic verification strip -->
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center w-6 h-6 rounded bg-tertiary-container text-on-tertiary">
+<span class="material-symbols-outlined text-sm font-bold">verified</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-code-md text-code-md font-semibold text-tertiary">LEDGER MONOTONIC // TAMPER_OK</span>
+<span class="text-outline text-code-sm font-code-sm">— SHA-256 HMAC verified (1,521 events)</span>
+</div>
+<div class="text-code-sm font-code-sm text-outline-variant">
+                Merkle state root: <span class="text-on-surface-variant font-code-sm">0x9f8a3c8e4726b1a03975d048fa2c3b1</span>
+</div>
+</div>
+</div>
+<!-- Clean state toggle tabs / slot chips -->
+<div class="flex items-center gap-1.5 p-1 bg-surface-container rounded-lg border border-outline-variant">
+<button class="px-3 py-1 bg-surface-container-high text-primary font-code-md text-code-md rounded border border-primary/30 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Active Backlog (12)</span>
+</button>
+<button class="px-3 py-1 text-on-surface-variant hover:text-on-surface font-code-md text-code-md rounded transition-colors">
+<span>Empty State: Zero Debt</span>
+</button>
+<button class="px-3 py-1 text-outline hover:text-error font-code-md text-code-md rounded transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">bug_report</span>
+<span>Simulated Corrupt Ledger</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 3. METRIC OVERVIEW CARDS (AIRY HORIZONTAL GRID) -->
+<section class="px-8 py-6 max-w-7xl mx-auto w-full shrink-0">
+<div class="grid grid-cols-4 gap-5">
+<!-- Card 1: Total Open Debt -->
+<div class="p-5 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline">
+<span>TOTAL OPEN DEBT</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg text-on-surface font-code-lg">12</span>
+<span class="font-code-md text-code-md text-error flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">arrow_upward</span> +2 past 24h
+              </span>
+</div>
+<div class="mt-3 pt-3 border-t border-outline-variant/40 text-code-sm font-code-sm text-on-surface-variant">
+              8 entities in critical priority (&gt;0.70)
+            </div>
+</div>
+<!-- Card 2: Mean Entropy Priority -->
+<div class="p-5 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline">
+<span>MEAN ENTROPY PRIORITY</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg text-on-surface font-code-lg">0.742</span>
+<span class="font-code-md text-code-md text-on-surface-variant">
+                p90: 0.914
+              </span>
+</div>
+<div class="mt-3 pt-3 border-t border-outline-variant/40 text-code-sm font-code-sm text-on-surface-variant">
+              Weight algorithm: v2 heuristic DAG
+            </div>
+</div>
+<!-- Card 3: Remediation SLA -->
+<div class="p-5 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline">
+<span>REMEDIATION SLA</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg text-on-surface font-code-lg">4.2d</span>
+<span class="font-code-md text-code-md text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">arrow_downward</span> -0.8d vs 30d avg
+              </span>
+</div>
+<div class="mt-3 pt-3 border-t border-outline-variant/40 text-code-sm font-code-sm text-on-surface-variant">
+              Avg human review time: 14.2 min
+            </div>
+</div>
+<!-- Card 4: Ledger Health -->
+<div class="p-5 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline">
+<span>LEDGER HEALTH</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg text-tertiary font-code-lg">100%</span>
+<span class="font-code-md text-code-md text-tertiary font-semibold">
+                MONOTONIC
+              </span>
+</div>
+<div class="mt-3 pt-3 border-t border-outline-variant/40 text-code-sm font-code-sm text-on-surface-variant">
+              11/11 invariants strictly compliant
+            </div>
+</div>
+</div>
+</section>
+<!-- 4. TWO-COLUMN CLEAN SPACIOUS WORKSPACE -->
+<section class="px-8 pb-12 max-w-7xl mx-auto w-full flex-1">
+<div class="grid grid-cols-12 gap-6 items-start">
+<!-- LEFT / MAIN AREA: DEBT TABLE & CONTROLS (8 Cols) -->
+<div class="col-span-8 flex flex-col gap-4">
+<!-- Controls Bar: Filter Pills & Search Input -->
+<div class="p-4 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<!-- Filter Pills -->
+<div class="flex items-center gap-2">
+<button class="h-7 px-3 bg-surface-container-high border border-outline-variant text-primary font-code-md text-code-md rounded font-medium">
+                    All (12)
+                  </button>
+<button class="h-7 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 text-on-surface-variant hover:text-on-surface font-code-md text-code-md rounded transition-colors">
+                    Stale Citations (4)
+                  </button>
+<button class="h-7 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 text-on-surface-variant hover:text-on-surface font-code-md text-code-md rounded transition-colors">
+                    Low Confidence (3)
+                  </button>
+<button class="h-7 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 text-on-surface-variant hover:text-on-surface font-code-md text-code-md rounded transition-colors">
+                    Orphan Subgraphs (3)
+                  </button>
+<button class="h-7 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 text-on-surface-variant hover:text-on-surface font-code-md text-code-md rounded transition-colors">
+                    Unresolved Ref (2)
+                  </button>
+</div>
+<div class="text-code-sm font-code-sm text-outline">
+                  Sort: <span class="text-on-surface font-medium">Priority (DESC)</span>
+</div>
+</div>
+<!-- Quick Subgraph Filter Input -->
+<div class="flex items-center h-8 bg-surface-container-lowest border border-outline-variant rounded px-2.5">
+<span class="font-code-md text-code-md text-outline mr-2">λ query:</span>
+<input class="bg-transparent border-none p-0 text-on-surface font-code-md text-code-md focus:ring-0 w-full placeholder:text-outline/60" placeholder="filter by entity uri, symbol prefix, or edge predicate..." type="text"/>
+<span class="font-code-sm text-code-sm text-outline">ESC to clear</span>
+</div>
+</div>
+<!-- Prioritized Debt Table (Clean, spacious, generous padding, strict styling) -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant text-label-sm font-label-sm text-outline uppercase tracking-wider">
+<th class="py-3 px-4 w-12 text-center">Rank</th>
+<th class="py-3 px-4">Entity Identifier / Node URI</th>
+<th class="py-3 px-3">Class</th>
+<th class="py-3 px-3 text-right">Priority</th>
+<th class="py-3 px-3 text-right">Budget</th>
+<th class="py-3 px-3 text-right">Age</th>
+<th class="py-3 px-4 text-center">Operation</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/40">
+<!-- Rank #01 -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3.5 px-4 font-code-md text-code-md text-outline text-center">#01</td>
+<td class="py-3.5 px-4 font-code-md text-code-md text-primary font-medium">
+                      node:kg_sym#store_acquire_mutation
+                    </td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm font-semibold tracking-wider border border-secondary/30 bg-secondary-container/20 text-secondary">
+                        STALE
+                      </span>
+</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-error text-right font-medium">0.942</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right">2.8k tok</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-outline text-right">42d</td>
+<td class="py-3.5 px-4 text-center">
+<button class="h-6 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm rounded transition-colors">
+                        Propose Mutation
+                      </button>
+</td>
+</tr>
+<!-- Rank #02 -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3.5 px-4 font-code-md text-code-md text-outline text-center">#02</td>
+<td class="py-3.5 px-4 font-code-md text-code-md text-primary font-medium">
+                      node:concept_419
+                    </td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm font-semibold tracking-wider border border-error/30 bg-error-container/20 text-error">
+                        LOW_CONF
+                      </span>
+</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-error text-right font-medium">0.891</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right">2.4k tok</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-outline text-right">28d</td>
+<td class="py-3.5 px-4 text-center">
+<button class="h-6 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm rounded transition-colors">
+                        Propose Mutation
+                      </button>
+</td>
+</tr>
+<!-- Rank #03 -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3.5 px-4 font-code-md text-code-md text-outline text-center">#03</td>
+<td class="py-3.5 px-4 font-code-md text-code-md text-primary font-medium">
+                      node:edge_rel_882
+                    </td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm font-semibold tracking-wider border border-outline/30 bg-surface-container-high text-on-surface-variant">
+                        UNRESOLVED_REF
+                      </span>
+</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-primary-fixed-dim text-right font-medium">0.840</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right">1.9k tok</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-outline text-right">19d</td>
+<td class="py-3.5 px-4 text-center">
+<button class="h-6 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm rounded transition-colors">
+                        Propose Mutation
+                      </button>
+</td>
+</tr>
+<!-- Rank #04 -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3.5 px-4 font-code-md text-code-md text-outline text-center">#04</td>
+<td class="py-3.5 px-4 font-code-md text-code-md text-primary font-medium">
+                      node:subgraph_tier2
+                    </td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm font-semibold tracking-wider border border-tertiary/30 bg-tertiary-container/20 text-tertiary">
+                        ORPHAN
+                      </span>
+</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-primary-fixed-dim text-right font-medium">0.785</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right">1.2k tok</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-outline text-right">14d</td>
+<td class="py-3.5 px-4 text-center">
+<button class="h-6 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm rounded transition-colors">
+                        Propose Mutation
+                      </button>
+</td>
+</tr>
+<!-- Rank #05 -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3.5 px-4 font-code-md text-code-md text-outline text-center">#05</td>
+<td class="py-3.5 px-4 font-code-md text-code-md text-primary font-medium">
+                      node:idx_hnsw_l0
+                    </td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm font-semibold tracking-wider border border-secondary/30 bg-secondary-container/20 text-secondary">
+                        STALE
+                      </span>
+</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-primary-fixed-dim text-right font-medium">0.730</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right">0.8k tok</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-outline text-right">14d</td>
+<td class="py-3.5 px-4 text-center">
+<button class="h-6 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm rounded transition-colors">
+                        Propose Mutation
+                      </button>
+</td>
+</tr>
+<!-- Rank #06 -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3.5 px-4 font-code-md text-code-md text-outline text-center">#06</td>
+<td class="py-3.5 px-4 font-code-md text-code-md text-primary font-medium">
+                      node:cache_sym#dispatch
+                    </td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm font-semibold tracking-wider border border-error/30 bg-error-container/20 text-error">
+                        LOW_CONF
+                      </span>
+</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right font-medium">0.695</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right">0.9k tok</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-outline text-right">11d</td>
+<td class="py-3.5 px-4 text-center">
+<button class="h-6 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm rounded transition-colors">
+                        Propose Mutation
+                      </button>
+</td>
+</tr>
+<!-- Rank #07 -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3.5 px-4 font-code-md text-code-md text-outline text-center">#07</td>
+<td class="py-3.5 px-4 font-code-md text-code-md text-primary font-medium">
+                      node:lease_tok#882
+                    </td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm font-semibold tracking-wider border border-tertiary/30 bg-tertiary-container/20 text-tertiary">
+                        ORPHAN
+                      </span>
+</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right font-medium">0.662</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right">0.4k tok</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-outline text-right">8d</td>
+<td class="py-3.5 px-4 text-center">
+<button class="h-6 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm rounded transition-colors">
+                        Propose Mutation
+                      </button>
+</td>
+</tr>
+<!-- Rank #08 -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-3.5 px-4 font-code-md text-code-md text-outline text-center">#08</td>
+<td class="py-3.5 px-4 font-code-md text-code-md text-primary font-medium">
+                      node:schema_entity_actor
+                    </td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm font-semibold tracking-wider border border-secondary/30 bg-secondary-container/20 text-secondary">
+                        STALE
+                      </span>
+</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right font-medium">0.610</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-on-surface-variant text-right">1.1k tok</td>
+<td class="py-3.5 px-3 font-code-md text-code-md text-outline text-right">6d</td>
+<td class="py-3.5 px-4 text-center">
+<button class="h-6 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm rounded transition-colors">
+                        Propose Mutation
+                      </button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Table Footer & Deterministic Batch Metadata -->
+<div class="px-4 py-3 bg-surface-container border-t border-outline-variant flex items-center justify-between text-code-sm font-code-sm text-outline">
+<div>
+                  Scan Mode: <span class="text-on-surface-variant font-medium">DETERMINISTIC_REORDERING</span>
+<span class="mx-2 text-outline-variant">|</span>
+                  Batch #<span class="text-on-surface-variant font-mono">0x82A1C9</span>
+<span class="mx-2 text-outline-variant">|</span>
+                  Entropy Threshold: <span class="text-on-surface-variant">&gt;0.250</span>
+</div>
+<div class="flex items-center gap-2">
+<span>Displaying 8 of 12</span>
+<span class="text-outline-variant">·</span>
+<button class="text-primary hover:underline font-code-md text-code-md">View all 12 entries</button>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: SUMMARY, BURNDOWN & SAFETY GATE (4 Cols) -->
+<div class="col-span-4 flex flex-col gap-5">
+<!-- Summary Panel: Breakdown by Reason -->
+<div class="p-5 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col gap-4">
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant">
+<span class="text-label-md font-label-md text-on-surface font-semibold tracking-wider">BREAKDOWN BY REASON (12 TOTAL)</span>
+<span class="material-symbols-outlined text-outline text-sm">pie_chart</span>
+</div>
+<div class="flex flex-col gap-3.5">
+<!-- Stale Citations -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-code-sm font-code-sm">
+<span class="text-on-surface-variant">Stale Citations &amp; Pointers</span>
+<span class="text-secondary font-medium">4 (33.3%)</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-secondary" style="width: 33.3%"></div>
+</div>
+</div>
+<!-- Low Confidence -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-code-sm font-code-sm">
+<span class="text-on-surface-variant">Low Confidence / High Entropy</span>
+<span class="text-error font-medium">3 (25.0%)</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-error" style="width: 25.0%"></div>
+</div>
+</div>
+<!-- Orphan Subgraphs -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-code-sm font-code-sm">
+<span class="text-on-surface-variant">Orphan Subgraphs &amp; Nodes</span>
+<span class="text-tertiary font-medium">3 (25.0%)</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-tertiary" style="width: 25.0%"></div>
+</div>
+</div>
+<!-- Unresolved Reference Traps -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-code-sm font-code-sm">
+<span class="text-on-surface-variant">Unresolved Reference Traps</span>
+<span class="text-outline font-medium">2 (16.7%)</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-outline" style="width: 16.7%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Hash-Chained 14-Day Burndown Trend (SVG Vector Line, zero gradients) -->
+<div class="p-5 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col gap-3">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant">
+<span class="text-label-md font-label-md text-on-surface font-semibold tracking-wider">14-DAY BURNDOWN TREND</span>
+<span class="text-code-sm font-code-sm text-tertiary font-medium">+1.4 items/day</span>
+</div>
+<!-- Monotonic Step Burndown SVG -->
+<div class="w-full h-32 pt-2 flex flex-col justify-end">
+<svg class="w-full h-24 overflow-visible" fill="none" stroke="currentColor" viewbox="0 0 320 90">
+<!-- Grid hairlines -->
+<line stroke="#424754" stroke-dasharray="2,2" stroke-width="0.5" x1="0" x2="320" y1="10" y2="10"></line>
+<line stroke="#424754" stroke-dasharray="2,2" stroke-width="0.5" x1="0" x2="320" y1="45" y2="45"></line>
+<line stroke="#424754" stroke-width="0.5" x1="0" x2="320" y1="80" y2="80"></line>
+<!-- Stepped Burndown Path from 24 items down to 12 items -->
+<path d="M 0 10 
+                           L 30 10 
+                           L 30 20 
+                           L 70 20 
+                           L 70 32 
+                           L 110 32 
+                           L 110 40 
+                           L 160 40 
+                           L 160 52 
+                           L 220 52 
+                           L 220 62 
+                           L 270 62 
+                           L 270 70 
+                           L 320 70" fill="none" stroke="#adc6ff" stroke-linecap="square" stroke-width="1.5"></path>
+<!-- Current position marker point -->
+<circle cx="320" cy="70" fill="#adc6ff" r="3"></circle>
+</svg>
+<div class="flex justify-between items-center text-code-sm font-code-sm text-outline pt-2 border-t border-outline-variant/30">
+<span>Day -14 (24 items)</span>
+<span>Target: &lt;5 in 7d</span>
+<span class="text-primary font-medium">Now (12 items)</span>
+</div>
+</div>
+</div>
+<!-- Autonomous Proposal-Gated Safety Barrier Box -->
+<div class="p-5 bg-surface-container border border-outline-variant rounded-lg flex flex-col gap-3">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-secondary text-base">shield_lock</span>
+<span class="text-headline-sm font-headline-sm">Proposal-Gated Safety Barrier</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant leading-relaxed">
+                Zero mutations are executed autonomously against the graph store. Every heuristic debt triage mitigation automatically generates an immutable DAG mutation proposal that requires operator cryptographic authorization before commit.
+              </p>
+<div class="pt-2 flex items-center justify-between border-t border-outline-variant/60">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-code-sm font-code-sm text-outline">ED25519 Quorum Active</span>
+</div>
+<span class="text-code-sm font-code-sm text-primary font-medium">Policy: STRICT_GATE</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- 5. SYSTEM STATUS FOOTER BAR -->
+<footer class="h-7 px-space-xl bg-surface-container-low border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm text-outline select-none shrink-0 z-20">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Raft Quorum: <strong class="text-on-surface-variant font-medium">3/3 SYNCED</strong></span>
+</div>
+<span class="text-outline-variant">|</span>
+<div>WAL Offset: <strong class="text-on-surface-variant font-medium">0x4F09B1</strong></div>
+<span class="text-outline-variant">|</span>
+<div>DuckDB Cache Hit: <strong class="text-on-surface-variant font-medium">99.4%</strong></div>
+<span class="text-outline-variant">|</span>
+<div class="flex items-center gap-1">
+<span>Invariants:</span>
+<strong class="text-tertiary font-medium">11/11 PASS</strong>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span>Latency: 1.2ms</span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant font-mono">Viewport: 1440x900 Clean Spacious</span>
+</div>
+</footer>
+</body></html>

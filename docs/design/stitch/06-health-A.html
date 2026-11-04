@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Health + System Diagnostics</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-fixed": "#001f26",
+            "on-tertiary-container": "#00311f",
+            "on-tertiary-fixed": "#002113",
+            "on-primary-fixed": "#001a42",
+            "surface-container-highest": "#32353b",
+            "tertiary-fixed-dim": "#4edea3",
+            "error": "#ffb4ab",
+            "primary-fixed": "#d8e2ff",
+            "on-primary": "#002e6a",
+            "surface-container-high": "#272a30",
+            "primary-fixed-dim": "#adc6ff",
+            "secondary-fixed": "#acedff",
+            "background": "#101319",
+            "on-primary-fixed-variant": "#004395",
+            "tertiary-container": "#00a572",
+            "on-error": "#690005",
+            "surface-dim": "#101319",
+            "on-error-container": "#ffdad6",
+            "surface-tint": "#adc6ff",
+            "outline-variant": "#424754",
+            "on-tertiary-fixed-variant": "#005236",
+            "on-surface-variant": "#c2c6d6",
+            "on-surface": "#e1e2eb",
+            "on-primary-container": "#00285d",
+            "surface": "#101319",
+            "on-secondary-container": "#00424e",
+            "surface-container-lowest": "#0b0e14",
+            "inverse-on-surface": "#2d3037",
+            "primary-container": "#4d8eff",
+            "on-secondary-fixed-variant": "#004e5c",
+            "on-secondary": "#003640",
+            "tertiary": "#4edea3",
+            "surface-bright": "#363940",
+            "surface-variant": "#32353b",
+            "error-container": "#93000a",
+            "on-background": "#e1e2eb",
+            "inverse-surface": "#e1e2eb",
+            "secondary-container": "#03b5d3",
+            "secondary": "#4cd7f6",
+            "inverse-primary": "#005ac2",
+            "on-tertiary": "#003824",
+            "primary": "#adc6ff",
+            "surface-container": "#1d2026",
+            "tertiary-fixed": "#6ffbbe",
+            "outline": "#8c909f",
+            "surface-container-low": "#191c22",
+            "secondary-fixed-dim": "#4cd7f6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "code-lg": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 14px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0e14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272a30;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased font-body-md h-screen w-screen overflow-hidden flex select-none">
+<!-- ==================== LEFT SIDEBAR NAVIGATION ==================== -->
+<aside class="fixed top-0 left-0 h-screen w-56 flex flex-col bg-surface-container-lowest border-r border-outline-variant z-30 select-none justify-between py-2 px-1">
+<div class="flex flex-col gap-2">
+<!-- Header / Brand -->
+<div class="px-2 py-1.5 border-b border-outline-variant/40 flex items-center justify-between">
+<div class="flex items-center gap-1.5 overflow-hidden">
+<span class="material-symbols-outlined text-primary text-base" data-icon="hub">hub</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight leading-none truncate">Know Your Context</span>
+<span class="font-code-sm text-code-sm text-outline mt-0.5 tracking-wider">LOCAL CLUSTER v2.4</span>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs (12 items) -->
+<nav class="flex flex-col gap-0.5 mt-1">
+<!-- Overview -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#overview">
+<span class="material-symbols-outlined text-outline" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Overview</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#activity">
+<span class="material-symbols-outlined text-outline" data-icon="dynamic_feed">dynamic_feed</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Activity</span>
+</a>
+<!-- Graph -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#graph">
+<span class="material-symbols-outlined text-outline" data-icon="hub">hub</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Graph</span>
+</a>
+<!-- Search -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#search">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Search</span>
+</a>
+<!-- Metrics -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#metrics">
+<span class="material-symbols-outlined text-outline" data-icon="monitoring">monitoring</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Metrics</span>
+</a>
+<!-- Health (ACTIVE) -->
+<a class="flex items-center gap-2 h-7 rounded bg-surface-container-high text-primary border-l-2 border-primary pl-2 font-medium hover:bg-surface-container transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#health">
+<span class="material-symbols-outlined text-primary" data-icon="vital_signs" data-weight="fill" style="font-variation-settings: 'FILL' 1;">vital_signs</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Health</span>
+<span class="ml-auto mr-1.5 w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#analytics">
+<span class="material-symbols-outlined text-outline" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Analytics</span>
+</a>
+<!-- Audit -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#audit">
+<span class="material-symbols-outlined text-outline" data-icon="history">history</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Audit</span>
+</a>
+<!-- Proposals -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#proposals">
+<span class="material-symbols-outlined text-outline" data-icon="rule">rule</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Proposals</span>
+</a>
+<!-- Debt -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#debt">
+<span class="material-symbols-outlined text-outline" data-icon="priority_high">priority_high</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Debt</span>
+</a>
+<!-- System -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#system">
+<span class="material-symbols-outlined text-outline" data-icon="memory">memory</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">System</span>
+</a>
+<!-- Setup -->
+<a class="flex items-center gap-2 h-7 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 transition-colors duration-100 ease-in-out cursor-pointer" href="#setup">
+<span class="material-symbols-outlined text-outline" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Setup</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="border-t border-outline-variant/40 pt-1.5 flex flex-col gap-0.5">
+<a class="flex items-center gap-2 h-6 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-100 cursor-pointer" href="#documentation">
+<span class="material-symbols-outlined text-outline text-xs" data-icon="menu_book">menu_book</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Documentation</span>
+</a>
+<a class="flex items-center gap-2 h-6 rounded text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-100 cursor-pointer" href="#terminal">
+<span class="material-symbols-outlined text-outline text-xs" data-icon="terminal">terminal</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Terminal</span>
+</a>
+</div>
+</aside>
+<!-- ==================== MAIN APPLICATION CONTAINER ==================== -->
+<div class="flex-1 flex flex-col h-screen pl-56 overflow-hidden bg-background">
+<!-- Top dense telemetry / header bar -->
+<header class="flex justify-between items-center h-8 w-full px-3 border-b border-outline-variant bg-surface-container-low select-none z-20 shrink-0">
+<!-- Left: Telemetry & Status Links -->
+<div class="flex items-center gap-3">
+<span class="font-code-md text-code-md text-on-surface font-semibold flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+          Know Your Context
+        </span>
+<span class="text-outline-variant text-xs">/</span>
+<span class="font-code-sm text-code-sm uppercase tracking-tight text-on-surface-variant">Cluster: <span class="text-on-surface">node-01.local</span></span>
+<span class="text-outline-variant text-xs">/</span>
+<span class="font-code-sm text-code-sm uppercase tracking-tight text-tertiary font-semibold">Lock Sync: QUORUM</span>
+<span class="text-outline-variant text-xs">/</span>
+<span class="font-code-sm text-code-sm uppercase tracking-tight text-tertiary font-semibold flex items-center gap-1">
+          State: HEALTHY [0]
+        </span>
+<span class="text-outline-variant text-xs">/</span>
+<span class="font-code-sm text-code-sm tracking-tight text-outline">WAL Seq: <span class="font-code-sm text-code-sm text-primary">#829</span></span>
+<span class="text-outline-variant text-xs">/</span>
+<span class="font-code-sm text-code-sm tracking-tight text-on-surface-variant">DuckDB: <span class="text-tertiary">READY</span></span>
+</div>
+<!-- Right: Action Bar -->
+<div class="flex items-center gap-1.5">
+<button class="h-6 px-2 text-xs font-code-sm bg-surface-container border border-outline-variant rounded hover:bg-surface-container-high text-on-surface flex items-center gap-1 transition-colors duration-100" title="Shortcut: F1">
+<span class="material-symbols-outlined text-xs" data-icon="sync">sync</span>
+<span>Run Diagnostics</span>
+<span class="text-outline text-[10px] ml-1 bg-surface-container-lowest px-1 rounded">F1</span>
+</button>
+<button class="h-6 px-2 text-xs font-code-sm bg-surface-container border border-outline-variant rounded hover:bg-surface-container-high text-on-surface flex items-center gap-1 transition-colors duration-100">
+<span class="material-symbols-outlined text-xs" data-icon="refresh">refresh</span>
+<span>Trigger Relearn</span>
+</button>
+<button class="h-6 px-2 text-xs font-code-sm bg-surface-container border border-outline-variant rounded hover:bg-surface-container-high text-on-surface flex items-center gap-1 transition-colors duration-100">
+<span class="material-symbols-outlined text-xs" data-icon="file_download">file_download</span>
+<span>Export Audit JSON</span>
+</button>
+<div class="h-3.5 w-px bg-outline-variant mx-1"></div>
+<button class="h-6 w-6 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded transition-colors" title="Sync Status">
+<span class="material-symbols-outlined text-xs" data-icon="sync">sync</span>
+</button>
+<button class="h-6 w-6 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-xs" data-icon="notifications">notifications</span>
+</button>
+<button class="h-6 w-6 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded transition-colors" title="Integrated Terminal">
+<span class="material-symbols-outlined text-xs" data-icon="terminal">terminal</span>
+</button>
+<button class="h-6 w-6 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded transition-colors" title="Operator Profile">
+<span class="material-symbols-outlined text-xs" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Sub-header / Status Banner -->
+<div class="bg-surface-container-lowest border-b border-outline-variant px-3 py-1.5 flex items-center justify-between shrink-0">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2">
+<span class="px-1.5 py-0.5 bg-tertiary-container/30 border border-tertiary-container text-tertiary font-code-sm text-code-sm font-semibold rounded uppercase">
+            STATUS: HEALTHY
+          </span>
+<span class="font-code-sm text-code-sm text-outline">[ok=true, exit_code 0]</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm">
+<span class="text-outline">worst_severity:</span>
+<span class="text-secondary font-medium">INFO</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm">
+<span class="text-outline">errors:</span>
+<span class="text-on-surface">0</span>
+<span class="text-outline ml-1">warnings:</span>
+<span class="text-secondary-fixed bg-surface-container px-1 rounded border border-outline-variant">2</span>
+<span class="text-outline-variant text-[11px]">(stale embeddings edge_rel_882, unindexed tag #legacy)</span>
+</div>
+</div>
+<div class="flex items-center gap-3 font-code-sm text-code-sm text-outline">
+<span class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+          11 fail-closed checks evaluated
+        </span>
+<span class="text-outline-variant">|</span>
+<span>last probe: <span class="text-on-surface">420ms ago</span></span>
+<span class="text-outline-variant">|</span>
+<span>cadence: <span class="text-on-surface">15s</span></span>
+</div>
+</div>
+<!-- MAIN DIAGNOSTICS WORKSPACE (Grid 12-columns, tight gutter) -->
+<div class="flex-1 grid grid-cols-12 overflow-hidden bg-background divide-x divide-outline-variant">
+<!-- LEFT COLUMN: 11 Fail-closed checks & Storage Summary (5 cols) -->
+<div class="col-span-5 flex flex-col h-full overflow-hidden bg-surface-container-lowest">
+<!-- Section Header: Fail-Closed Checks -->
+<div class="h-7 px-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between shrink-0">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-xs" data-icon="verified">verified</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface">11 Fail-Closed Diagnostic Checks</span>
+</div>
+<span class="font-code-sm text-code-sm text-tertiary font-medium">11/11 PASSED</span>
+</div>
+<!-- 11 Checks List (Compact) -->
+<div class="flex-1 overflow-y-auto divide-y divide-outline-variant/60">
+<!-- Check 1 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">store_readable</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.4ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">fs::check_fd</span>
+</div>
+</div>
+<!-- Check 2 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">chain_integrity</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">1.8ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">sha256_merkle_verify</span>
+</div>
+</div>
+<!-- Check 3 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">projection_fresh</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.9ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">wal_lag == 0</span>
+</div>
+</div>
+<!-- Check 4 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">leases_consistent</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.5ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">raft_quorum_ack</span>
+</div>
+</div>
+<!-- Check 5 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">schema_version</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.2ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">v5_migration_clean</span>
+</div>
+</div>
+<!-- Check 6 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">journal_mode</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.1ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">wal_seq_829</span>
+</div>
+</div>
+<!-- Check 7 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">freelist_bounds</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.6ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">freelist_pages &lt;= 64</span>
+</div>
+</div>
+<!-- Check 8 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">kill_switches</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.1ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">all_circuits_closed</span>
+</div>
+</div>
+<!-- Check 9 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">hardware_probe</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">1.2ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">nvme_io_latency &lt; 2ms</span>
+</div>
+</div>
+<!-- Check 10 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">sidecars</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.7ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">3/3 active IPC sockets</span>
+</div>
+</div>
+<!-- Check 11 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2 truncate">
+<span class="px-1 py-0.2 bg-tertiary/10 border border-tertiary/40 text-tertiary font-code-sm text-[10px] font-semibold rounded">PASS</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium truncate">contracts_frozen</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-[11px] shrink-0 text-outline">
+<span class="text-on-surface-variant font-mono">0.3ms</span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">deterministic_dag</span>
+</div>
+</div>
+</div>
+<!-- Section: Store Summary Card (Database & Storage Engine Metrics) -->
+<div class="border-t border-outline-variant bg-surface-container-low shrink-0 p-3">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/60 mb-2">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-xs" data-icon="storage">storage</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface">Store Summary &amp; Storage Engine</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">v5.0.2-local</span>
+</div>
+<div class="grid grid-cols-4 gap-2">
+<!-- Metric 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<div class="font-label-sm text-label-sm text-outline uppercase truncate">Tables</div>
+<div class="font-code-lg text-code-lg text-on-surface font-semibold mt-0.5">18</div>
+<div class="font-code-sm text-[10px] text-outline truncate">relational + lsm</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<div class="font-label-sm text-label-sm text-outline uppercase truncate">Schema</div>
+<div class="font-code-lg text-code-lg text-secondary font-semibold mt-0.5">[v1..v5]</div>
+<div class="font-code-sm text-[10px] text-outline truncate">migrated clean</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<div class="font-label-sm text-label-sm text-outline uppercase truncate">File Size</div>
+<div class="font-code-lg text-code-lg text-on-surface font-semibold mt-0.5">46.2 MB</div>
+<div class="font-code-sm text-[10px] text-outline truncate">alloc: 64.0MB</div>
+</div>
+<!-- Metric 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<div class="font-label-sm text-label-sm text-outline uppercase truncate">Freelist</div>
+<div class="font-code-lg text-code-lg text-on-surface font-semibold mt-0.5">12 pgs</div>
+<div class="font-code-sm text-[10px] text-outline truncate">page: 4096 B</div>
+</div>
+</div>
+<!-- Bottom micro specs -->
+<div class="mt-2 pt-2 border-t border-outline-variant/40 flex items-center justify-between font-code-sm text-[11px] text-outline">
+<span class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+              WAL Mode: <span class="text-on-surface font-semibold">ACTIVE</span>
+</span>
+<span>Sync Interval: <span class="text-on-surface">1000ms</span></span>
+<span>Driver: <span class="text-on-surface">libsqlite3/wal2</span></span>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Findings Table + Request Timing Panel (7 cols) -->
+<div class="col-span-7 flex flex-col h-full overflow-hidden bg-surface">
+<!-- Top Right: Findings Table -->
+<div class="flex-1 flex flex-col overflow-hidden">
+<div class="h-7 px-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-xs" data-icon="troubleshoot">troubleshoot</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface">Active Diagnostic Findings &amp; Assertions</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm">
+<span class="text-outline">5 active entries</span>
+<span class="text-outline-variant">|</span>
+<span class="text-secondary font-medium">2 warnings</span>
+<span class="text-outline-variant">|</span>
+<span class="text-outline">3 info</span>
+</div>
+</div>
+<!-- Findings Table Header -->
+<div class="h-6 bg-surface-container border-b border-outline-variant px-3 grid grid-cols-12 items-center font-label-md text-label-md text-outline shrink-0 uppercase tracking-wider">
+<div class="col-span-1">SEV</div>
+<div class="col-span-1">CODE</div>
+<div class="col-span-4">MESSAGE</div>
+<div class="col-span-4">DETAILS / SPEC</div>
+<div class="col-span-1 text-right">OCCUR</div>
+<div class="col-span-1 text-right">ACTION</div>
+</div>
+<!-- Findings Table Body (Strict 28px rows) -->
+<div class="flex-1 overflow-y-auto divide-y divide-outline-variant/60 font-code-sm text-code-sm">
+<!-- Row 1: WARN W-104 -->
+<div class="h-7 px-3 grid grid-cols-12 items-center hover:bg-surface-container transition-colors duration-75">
+<div class="col-span-1">
+<span class="px-1.5 py-0.2 bg-secondary/10 border border-secondary/40 text-secondary text-[10px] font-semibold rounded">WARN</span>
+</div>
+<div class="col-span-1 text-on-surface-variant font-mono">W-104</div>
+<div class="col-span-4 text-on-surface font-medium truncate pr-2">Stale embedding pointers detected</div>
+<div class="col-span-4 text-outline font-mono truncate pr-2">edge_rel_882 missing cosine vector in tier2 index</div>
+<div class="col-span-1 text-right text-on-surface-variant font-mono">T-18m</div>
+<div class="col-span-1 text-right">
+<button class="h-5 px-1.5 bg-surface-container border border-outline-variant rounded hover:bg-surface-container-high text-primary hover:text-on-surface text-[10px] font-code-sm transition-colors">
+                  Re-index
+                </button>
+</div>
+</div>
+<!-- Row 2: WARN W-089 -->
+<div class="h-7 px-3 grid grid-cols-12 items-center hover:bg-surface-container transition-colors duration-75">
+<div class="col-span-1">
+<span class="px-1.5 py-0.2 bg-secondary/10 border border-secondary/40 text-secondary text-[10px] font-semibold rounded">WARN</span>
+</div>
+<div class="col-span-1 text-on-surface-variant font-mono">W-089</div>
+<div class="col-span-4 text-on-surface font-medium truncate pr-2">Unindexed legacy semantic tag</div>
+<div class="col-span-4 text-outline font-mono truncate pr-2">tag '#legacy' referenced in 4 concepts without bloom filter</div>
+<div class="col-span-1 text-right text-on-surface-variant font-mono">T-42m</div>
+<div class="col-span-1 text-right">
+<button class="h-5 px-1.5 bg-surface-container border border-outline-variant rounded hover:bg-surface-container-high text-primary hover:text-on-surface text-[10px] font-code-sm transition-colors whitespace-nowrap">
+                  Build
+                </button>
+</div>
+</div>
+<!-- Row 3: INFO I-412 -->
+<div class="h-7 px-3 grid grid-cols-12 items-center hover:bg-surface-container transition-colors duration-75">
+<div class="col-span-1">
+<span class="px-1.5 py-0.2 bg-surface-container-high border border-outline-variant text-outline text-[10px] font-semibold rounded">INFO</span>
+</div>
+<div class="col-span-1 text-on-surface-variant font-mono">I-412</div>
+<div class="col-span-4 text-on-surface font-medium truncate pr-2">WAL checkpoint cycle clean</div>
+<div class="col-span-4 text-outline font-mono truncate pr-2">zero contention on shared_wal_read mutex</div>
+<div class="col-span-1 text-right text-on-surface-variant font-mono">T-2m</div>
+<div class="col-span-1 text-right">
+<button class="h-5 px-1.5 bg-surface-container border border-outline-variant rounded hover:bg-surface-container-high text-outline hover:text-on-surface text-[10px] font-code-sm transition-colors">
+                  Inspect
+                </button>
+</div>
+</div>
+<!-- Row 4: INFO I-305 -->
+<div class="h-7 px-3 grid grid-cols-12 items-center hover:bg-surface-container transition-colors duration-75">
+<div class="col-span-1">
+<span class="px-1.5 py-0.2 bg-surface-container-high border border-outline-variant text-outline text-[10px] font-semibold rounded">INFO</span>
+</div>
+<div class="col-span-1 text-on-surface-variant font-mono">I-305</div>
+<div class="col-span-4 text-on-surface font-medium truncate pr-2">Raft lease quorum renewal</div>
+<div class="col-span-4 text-outline font-mono truncate pr-2">leader term 84 acknowledged by 8/8 nodes</div>
+<div class="col-span-1 text-right text-on-surface-variant font-mono">T-12s</div>
+<div class="col-span-1 text-right">
+<button class="h-5 px-1.5 bg-surface-container border border-outline-variant rounded hover:bg-surface-container-high text-outline hover:text-on-surface text-[10px] font-code-sm transition-colors">
+                  Inspect
+                </button>
+</div>
+</div>
+<!-- Row 5: INFO I-201 -->
+<div class="h-7 px-3 grid grid-cols-12 items-center hover:bg-surface-container transition-colors duration-75">
+<div class="col-span-1">
+<span class="px-1.5 py-0.2 bg-surface-container-high border border-outline-variant text-outline text-[10px] font-semibold rounded">INFO</span>
+</div>
+<div class="col-span-1 text-on-surface-variant font-mono">I-201</div>
+<div class="col-span-4 text-on-surface font-medium truncate pr-2">Schema invariants verified</div>
+<div class="col-span-4 text-outline font-mono truncate pr-2">1,284 nodes and 3,917 edges satisfy SHACL rules</div>
+<div class="col-span-1 text-right text-on-surface-variant font-mono">T-4m</div>
+<div class="col-span-1 text-right">
+<button class="h-5 px-1.5 bg-surface-container border border-outline-variant rounded hover:bg-surface-container-high text-outline hover:text-on-surface text-[10px] font-code-sm transition-colors">
+                  Inspect
+                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Right: Request Timing Mini-Panel (Latency Micro-benchmarks) -->
+<div class="border-t border-outline-variant bg-surface-container-lowest shrink-0">
+<div class="h-7 px-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-xs" data-icon="speed">speed</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface">Route Latency Micro-Benchmarks (p50 / p99)</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">window: 50,000 reqs</span>
+</div>
+<!-- Micro-benchmark rows (Strict 28px) -->
+<div class="divide-y divide-outline-variant/60 font-code-sm text-code-sm">
+<!-- Route 1 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2">
+<span class="font-mono text-primary">GET</span>
+<span class="text-on-surface font-mono">/v1/graph/traverse</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-32 bg-surface-container-high h-1.5 rounded-full overflow-hidden hidden sm:block">
+<div class="bg-tertiary h-full rounded-full" style="width: 14%"></div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-tertiary font-mono">0.8ms</span>
+<span class="text-outline font-mono text-[11px]">(p99 1.4ms)</span>
+</div>
+</div>
+</div>
+<!-- Route 2 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2">
+<span class="font-mono text-primary">POST</span>
+<span class="text-on-surface font-mono">/v1/symbols/ast_query</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-32 bg-surface-container-high h-1.5 rounded-full overflow-hidden hidden sm:block">
+<div class="bg-tertiary h-full rounded-full" style="width: 8%"></div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-tertiary font-mono">0.4ms</span>
+<span class="text-outline font-mono text-[11px]">(p99 0.9ms)</span>
+</div>
+</div>
+</div>
+<!-- Route 3 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2">
+<span class="font-mono text-secondary">POST</span>
+<span class="text-on-surface font-mono">/v1/leases/acquire</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-32 bg-surface-container-high h-1.5 rounded-full overflow-hidden hidden sm:block">
+<div class="bg-tertiary h-full rounded-full" style="width: 5%"></div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-tertiary font-mono">0.2ms</span>
+<span class="text-outline font-mono text-[11px]">(p99 0.5ms)</span>
+</div>
+</div>
+</div>
+<!-- Route 4 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2">
+<span class="font-mono text-tertiary">PUT</span>
+<span class="text-on-surface font-mono">/v1/wal/commit</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-32 bg-surface-container-high h-1.5 rounded-full overflow-hidden hidden sm:block">
+<div class="bg-tertiary h-full rounded-full" style="width: 22%"></div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-tertiary font-mono">1.1ms</span>
+<span class="text-outline font-mono text-[11px]">(p99 2.1ms)</span>
+</div>
+</div>
+</div>
+<!-- Route 5 -->
+<div class="h-7 px-3 flex items-center justify-between hover:bg-surface-container transition-colors duration-75">
+<div class="flex items-center gap-2">
+<span class="font-mono text-primary">POST</span>
+<span class="text-on-surface font-mono">/v1/vector/knn_search</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-32 bg-surface-container-high h-1.5 rounded-full overflow-hidden hidden sm:block">
+<div class="bg-secondary h-full rounded-full" style="width: 72%"></div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-secondary font-mono">5.8ms</span>
+<span class="text-outline font-mono text-[11px]">(p99 9.2ms)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ==================== GLOBAL FOOTER STATUS BAR ==================== -->
+<footer class="h-6 px-3 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm text-outline select-none shrink-0 z-20">
+<!-- Left metrics -->
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+          Consensus OK (Leader #1)
+        </span>
+<span class="text-outline-variant">|</span>
+<span>WAL seq <span class="text-primary font-mono">829</span></span>
+<span class="text-outline-variant">|</span>
+<span>DuckDB v0.10.1 cache hit <span class="text-tertiary font-mono">99.4%</span></span>
+<span class="text-outline-variant">|</span>
+<span>Memory RSS <span class="text-on-surface font-mono">46.2MB</span></span>
+<span class="text-outline-variant">|</span>
+<span>Uptime <span class="text-on-surface font-mono">18d 04h</span></span>
+</div>
+<!-- Right system alerts & environment info -->
+<div class="flex items-center gap-3">
+<span class="text-outline">Engine: <span class="text-on-surface">Embedded Localhost</span></span>
+<span class="text-outline-variant">|</span>
+<span class="text-outline">IPC: <span class="text-tertiary">UNIX_SOCK_0</span></span>
+<span class="text-outline-variant">|</span>
+<span class="text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="check_circle">check_circle</span>
+          SYSTEM NOMINAL
+        </span>
+</div>
+</footer>
+</div>
+<script>
+    // Lightweight keyboard navigation handler for pro engineering console feel
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F1') {
+        e.preventDefault();
+        const btn = document.querySelector('button[title*="F1"]');
+        if (btn) {
+          btn.classList.add('bg-surface-container-highest');
+          setTimeout(() => btn.classList.remove('bg-surface-container-highest'), 150);
+        }
+      }
+    });
+  </script>
+</body></html>

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Debt Queue</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with custom extensions -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-bright": "#363940",
+            "surface": "#101319",
+            "on-error-container": "#ffdad6",
+            "surface-container-highest": "#32353b",
+            "on-primary": "#002e6a",
+            "tertiary-container": "#00a572",
+            "error-container": "#93000a",
+            "error": "#ffb4ab",
+            "primary-fixed": "#d8e2ff",
+            "on-tertiary-fixed-variant": "#005236",
+            "surface-tint": "#adc6ff",
+            "on-primary-container": "#00285d",
+            "on-primary-fixed-variant": "#004395",
+            "tertiary": "#4edea3",
+            "on-surface": "#e1e2eb",
+            "on-error": "#690005",
+            "on-tertiary": "#003824",
+            "secondary-container": "#03b5d3",
+            "inverse-primary": "#005ac2",
+            "background": "#101319",
+            "primary": "#adc6ff",
+            "outline": "#8c909f",
+            "secondary": "#4cd7f6",
+            "surface-variant": "#32353b",
+            "tertiary-fixed": "#6ffbbe",
+            "on-tertiary-container": "#00311f",
+            "on-primary-fixed": "#001a42",
+            "surface-container-lowest": "#0b0e14",
+            "surface-container": "#1d2026",
+            "on-secondary-container": "#00424e",
+            "on-secondary": "#003640",
+            "surface-container-low": "#191c22",
+            "on-secondary-fixed-variant": "#004e5c",
+            "surface-dim": "#101319",
+            "primary-fixed-dim": "#adc6ff",
+            "outline-variant": "#424754",
+            "surface-container-high": "#272a30",
+            "inverse-surface": "#e1e2eb",
+            "inverse-on-surface": "#2d3037",
+            "secondary-fixed-dim": "#4cd7f6",
+            "secondary-fixed": "#acedff",
+            "on-surface-variant": "#c2c6d6",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-tertiary-fixed": "#002113",
+            "on-background": "#e1e2eb",
+            "on-secondary-fixed": "#001f26",
+            "primary-container": "#4d8eff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "0.5rem",
+            "space-xs": "0.125rem",
+            "space-lg": "0.75rem",
+            "space-sm": "0.25rem",
+            "gutter-mobile": "0.25rem",
+            "margin-mobile": "0.5rem",
+            "gutter": "0.5rem",
+            "space-xl": "1rem",
+            "margin": "0.75rem"
+          },
+          "fontFamily": {
+            "label-md": ["JetBrains Mono"],
+            "code-lg": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    /* Technical Precision Layout Reset */
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      margin: 0;
+      background-color: #0b0e14;
+      color: #e1e2eb;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+    .material-symbols-outlined {
+      font-size: 16px;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Hairline borders and zero-ambient aesthetic */
+    .hairline-b { border-bottom: 1px solid #2a313e; }
+    .hairline-r { border-right: 1px solid #2a313e; }
+    .hairline-t { border-top: 1px solid #2a313e; }
+    .hairline-l { border-left: 1px solid #2a313e; }
+    .hairline-all { border: 1px solid #2a313e; }
+    
+    /* Scrollbar styling for data density */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #101319;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a313e;
+      border-radius: 1px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface h-screen flex flex-col select-none overflow-hidden text-body-sm font-body-sm">
+<!-- ================= TOP TELEMETRY BAR ================= -->
+<header class="flex justify-between items-center h-10 px-space-xl w-full border-b border-outline-variant bg-surface-container-low z-20 shrink-0">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-headline-sm font-headline-sm text-on-surface font-semibold tracking-tight">Know Your Context</span>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<!-- Cluster Telemetry pills -->
+<div class="flex items-center gap-space-md">
+<span class="text-on-surface-variant font-code-md text-code-md px-1.5 py-0.5 rounded bg-surface-container-lowest hairline-all">Cluster: local-daemon</span>
+<span class="text-on-surface-variant font-code-md text-code-md px-1.5 py-0.5 rounded bg-surface-container-lowest hairline-all">Graph: main-ctx</span>
+<span class="text-primary font-code-md text-code-md px-1.5 py-0.5 rounded bg-surface-container-lowest hairline-all flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          Lease: synchronized
+        </span>
+</div>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs text-on-surface-variant mr-space-sm">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Notifications">
+<span class="material-symbols-outlined" data-icon="notifications_none">notifications_none</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="CLI Terminal">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Settings Tuning">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+</div>
+<button class="px-space-md h-7 rounded border border-outline-variant bg-surface-container hover:bg-surface-container-high text-on-surface font-code-md text-code-md flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+        Freeze Graph
+      </button>
+<button class="px-space-md h-7 rounded bg-primary-container hover:bg-inverse-primary text-on-primary font-code-md text-code-md font-medium flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+        Execute Mutation
+      </button>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-code-sm text-code-sm" title="Autonomous runtime operator identity badge">
+<div class="w-5 h-5 rounded bg-surface-container-high flex items-center justify-center text-primary font-bold text-[10px] hairline-all">
+          OP
+        </div>
+<span>daemon@0.9.4</span>
+</div>
+</div>
+</header>
+<div class="flex flex-1 w-full overflow-hidden">
+<!-- ================= LEFT PERSISTENT SIDEBAR ================= -->
+<aside class="flex flex-col h-full w-64 bg-surface-container-lowest border-r border-outline-variant select-none shrink-0 justify-between">
+<div>
+<!-- Sidebar Brand Subtext -->
+<div class="px-space-md py-space-sm border-b border-outline-variant flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface-variant">local-kg // v0.9.4</span>
+<span class="w-2 h-2 rounded-full bg-tertiary" title="Runtime online"></span>
+</div>
+<!-- 12 Navigation Items -->
+<nav class="py-space-xs flex flex-col space-y-0.5">
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-label-sm">Overview</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="pulse_alert">pulse_alert</span>
+<span class="font-label-sm text-label-sm">Activity</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="font-label-sm text-label-sm">Graph</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="font-label-sm text-label-sm">Metrics</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="health_and_safety">health_and_safety</span>
+<span class="font-label-sm text-label-sm">Health</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-sm text-label-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="policy">policy</span>
+<span class="font-label-sm text-label-sm">Audit</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span class="font-label-sm text-label-sm">Proposals</span>
+</a>
+<!-- ACTIVE NAVIGATION ITEM: Debt with badge 12 -->
+<a class="flex items-center justify-between px-space-md py-space-sm bg-surface-container text-primary font-medium border-l-2 border-primary transition-colors duration-150" href="#">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-primary" data-icon="warning">warning</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Debt</span>
+</div>
+<span class="font-code-sm text-code-sm bg-primary/20 text-primary border border-primary/40 px-1.5 py-0.2 rounded font-bold">12</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dns">dns</span>
+<span class="font-label-sm text-label-sm">System</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Setup</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-space-sm border-t border-outline-variant space-y-space-sm bg-surface-container-lowest">
+<button class="w-full py-1.5 px-space-md rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-sm text-code-sm flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[14px]">sync</span>
+          Sync Local Engine
+        </button>
+<div class="flex items-center justify-between px-space-xs text-on-surface-variant font-code-sm text-code-sm">
+<a class="flex items-center gap-1 hover:text-on-surface" href="#"><span class="material-symbols-outlined text-[13px]" data-icon="help">help</span>Docs</a>
+<span class="flex items-center gap-1 text-outline"><span class="material-symbols-outlined text-[13px]" data-icon="terminal">terminal</span>v0.9.4-local</span>
+</div>
+</div>
+</aside>
+<!-- ================= MAIN CONTENT VIEWPORT ================= -->
+<main class="flex-1 flex flex-col h-full bg-surface-dim overflow-y-auto">
+<!-- Top Ledger Verification Banner (Honest Tamper-Evident) -->
+<div class="w-full px-space-xl py-1.5 bg-surface-container-low border-b border-outline-variant flex items-center justify-between text-code-sm font-code-sm" id="ledger-banner">
+<div class="flex items-center gap-space-md">
+<span class="flex items-center gap-1 text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+            LEDGER MONOTONIC // TAMPER_OK
+          </span>
+<span class="text-outline">|</span>
+<span class="text-on-surface-variant">SHA-256 HMAC verified (1,521 events)</span>
+<span class="text-outline">|</span>
+<span class="text-on-surface-variant">Merkle state root: <span class="text-primary font-mono">0x9f8a...c3b1</span></span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="text-outline">DAG: consistent</span>
+<span class="text-tertiary-fixed font-code-sm font-semibold px-1 rounded bg-tertiary/10 border border-tertiary/30">VALIDATED</span>
+</div>
+</div>
+<!-- Corrupt State Alert Slot (Dormant by default, triggered via Simulation switch) -->
+<div class="hidden w-full px-space-xl py-1.5 bg-error-container border-b border-error text-error text-code-sm font-code-sm items-center justify-between" id="corrupt-alert-slot">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">error</span>
+<span>CORRUPT: hash divergence detected at seq #829. Root mismatch 0x9f8a...c3b1 != 0x011e...e89a</span>
+</div>
+<button class="underline hover:text-white" onclick="switchState('active')">Acknowledge &amp; Revert to Backlog</button>
+</div>
+<!-- Page Header & Action Toolbar -->
+<div class="p-space-xl pb-space-md border-b border-outline-variant bg-surface shrink-0">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-space-md">
+<div>
+<div class="flex items-center gap-space-md">
+<h1 class="text-headline-lg font-headline-lg text-on-surface font-semibold tracking-tight">Knowledge Debt Queue</h1>
+<span class="px-2 py-0.5 text-label-sm font-label-sm bg-primary/10 text-primary border border-primary/30 rounded">
+                12 items active
+              </span>
+<span class="px-2 py-0.5 text-label-sm font-label-sm bg-tertiary/10 text-tertiary border border-tertiary/30 rounded flex items-center gap-1 font-mono">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                KYC_DEBT_QUEUE = ON
+              </span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-0.5">
+              Prioritized structural anomalies, unreferenced subgraphs, and heuristic entropy awaiting mutation proposals.
+            </p>
+</div>
+<!-- Simulation / State Switcher & Bulk Actions -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<!-- State Switcher Tabs -->
+<div class="flex rounded bg-surface-container-lowest hairline-all p-0.5 mr-space-sm">
+<button class="px-2 py-1 text-code-sm font-code-sm bg-surface-container text-primary rounded font-medium" id="tab-active" onclick="switchState('active')">Active Backlog (12)</button>
+<button class="px-2 py-1 text-code-sm font-code-sm text-on-surface-variant hover:text-on-surface rounded" id="tab-empty" onclick="switchState('empty')">Empty State: Zero Debt</button>
+<button class="px-2 py-1 text-code-sm font-code-sm text-on-surface-variant hover:text-on-surface rounded" id="tab-corrupt" onclick="switchState('corrupt')">Simulated Corrupt Ledger</button>
+</div>
+<button class="px-2.5 h-8 rounded border border-outline-variant bg-surface-container hover:bg-surface-container-high text-on-surface font-code-sm text-code-sm flex items-center gap-1 transition-colors" title="Reload priority matrix">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+              Recompute Priority [F5]
+            </button>
+<button class="px-2.5 h-8 rounded border border-outline-variant bg-surface-container hover:bg-surface-container-high text-on-surface font-code-sm text-code-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">download</span>
+              Export Debt Ledger (JSON)
+            </button>
+<button class="px-3 h-8 rounded bg-primary-container hover:bg-inverse-primary text-on-primary font-code-md text-code-md font-medium flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[15px]">ballot</span>
+              Propose Bulk Mutation
+            </button>
+</div>
+</div>
+</div>
+<!-- ================= SCROLLABLE CONTENT BODY ================= -->
+<div class="p-space-xl space-y-space-xl flex-1" id="content-container">
+<!-- ================= LAYOUT DIRECTION C: 5 DASHBOARD KPI CARDS ================= -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
+<!-- Card 1: TOTAL OPEN DEBT -->
+<div class="p-space-md bg-surface-container-low hairline-all rounded hover:border-outline transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Total Open Debt</span>
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg font-bold text-on-surface font-mono">12</span>
+<span class="px-1.5 py-0.5 rounded bg-error/10 text-error border border-error/30 font-code-sm text-code-sm font-medium">+2 past 24h</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/60 flex items-center justify-between text-code-sm font-code-sm text-on-surface-variant">
+<span>Critical priority (&gt;0.70)</span>
+<span class="text-error font-semibold font-mono">8 nodes</span>
+</div>
+</div>
+<!-- Card 2: MEAN ENTROPY PRIORITY -->
+<div class="p-space-md bg-surface-container-low hairline-all rounded hover:border-outline transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Mean Entropy Priority</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg font-bold text-on-surface font-mono">0.742</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-code-sm text-code-sm">p90: 0.914</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/60 flex items-center justify-between text-code-sm font-code-sm text-on-surface-variant">
+<span>Weight algorithm</span>
+<span class="text-on-surface font-mono">DAG v2.4</span>
+</div>
+</div>
+<!-- Card 3: REMEDIATION SLA -->
+<div class="p-space-md bg-surface-container-low hairline-all rounded hover:border-outline transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Remediation SLA</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg font-bold text-on-surface font-mono">4.2d</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary/10 text-tertiary border border-tertiary/30 font-code-sm text-code-sm font-medium">-0.8d vs 30d</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/60 flex items-center justify-between text-code-sm font-code-sm text-on-surface-variant">
+<span>Operator review time</span>
+<span class="text-on-surface font-mono">14.2m avg</span>
+</div>
+</div>
+<!-- Card 4: LEDGER INTEGRITY -->
+<div class="p-space-md bg-surface-container-low hairline-all rounded hover:border-outline transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Ledger Integrity</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg font-bold text-tertiary font-mono">100%</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary/10 text-tertiary border border-tertiary/30 font-code-sm text-code-sm font-semibold">MONOTONIC</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/60 flex items-center justify-between text-code-sm font-code-sm text-on-surface-variant">
+<span>Strict compliance</span>
+<span class="text-tertiary font-mono">11/11 invariants</span>
+</div>
+</div>
+<!-- Card 5: BUDGET IMPACT -->
+<div class="p-space-md bg-surface-container-low hairline-all rounded hover:border-outline transition-colors">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">
+<span>Budget Impact</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg font-bold text-on-surface font-mono">14.2k</span>
+<span class="text-code-sm font-code-sm text-on-surface-variant font-mono">tokens</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/60 flex items-center justify-between text-code-sm font-code-sm text-on-surface-variant">
+<span>Est. mitigation cost</span>
+<span class="text-on-surface font-mono">$18.40 (18.4d)</span>
+</div>
+</div>
+</div>
+<!-- ================= BENTO GRID: STRUCTURED ANALYTICS & POLICY CARDS ================= -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
+<!-- Card B: Breakdown by Reason Card -->
+<div class="bg-surface-container-low hairline-all rounded p-space-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Debt by Structural Anomaly</span>
+<span class="text-code-sm font-code-sm text-on-surface-variant font-mono">4 classes</span>
+</div>
+<p class="text-code-sm font-code-sm text-on-surface-variant mb-space-md">
+                Heuristic distribution across registered ontology graph slices.
+              </p>
+<!-- Flat segmented bar -->
+<div class="w-full h-3 bg-surface-container-highest rounded-sm flex overflow-hidden mb-space-md">
+<div class="h-full bg-amber-500" style="width: 33.3%;" title="Stale: 33.3%"></div>
+<div class="h-full bg-secondary" style="width: 25.0%;" title="Low Confidence: 25.0%"></div>
+<div class="h-full bg-error" style="width: 25.0%;" title="Orphan: 25.0%"></div>
+<div class="h-full bg-purple-400" style="width: 16.7%;" title="Unresolved Ref: 16.7%"></div>
+</div>
+<!-- Breakdown list -->
+<div class="space-y-space-sm font-code-sm text-code-sm">
+<div class="flex items-center justify-between py-1 border-b border-outline-variant/40">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-xs bg-amber-500"></span>
+<span class="text-on-surface">Stale Citations &amp; Pointers</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-mono text-on-surface font-medium">4</span>
+<span class="text-outline font-mono">33.3%</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-outline-variant/40">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-xs bg-secondary"></span>
+<span class="text-on-surface">Low Confidence / High Entropy</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-mono text-on-surface font-medium">3</span>
+<span class="text-outline font-mono">25.0%</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-outline-variant/40">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-xs bg-error"></span>
+<span class="text-on-surface">Orphan Subgraphs &amp; Nodes</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-mono text-on-surface font-medium">3</span>
+<span class="text-outline font-mono">25.0%</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-xs bg-purple-400"></span>
+<span class="text-on-surface">Unresolved Reference Traps</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-mono text-on-surface font-medium">2</span>
+<span class="text-outline font-mono">16.7%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs text-[11px] font-code-sm text-outline border-t border-outline-variant/40 flex justify-between">
+<span>Entropy scan rate: 100 Hz</span>
+<span>Evaluator: sub-heuristic#09</span>
+</div>
+</div>
+<!-- Card C: Hash-Chained Ledger Burndown Card -->
+<div class="bg-surface-container-low hairline-all rounded p-space-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">14-Day Ledger Burndown</span>
+<span class="text-code-sm font-code-sm text-tertiary font-mono">Target: &lt;5 in 7d</span>
+</div>
+<p class="text-code-sm font-code-sm text-on-surface-variant mb-space-sm">
+                Historical resolution tracking verified via monotonically committed ledger events.
+              </p>
+<!-- Burndown sparkline SVG representation -->
+<div class="h-24 w-full bg-surface-container-lowest hairline-all rounded p-2 flex flex-col justify-between relative overflow-hidden">
+<!-- Axes reference labels -->
+<div class="flex justify-between text-[10px] font-mono text-outline">
+<span>24 nodes (T-14d)</span>
+<span>18 nodes</span>
+<span>Now: 12 nodes</span>
+</div>
+<!-- Hairline SVG chart with pure zero-fill paths -->
+<svg class="w-full h-12 overflow-visible" preserveaspectratio="none" viewbox="0 0 100 30">
+<!-- Threshold Guide -->
+<line stroke="#424754" stroke-dasharray="2,2" stroke-width="0.5" x1="0" x2="100" y1="24" y2="24"></line>
+<!-- Historical Debt Trend Line (24 down to 12) -->
+<polyline fill="none" points="0,5 12,8 24,7 36,11 48,14 60,16 72,15 84,20 100,22" stroke="#adc6ff" stroke-width="1.5"></polyline>
+<!-- Target Projection Line -->
+<polyline fill="none" points="100,22 110,25 120,28" stroke="#4edea3" stroke-dasharray="2,1" stroke-width="1"></polyline>
+<!-- Points -->
+<circle cx="0" cy="5" fill="#adc6ff" r="1.5"></circle>
+<circle cx="48" cy="14" fill="#adc6ff" r="1.5"></circle>
+<circle cx="100" cy="22" fill="#4edea3" r="2"></circle>
+</svg>
+<div class="flex justify-between items-center text-[10px] font-mono text-on-surface-variant pt-1 border-t border-outline-variant/30">
+<span class="text-primary">-50% net debt (14d)</span>
+<span class="text-outline">Pace: 0.85 nodes/day</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant/40 flex items-center justify-between text-code-sm font-code-sm">
+<span class="text-on-surface-variant font-mono">LEDGER MONOTONIC</span>
+<span class="text-outline font-mono">seq #10418 to #10421 verified</span>
+</div>
+</div>
+<!-- Card D: Autonomous Triage Engine Policy Card -->
+<div class="bg-surface-container-low hairline-all rounded p-space-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Triage Engine Policy</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary/10 text-tertiary font-code-sm text-code-sm font-bold">GATED SAFE</span>
+</div>
+<p class="text-code-sm font-code-sm text-on-surface-variant mb-space-sm">
+                Deterministic guarantee: mutations are never auto-committed to graph root.
+              </p>
+<!-- Core Policy Notice -->
+<div class="p-2 bg-surface-container-lowest hairline-all rounded mb-space-sm border-l-2 border-primary">
+<span class="text-code-sm font-code-sm text-primary font-semibold block mb-0.5">0 MUTATIONS AUTO-APPLIED</span>
+<span class="text-[11px] font-body-sm text-on-surface-variant leading-tight block">
+                  Every heuristic mitigation produces an immutable DAG proposal requiring human operator quorum before write-lease execution.
+                </span>
+</div>
+<!-- Rules Matrix Preview -->
+<div class="space-y-1.5 font-code-sm text-code-sm">
+<div class="p-1.5 bg-surface-container rounded flex items-center justify-between text-on-surface-variant">
+<span class="font-mono text-[11px]"><span class="text-primary font-bold">Rule 0x1:</span> Orphan age &gt; 30d</span>
+<span class="text-secondary font-mono">+0.15 Pri</span>
+</div>
+<div class="p-1.5 bg-surface-container rounded flex items-center justify-between text-on-surface-variant">
+<span class="font-mono text-[11px]"><span class="text-primary font-bold">Rule 0x2:</span> Broken ref trap</span>
+<span class="text-error font-mono">Quarantine</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant/40 flex items-center justify-between text-code-sm font-code-sm">
+<span class="text-outline">Engine: Heuristics-v2</span>
+<span class="text-on-surface font-mono">Quorum: 1 Operator</span>
+</div>
+</div>
+</div>
+<!-- ================= CARD A: PRIORITIZED DEBT QUEUE TABLE CARD ================= -->
+<div class="bg-surface-container-low hairline-all rounded flex flex-col">
+<!-- Table Header Controls: Search & Category Chips -->
+<div class="p-space-md border-b border-outline-variant flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="text-label-md font-label-md text-on-surface uppercase tracking-wider mr-1">Filter Queue:</span>
+<button class="px-2 py-1 rounded bg-surface-container-high text-primary hairline-all font-code-sm text-code-sm font-semibold">All (12)</button>
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hairline-all font-code-sm text-code-sm">Stale (4)</button>
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hairline-all font-code-sm text-code-sm">Low-Confidence (3)</button>
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hairline-all font-code-sm text-code-sm">Orphan (3)</button>
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hairline-all font-code-sm text-code-sm">Unresolved Ref (2)</button>
+</div>
+<!-- Search Console Input -->
+<div class="relative w-full md:w-80">
+<span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-outline font-mono text-xs">λ</span>
+<input class="w-full h-7 pl-6 pr-3 bg-surface-container-lowest border border-outline-variant rounded font-code-sm text-code-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary" placeholder="filter by node URI or predicate..." type="text"/>
+</div>
+</div>
+<!-- Structured Data Table (Strict 28px height styling & Monospace data) -->
+<div class="overflow-x-auto">
+<table class="w-full border-collapse text-left">
+<thead>
+<tr class="bg-surface-container-lowest hairline-b text-label-sm font-label-sm text-outline uppercase tracking-wider h-7">
+<th class="py-1 px-3 w-12 text-center font-mono">Rank</th>
+<th class="py-1 px-3">Node URI Identifier</th>
+<th class="py-1 px-3 w-36">Reason Anomaly</th>
+<th class="py-1 px-3 w-40">Priority Score</th>
+<th class="py-1 px-3 w-28 text-right font-mono">Budget</th>
+<th class="py-1 px-3 w-20 text-right font-mono">Age</th>
+<th class="py-1 px-3 w-44 text-right">Remediation Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-code-sm text-code-sm">
+<!-- Row #01 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#01</td>
+<td class="py-1 px-3 font-mono text-primary font-medium truncate max-w-xs" title="node:kg_sym#store_acquire_mutation">node:kg_sym#store_acquire_mutation</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-error/10 text-error border border-error/30 font-semibold">ORPHAN</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.942</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-error" style="width: 94%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">2.8k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">42d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #02 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#02</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:compat_read_uncommitted">node:compat_read_uncommitted</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-purple-400/10 text-purple-300 border border-purple-400/30 font-semibold">UNRESOLVED_REF</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.914</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-error" style="width: 91%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">1.9k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">38d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #03 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#03</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:concept_419">node:concept_419</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold">STALE</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.887</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-amber-500" style="width: 88%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">1.2k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">28d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #04 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#04</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:edge_rel_882">node:edge_rel_882</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-secondary/10 text-secondary border border-secondary/30 font-semibold">LOW_CONF</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.840</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-amber-500" style="width: 84%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">0.8k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">19d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #05 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#05</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:subgraph_tier2">node:subgraph_tier2</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-error/10 text-error border border-error/30 font-semibold">ORPHAN</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.795</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-amber-500" style="width: 79%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">3.4k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">31d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #06 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#06</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:idx_hnsw_l0">node:idx_hnsw_l0</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold">STALE</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.760</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-amber-500" style="width: 76%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">1.1k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">24d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #07 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#07</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:cache_sym#dispatch">node:cache_sym#dispatch</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-secondary/10 text-secondary border border-secondary/30 font-semibold">LOW_CONF</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.722</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-amber-500" style="width: 72%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">0.6k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">15d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #08 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#08</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:lease_tok#882">node:lease_tok#882</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-purple-400/10 text-purple-300 border border-purple-400/30 font-semibold">UNRESOLVED_REF</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.705</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-amber-500" style="width: 70%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">0.4k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">12d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #09 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#09</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:schema_entity_actor">node:schema_entity_actor</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold">STALE</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.590</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-secondary" style="width: 59%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">0.9k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">16d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #10 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#10</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:eval_loop_async">node:eval_loop_async</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-secondary/10 text-secondary border border-secondary/30 font-semibold">LOW_CONF</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.480</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-secondary" style="width: 48%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">0.5k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">10d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #11 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#11</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:wal_checkpoint">node:wal_checkpoint</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold">STALE</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.380</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-tertiary" style="width: 38%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">0.3k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">7d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+<!-- Row #12 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="py-1 px-3 text-center text-outline font-mono">#12</td>
+<td class="py-1 px-3 font-mono text-on-surface truncate max-w-xs" title="node:heuristics_catalog">node:heuristics_catalog</td>
+<td class="py-1 px-3">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono uppercase bg-error/10 text-error border border-error/30 font-semibold">ORPHAN</span>
+</td>
+<td class="py-1 px-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-on-surface font-semibold w-10">0.320</span>
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-tertiary" style="width: 32%;"></div>
+</div>
+</div>
+</td>
+<td class="py-1 px-3 text-right font-mono text-on-surface">0.2k tok</td>
+<td class="py-1 px-3 text-right font-mono text-outline">5d</td>
+<td class="py-1 px-3 text-right">
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-[11px] font-mono transition-colors">
+                      Propose Improvement
+                    </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer Pagination / Context -->
+<div class="p-space-sm px-space-md border-t border-outline-variant flex items-center justify-between text-code-sm font-code-sm text-on-surface-variant bg-surface-container-lowest">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Displaying 12 of 12 anomalies awaiting operator sign-off</span>
+</div>
+<div class="flex items-center gap-space-md font-mono">
+<span class="text-outline">Page 1 of 1</span>
+<span class="text-outline">Sorted by DAG Entropy (desc)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= EMPTY STATE CONTAINER (HIDDEN INITIALLY) ================= -->
+<div class="hidden flex-1 p-space-xl flex-col items-center justify-center text-center" id="empty-state-view">
+<div class="w-14 h-14 rounded-full bg-tertiary/10 border border-tertiary/30 flex items-center justify-center mb-space-md">
+<span class="material-symbols-outlined text-tertiary text-2xl" data-icon="check_circle">check_circle</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface font-semibold mb-1">Queue Empty — Zero Debt Detected</h2>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-md mb-space-md">
+          All knowledge graph subgraphs, relational edges, and ontology pointers are strictly normalized against the baseline invariants.
+        </p>
+<div class="p-space-md bg-surface-container-low hairline-all rounded font-code-sm text-code-sm text-on-surface-variant inline-flex items-center gap-3">
+<span class="text-tertiary font-mono">Invariants: 11/11 PASS</span>
+<span class="text-outline">|</span>
+<span class="font-mono">Next heuristic sweep in 4m 12s</span>
+</div>
+</div>
+<!-- ================= BOTTOM TELEMETRY STATUS BAR ================= -->
+<footer class="h-7 w-full bg-surface-container-lowest border-t border-outline-variant px-space-xl flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant shrink-0 z-10 select-none">
+<div class="flex items-center gap-space-lg">
+<span class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+            Raft Quorum: <span class="text-on-surface font-semibold">3/3 SYNCED</span>
+</span>
+<span class="text-outline">|</span>
+<span>WAL Offset: <span class="text-primary font-mono">0x4F09B1</span></span>
+<span class="text-outline">|</span>
+<span>DuckDB Cache Hit: <span class="text-on-surface font-mono">99.4%</span></span>
+</div>
+<div class="flex items-center gap-space-lg font-mono">
+<span>Invariants: <span class="text-tertiary font-semibold">11/11 PASS</span></span>
+<span class="text-outline">|</span>
+<span>Latency: <span class="text-on-surface">1.2ms</span></span>
+<span class="text-outline">|</span>
+<span class="text-outline">UTC 2025-05-19 14:32:08</span>
+</div>
+</footer>
+</main>
+</div>
+<!-- Inline State Switcher Script for UI Interactivity -->
+<script>
+    function switchState(state) {
+      const activeTab = document.getElementById('tab-active');
+      const emptyTab = document.getElementById('tab-empty');
+      const corruptTab = document.getElementById('tab-corrupt');
+      
+      const contentContainer = document.getElementById('content-container');
+      const emptyStateView = document.getElementById('empty-state-view');
+      const corruptAlert = document.getElementById('corrupt-alert-slot');
+      const ledgerBanner = document.getElementById('ledger-banner');
+
+      // Reset tabs
+      [activeTab, emptyTab, corruptTab].forEach(t => {
+        t.className = "px-2 py-1 text-code-sm font-code-sm text-on-surface-variant hover:text-on-surface rounded";
+      });
+
+      if (state === 'active') {
+        activeTab.className = "px-2 py-1 text-code-sm font-code-sm bg-surface-container text-primary rounded font-medium";
+        contentContainer.classList.remove('hidden');
+        emptyStateView.classList.add('hidden');
+        corruptAlert.classList.add('hidden');
+        corruptAlert.classList.remove('flex');
+        ledgerBanner.classList.remove('hidden');
+      } else if (state === 'empty') {
+        emptyTab.className = "px-2 py-1 text-code-sm font-code-sm bg-surface-container text-primary rounded font-medium";
+        contentContainer.classList.add('hidden');
+        emptyStateView.classList.remove('hidden');
+        emptyStateView.classList.add('flex');
+        corruptAlert.classList.add('hidden');
+        corruptAlert.classList.remove('flex');
+        ledgerBanner.classList.remove('hidden');
+      } else if (state === 'corrupt') {
+        corruptTab.className = "px-2 py-1 text-code-sm font-code-sm bg-surface-container text-error rounded font-medium";
+        contentContainer.classList.remove('hidden');
+        emptyStateView.classList.add('hidden');
+        corruptAlert.classList.remove('hidden');
+        corruptAlert.classList.add('flex');
+        ledgerBanner.classList.add('hidden');
+      }
+    }
+  </script>
+</body></html>

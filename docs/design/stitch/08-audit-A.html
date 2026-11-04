@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context // Audit Ledger Console</title>
+<!-- Google Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-error-container": "#ffdad6",
+            "on-surface-variant": "#c2c6d6",
+            "on-error": "#690005",
+            "on-primary-fixed-variant": "#004395",
+            "on-tertiary-fixed": "#002113",
+            "primary-fixed-dim": "#adc6ff",
+            "surface-bright": "#363940",
+            "outline-variant": "#424754",
+            "on-secondary-fixed-variant": "#004e5c",
+            "tertiary-container": "#00a572",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-tertiary-container": "#00311f",
+            "on-primary-container": "#00285d",
+            "on-secondary-container": "#00424e",
+            "tertiary-fixed": "#6ffbbe",
+            "on-secondary-fixed": "#001f26",
+            "secondary-fixed": "#acedff",
+            "on-background": "#e1e2eb",
+            "surface-dim": "#101319",
+            "on-secondary": "#003640",
+            "surface-container-highest": "#32353b",
+            "inverse-primary": "#005ac2",
+            "inverse-surface": "#e1e2eb",
+            "secondary": "#4cd7f6",
+            "on-surface": "#e1e2eb",
+            "primary": "#adc6ff",
+            "primary-fixed": "#d8e2ff",
+            "secondary-fixed-dim": "#4cd7f6",
+            "error": "#ffb4ab",
+            "surface-container-low": "#191c22",
+            "secondary-container": "#03b5d3",
+            "outline": "#8c909f",
+            "primary-container": "#4d8eff",
+            "surface-tint": "#adc6ff",
+            "on-primary-fixed": "#001a42",
+            "surface-container-lowest": "#0b0e14",
+            "on-tertiary": "#003824",
+            "background": "#101319",
+            "surface-container-high": "#272a30",
+            "on-primary": "#002e6a",
+            "surface": "#101319",
+            "surface-container": "#1d2026",
+            "on-tertiary-fixed-variant": "#005236",
+            "inverse-on-surface": "#2d3037",
+            "tertiary": "#4edea3",
+            "surface-variant": "#32353b",
+            "error-container": "#93000a"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-sm": "0.25rem",
+            "margin-mobile": "0.5rem",
+            "space-xl": "1rem",
+            "margin": "0.75rem",
+            "gutter": "0.5rem",
+            "space-lg": "0.75rem",
+            "space-xs": "0.125rem",
+            "gutter-mobile": "0.25rem",
+            "space-md": "0.5rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "code-lg": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "label-md": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Technical Precision custom rules */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0E14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272A30;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+    .hairline-b { border-bottom: 1px solid #424754; }
+    .hairline-r { border-right: 1px solid #424754; }
+    .hairline-t { border-top: 1px solid #424754; }
+    .hairline-l { border-left: 1px solid #424754; }
+    .hairline-all { border: 1px solid #424754; }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased font-body-md select-none overflow-hidden h-screen w-screen flex flex-col">
+<!-- ================= TOP TELEMETRY BAR ================= -->
+<header class="h-10 bg-surface-container-low hairline-b flex items-center justify-between px-space-lg w-full flex-shrink-0 z-30">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-sm pr-space-md hairline-r">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-code-md text-code-md font-semibold text-primary tracking-tight">Know Your Context</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant px-1.5 py-0.5 bg-surface-container hairline-all rounded">KYC // ENGINE</span>
+</div>
+<!-- Cluster Telemetry Nodes -->
+<div class="flex items-center gap-space-sm font-code-sm text-code-sm text-on-surface-variant">
+<span class="px-space-sm py-space-xs text-on-surface-variant">Cluster: <span class="text-on-surface font-medium">raft-local-01</span></span>
+<span class="text-outline-variant">/</span>
+<span class="px-space-sm py-space-xs text-on-surface-variant">Sync: <span class="text-tertiary font-medium">QUORUM_REACHED</span></span>
+<span class="text-outline-variant">/</span>
+<span class="px-space-sm py-space-xs text-on-surface-variant">p99: <span class="text-primary font-medium">1.42ms</span></span>
+<span class="text-outline-variant">/</span>
+<span class="px-space-sm py-space-xs text-on-surface-variant">TPS: <span class="text-secondary font-medium">24.8k</span></span>
+<span class="text-outline-variant">/</span>
+<span class="px-space-sm py-space-xs text-on-surface-variant">Root: <span class="text-on-surface font-code-sm">0x9f8a...c3b1</span></span>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-space-sm">
+<button class="h-7 px-2.5 bg-primary text-on-primary font-code-sm text-code-sm font-semibold rounded flex items-center gap-1.5 hover:bg-primary-container transition-none cursor-pointer" id="btn-verify">
+<span class="material-symbols-outlined text-sm" data-icon="sync">sync</span>
+        Run Full Verification [F5]
+      </button>
+<button class="h-7 px-2.5 bg-surface-container text-on-surface hairline-all font-code-sm text-code-sm rounded hover:bg-surface-container-high transition-none cursor-pointer flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="receipt_long">receipt_long</span>
+        Export JSON
+      </button>
+<button class="h-7 px-2 bg-error-container text-on-error-container hairline-all font-code-sm text-code-sm rounded hover:bg-on-error transition-none cursor-pointer flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="lock">lock</span>
+        Emergency Lock
+      </button>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<button class="p-1 hover:bg-surface-container rounded text-on-surface cursor-pointer" title="Terminal">
+<span class="material-symbols-outlined text-base" data-icon="terminal">terminal</span>
+</button>
+<button class="p-1 hover:bg-surface-container rounded text-on-surface cursor-pointer" title="Notifications">
+<span class="material-symbols-outlined text-base" data-icon="notifications">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ================= MAIN WORKSPACE AREA ================= -->
+<div class="flex flex-1 overflow-hidden relative">
+<!-- ===== LEFT SIDEBAR (Fixed 224px / w-56 from JSON) ===== -->
+<aside class="w-56 bg-surface-container-lowest hairline-r flex flex-col justify-between flex-shrink-0 z-20">
+<!-- Top Brand Header -->
+<div class="px-space-md py-space-sm hairline-b">
+<div class="flex items-center justify-between">
+<div>
+<div class="font-code-md text-code-md font-semibold text-primary tracking-tight">KYC // ENGINE</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant">v4.18.2-local-raft</div>
+</div>
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+</div>
+</div>
+<!-- Navigation Tabs (Exact 12 items, Audit ACTIVE) -->
+<nav class="flex-1 overflow-y-auto py-space-xs flex flex-col">
+<!-- 1. Overview -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="dashboard">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- 2. Activity -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="pulse_alert">pulse_alert</span>
+<span>Activity</span>
+</a>
+<!-- 3. Graph -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="hub">hub</span>
+<span>Graph</span>
+</a>
+<!-- 4. Search -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="search">search</span>
+<span>Search</span>
+</a>
+<!-- 5. Metrics -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="query_stats">query_stats</span>
+<span>Metrics</span>
+</a>
+<!-- 6. Health -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="health_metrics">health_metrics</span>
+<span>Health</span>
+</a>
+<!-- 7. Analytics -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+<!-- 8. Audit (ACTIVE STATE - EXACT FROM JSON) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs bg-surface-container-highest text-primary border-l-2 border-primary rounded-none font-code-sm text-code-sm transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="verified_user">verified_user</span>
+<span class="font-medium text-on-surface">Audit</span>
+<span class="ml-auto text-[9px] px-1 py-0.2 bg-primary/20 text-primary rounded font-mono">LIVE</span>
+</a>
+<!-- 9. Proposals -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="rule">rule</span>
+<span>Proposals</span>
+</a>
+<!-- 10. Debt -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="receipt_long">receipt_long</span>
+<span>Debt</span>
+</a>
+<!-- 11. System -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="memory">memory</span>
+<span>System</span>
+</a>
+<!-- 12. Setup -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-base" data-icon="settings">settings</span>
+<span>Setup</span>
+</a>
+</nav>
+<!-- Sidebar Footer -->
+<div class="p-space-xs hairline-t bg-surface-container-lowest">
+<div class="px-space-sm py-1 flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm">
+<span class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+            IPC Latency
+          </span>
+<span class="text-on-surface">0.12ms</span>
+</div>
+<div class="flex items-center justify-between pt-1 text-on-surface-variant font-code-sm text-code-sm px-space-sm">
+<a class="flex items-center gap-1 hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="terminal">terminal</span> Docs
+          </a>
+<a class="flex items-center gap-1 hover:text-error" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="power_settings_new">power_settings_new</span> Close
+          </a>
+</div>
+</div>
+</aside>
+<!-- ===== CENTER CONTENT CANVAS ===== -->
+<main class="flex-1 flex flex-col overflow-hidden bg-surface-container-lowest">
+<!-- ===== VERIFICATION MASTER BANNER ===== -->
+<div class="bg-surface-container-low hairline-b px-space-md py-2 flex flex-col gap-1.5 flex-shrink-0" id="master-banner">
+<div class="flex items-center justify-between flex-wrap gap-2">
+<!-- Status pill & metrics -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-tertiary/10 border border-tertiary/30 text-tertiary font-code-sm font-semibold" id="banner-status-badge">
+<span class="material-symbols-outlined text-sm" data-icon="verified_user">verified_user</span>
+<span id="banner-status-text">CHAIN INTEGRITY: 100% OK [VERIFIED]</span>
+</div>
+<div class="flex items-center gap-space-md font-code-sm text-code-sm text-on-surface-variant">
+<span>Events: <strong class="text-on-surface" id="stat-events">1,521</strong></span>
+<span>Bad Seq: <strong class="text-tertiary" id="stat-bad-seq">none</strong></span>
+<span>Replay: <strong class="text-primary">1.4ms</strong></span>
+<span>Invariants: <strong class="text-tertiary">4/4 PASS</strong></span>
+<span>Faults: <strong class="text-tertiary">0 CLEAN</strong></span>
+</div>
+</div>
+<!-- State Simulation Toggle Pills -->
+<div class="flex items-center gap-1 font-code-sm text-code-sm">
+<span class="text-outline-variant pr-1">Preview State:</span>
+<button class="px-2 py-0.5 rounded bg-surface-container-highest text-primary hairline-all font-mono font-medium" id="btn-state-active" onclick="setLedgerState('active')">
+              Active Chain (1,521)
+            </button>
+<button class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hairline-all font-mono" id="btn-state-broken" onclick="setLedgerState('broken')">
+              Simulate Broken (#829)
+            </button>
+<button class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hairline-all font-mono" id="btn-state-neutral" onclick="setLedgerState('neutral')">
+              Ledger Absent
+            </button>
+</div>
+</div>
+<!-- Merkle Root Line -->
+<div class="flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm bg-surface-container-lowest px-2 py-1 hairline-all rounded">
+<div class="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
+<span class="text-outline">SHA256_MERKLE_ROOT:</span>
+<span class="text-secondary font-mono" id="merkle-root-val">0x9f8a2c38e4726b1a03975d048fa2c3b1e8432a901ffecba1298c4371aa8920bc</span>
+</div>
+<div class="flex items-center gap-3 text-xs flex-shrink-0">
+<span class="text-outline">IMMUTABLE_LOG_ID: <span class="text-on-surface">wal_00938</span></span>
+<span class="text-outline">ALGORITHM: <span class="text-on-surface">ED25519_BLAKE3</span></span>
+</div>
+</div>
+</div>
+<!-- ===== SPLIT VIEW: Center Audit Table (65%) + Right Sub-Ledgers (35%) ===== -->
+<div class="flex-1 flex overflow-hidden">
+<!-- ===== MAIN AUDIT TABLE (65% width) ===== -->
+<section class="w-[65%] hairline-r flex flex-col overflow-hidden bg-surface-container-lowest">
+<!-- Table Controls Header -->
+<div class="h-9 px-space-md hairline-b flex items-center justify-between bg-surface-container-low flex-shrink-0">
+<!-- Filter Tabs -->
+<div class="flex items-center gap-1 font-code-sm text-code-sm" id="audit-tabs">
+<button class="px-2 py-1 bg-surface-container-highest text-primary hairline-all rounded font-medium">All (1,521)</button>
+<button class="px-2 py-1 text-on-surface-variant hover:bg-surface-container rounded">knowledge.query</button>
+<button class="px-2 py-1 text-on-surface-variant hover:bg-surface-container rounded">knowledge.log_event</button>
+<button class="px-2 py-1 text-on-surface-variant hover:bg-surface-container rounded">knowledge.apply_improvement</button>
+<button class="px-2 py-1 text-on-surface-variant hover:bg-surface-container rounded">knowledge.rollback</button>
+</div>
+<!-- Search Hash/Seq Input -->
+<div class="flex items-center">
+<div class="relative w-48">
+<input class="w-full h-6 bg-surface-container-lowest hairline-all rounded px-2 font-code-sm text-code-sm text-on-surface placeholder:text-outline focus:border-primary focus:outline-none" placeholder="Filter hash / seq..." type="text"/>
+<span class="material-symbols-outlined text-xs absolute right-1.5 top-1 text-outline" data-icon="search">search</span>
+</div>
+</div>
+</div>
+<!-- Table Container -->
+<div class="flex-1 overflow-y-auto">
+<table class="w-full text-left border-collapse table-fixed">
+<thead class="sticky top-0 bg-surface-container-low hairline-b text-on-surface-variant font-label-md text-label-md z-10">
+<tr class="h-7">
+<th class="w-16 px-space-md font-medium">SEQ</th>
+<th class="w-36 px-space-sm font-medium">EVENT_TYPE</th>
+<th class="w-20 px-space-sm font-medium">ACTOR</th>
+<th class="w-24 px-space-sm font-medium">OCCURRED_AT</th>
+<th class="w-48 px-space-sm font-medium">PREV_HASH → ENTRY_HASH</th>
+<th class="px-space-md font-medium">PAYLOAD PREVIEW</th>
+</tr>
+</thead>
+<tbody class="font-code-sm text-code-sm divide-y divide-outline-variant/30" id="table-rows">
+<!-- Row #01521 (Selected / Latest) -->
+<tr class="h-7 hover:bg-surface-container bg-surface-container-low/60 border-l-2 border-primary cursor-pointer">
+<td class="px-space-md text-primary font-mono font-medium">#01521</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-tertiary/10 border border-tertiary/30 text-tertiary text-[10px] font-mono font-semibold tracking-wide">APPLY_IMPROVEMENT</span>
+</td>
+<td class="px-space-sm text-on-surface">agent-2</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:38:14.902Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">4a01c482</span> → <span class="text-secondary font-medium">9f2c1ab4</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"node": "ctx_vector_49", "action": "re-index", "drift": 0.012}
+                  </td>
+</tr>
+<!-- Row #01520 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01520</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-mono font-semibold tracking-wide">LOG_EVENT</span>
+</td>
+<td class="px-space-sm text-on-surface">sub-139</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:38:09.118Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">e829d110</span> → <span class="text-on-surface">4a01c482</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"event": "snapshot_created", "dag_nodes": 49102, "checksum": "d38a"}
+                  </td>
+</tr>
+<!-- Row #01519 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01519</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-secondary/10 border border-secondary/30 text-secondary text-[10px] font-mono font-semibold tracking-wide">QUERY</span>
+</td>
+<td class="px-space-sm text-on-surface">operator</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:37:52.441Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">09cb571a</span> → <span class="text-on-surface">e829d110</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"query": "MATCH (n:Intent)-[:DEPENDS]-&gt;(m) RETURN n.id", "took_ms": 0.82}
+                  </td>
+</tr>
+<!-- Row #01518 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01518</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-tertiary/10 border border-tertiary/30 text-tertiary text-[10px] font-mono font-semibold tracking-wide">APPLY_IMPROVEMENT</span>
+</td>
+<td class="px-space-sm text-on-surface">agent-2</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:37:38.200Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">fc0198de</span> → <span class="text-on-surface">09cb571a</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"action": "prune_dead_link", "target": "edge_3902", "confidence": 0.994}
+                  </td>
+</tr>
+<!-- Row #01517 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01517</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-mono font-semibold tracking-wide">LOG_EVENT</span>
+</td>
+<td class="px-space-sm text-on-surface">sub-139</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:37:11.832Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">33ba7802</span> → <span class="text-on-surface">fc0198de</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"wal_rotation": true, "chunk_seq": 4901, "sync_target": "raft-02"}
+                  </td>
+</tr>
+<!-- Row #01516 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01516</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-error/10 border border-error/30 text-error text-[10px] font-mono font-semibold tracking-wide">ROLLBACK</span>
+</td>
+<td class="px-space-sm text-on-surface">operator</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:36:58.004Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">9a32c0f1</span> → <span class="text-on-surface">33ba7802</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"reason": "guardrail_violation", "reverted_txn": "0x77d1a", "state": "restored"}
+                  </td>
+</tr>
+<!-- Row #01515 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01515</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-secondary/10 border border-secondary/30 text-secondary text-[10px] font-mono font-semibold tracking-wide">QUERY</span>
+</td>
+<td class="px-space-sm text-on-surface">sub-044</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:36:44.919Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">bb51ae44</span> → <span class="text-on-surface">9a32c0f1</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"vector_knn": "0.19, -0.44...", "k": 10, "index": "hnsw_cosine_v2"}
+                  </td>
+</tr>
+<!-- Row #01514 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01514</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-mono font-semibold tracking-wide">LOG_EVENT</span>
+</td>
+<td class="px-space-sm text-on-surface">agent-2</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:36:20.505Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">10f882a1</span> → <span class="text-on-surface">bb51ae44</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"agent_handshake": "peer_verified", "session_token": "0x44ab...9901"}
+                  </td>
+</tr>
+<!-- Row #01513 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01513</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-tertiary/10 border border-tertiary/30 text-tertiary text-[10px] font-mono font-semibold tracking-wide">APPLY_IMPROVEMENT</span>
+</td>
+<td class="px-space-sm text-on-surface">agent-2</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:36:01.320Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">5477da09</span> → <span class="text-on-surface">10f882a1</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"optimize": "reweight_edges", "graph_cluster": "infra_net", "gain": "+4.1%"}
+                  </td>
+</tr>
+<!-- Row #01512 -->
+<tr class="h-7 hover:bg-surface-container cursor-pointer">
+<td class="px-space-md text-on-surface font-mono">#01512</td>
+<td class="px-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-secondary/10 border border-secondary/30 text-secondary text-[10px] font-mono font-semibold tracking-wide">QUERY</span>
+</td>
+<td class="px-space-sm text-on-surface">operator</td>
+<td class="px-space-sm text-on-surface-variant font-mono">12:35:48.110Z</td>
+<td class="px-space-sm font-mono text-outline">
+<span class="text-on-surface-variant">88a4bc19</span> → <span class="text-on-surface">5477da09</span>
+</td>
+<td class="px-space-md font-mono text-on-surface-variant truncate">
+                    {"query": "EXPLAIN ANALYZE SELECT * FROM state_journal WHERE seq &gt; 1400"}
+                  </td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer Pagination / Summary -->
+<div class="h-7 px-space-md hairline-t bg-surface-container-low flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm">
+<span>Showing rows 1 - 10 of 1,521 events (Sorted: DESC)</span>
+<div class="flex items-center gap-2">
+<span class="text-outline">PAGE 1 OF 153</span>
+<button class="px-1.5 py-0.5 bg-surface-container hairline-all rounded text-on-surface">←</button>
+<button class="px-1.5 py-0.5 bg-surface-container hairline-all rounded text-on-surface">→</button>
+</div>
+</div>
+</section>
+<!-- ===== RIGHT SIDE STACK (35% width, 3 Sub-Ledgers) ===== -->
+<section class="w-[35%] flex flex-col overflow-y-auto bg-surface-container-lowest divide-y divide-outline-variant/40">
+<!-- 1. HEALTH LEDGER SNAPSHOTS -->
+<div class="p-space-md bg-surface-container-lowest">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="health_metrics">health_metrics</span>
+<span class="font-headline-sm text-headline-sm text-on-surface text-xs tracking-tight uppercase">Health Ledger Snapshots</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-tertiary/10 border border-tertiary/30 text-tertiary font-code-sm text-[10px] font-semibold">
+                SYNCED // 100% PASS
+              </span>
+</div>
+<!-- Health Snapshot Cards -->
+<div class="space-y-1.5">
+<div class="p-2 bg-surface-container-low hairline-all rounded font-code-sm text-code-sm">
+<div class="flex items-center justify-between text-on-surface mb-1">
+<span class="text-tertiary font-medium">SNAPSHOT_ID: snap_20261104_12</span>
+<span class="text-secondary font-mono">Score: 99.8%</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant text-[11px]">
+<span>recorded_at: 2026-11-04T12:35:00Z</span>
+<span>exit_code: <strong class="text-tertiary">0 (OK)</strong></span>
+</div>
+<div class="mt-1 flex items-center justify-between text-[11px] text-outline">
+<span>Invariants: 11/11 checked</span>
+<span class="text-on-surface font-mono">0x448a...bf01</span>
+</div>
+</div>
+<div class="p-2 bg-surface-container-low hairline-all rounded font-code-sm text-code-sm opacity-80">
+<div class="flex items-center justify-between text-on-surface mb-1">
+<span class="text-tertiary font-medium">SNAPSHOT_ID: snap_20261104_11</span>
+<span class="text-secondary font-mono">Score: 99.6%</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant text-[11px]">
+<span>recorded_at: 2026-11-04T12:30:00Z</span>
+<span>exit_code: <strong class="text-tertiary">0 (OK)</strong></span>
+</div>
+<div class="mt-1 flex items-center justify-between text-[11px] text-outline">
+<span>Invariants: 11/11 checked</span>
+<span class="text-on-surface font-mono">0x11ce...90fa</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 2. DEBT LEDGER ENTRIES -->
+<div class="p-space-md bg-surface-container-lowest">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="receipt_long">receipt_long</span>
+<span class="font-headline-sm text-headline-sm text-on-surface text-xs tracking-tight uppercase">Debt Ledger Entries</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-code-sm text-[10px] font-semibold">
+                AUDITED // 12 ITEMS
+              </span>
+</div>
+<!-- Debt List Items -->
+<div class="space-y-1.5">
+<div class="p-2 bg-surface-container-low hairline-all rounded font-code-sm text-code-sm">
+<div class="flex items-center justify-between">
+<span class="text-primary font-medium">DEBT-01: stale citations</span>
+<span class="text-on-surface-variant font-mono">4h 12m</span>
+</div>
+<div class="mt-1 text-on-surface-variant text-[11px] truncate">
+                  Target DAG: <span class="text-on-surface font-mono">dag_ref_8021</span> → hash <span class="text-secondary">0x81df3e</span>
+</div>
+<div class="mt-0.5 flex items-center justify-between text-[10px] text-outline">
+<span>Severity: MINOR</span>
+<span class="text-tertiary">REMEDIATION_ENQUEUED</span>
+</div>
+</div>
+<div class="p-2 bg-surface-container-low hairline-all rounded font-code-sm text-code-sm">
+<div class="flex items-center justify-between">
+<span class="text-primary font-medium">DEBT-02: cyclic references</span>
+<span class="text-on-surface-variant font-mono">18h 40m</span>
+</div>
+<div class="mt-1 text-on-surface-variant text-[11px] truncate">
+                  Target DAG: <span class="text-on-surface font-mono">ctx_ring_09</span> → hash <span class="text-secondary">0xcc912a</span>
+</div>
+<div class="mt-0.5 flex items-center justify-between text-[10px] text-outline">
+<span>Severity: MODERATE</span>
+<span class="text-outline">PENDING_REVIEW</span>
+</div>
+</div>
+<div class="p-2 bg-surface-container-low hairline-all rounded font-code-sm text-code-sm">
+<div class="flex items-center justify-between">
+<span class="text-primary font-medium">DEBT-03: unindexed tag</span>
+<span class="text-on-surface-variant font-mono">1d 04h</span>
+</div>
+<div class="mt-1 text-on-surface-variant text-[11px] truncate">
+                  Target DAG: <span class="text-on-surface font-mono">tag_orphan_44</span> → hash <span class="text-secondary">0x3340ae</span>
+</div>
+<div class="mt-0.5 flex items-center justify-between text-[10px] text-outline">
+<span>Severity: LOW</span>
+<span class="text-tertiary">AUTO_REPAIR_ON_BATCH</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. EXPERIENCE RERANK JOURNAL -->
+<div class="p-space-md bg-surface-container-lowest">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="hub">hub</span>
+<span class="font-headline-sm text-headline-sm text-on-surface text-xs tracking-tight uppercase">Experience Rerank Journal</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-secondary/10 border border-secondary/30 text-secondary font-code-sm text-[10px] font-semibold">
+                TAMPER_OK // MONOTONIC
+              </span>
+</div>
+<!-- Journal List Items -->
+<div class="space-y-1 font-code-sm text-code-sm">
+<div class="p-1.5 bg-surface-container-low hairline-all rounded flex items-center justify-between">
+<div>
+<span class="text-on-surface font-medium">step_seq #492</span>
+<div class="text-[10px] text-outline">77a102 → 8b901a</div>
+</div>
+<div class="text-right">
+<span class="text-tertiary font-mono font-medium">+0.038</span>
+<div class="text-[10px] text-on-surface-variant">delta score</div>
+</div>
+</div>
+<div class="p-1.5 bg-surface-container-low hairline-all rounded flex items-center justify-between">
+<div>
+<span class="text-on-surface font-medium">step_seq #491</span>
+<div class="text-[10px] text-outline">62cd09 → 77a102</div>
+</div>
+<div class="text-right">
+<span class="text-tertiary font-mono font-medium">+0.014</span>
+<div class="text-[10px] text-on-surface-variant">delta score</div>
+</div>
+</div>
+<div class="p-1.5 bg-surface-container-low hairline-all rounded flex items-center justify-between">
+<div>
+<span class="text-on-surface font-medium">step_seq #490</span>
+<div class="text-[10px] text-outline">e50012 → 62cd09</div>
+</div>
+<div class="text-right">
+<span class="text-tertiary font-mono font-medium">+0.021</span>
+<div class="text-[10px] text-on-surface-variant">delta score</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- ================= BOTTOM STATUS BAR ================= -->
+<footer class="h-7 bg-surface-container-low hairline-t px-space-lg flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant flex-shrink-0 z-30">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Local Quorum: <strong class="text-on-surface">3/3 SYNCED</strong></span>
+</div>
+<span class="text-outline-variant">|</span>
+<span>WAL Offset: <strong class="text-primary font-mono">0x4F09B1</strong></span>
+<span class="text-outline-variant">|</span>
+<span>DuckDB In-Memory hit: <strong class="text-tertiary">99.4%</strong></span>
+<span class="text-outline-variant">|</span>
+<span>Invariant checks: <strong class="text-tertiary">11/11 PASS</strong></span>
+</div>
+<div class="flex items-center gap-space-lg">
+<span>Engine: <strong class="text-on-surface">v2.14.8-crypto-opt</strong></span>
+<span class="text-outline-variant">|</span>
+<span class="text-outline">Viewport: <strong class="text-on-surface font-mono">1440x900 Fixed Console</strong></span>
+</div>
+</footer>
+<!-- ================= LIGHTWEIGHT INTERACTIVITY SCRIPT ================= -->
+<script>
+    // State pill preview handler
+    function setLedgerState(state) {
+      const badge = document.getElementById('banner-status-badge');
+      const text = document.getElementById('banner-status-text');
+      const badSeq = document.getElementById('stat-bad-seq');
+      const merkle = document.getElementById('merkle-root-val');
+      const btnActive = document.getElementById('btn-state-active');
+      const btnBroken = document.getElementById('btn-state-broken');
+      const btnNeutral = document.getElementById('btn-state-neutral');
+
+      // Reset button classes
+      [btnActive, btnBroken, btnNeutral].forEach(b => {
+        b.className = 'px-2 py-0.5 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hairline-all font-mono';
+      });
+
+      if (state === 'active') {
+        btnActive.className = 'px-2 py-0.5 rounded bg-surface-container-highest text-primary hairline-all font-mono font-medium';
+        badge.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded bg-tertiary/10 border border-tertiary/30 text-tertiary font-code-sm font-semibold';
+        text.innerText = 'CHAIN INTEGRITY: 100% OK [VERIFIED]';
+        badSeq.className = 'text-tertiary';
+        badSeq.innerText = 'none';
+        merkle.innerText = '0x9f8a2c38e4726b1a03975d048fa2c3b1e8432a901ffecba1298c4371aa8920bc';
+      } else if (state === 'broken') {
+        btnBroken.className = 'px-2 py-0.5 rounded bg-surface-container-highest text-error hairline-all font-mono font-medium';
+        badge.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded bg-error-container/20 border border-error text-error font-code-sm font-semibold';
+        text.innerText = 'CHAIN INTEGRITY: FAULT DETECTED [INVALID HASH]';
+        badSeq.className = 'text-error';
+        badSeq.innerText = '#00829 (HASH_MISMATCH)';
+        merkle.innerText = '0xCORRUPT_MERKLE_BRANCH_AT_NODE_829_REPLAY_FAILED';
+      } else if (state === 'neutral') {
+        btnNeutral.className = 'px-2 py-0.5 rounded bg-surface-container-highest text-on-surface hairline-all font-mono font-medium';
+        badge.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container hairline-all text-on-surface-variant font-code-sm font-semibold';
+        text.innerText = 'LEDGER ABSENT: INITIALIZING REPLAY BUFFER';
+        badSeq.className = 'text-on-surface-variant';
+        badSeq.innerText = 'n/a';
+        merkle.innerText = '0x0000000000000000000000000000000000000000000000000000000000000000';
+      }
+    }
+
+    // Interactive button trigger
+    document.getElementById('btn-verify').addEventListener('click', () => {
+      const orig = document.getElementById('btn-verify').innerHTML;
+      document.getElementById('btn-verify').innerHTML = '<span class="material-symbols-outlined text-sm animate-spin" data-icon="sync">sync</span> Verifying...';
+      setTimeout(() => {
+        document.getElementById('btn-verify').innerHTML = orig;
+        setLedgerState('active');
+      }, 400);
+    });
+  </script>
+</body></html>

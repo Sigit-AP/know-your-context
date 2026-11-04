@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context // Agent Activity Log</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed-variant": "#004395",
+            "surface-container": "#1d2026",
+            "outline": "#8c909f",
+            "inverse-primary": "#005ac2",
+            "tertiary-fixed": "#6ffbbe",
+            "on-tertiary-fixed": "#002113",
+            "on-tertiary-container": "#00311f",
+            "on-error-container": "#ffdad6",
+            "on-primary-fixed": "#001a42",
+            "inverse-surface": "#e1e2eb",
+            "surface-container-highest": "#32353b",
+            "tertiary": "#4edea3",
+            "on-tertiary-fixed-variant": "#005236",
+            "on-tertiary": "#003824",
+            "background": "#101319",
+            "error-container": "#93000a",
+            "tertiary-fixed-dim": "#4edea3",
+            "primary-fixed": "#d8e2ff",
+            "secondary-fixed-dim": "#4cd7f6",
+            "on-primary-container": "#00285d",
+            "on-background": "#e1e2eb",
+            "on-primary": "#002e6a",
+            "surface-container-high": "#272a30",
+            "outline-variant": "#424754",
+            "on-surface-variant": "#c2c6d6",
+            "on-surface": "#e1e2eb",
+            "surface-container-lowest": "#0b0e14",
+            "on-secondary-fixed": "#001f26",
+            "on-error": "#690005",
+            "surface-container-low": "#191c22",
+            "secondary": "#4cd7f6",
+            "primary": "#adc6ff",
+            "surface-bright": "#363940",
+            "surface-tint": "#adc6ff",
+            "on-secondary-container": "#00424e",
+            "inverse-on-surface": "#2d3037",
+            "secondary-fixed": "#acedff",
+            "error": "#ffb4ab",
+            "on-secondary-fixed-variant": "#004e5c",
+            "secondary-container": "#03b5d3",
+            "on-secondary": "#003640",
+            "surface-dim": "#101319",
+            "primary-fixed-dim": "#adc6ff",
+            "tertiary-container": "#00a572",
+            "surface": "#101319",
+            "surface-variant": "#32353b",
+            "primary-container": "#4d8eff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xl": "1rem",
+            "gutter-mobile": "0.25rem",
+            "space-xs": "0.125rem",
+            "gutter": "0.5rem",
+            "space-sm": "0.25rem",
+            "space-lg": "0.75rem",
+            "margin-mobile": "0.5rem",
+            "space-md": "0.5rem",
+            "margin": "0.75rem"
+          },
+          "fontFamily": {
+            "label-sm": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "label-md": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "body-lg": ["Inter"],
+            "code-lg": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* Technical scrollbars & crisp rendering */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0e14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272a30;
+      border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+    .material-symbols-outlined {
+      font-size: 14px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .skeleton-pulse {
+      animation: pulse-op 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-op {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 0.35; }
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased overflow-hidden select-none h-screen w-screen font-body-sm text-body-sm">
+<!-- ==================== LEFT SIDEBAR COMPONENT ==================== -->
+<aside class="fixed top-0 left-0 h-screen w-64 border-r border-outline-variant bg-surface-container-lowest flex flex-col justify-between py-space-md px-space-xs z-30">
+<!-- Sidebar Header -->
+<div class="px-space-md pt-space-xs pb-space-md border-b border-outline-variant">
+<div class="flex items-center gap-space-sm mb-space-xs">
+<div class="w-5 h-5 bg-surface-container-highest border border-primary flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+</div>
+<div class="flex flex-col">
+<span class="font-code-md text-code-md font-semibold text-primary tracking-tight leading-none">KYC // ENGINE</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider mt-1">v4.18.2-local-raft</span>
+</div>
+</div>
+<div class="text-[9px] font-label-sm text-on-surface-variant flex items-center justify-between mt-space-sm bg-surface-container-low px-space-sm py-0.5 border border-outline-variant">
+<span class="text-tertiary">LOCAL-FIRST</span>
+<span class="font-code-sm text-code-sm text-on-surface">NODE-01 // LEADER</span>
+</div>
+</div>
+<!-- Navigation Tabs (Strict 12 items as defined in design system JSON) -->
+<nav class="flex-1 overflow-y-auto py-space-sm flex flex-col gap-0.5">
+<!-- 1. Overview -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="dashboard">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- 2. Activity (CURRENTLY ACTIVE) -->
+<a class="flex items-center justify-between px-space-md py-space-xs bg-surface-container-highest text-primary border-l-2 border-primary rounded-none font-code-sm text-code-sm transition-none select-none" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary" data-icon="pulse_alert">pulse_alert</span>
+<span class="font-semibold">Activity</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+</a>
+<!-- 3. Graph -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="hub">hub</span>
+<span>Graph</span>
+</a>
+<!-- 4. Search -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<span>Search</span>
+</a>
+<!-- 5. Metrics -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="query_stats">query_stats</span>
+<span>Metrics</span>
+</a>
+<!-- 6. Health -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="health_metrics">health_metrics</span>
+<span>Health</span>
+</a>
+<!-- 7. Analytics -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+<!-- 8. Audit -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="verified_user">verified_user</span>
+<span>Audit</span>
+</a>
+<!-- 9. Proposals (badge: 3) -->
+<a class="flex items-center justify-between px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline" data-icon="rule">rule</span>
+<span>Proposals</span>
+</div>
+<span class="px-1 py-0.2 bg-secondary-container text-on-secondary-container font-label-sm text-[9px] border border-secondary font-semibold">3</span>
+</a>
+<!-- 10. Debt (badge: 12) -->
+<a class="flex items-center justify-between px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline" data-icon="receipt_long">receipt_long</span>
+<span>Debt</span>
+</div>
+<span class="px-1 py-0.2 bg-surface-container-high text-on-surface font-label-sm text-[9px] border border-outline-variant">12</span>
+</a>
+<!-- 11. System -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="memory">memory</span>
+<span>System</span>
+</a>
+<!-- 12. Setup -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant rounded-none font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-none select-none" href="#">
+<span class="material-symbols-outlined text-outline" data-icon="settings">settings</span>
+<span>Setup</span>
+</a>
+</nav>
+<!-- Sidebar CTA & Footer -->
+<div class="pt-space-sm border-t border-outline-variant flex flex-col gap-space-xs px-space-xs">
+<button class="w-full bg-primary-container text-on-primary-container font-code-sm text-code-sm font-semibold h-7 px-space-md flex items-center justify-center gap-1.5 hover:bg-primary transition-none">
+<span class="material-symbols-outlined text-sm" data-icon="play_arrow">play_arrow</span>
+<span>EXECUTE QUERY</span>
+</button>
+<div class="flex items-center justify-between pt-space-xs px-space-sm">
+<a class="text-on-surface-variant hover:text-primary flex items-center gap-1 font-code-sm text-code-sm" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+<span>Docs</span>
+</a>
+<div class="flex items-center gap-1 font-label-sm text-[10px] text-tertiary">
+<span class="inline-block w-1.5 h-1.5 bg-tertiary"></span>
+<span>IPC: 0.12ms</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ==================== TOP NAVIGATION BAR ==================== -->
+<header class="fixed top-0 right-0 left-64 h-12 border-b border-outline-variant bg-surface-container-low flex items-center justify-between px-space-lg z-20">
+<!-- Breadcrumb & Telemetry cluster -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1.5 text-on-surface font-code-md text-code-md">
+<span class="text-outline font-normal">KYC // RUNTIME</span>
+<span class="text-outline-variant font-normal">/</span>
+<span class="text-primary font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-primary"></span>
+          Agent Activity Log
+        </span>
+</div>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<!-- Telemetry cluster pills -->
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 border border-outline-variant bg-surface-container text-on-surface-variant flex items-center gap-1">
+<span class="text-outline">Cluster:</span> <span class="text-on-surface">raft-local-01</span>
+</span>
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 border border-tertiary text-tertiary bg-surface-container flex items-center gap-1">
+<span class="w-1 h-1 bg-tertiary"></span> QUORUM_REACHED
+        </span>
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 border border-outline-variant bg-surface-container text-on-surface-variant">
+          Buffer: <span class="text-secondary">10,421 PKTS (20.8%)</span>
+</span>
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 border border-outline-variant bg-surface-container text-on-surface-variant">
+          Ingest: <span class="text-on-surface">184.2 EVTS/S</span>
+</span>
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 border border-outline-variant bg-surface-container text-on-surface-variant">
+          p99: <span class="text-on-surface">1.2ms</span>
+</span>
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 border border-outline-variant bg-surface-container text-on-surface-variant">
+          Merkle: <span class="text-primary">0x9f8a...c3b1</span>
+</span>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-space-sm">
+<button class="h-7 px-space-md bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high font-code-sm text-code-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-outline" data-icon="pause">pause</span>
+<span>Pause Stream</span>
+<span class="text-[9px] bg-surface-container-highest px-1 text-on-surface-variant ml-1">[Space]</span>
+</button>
+<button class="h-7 px-space-md bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high font-code-sm text-code-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-outline" data-icon="delete_sweep">delete_sweep</span>
+<span>Clear Buffer</span>
+</button>
+<button class="h-7 px-space-md bg-primary text-on-primary-container font-semibold hover:bg-primary-container font-code-sm text-code-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+<span>Export JSON-LD</span>
+</button>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<!-- Action icon buttons from JSON -->
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface" title="Sync state">
+<span class="material-symbols-outlined" data-icon="sync">sync</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface" title="Terminal CLI">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface relative" title="Notifications">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-1.5 h-1.5 bg-secondary"></span>
+</button>
+</div>
+</div>
+</header>
+<!-- ==================== MAIN WORKSPACE AREA (1440px desktop fixed layout) ==================== -->
+<main class="fixed top-12 bottom-6 left-64 right-0 flex overflow-hidden bg-surface-container-lowest">
+<!-- ==================== LEFT MAIN LOG STREAM PANEL (~74% width) ==================== -->
+<section class="w-[74%] h-full flex flex-col border-r border-outline-variant bg-surface-container-lowest">
+<!-- FILTER & QUERY CONTROL BAR -->
+<div class="h-10 px-space-md border-b border-outline-variant bg-surface-container-low flex items-center justify-between gap-space-md shrink-0">
+<!-- Left: Level chips & Agent chips & Free-text search input -->
+<div class="flex items-center gap-space-sm flex-1">
+<!-- Level Chips -->
+<div class="flex items-center bg-surface-container-lowest border border-outline-variant p-0.5">
+<button class="px-1.5 py-0.5 font-label-sm text-label-sm bg-surface-container-highest text-primary font-semibold">ALL <span class="text-on-surface-variant font-normal">10,421</span></button>
+<button class="px-1.5 py-0.5 font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface">INFO <span class="text-outline font-normal">9,812</span></button>
+<button class="px-1.5 py-0.5 font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface">WARN <span class="text-outline font-normal">582</span></button>
+<button class="px-1.5 py-0.5 font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface">ERROR <span class="text-outline font-normal">27</span></button>
+</div>
+<!-- Separator -->
+<span class="text-outline-variant font-code-sm">|</span>
+<!-- Agent Chips -->
+<div class="flex items-center gap-1">
+<span class="text-[9px] font-label-sm text-outline uppercase tracking-wider">Agent:</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 bg-surface-container border border-outline-variant text-secondary cursor-pointer hover:border-secondary">agent-2</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 bg-surface-container border border-outline-variant text-tertiary cursor-pointer hover:border-tertiary">sub-139</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 bg-surface-container border border-outline-variant text-primary cursor-pointer hover:border-primary">operator</span>
+</div>
+<!-- Free-text Search Input (Fixed cleanly next to filters) -->
+<div class="relative flex-1 max-w-sm">
+<span class="absolute left-2 top-1.5 font-code-sm text-outline pointer-events-none">&lt;&gt;</span>
+<input class="w-full h-7 pl-6 pr-14 bg-surface-container-lowest border border-outline-variant font-code-sm text-code-sm text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-0" placeholder="Filter payload, node, action, hash..." type="text" value=""/>
+<div class="absolute right-1 top-1 flex items-center gap-1">
+<span class="font-label-sm text-[9px] text-outline bg-surface-container px-1 py-0.5 border border-outline-variant">[Ctrl+K]</span>
+<button class="text-outline hover:text-on-surface p-0.5">
+<span class="material-symbols-outlined text-[12px]" data-icon="close">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right: Toggles & Buffer Meter -->
+<div class="flex items-center gap-space-md shrink-0">
+<!-- Autoscroll Toggle -->
+<div class="flex items-center gap-1.5 bg-surface-container px-2 py-0.5 border border-outline-variant cursor-pointer">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="font-label-sm text-label-sm text-tertiary tracking-wider font-semibold">AUTOSCROLL ON</span>
+</div>
+<!-- Group-by-Day Toggle -->
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-outline cursor-pointer hover:text-on-surface">
+<span>GROUP BY DAY:</span>
+<span class="text-on-surface-variant">OFF</span>
+</div>
+<!-- Capacity Bar -->
+<div class="flex items-center gap-1.5 font-label-sm text-[10px] text-outline">
+<span>BUF CAP</span>
+<div class="w-12 h-1.5 bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-secondary" style="width: 20.8%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- STREAMING LOG TABLE -->
+<div class="flex-1 flex flex-col overflow-hidden">
+<!-- Table Column Headers (Strict fixed widths to guarantee no text collisions) -->
+<div class="h-7 bg-surface-container border-b border-outline-variant flex items-center text-outline font-label-sm text-label-sm px-space-md sticky top-0 z-10">
+<div class="w-16 shrink-0">SEQ</div>
+<div class="w-16 shrink-0">LEVEL</div>
+<div class="w-24 shrink-0">AGENT</div>
+<div class="w-32 shrink-0">ACTION</div>
+<div class="flex-1 min-w-[280px] px-2">DESCRIPTION</div>
+<div class="w-40 shrink-0">NODES</div>
+<div class="w-24 shrink-0 font-right text-right">HASH</div>
+<div class="w-40 shrink-0 text-right">OCCURRED_AT</div>
+</div>
+<!-- Table Body Rows (28px height strict technical observability rows) -->
+<div class="flex-1 overflow-y-auto divide-y divide-outline-variant font-code-sm text-code-sm">
+<!-- PULSING LIVE TAIL STREAM SKELETON INDICATOR ROWS -->
+<div class="h-7 px-space-md flex items-center bg-surface-container-high/40 text-on-surface-variant skeleton-pulse">
+<div class="w-16 shrink-0 text-primary font-semibold">#10423</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">RECEIVE</span>
+</div>
+<div class="w-24 shrink-0 text-outline">in-flight</div>
+<div class="w-32 shrink-0 text-outline">streaming_batch</div>
+<div class="flex-1 min-w-[280px] px-2 text-outline flex items-center gap-2">
+<span class="inline-block w-2 h-2 bg-secondary animate-spin"></span>
+<span>Ingesting Merkle delta leaf 0xfa49d... awaiting Raft commit quorum</span>
+</div>
+<div class="w-40 shrink-0 text-outline">dag:staging_v2</div>
+<div class="w-24 shrink-0 text-right text-outline">--------</div>
+<div class="w-40 shrink-0 text-right text-outline">2026-11-04T11:58:05Z</div>
+</div>
+<div class="h-7 px-space-md flex items-center bg-surface-container-high/20 text-on-surface-variant skeleton-pulse">
+<div class="w-16 shrink-0 text-primary font-semibold">#10422</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-tertiary/10 text-tertiary border border-tertiary/30">IN_FLIGHT</span>
+</div>
+<div class="w-24 shrink-0 text-secondary">agent-2</div>
+<div class="w-32 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-surface-container text-tertiary border border-outline-variant">eval_pipeline</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface-variant truncate">
+              Verifying topological sort invariants on concept taxonomy subgraph
+            </div>
+<div class="w-40 shrink-0 text-outline">concept_419</div>
+<div class="w-24 shrink-0 text-right text-outline">a19c...</div>
+<div class="w-40 shrink-0 text-right text-outline">2026-11-04T11:58:04Z</div>
+</div>
+<!-- ROW #10421 -->
+<div class="h-7 px-space-md flex items-center hover:bg-surface-container transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10421</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">INFO</span>
+</div>
+<div class="w-24 shrink-0 text-secondary font-medium">agent-2</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-tertiary border border-outline-variant">mutate_graph</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface truncate">
+              Attached directional edge [concept_419 -&gt; heuristics-catalog] with weight 0.94
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-on-surface border border-outline-variant font-code-sm text-[10px]">heuristics-catalog</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">9f2c1ab4</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:58:02Z</div>
+</div>
+<!-- ROW #10420 (Contested Lock Error) -->
+<div class="h-7 px-space-md flex items-center bg-error-container/10 hover:bg-error-container/20 border-l-2 border-error transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10420</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-error/20 text-error border border-error/50 font-semibold">ERROR</span>
+</div>
+<div class="w-24 shrink-0 text-tertiary font-medium">sub-139</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-error/10 text-error border border-error/30">acquire_lease</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-error font-medium truncate">
+              Lease acquisition rejected: contested lock on kg_entity_4402 by sub-139
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-error border border-error/30 font-code-sm text-[10px]">kg_entity_4402</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">8a1d440f</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:57:59Z</div>
+</div>
+<!-- ROW #10419 (WARN Payload failure) -->
+<div class="h-7 px-space-md flex items-center bg-surface-container-high/20 hover:bg-surface-container transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10419</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-tertiary-container/30 text-tertiary border border-tertiary/40">WARN</span>
+</div>
+<div class="w-24 shrink-0 text-primary font-medium">operator</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-on-surface-variant border border-outline-variant">log_event</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface-variant truncate">
+              unreadable payload: schema validation decode failure at byte offset 0x4F
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-outline border border-outline-variant font-code-sm text-[10px]">dag:schema_v1</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">77e19cb2</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:57:54Z</div>
+</div>
+<!-- ROW #10418 -->
+<div class="h-7 px-space-md flex items-center hover:bg-surface-container transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10418</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">INFO</span>
+</div>
+<div class="w-24 shrink-0 text-primary font-medium">operator</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-secondary border border-outline-variant">record_outcome</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface truncate">
+              Snapshot sync completed to DuckDB memory AST columnar store
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-on-surface border border-outline-variant font-code-sm text-[10px]">duckdb_ast_01</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">3d81b899</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:57:48Z</div>
+</div>
+<!-- ROW #10417 -->
+<div class="h-7 px-space-md flex items-center hover:bg-surface-container transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10417</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">INFO</span>
+</div>
+<div class="w-24 shrink-0 text-secondary font-medium">agent-2</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-tertiary border border-outline-variant">apply_improvement</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface truncate">
+              Merged subgraph clusters: tier2_partition into main_ctx DAG
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-on-surface border border-outline-variant font-code-sm text-[10px]">dag:subgraph_tier2</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">4b20ec91</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:57:39Z</div>
+</div>
+<!-- ROW #10416 -->
+<div class="h-7 px-space-md flex items-center hover:bg-surface-container transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10416</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">INFO</span>
+</div>
+<div class="w-24 shrink-0 text-tertiary font-medium">sub-139</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-secondary border border-outline-variant">query</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface truncate">
+              K-nearest embedding search across hnsw_cosine_level0 (42 results)
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-on-surface border border-outline-variant font-code-sm text-[10px]">vec_store_08</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">c09ff81e</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:57:31Z</div>
+</div>
+<!-- ROW #10415 (WARN) -->
+<div class="h-7 px-space-md flex items-center bg-surface-container-high/20 hover:bg-surface-container transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10415</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-tertiary-container/30 text-tertiary border border-tertiary/40">WARN</span>
+</div>
+<div class="w-24 shrink-0 text-primary font-medium">operator</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-on-surface-variant border border-outline-variant">log_event</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface-variant truncate">
+              Raft log delta compaction lag exceeded 150ms window
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-outline border border-outline-variant font-code-sm text-[10px]">raft_wal_log</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">e94b1212</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:57:22Z</div>
+</div>
+<!-- ROW #10414 -->
+<div class="h-7 px-space-md flex items-center hover:bg-surface-container transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10414</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">INFO</span>
+</div>
+<div class="w-24 shrink-0 text-secondary font-medium">agent-2</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-tertiary border border-outline-variant">mutate_graph</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface truncate">
+              Resolved cross-context link between edge:rel_ctx_891 and symbol index
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-on-surface border border-outline-variant font-code-sm text-[10px]">edge:rel_ctx_891</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">f0284cca</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:57:15Z</div>
+</div>
+<!-- ROW #10413 -->
+<div class="h-7 px-space-md flex items-center hover:bg-surface-container transition-none cursor-pointer">
+<div class="w-16 shrink-0 text-primary font-medium">#10413</div>
+<div class="w-16 shrink-0">
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">INFO</span>
+</div>
+<div class="w-24 shrink-0 text-primary font-medium">operator</div>
+<div class="w-32 shrink-0">
+<span class="px-1.5 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-secondary border border-outline-variant">acquire_lease</span>
+</div>
+<div class="flex-1 min-w-[280px] px-2 text-on-surface truncate">
+              Acquired exclusive maintenance lease lock for DAG re-index
+            </div>
+<div class="w-40 shrink-0">
+<span class="px-1.5 py-0.2 bg-surface-container text-on-surface border border-outline-variant font-code-sm text-[10px]">catalog_root</span>
+</div>
+<div class="w-24 shrink-0 text-right font-code-sm text-outline">612e55aa</div>
+<div class="w-40 shrink-0 text-right text-on-surface-variant font-label-sm text-[10px]">2026-11-04T11:57:08Z</div>
+</div>
+</div>
+<!-- SIMULATED TOGGLE / EMPTY STATE PREVIEW STRIP -->
+<div class="h-6 bg-surface-container-low border-t border-outline-variant px-space-md flex items-center justify-between text-[10px] font-label-sm text-outline">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-outline-variant"></span>
+<span>STREAM HEAD: #10423 (9.8k events cached in memory)</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant hover:text-primary cursor-pointer">
+<span class="material-symbols-outlined text-[12px]" data-icon="visibility">visibility</span>
+<span>Preview Empty State: 'no events yet'</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ==================== RIGHT SIDE PANEL (~26% width) ==================== -->
+<aside class="w-[26%] h-full flex flex-col bg-surface-container-lowest overflow-hidden">
+<!-- Panel Header -->
+<div class="h-10 px-space-md border-b border-outline-variant bg-surface-container-low flex items-center justify-between shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]" data-icon="lock_clock">lock_clock</span>
+<span class="font-code-md text-code-md font-semibold text-on-surface">Node Leases &amp; Contested Locks</span>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary bg-surface-container px-1.5 py-0.5 border border-tertiary">
+          8 / 8 Active
+        </span>
+</div>
+<!-- ACTIVE LEASES SUB-PANEL (Upper ~65%) -->
+<div class="flex-1 flex flex-col border-b border-outline-variant overflow-hidden">
+<div class="h-6 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>TARGET NODE / ACTOR</span>
+<span>TTL / STATUS</span>
+</div>
+<div class="flex-1 overflow-y-auto divide-y divide-outline-variant font-code-sm text-code-sm">
+<!-- Leased Item 1: CRITICAL CONFLICT STATE -->
+<div class="p-space-sm bg-error-container/15 hover:bg-error-container/25 border-l-2 border-error">
+<div class="flex items-center justify-between mb-1">
+<span class="font-semibold text-error font-code-sm">kg_entity_4402</span>
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-error/20 text-error border border-error/50 font-semibold tracking-wider">
+                [CONFLICT: NODE_IN_USE]
+              </span>
+</div>
+<div class="flex items-center justify-between text-outline text-[11px]">
+<div>
+                Holder: <span class="text-secondary font-medium">agent-2</span>
+<span class="text-error ml-1 font-semibold">&lt;- contested by sub-139</span>
+</div>
+<div class="text-error font-semibold font-label-sm">00m 18s</div>
+</div>
+<div class="mt-1 pt-1 border-t border-outline-variant/30 flex items-center justify-between text-[10px] text-on-surface-variant">
+<span>Wait queue: <strong class="text-error">#1 in queue</strong></span>
+<span class="text-outline">Epoch #489</span>
+</div>
+</div>
+<!-- Leased Item 2: concept_419 -->
+<div class="p-space-sm hover:bg-surface-container">
+<div class="flex items-center justify-between mb-1">
+<span class="font-medium text-on-surface font-code-sm">concept_419</span>
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">
+                [ACTIVE LEASE]
+              </span>
+</div>
+<div class="flex items-center justify-between text-outline text-[11px]">
+<div>Holder: <span class="text-secondary">agent-2</span></div>
+<div class="text-on-surface font-label-sm">03m 12s</div>
+</div>
+</div>
+<!-- Leased Item 3: edge:rel_ctx_891 -->
+<div class="p-space-sm hover:bg-surface-container">
+<div class="flex items-center justify-between mb-1">
+<span class="font-medium text-on-surface font-code-sm">edge:rel_ctx_891</span>
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-tertiary border border-outline-variant">
+                [READ LOCK]
+              </span>
+</div>
+<div class="flex items-center justify-between text-outline text-[11px]">
+<div>Holder: <span class="text-tertiary">sub-139</span></div>
+<div class="text-on-surface font-label-sm">14m 45s</div>
+</div>
+</div>
+<!-- Leased Item 4: dag:subgraph_tier2 -->
+<div class="p-space-sm hover:bg-surface-container">
+<div class="flex items-center justify-between mb-1">
+<span class="font-medium text-on-surface font-code-sm">dag:subgraph_tier2</span>
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">
+                [ACTIVE LEASE]
+              </span>
+</div>
+<div class="flex items-center justify-between text-outline text-[11px]">
+<div>Holder: <span class="text-secondary">agent-2</span></div>
+<div class="text-on-surface font-label-sm">08m 50s</div>
+</div>
+</div>
+<!-- Leased Item 5: vec_store_08 -->
+<div class="p-space-sm hover:bg-surface-container">
+<div class="flex items-center justify-between mb-1">
+<span class="font-medium text-on-surface font-code-sm">vec_store_08</span>
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-surface-container-high text-tertiary border border-outline-variant">
+                [READ LOCK]
+              </span>
+</div>
+<div class="flex items-center justify-between text-outline text-[11px]">
+<div>Holder: <span class="text-tertiary">sub-139</span></div>
+<div class="text-on-surface font-label-sm">01m 04s</div>
+</div>
+</div>
+<!-- Leased Item 6: catalog_root -->
+<div class="p-space-sm hover:bg-surface-container">
+<div class="flex items-center justify-between mb-1">
+<span class="font-medium text-on-surface font-code-sm">catalog_root</span>
+<span class="px-1 py-0.2 font-label-sm text-[9px] bg-secondary/10 text-secondary border border-secondary/30">
+                [EXCLUSIVE LEASE]
+              </span>
+</div>
+<div class="flex items-center justify-between text-outline text-[11px]">
+<div>Holder: <span class="text-primary font-medium">operator</span></div>
+<div class="text-on-surface font-label-sm">29m 11s</div>
+</div>
+</div>
+</div>
+</div>
+<!-- CONTESTED LOCK QUEUE (Lower ~35%) -->
+<div class="h-44 flex flex-col bg-surface-container-low shrink-0">
+<div class="h-6 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span class="flex items-center gap-1 text-on-surface">
+<span class="w-1.5 h-1.5 bg-error"></span>
+            Contested Lock Queue (2 Queued)
+          </span>
+<span class="text-outline">P99: 1.8ms</span>
+</div>
+<div class="p-space-sm flex-1 flex flex-col justify-between font-code-sm text-code-sm">
+<div class="space-y-1.5 overflow-y-auto">
+<div class="flex items-center justify-between text-[11px] bg-surface-container-lowest p-1.5 border border-outline-variant">
+<div>
+<span class="text-error font-medium">1. sub-139</span>
+<span class="text-outline">waiting on</span>
+<span class="text-on-surface">kg_entity_4402</span>
+</div>
+<span class="text-outline font-label-sm">wait: 42s</span>
+</div>
+<div class="flex items-center justify-between text-[11px] bg-surface-container-lowest p-1.5 border border-outline-variant">
+<div>
+<span class="text-on-surface-variant font-medium">2. agent-2</span>
+<span class="text-outline">waiting on</span>
+<span class="text-on-surface">catalog_root</span>
+</div>
+<span class="text-outline font-label-sm">wait: 09s</span>
+</div>
+</div>
+<div class="pt-2 border-t border-outline-variant flex items-center justify-between">
+<div class="text-[9px] font-label-sm text-outline">
+              Clock: <span class="text-tertiary">Deterministic tiebreak</span>
+</div>
+<button class="h-6 px-2 bg-surface-container border border-outline-variant hover:border-error hover:text-error text-on-surface-variant font-label-sm text-[10px] flex items-center gap-1 transition-none">
+<span class="material-symbols-outlined text-[12px]" data-icon="lock_reset">lock_reset</span>
+<span>Revoke Stale Leases</span>
+</button>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- ==================== BOTTOM TELEMETRY STATUS BAR (Fixed 24px) ==================== -->
+<footer class="fixed bottom-0 right-0 left-64 h-6 border-t border-outline-variant bg-surface-container-low px-space-md flex items-center justify-between font-label-sm text-[10px] text-on-surface-variant z-20">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1 text-tertiary">
+<span class="w-1.5 h-1.5 bg-tertiary"></span>
+<span>Raft Quorum 3/3 SYNCED</span>
+</div>
+<span class="text-outline-variant">|</span>
+<div>DuckDB Cache Hit: <span class="text-on-surface">99.4%</span></div>
+<span class="text-outline-variant">|</span>
+<div>Memory RSS: <span class="text-secondary">46.2 MB</span></div>
+<span class="text-outline-variant">|</span>
+<div>Invariant checks: <span class="text-tertiary">11/11 PASS</span></div>
+</div>
+<div class="flex items-center gap-space-md">
+<div>10,421 events loaded</div>
+<span class="text-outline-variant">|</span>
+<div class="text-outline">Viewport: 1440x900 Fixed Console</div>
+<div class="w-2 h-2 bg-tertiary"></div>
+</div>
+</footer>
+</body></html>

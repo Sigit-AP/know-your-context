@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Know Your Context - Overview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#0B0D11',
+            surface: {
+              DEFAULT: '#11151D',
+              card: '#141923',
+              subtle: '#181E2A',
+              hover: '#1D2433'
+            },
+            border: {
+              DEFAULT: '#2A313E',
+              subtle: '#1F2532',
+              focus: '#3E485B'
+            },
+            text: {
+              primary: '#F1F4F9',
+              secondary: '#9BA3B5',
+              muted: '#5F697E',
+              mono: '#CAD2E0'
+            },
+            accent: {
+              emerald: '#10B981',
+              emeraldBg: '#06281E',
+              emeraldBorder: '#0E4E39',
+              amber: '#F59E0B',
+              amberBg: '#2E1E05',
+              amberBorder: '#5C3E08',
+              blue: '#3B82F6',
+              cyan: '#06B6D4'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D11;
+      color: #F1F4F9;
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono-data {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 20;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0D11;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2A313E;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex bg-base text-text-primary antialiased selection:bg-surface-subtle selection:text-white">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="w-64 flex-shrink-0 border-r border-border flex flex-col justify-between h-screen sticky top-0 bg-[#0B0D11]">
+    <div class="flex flex-col">
+      <!-- Workspace Brand Header -->
+      <div class="px-6 py-6 border-b border-border/80">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded border border-border bg-surface flex items-center justify-center text-text-primary">
+            <span class="material-symbols-outlined text-[17px]">hub</span>
+          </div>
+          <div>
+            <h1 class="text-sm font-semibold tracking-tight text-text-primary">Know Your Context</h1>
+            <p class="font-mono-data text-[11px] text-text-muted mt-0.5 tracking-wide">local-kg // v0.9.4</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation List -->
+      <nav class="px-3 py-5 space-y-1">
+        <!-- Overview (Highlighted / Active) -->
+        <a href="#overview" class="flex items-center justify-between px-3 py-2 rounded text-xs font-medium bg-surface text-text-primary border border-border shadow-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[17px] text-text-primary">grid_view</span>
+            <span>Overview</span>
+          </div>
+          <span class="w-1.5 h-1.5 rounded-full bg-accent-emerald"></span>
+        </a>
+
+        <!-- Activity -->
+        <a href="#activity" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">receipt_long</span>
+          <span>Activity</span>
+        </a>
+
+        <!-- Graph -->
+        <a href="#graph" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">schema</span>
+          <span>Graph</span>
+        </a>
+
+        <!-- Search -->
+        <a href="#search" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">search</span>
+          <span>Search</span>
+        </a>
+
+        <!-- Metrics -->
+        <a href="#metrics" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">query_stats</span>
+          <span>Metrics</span>
+        </a>
+
+        <!-- Health -->
+        <a href="#health" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">health_and_safety</span>
+          <span>Health</span>
+        </a>
+
+        <!-- Analytics -->
+        <a href="#analytics" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">analytics</span>
+          <span>Analytics</span>
+        </a>
+
+        <!-- Audit -->
+        <a href="#audit" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">verified_user</span>
+          <span>Audit</span>
+        </a>
+
+        <!-- Proposals -->
+        <a href="#proposals" class="flex items-center justify-between px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[17px] text-text-muted">alt_route</span>
+            <span>Proposals</span>
+          </div>
+          <span class="font-mono-data text-[10px] text-text-muted px-1.5 py-0.5 rounded border border-border">3</span>
+        </a>
+
+        <!-- Debt -->
+        <a href="#debt" class="flex items-center justify-between px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[17px] text-text-muted">build_circle</span>
+            <span>Debt</span>
+          </div>
+          <span class="font-mono-data text-[10px] text-accent-amber px-1.5 py-0.5 rounded border border-accent-amberBorder/60 bg-accent-amberBg/40">12</span>
+        </a>
+
+        <!-- System -->
+        <a href="#system" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">dns</span>
+          <span>System</span>
+        </a>
+
+        <!-- Setup -->
+        <a href="#setup" class="flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-text-muted">tune</span>
+          <span>Setup</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer / Cluster Node Info -->
+    <div class="p-4 m-3 rounded border border-border/80 bg-surface/50 font-mono-data text-[11px] space-y-1.5">
+      <div class="flex justify-between items-center text-text-muted">
+        <span>RUNTIME</span>
+        <span class="text-accent-emerald flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent-emerald"></span>
+          ONLINE
+        </span>
+      </div>
+      <div class="text-text-secondary truncate">node: 127.0.0.1:9042</div>
+      <div class="text-text-muted text-[10px] pt-1 border-t border-border/60 flex justify-between">
+        <span>STORAGE: SQLite/WAL</span>
+        <span class="text-text-secondary">46.2 MB</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="flex-1 flex flex-col min-w-0 bg-base overflow-y-auto">
+
+    <!-- TOP APPLICTION HEADER -->
+    <header class="h-14 border-b border-border px-8 flex items-center justify-between sticky top-0 bg-[#0B0D11]/95 backdrop-blur z-20">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold text-text-primary tracking-wide uppercase">Workspace</span>
+        <span class="text-border">/</span>
+        <span class="text-xs font-medium text-text-secondary">core-graph-prod</span>
+        <span class="font-mono-data text-[11px] px-2 py-0.5 rounded bg-surface border border-border text-text-muted">sha:a9f4c02</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 text-text-muted font-mono-data text-xs px-3 py-1.5 border border-border rounded bg-surface">
+          <span class="material-symbols-outlined text-[15px]">terminal</span>
+          <span>CLI: connected</span>
+        </div>
+        <div class="text-right">
+          <div class="font-mono-data text-xs text-text-secondary">2025-05-18T14:42:09Z</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT CONTAINER: DIRECTION B - CLEAN, SPACIOUS, AIRY -->
+    <div class="p-10 max-w-[1240px] w-full mx-auto space-y-10">
+
+      <!-- SECTION 1: HEADER & OPERATOR QUESTION ANSWER -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div>
+            <h2 class="text-2xl font-bold tracking-tight text-text-primary">System Overview</h2>
+            <p class="text-sm text-text-secondary mt-1">High-level integrity, topology footprint, and pending operator actions.</p>
+          </div>
+          <div class="font-mono-data text-xs text-text-muted flex items-center gap-2">
+            <span>POLL: 1000ms</span>
+            <span class="w-1 h-1 rounded-full bg-text-muted"></span>
+            <span>READ CONSISTENCY: STRONG</span>
+          </div>
+        </div>
+
+        <!-- 5-SECOND ANSWER HEALTH BANNER (ok=true) -->
+        <div class="border border-accent-emeraldBorder bg-accent-emeraldBg/30 rounded-lg p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-xs">
+          <div class="flex items-center gap-4">
+            <div class="w-9 h-9 rounded border border-accent-emeraldBorder bg-accent-emeraldBg flex items-center justify-center text-accent-emerald shrink-0">
+              <span class="material-symbols-outlined text-[22px]">check_circle</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2.5">
+                <span class="text-sm font-semibold text-text-primary tracking-wide">System Health: Nominal</span>
+                <span class="font-mono-data text-[11px] px-2 py-0.5 rounded bg-accent-emeraldBg border border-accent-emeraldBorder text-accent-emerald font-medium">ok = true</span>
+                <span class="font-mono-data text-[11px] px-2 py-0.5 rounded bg-surface border border-border text-text-muted">exit_code 0</span>
+              </div>
+              <div class="text-xs text-text-secondary mt-1 flex items-center gap-3">
+                <span class="text-emerald-400 font-medium">11 checks passed</span>
+                <span class="text-border">•</span>
+                <span>All storage engines and vector indices synchronous</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Structured Health Telemetry Badges -->
+          <div class="flex items-center gap-3 font-mono-data text-xs shrink-0 flex-wrap">
+            <div class="px-3 py-1.5 rounded bg-surface border border-border flex items-center gap-2">
+              <span class="text-text-muted">worst_severity:</span>
+              <span class="text-text-primary font-medium">INFO</span>
+            </div>
+            <div class="px-3 py-1.5 rounded bg-surface border border-border flex items-center gap-2">
+              <span class="text-text-muted">errors:</span>
+              <span class="text-emerald-400 font-medium">0</span>
+            </div>
+            <div class="px-3 py-1.5 rounded bg-surface border border-accent-amberBorder/70 bg-accent-amberBg/30 flex items-center gap-2">
+              <span class="text-text-muted">warnings:</span>
+              <span class="text-accent-amber font-semibold">2</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: PRIMARY KPI STRIP & ACTIVITY SPARKLINE -->
+      <section class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted">Topology & Storage Metrics</h3>
+          <span class="font-mono-data text-[11px] text-text-muted">updated 3s ago</span>
+        </div>
+
+        <!-- 6-Metric KPI Strip -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <!-- KPI 1: Total Nodes -->
+          <div class="p-4 rounded-lg bg-surface border border-border flex flex-col justify-between hover:border-border-focus transition-colors">
+            <div class="text-xs font-medium text-text-muted">total_nodes</div>
+            <div class="mt-3">
+              <div class="font-mono-data text-2xl font-bold text-text-primary tracking-tight">1,284</div>
+              <div class="font-mono-data text-[11px] text-text-muted mt-1">+18 today</div>
+            </div>
+          </div>
+
+          <!-- KPI 2: Total Edges -->
+          <div class="p-4 rounded-lg bg-surface border border-border flex flex-col justify-between hover:border-border-focus transition-colors">
+            <div class="text-xs font-medium text-text-muted">total_edges</div>
+            <div class="mt-3">
+              <div class="font-mono-data text-2xl font-bold text-text-primary tracking-tight">3,917</div>
+              <div class="font-mono-data text-[11px] text-text-muted mt-1">avg deg 3.05</div>
+            </div>
+          </div>
+
+          <!-- KPI 3: Store File -->
+          <div class="p-4 rounded-lg bg-surface border border-border flex flex-col justify-between hover:border-border-focus transition-colors">
+            <div class="text-xs font-medium text-text-muted">store file</div>
+            <div class="mt-3">
+              <div class="font-mono-data text-2xl font-bold text-text-primary tracking-tight">46.2 <span class="text-sm font-normal text-text-muted">MB</span></div>
+              <div class="font-mono-data text-[11px] text-text-muted mt-1">page_size 4096</div>
+            </div>
+          </div>
+
+          <!-- KPI 4: Journal Mode -->
+          <div class="p-4 rounded-lg bg-surface border border-border flex flex-col justify-between hover:border-border-focus transition-colors">
+            <div class="text-xs font-medium text-text-muted">journal_mode</div>
+            <div class="mt-3">
+              <div class="font-mono-data text-2xl font-bold text-text-primary tracking-tight">WAL</div>
+              <div class="font-mono-data text-[11px] text-emerald-400 mt-1">checkpoint: PASS</div>
+            </div>
+          </div>
+
+          <!-- KPI 5: Schema Version -->
+          <div class="p-4 rounded-lg bg-surface border border-border flex flex-col justify-between hover:border-border-focus transition-colors">
+            <div class="text-xs font-medium text-text-muted">schema_version</div>
+            <div class="mt-3">
+              <div class="font-mono-data text-2xl font-bold text-text-primary tracking-tight">v5</div>
+              <div class="font-mono-data text-[11px] text-text-muted mt-1">migration clean</div>
+            </div>
+          </div>
+
+          <!-- KPI 6: Events Today -->
+          <div class="p-4 rounded-lg bg-surface border border-border flex flex-col justify-between hover:border-border-focus transition-colors">
+            <div class="text-xs font-medium text-text-muted">events today</div>
+            <div class="mt-3">
+              <div class="font-mono-data text-2xl font-bold text-text-primary tracking-tight">214</div>
+              <div class="font-mono-data text-[11px] text-text-muted mt-1">peak 42/hr</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 14-Day Activity Sparkline & Velocity Section -->
+        <div class="p-5 rounded-lg bg-surface border border-border flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-1 max-w-xs">
+            <div class="text-xs font-semibold text-text-primary">14-Day Event Velocity</div>
+            <div class="text-xs text-text-muted leading-relaxed">Daily graph mutations, traversal logs, and schema assertions.</div>
+            <div class="font-mono-data text-xs text-text-secondary pt-1">Σ 2,840 events / 14d</div>
+          </div>
+
+          <!-- Discrete Sparkline Chart (JetBrains mono data labels, strict hairline strokes) -->
+          <div class="flex-1 flex flex-col items-end max-w-xl">
+            <div class="w-full flex items-end justify-between gap-1.5 h-16 pt-2 pb-1 border-b border-border/60">
+              <!-- Day 1 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 28px;"></div>
+              </div>
+              <!-- Day 2 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 36px;"></div>
+              </div>
+              <!-- Day 3 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 22px;"></div>
+              </div>
+              <!-- Day 4 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 40px;"></div>
+              </div>
+              <!-- Day 5 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 48px;"></div>
+              </div>
+              <!-- Day 6 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 32px;"></div>
+              </div>
+              <!-- Day 7 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 18px;"></div>
+              </div>
+              <!-- Day 8 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 30px;"></div>
+              </div>
+              <!-- Day 9 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 44px;"></div>
+              </div>
+              <!-- Day 10 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 38px;"></div>
+              </div>
+              <!-- Day 11 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 52px;"></div>
+              </div>
+              <!-- Day 12 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 41px;"></div>
+              </div>
+              <!-- Day 13 -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-border group-hover:bg-text-secondary transition-colors rounded-t-sm" style="height: 35px;"></div>
+              </div>
+              <!-- Day 14 (Today: 214) -->
+              <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                <div class="w-full bg-text-primary rounded-t-sm" style="height: 56px;"></div>
+              </div>
+            </div>
+            <div class="w-full flex justify-between font-mono-data text-[10px] text-text-muted mt-1.5 px-0.5">
+              <span>May 05 (-14d)</span>
+              <span>7d avg: 198</span>
+              <span class="text-text-primary font-medium">Today (214)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: ATTENTION & AGENTS / RELEARN PANELS (FOCUSED 2-COLUMN SPLIT) -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- PANEL A: ATTENTION & DEBT QUEUE -->
+        <div class="rounded-lg bg-surface border border-border p-6 flex flex-col justify-between space-y-6">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-border/80">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[19px] text-accent-amber">priority_high</span>
+                <h3 class="text-base font-semibold text-text-primary">Attention Required</h3>
+              </div>
+              <span class="font-mono-data text-xs text-text-muted">3 actionable categories</span>
+            </div>
+
+            <!-- Attention Breakdown List -->
+            <div class="space-y-3 font-mono-data text-xs">
+              <!-- Item 1: Improvement Proposals -->
+              <div class="p-3.5 rounded bg-surface-card border border-border hover:border-border-focus transition-colors flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                  <div>
+                    <div class="font-semibold text-text-primary font-sans text-xs">Improvement Proposals Pending</div>
+                    <div class="text-[11px] text-text-muted mt-0.5">Automated ontology refinements awaiting review</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-bold text-text-primary">3</span>
+                  <a href="#proposals" class="px-2 py-1 rounded border border-border bg-surface text-[11px] text-text-secondary hover:text-text-primary">Inspect</a>
+                </div>
+              </div>
+
+              <!-- Item 2: Knowledge Debt -->
+              <div class="p-3.5 rounded bg-surface-card border border-border hover:border-border-focus transition-colors flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-2 h-2 rounded-full bg-accent-amber"></div>
+                  <div>
+                    <div class="font-semibold text-text-primary font-sans text-xs">Knowledge-Debt Items</div>
+                    <div class="text-[11px] text-text-muted mt-0.5">Stale edges, redundant predicates, orphan concepts</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-bold text-accent-amber">12</span>
+                  <a href="#debt" class="px-2 py-1 rounded border border-border bg-surface text-[11px] text-text-secondary hover:text-text-primary">Audit</a>
+                </div>
+              </div>
+
+              <!-- Item 3: Unresolved References -->
+              <div class="p-3.5 rounded bg-surface-card border border-border hover:border-border-focus transition-colors flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                  <div>
+                    <div class="font-semibold text-text-primary font-sans text-xs">Unresolved-Reference Failures</div>
+                    <div class="text-[11px] text-text-muted mt-0.5">Dangling edge pointers to missing entity hashes</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-bold text-amber-400">2</span>
+                  <a href="#health" class="px-2 py-1 rounded border border-border bg-surface text-[11px] text-text-secondary hover:text-text-primary">Resolve</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Summary Indicator -->
+          <div class="pt-3 border-t border-border/80 flex items-center justify-between text-xs text-text-muted">
+            <span class="font-mono-data text-[11px]">SLA: 0 critical blocks</span>
+            <span class="text-text-secondary text-xs">All warnings non-blocking for queries</span>
+          </div>
+        </div>
+
+        <!-- PANEL B: ACTORS & RELEARN STATE MACHINE -->
+        <div class="rounded-lg bg-surface border border-border p-6 flex flex-col justify-between space-y-6">
+          <div class="space-y-5">
+            <!-- Active Agents Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-border/80">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[19px] text-text-secondary">smart_toy</span>
+                <h3 class="text-base font-semibold text-text-primary">Active Actors & Agents</h3>
+              </div>
+              <span class="font-mono-data text-xs text-text-muted">3 sessions attached</span>
+            </div>
+
+            <!-- Actors List -->
+            <div class="space-y-2.5">
+              <!-- Actor 1: agent-2 -->
+              <div class="p-3 rounded bg-surface-card border border-border flex items-center justify-between font-mono-data text-xs">
+                <div class="flex items-center gap-3">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent-emerald"></span>
+                  <span class="font-semibold text-text-primary">agent-2</span>
+                  <span class="text-text-muted text-[11px]">type: background_extractor</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-text-secondary text-[11px]">lease: 03m 12s left</span>
+                  <span class="px-1.5 py-0.5 rounded bg-surface border border-border text-[10px] text-text-muted">PID 4108</span>
+                </div>
+              </div>
+
+              <!-- Actor 2: sub-139 -->
+              <div class="p-3 rounded bg-surface-card border border-border flex items-center justify-between font-mono-data text-xs">
+                <div class="flex items-center gap-3">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent-emerald"></span>
+                  <span class="font-semibold text-text-primary">sub-139</span>
+                  <span class="text-text-muted text-[11px]">type: vector_embedder</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-text-secondary text-[11px]">lease: 14m 45s left</span>
+                  <span class="px-1.5 py-0.5 rounded bg-surface border border-border text-[10px] text-text-muted">PID 5291</span>
+                </div>
+              </div>
+
+              <!-- Actor 3: operator -->
+              <div class="p-3 rounded bg-surface-card border border-border flex items-center justify-between font-mono-data text-xs">
+                <div class="flex items-center gap-3">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                  <span class="font-semibold text-text-primary">operator</span>
+                  <span class="text-text-muted text-[11px]">type: interactive_console</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-text-secondary text-[11px]">tty: pts/0 (local)</span>
+                  <span class="px-1.5 py-0.5 rounded bg-surface border border-border text-[10px] text-text-muted">UID 1000</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Relearn State Machine Section -->
+            <div class="pt-4 border-t border-border/80">
+              <div class="flex items-center justify-between mb-3">
+                <div class="text-xs font-semibold uppercase tracking-wider text-text-muted">Relearn State Machine</div>
+                <div class="font-mono-data text-[11px] text-text-muted">last pass: 42m ago</div>
+              </div>
+
+              <div class="p-4 rounded bg-surface-card border border-border flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="px-2.5 py-1 rounded bg-surface border border-border font-mono-data text-xs font-bold text-accent-emerald tracking-wider">
+                    STATE: IDLE
+                  </div>
+                  <div class="text-xs text-text-secondary">Next scheduled cycle in 18 minutes</div>
+                </div>
+
+                <!-- State Transition Dots -->
+                <div class="flex items-center gap-2 font-mono-data text-[11px] text-text-muted">
+                  <span class="text-accent-emerald font-medium">IDLE</span>
+                  <span class="text-border">→</span>
+                  <span>SCAN</span>
+                  <span class="text-border">→</span>
+                  <span>DIFF</span>
+                  <span class="text-border">→</span>
+                  <span>SYNC</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Row -->
+          <div class="pt-3 border-t border-border/80 flex items-center justify-between">
+            <button class="px-3 py-1.5 rounded border border-border bg-surface hover:bg-surface-subtle font-mono-data text-xs text-text-secondary hover:text-text-primary transition-colors flex items-center gap-2">
+              <span class="material-symbols-outlined text-[15px]">play_arrow</span>
+              <span>Trigger Manual Relearn</span>
+            </button>
+            <span class="font-mono-data text-[11px] text-text-muted">lock: shared_wal_read</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: CONTEXTUAL INSPECTION / RECENT GRAPH TRACES -->
+      <section class="space-y-3 pt-2">
+        <div class="flex items-center justify-between">
+          <div class="text-xs font-semibold uppercase tracking-wider text-text-muted">Live Graph Event Ledger</div>
+          <div class="font-mono-data text-[11px] text-text-muted">Showing 4 most recent transactions</div>
+        </div>
+
+        <div class="rounded-lg bg-surface border border-border overflow-hidden">
+          <table class="w-full text-left font-mono-data text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-border bg-surface-card text-text-muted text-[11px]">
+                <th class="py-2.5 px-4 font-medium">TIMESTAMP</th>
+                <th class="py-2.5 px-4 font-medium">ACTOR</th>
+                <th class="py-2.5 px-4 font-medium">OPERATION</th>
+                <th class="py-2.5 px-4 font-medium">TARGET / SUBJECT</th>
+                <th class="py-2.5 px-4 font-medium">TX HASH</th>
+                <th class="py-2.5 px-4 font-medium text-right">STATUS</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border/60">
+              <tr class="hover:bg-surface-card/60 transition-colors">
+                <td class="py-2.5 px-4 text-text-secondary">14:41:58.204</td>
+                <td class="py-2.5 px-4 text-text-primary">sub-139</td>
+                <td class="py-2.5 px-4 text-cyan-400">EMBED_UPDATE</td>
+                <td class="py-2.5 px-4 text-text-muted">node:concept_419</td>
+                <td class="py-2.5 px-4 text-text-muted">8f2c00a1</td>
+                <td class="py-2.5 px-4 text-right text-accent-emerald font-medium">200 OK</td>
+              </tr>
+              <tr class="hover:bg-surface-card/60 transition-colors">
+                <td class="py-2.5 px-4 text-text-secondary">14:41:42.891</td>
+                <td class="py-2.5 px-4 text-text-primary">agent-2</td>
+                <td class="py-2.5 px-4 text-blue-400">LINK_EDGE</td>
+                <td class="py-2.5 px-4 text-text-muted">edge:rel_882</td>
+                <td class="py-2.5 px-4 text-text-muted">4b90e1fa</td>
+                <td class="py-2.5 px-4 text-right text-accent-emerald font-medium">200 OK</td>
+              </tr>
+              <tr class="hover:bg-surface-card/60 transition-colors">
+                <td class="py-2.5 px-4 text-text-secondary">14:40:19.412</td>
+                <td class="py-2.5 px-4 text-text-primary">operator</td>
+                <td class="py-2.5 px-4 text-text-secondary">INSPECT_QUERY</td>
+                <td class="py-2.5 px-4 text-text-muted">query:orphan_subgraph</td>
+                <td class="py-2.5 px-4 text-text-muted">18c39d04</td>
+                <td class="py-2.5 px-4 text-right text-accent-emerald font-medium">200 OK</td>
+              </tr>
+              <tr class="hover:bg-surface-card/60 transition-colors">
+                <td class="py-2.5 px-4 text-text-secondary">14:38:05.110</td>
+                <td class="py-2.5 px-4 text-text-primary">agent-2</td>
+                <td class="py-2.5 px-4 text-accent-amber">REF_PROPOSAL</td>
+                <td class="py-2.5 px-4 text-text-muted">prop:dedup_ontology</td>
+                <td class="py-2.5 px-4 text-text-muted">a381cf77</td>
+                <td class="py-2.5 px-4 text-right text-accent-amber font-medium">201 QUEUED</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+</body>
+</html>

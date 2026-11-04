@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - System Introspection</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "outline-variant": "#424754",
+            "on-primary": "#002e6a",
+            "on-tertiary-container": "#00311f",
+            "surface-container-lowest": "#0b0e14",
+            "on-secondary-fixed-variant": "#004e5c",
+            "on-secondary": "#003640",
+            "surface-variant": "#32353b",
+            "primary-fixed": "#d8e2ff",
+            "secondary": "#4cd7f6",
+            "surface-bright": "#363940",
+            "primary-container": "#4d8eff",
+            "background": "#101319",
+            "secondary-fixed": "#acedff",
+            "secondary-fixed-dim": "#4cd7f6",
+            "on-surface": "#e1e2eb",
+            "on-secondary-container": "#00424e",
+            "surface-tint": "#adc6ff",
+            "surface": "#101319",
+            "tertiary-container": "#00a572",
+            "on-background": "#e1e2eb",
+            "outline": "#8c909f",
+            "inverse-on-surface": "#2d3037",
+            "surface-container-highest": "#32353b",
+            "on-primary-fixed-variant": "#004395",
+            "on-tertiary-fixed-variant": "#005236",
+            "tertiary-fixed-dim": "#4edea3",
+            "surface-container-low": "#191c22",
+            "surface-container": "#1d2026",
+            "on-tertiary-fixed": "#002113",
+            "on-secondary-fixed": "#001f26",
+            "tertiary": "#4edea3",
+            "inverse-surface": "#e1e2eb",
+            "surface-container-high": "#272a30",
+            "on-tertiary": "#003824",
+            "on-surface-variant": "#c2c6d6",
+            "surface-dim": "#101319",
+            "primary-fixed-dim": "#adc6ff",
+            "on-error": "#690005",
+            "error": "#ffb4ab",
+            "tertiary-fixed": "#6ffbbe",
+            "secondary-container": "#03b5d3",
+            "on-error-container": "#ffdad6",
+            "on-primary-container": "#00285d",
+            "on-primary-fixed": "#001a42",
+            "inverse-primary": "#005ac2",
+            "error-container": "#93000a",
+            "primary": "#adc6ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xl": "1rem",
+            "space-sm": "0.25rem",
+            "margin": "0.75rem",
+            "gutter-mobile": "0.25rem",
+            "gutter": "0.5rem",
+            "margin-mobile": "0.5rem",
+            "space-xs": "0.125rem",
+            "space-md": "0.5rem",
+            "space-lg": "0.75rem"
+          },
+          "fontFamily": {
+            "label-sm": ["JetBrains Mono"],
+            "code-lg": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "body-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "code-md": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Scrollbar styling for pure developer UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0e14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272a30;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased font-body-md min-h-screen flex selection:bg-primary selection:text-on-primary">
+<!-- SHARED COMPONENT 1: SideNavBar -->
+<aside class="flex flex-col h-full w-64 bg-surface-container-lowest border-r border-outline-variant select-none shrink-0 fixed left-0 top-0 bottom-0 z-40">
+<!-- Header / Brand -->
+<div class="p-space-xl pb-space-lg border-b border-outline-variant flex items-center justify-between">
+<div>
+<div class="flex items-center gap-space-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<h1 class="text-headline-sm font-headline-sm text-on-surface tracking-tight">Know Your Context</h1>
+</div>
+<p class="text-code-sm font-code-sm text-outline mt-space-xs">local-kg // v0.9.4</p>
+</div>
+<div class="w-6 h-6 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">dns</span>
+</div>
+</div>
+<!-- Navigation List (12 explicit tabs, 'System' is actively highlighted) -->
+<nav aria-label="Main Navigation" class="flex-1 overflow-y-auto py-space-md space-y-0.5">
+<!-- 1. Overview -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">dashboard</span>
+<span class="text-label-sm font-label-sm">Overview</span>
+</a>
+<!-- 2. Activity -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">pulse_alert</span>
+<span class="text-label-sm font-label-sm">Activity</span>
+</a>
+<!-- 3. Graph -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">account_tree</span>
+<span class="text-label-sm font-label-sm">Graph</span>
+</a>
+<!-- 4. Search -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">search</span>
+<span class="text-label-sm font-label-sm">Search</span>
+</a>
+<!-- 5. Metrics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">query_stats</span>
+<span class="text-label-sm font-label-sm">Metrics</span>
+</a>
+<!-- 6. Health -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">health_and_safety</span>
+<span class="text-label-sm font-label-sm">Health</span>
+</a>
+<!-- 7. Analytics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">analytics</span>
+<span class="text-label-sm font-label-sm">Analytics</span>
+</a>
+<!-- 8. Audit -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">policy</span>
+<span class="text-label-sm font-label-sm">Audit</span>
+</a>
+<!-- 9. Proposals -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">assignment_turned_in</span>
+<span class="text-label-sm font-label-sm">Proposals</span>
+</a>
+<!-- 10. Debt -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">warning</span>
+<span class="text-label-sm font-label-sm">Debt</span>
+</a>
+<!-- 11. System (ACTIVE) -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm bg-surface-container text-primary font-medium border-l-2 border-primary" href="#">
+<span class="material-symbols-outlined text-primary">dns</span>
+<span class="text-label-sm font-label-sm text-primary">System</span>
+<span class="ml-auto w-1.5 h-1.5 rounded-full bg-primary"></span>
+</a>
+<!-- 12. Setup -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span class="text-label-sm font-label-sm">Setup</span>
+</a>
+</nav>
+<!-- Sidebar Bottom Action & Meta -->
+<div class="p-space-md border-t border-outline-variant space-y-space-md bg-surface-container-lowest">
+<button class="w-full flex items-center justify-center gap-space-sm py-1.5 px-space-md bg-surface-container-high border border-outline-variant hover:border-outline text-on-surface font-label-sm text-label-sm rounded transition-colors">
+<span class="material-symbols-outlined text-primary">sync</span>
+<span>Sync Local Engine</span>
+</button>
+<div class="flex items-center justify-between text-code-sm font-code-sm text-outline px-1">
+<div class="flex items-center gap-1.5 hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined text-outline">help</span>
+<span>Docs</span>
+</div>
+<div class="flex items-center gap-1.5 font-code-sm text-outline">
+<span class="material-symbols-outlined text-outline">terminal</span>
+<span>v0.9.4-local</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- MAIN VIEWPORT CANVAS (offset by 256px sidebar) -->
+<div class="pl-64 flex-1 flex flex-col min-w-0 bg-surface">
+<!-- SHARED COMPONENT 2: TopNavBar -->
+<header class="flex justify-between items-center h-10 px-space-xl w-full border-b border-outline-variant bg-surface-container-low sticky top-0 z-30 select-none">
+<!-- Left side: Telemetry indicators -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-1.5 text-code-md font-code-md text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-outline">Cluster:</span>
+<span class="text-on-surface">local-daemon</span>
+</div>
+<span class="text-outline-variant">/</span>
+<div class="flex items-center gap-1.5 text-code-md font-code-md text-on-surface-variant">
+<span class="text-outline">Graph:</span>
+<span class="text-on-surface">main-ctx</span>
+</div>
+<span class="text-outline-variant">/</span>
+<div class="flex items-center gap-1.5 text-code-md font-code-md text-primary">
+<span class="text-outline">Lease:</span>
+<span class="font-code-md text-code-md">synchronized</span>
+</div>
+<span class="text-outline-variant">/</span>
+<div class="flex items-center gap-1.5 text-code-md font-code-md text-on-surface-variant">
+<span class="text-outline">Engine:</span>
+<span class="text-on-surface font-code-md">DuckDB + SQLite WAL</span>
+</div>
+<span class="text-outline-variant">/</span>
+<div class="flex items-center gap-1.5 text-code-md font-code-md text-on-surface-variant">
+<span class="text-outline">Epoch:</span>
+<span class="font-code-md text-tertiary">0x8F4E</span>
+</div>
+</div>
+<!-- Right side: Operations & Diagnostics Triggers -->
+<div class="flex items-center gap-space-md">
+<button class="h-7 px-2.5 rounded bg-surface-container-high border border-outline-variant text-on-surface hover:border-outline font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-outline">refresh</span>
+          Re-run Diagnostics
+        </button>
+<button class="h-7 px-2.5 rounded bg-surface-container-high border border-outline-variant text-on-surface hover:border-outline font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-outline">download</span>
+          Export Config JSON
+        </button>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<button class="h-7 w-7 rounded flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Notifications">
+<span class="material-symbols-outlined">notifications_none</span>
+</button>
+<button class="h-7 w-7 rounded flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Engine Console">
+<span class="material-symbols-outlined">terminal</span>
+</button>
+<button class="h-7 w-7 rounded flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Tuning Parameters">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</header>
+<!-- CONTENT SURFACE (Direction B: Clean Spacious, Airy Stacked Layout, 1440px target, wide margins, high breathing room) -->
+<main class="p-8 max-w-[1400px] w-full mx-auto space-y-10">
+<!-- SECTION HEADER -->
+<div class="flex flex-col md:flex-row md:items-end justify-between pb-6 border-b border-outline-variant gap-4">
+<div>
+<div class="flex items-center gap-2 mb-1.5">
+<span class="text-label-sm font-label-sm text-primary uppercase">Subsystem Telemetry</span>
+<span class="text-outline-variant">·</span>
+<span class="text-label-sm font-label-sm text-tertiary">PID: 41092</span>
+</div>
+<h2 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">System Introspection</h2>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Autonomous store telemetry, runtime triage circuit switches, hardware bounds, and deterministic route arbitration.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low border border-outline-variant rounded">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-label-sm font-label-sm text-on-surface">KERNEL HEALTHY</span>
+<span class="text-code-sm font-code-sm text-outline">99.98% Uptime</span>
+</div>
+</div>
+</div>
+<!-- 1. STORE SECTION (Spacious Bento Layout) -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">storage</span>
+              Storage Engine &amp; WAL Invariants
+            </h3>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Underlying B-tree state, physical frame allocation, and relational invariant guarantees.</p>
+</div>
+<div class="text-code-sm font-code-sm text-outline bg-surface-container-low px-2.5 py-1 rounded border border-outline-variant">
+            Engine: <span class="text-on-surface">SQLite / WAL Kernel (v5.0.2-local)</span> | journal_mode <span class="text-tertiary">WAL</span> | Schema <span class="text-primary">1→5 (v5 clean migration)</span>
+</div>
+</div>
+<!-- High-level Metric Strip (Spacious cards) -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+<div class="bg-surface-container-low border border-outline-variant rounded p-4">
+<div class="flex justify-between items-center">
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-wider">Total Pages</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<div class="text-headline-md font-code-lg text-on-surface mt-2 tabular-nums">11,280</div>
+<div class="text-code-sm font-code-sm text-outline mt-1">Allocated blocks</div>
+</div>
+<div class="bg-surface-container-low border border-outline-variant rounded p-4">
+<div class="flex justify-between items-center">
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-wider">Page Size</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+</div>
+<div class="text-headline-md font-code-lg text-on-surface mt-2 tabular-nums">4,096 B</div>
+<div class="text-code-sm font-code-sm text-outline mt-1">4.0 KiB uniform cluster</div>
+</div>
+<div class="bg-surface-container-low border border-outline-variant rounded p-4">
+<div class="flex justify-between items-center">
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-wider">Freelist Pages</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</div>
+<div class="text-headline-md font-code-lg text-secondary mt-2 tabular-nums">12 <span class="text-label-md font-code-sm text-outline">(0.11%)</span></div>
+<div class="text-code-sm font-code-sm text-outline mt-1">Low fragmentation index</div>
+</div>
+<div class="bg-surface-container-low border border-outline-variant rounded p-4">
+<div class="flex justify-between items-center">
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-wider">In-Mem WAL</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="text-headline-md font-code-lg text-on-surface mt-2 tabular-nums">829 <span class="text-label-md font-code-sm text-outline">frames</span></div>
+<div class="text-code-sm font-code-sm text-outline mt-1">Checkpoint scheduled at 1k</div>
+</div>
+<div class="bg-surface-container-low border border-outline-variant rounded p-4">
+<div class="flex justify-between items-center">
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-wider">Cache Hit</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="text-headline-md font-code-lg text-tertiary mt-2 tabular-nums">99.4%</div>
+<div class="text-code-sm font-code-sm text-outline mt-1">Page cache warm (256MB)</div>
+</div>
+</div>
+<!-- Table Metrics (Spacious Clean Table Card) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded overflow-hidden">
+<div class="px-5 py-3 border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<div class="text-label-md font-label-md text-outline uppercase tracking-wider">Indexed Relational Partitions</div>
+<div class="text-code-sm font-code-sm text-outline">Total Virtual Memory: <span class="text-on-surface">46.2 MB</span></div>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Table Row 1 -->
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 w-1/4">
+<span class="material-symbols-outlined text-outline">database</span>
+<div>
+<div class="font-code-md text-code-md text-on-surface">event_log</div>
+<div class="text-body-sm font-body-sm text-outline">Append-only journal</div>
+</div>
+</div>
+<div class="w-1/6 font-code-md text-code-md text-on-surface tabular-nums">1,521 rows</div>
+<div class="w-1/6 font-code-md text-code-md text-outline tabular-nums">6.2 MB</div>
+<div class="w-1/3">
+<span class="text-code-sm font-code-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant">
+                  Invariant: Monotonic SHA-256 HMAC
+                </span>
+</div>
+<div class="w-24 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-tertiary/10 text-tertiary border border-tertiary/30">SYNCED</span>
+</div>
+</div>
+<!-- Table Row 2 -->
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 w-1/4">
+<span class="material-symbols-outlined text-outline">database</span>
+<div>
+<div class="font-code-md text-code-md text-on-surface">node_revision</div>
+<div class="text-body-sm font-body-sm text-outline">Graph entity historical states</div>
+</div>
+</div>
+<div class="w-1/6 font-code-md text-code-md text-on-surface tabular-nums">1,284 rows</div>
+<div class="w-1/6 font-code-md text-code-md text-outline tabular-nums">14.8 MB</div>
+<div class="w-1/3">
+<span class="text-code-sm font-code-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant">
+                  Invariant: Invariant Checks PASS
+                </span>
+</div>
+<div class="w-24 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-primary/10 text-primary border border-primary/30">ACTIVE</span>
+</div>
+</div>
+<!-- Table Row 3 -->
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 w-1/4">
+<span class="material-symbols-outlined text-outline">database</span>
+<div>
+<div class="font-code-md text-code-md text-on-surface">node_relation</div>
+<div class="text-body-sm font-body-sm text-outline">Direct relational linkages</div>
+</div>
+</div>
+<div class="w-1/6 font-code-md text-code-md text-on-surface tabular-nums">3,917 rows</div>
+<div class="w-1/6 font-code-md text-code-md text-outline tabular-nums">18.2 MB</div>
+<div class="w-1/3">
+<span class="text-code-sm font-code-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant">
+                  Invariant: Directed Acyclic Graph
+                </span>
+</div>
+<div class="w-24 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-secondary/10 text-secondary border border-secondary/30">VALIDATED</span>
+</div>
+</div>
+<!-- Table Row 4 -->
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 w-1/4">
+<span class="material-symbols-outlined text-outline">database</span>
+<div>
+<div class="font-code-md text-code-md text-on-surface">evidence</div>
+<div class="text-body-sm font-body-sm text-outline">Arbitration receipts &amp; citations</div>
+</div>
+</div>
+<div class="w-1/6 font-code-md text-code-md text-on-surface tabular-nums">860 rows</div>
+<div class="w-1/6 font-code-md text-code-md text-outline tabular-nums">4.1 MB</div>
+<div class="w-1/3">
+<span class="text-code-sm font-code-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant">
+                  Invariant: Receipt Arbitration v4
+                </span>
+</div>
+<div class="w-24 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-tertiary/10 text-tertiary border border-tertiary/30">AUDITED</span>
+</div>
+</div>
+<!-- Table Row 5 -->
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 w-1/4">
+<span class="material-symbols-outlined text-outline">database</span>
+<div>
+<div class="font-code-md text-code-md text-on-surface">symbols</div>
+<div class="text-body-sm font-body-sm text-outline">Deterministic semantic symbols</div>
+</div>
+</div>
+<div class="w-1/6 font-code-md text-code-md text-on-surface tabular-nums">2,204 rows</div>
+<div class="w-1/6 font-code-md text-code-md text-outline tabular-nums">2.9 MB</div>
+<div class="w-1/3">
+<span class="text-code-sm font-code-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant">
+                  Invariant: AST DuckDB In-Memory
+                </span>
+</div>
+<div class="w-24 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-primary/10 text-primary border border-primary/30">READY</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. KILL SWITCHES SECTION (Circuit Breakers - Spacious Cards) -->
+<section class="space-y-4">
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">toggle_on</span>
+            Triage Circuit Breakers &amp; Kill Switches
+          </h3>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Non-destructive emergency overrides with autonomous fail-safe fallback policies.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Switch Card 1 -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-5 flex flex-col justify-between space-y-4 hover:border-outline transition-colors">
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-code-md font-code-md text-on-surface">KYS_DEBT_QUEUE</span>
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm bg-tertiary/10 text-tertiary border border-tertiary/30">ENV_VAR: ON</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Affects background heuristic debt scanner &amp; burndown pipeline.</p>
+<div class="mt-3 pt-3 border-t border-outline-variant flex items-center gap-2 text-code-sm font-code-sm">
+<span class="text-outline">Policy:</span>
+<span class="text-secondary font-medium">FAIL_OPEN</span>
+<span class="text-outline text-label-sm">(Degrade to read-only manual inspection)</span>
+</div>
+</div>
+<button class="w-full h-8 px-3 rounded bg-surface-container-high border border-outline-variant hover:border-error hover:text-error text-on-surface font-label-sm text-label-sm flex items-center justify-center gap-2 transition-colors">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+              Trip Switch
+            </button>
+</div>
+<!-- Switch Card 2 -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-5 flex flex-col justify-between space-y-4 hover:border-outline transition-colors">
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-code-md font-code-md text-on-surface">KYS_WEBVIEW_EXPORT</span>
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm bg-tertiary/10 text-tertiary border border-tertiary/30">ENV_VAR: ON</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Affects interactive DAG visualizer canvas &amp; JSON-LD serialization runtime.</p>
+<div class="mt-3 pt-3 border-t border-outline-variant flex items-center gap-2 text-code-sm font-code-sm">
+<span class="text-outline">Policy:</span>
+<span class="text-secondary font-medium">FAIL_CLOSED</span>
+<span class="text-outline text-label-sm">(Fallback to raw CLI AST dump)</span>
+</div>
+</div>
+<button class="w-full h-8 px-3 rounded bg-surface-container-high border border-outline-variant hover:border-error hover:text-error text-on-surface font-label-sm text-label-sm flex items-center justify-center gap-2 transition-colors">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+              Trip Switch
+            </button>
+</div>
+<!-- Switch Card 3 -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-5 flex flex-col justify-between space-y-4 hover:border-outline transition-colors">
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-code-md font-code-md text-on-surface">KYS_INGEST</span>
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm bg-tertiary/10 text-tertiary border border-tertiary/30">ENV_VAR: ON</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Affects real-time agent mutation stream &amp; WAL ingestion broker.</p>
+<div class="mt-3 pt-3 border-t border-outline-variant flex items-center gap-2 text-code-sm font-code-sm">
+<span class="text-outline">Policy:</span>
+<span class="text-secondary font-medium">FAIL_PAUSE</span>
+<span class="text-outline text-label-sm">(Buffer in memory up to 50k pkts)</span>
+</div>
+</div>
+<button class="w-full h-8 px-3 rounded bg-surface-container-high border border-outline-variant hover:border-error hover:text-error text-on-surface font-label-sm text-label-sm flex items-center justify-center gap-2 transition-colors">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+              Trip Switch
+            </button>
+</div>
+</div>
+</section>
+<!-- 3. RUNTIME TUNING KNOBS & CONFIG SECTION -->
+<section class="space-y-4">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">tune</span>
+              Runtime Tuning Knobs &amp; Dynamic Configuration
+            </h3>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Parameters hot-reloaded via runtime signal or active daemon lease.</p>
+</div>
+<!-- Filter Chips -->
+<div class="flex items-center gap-2">
+<button class="h-6 px-2.5 rounded text-label-sm font-label-sm bg-primary/20 text-primary border border-primary/40">All 18</button>
+<button class="h-6 px-2.5 rounded text-label-sm font-label-sm bg-surface-container-high text-outline hover:text-on-surface border border-outline-variant">Env 6</button>
+<button class="h-6 px-2.5 rounded text-label-sm font-label-sm bg-surface-container-high text-outline hover:text-on-surface border border-outline-variant">File 8</button>
+<button class="h-6 px-2.5 rounded text-label-sm font-label-sm bg-surface-container-high text-outline hover:text-on-surface border border-outline-variant">Default 4</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded overflow-hidden">
+<div class="grid grid-cols-12 px-5 py-2.5 border-b border-outline-variant bg-surface-container-low text-label-md font-label-md text-outline uppercase tracking-wider">
+<div class="col-span-5">Parameter Identifier</div>
+<div class="col-span-2 text-right">Active Value</div>
+<div class="col-span-2 text-center">Type</div>
+<div class="col-span-3 text-right">Provenance Source</div>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-5 font-code-md text-code-md text-on-surface flex items-center gap-2">
+<span class="text-outline">λ</span>
+                max_event_buffer_pkts
+              </div>
+<div class="col-span-2 font-code-md text-code-md text-on-surface text-right tabular-nums">50,000</div>
+<div class="col-span-2 text-center">
+<span class="text-code-sm font-code-sm text-outline">uint32</span>
+</div>
+<div class="col-span-3 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-surface-container-high text-secondary border border-secondary/30">ENV: KYS_MAX_BUF</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-5 font-code-md text-code-md text-on-surface flex items-center gap-2">
+<span class="text-outline">λ</span>
+                heuristic_entropy_threshold
+              </div>
+<div class="col-span-2 font-code-md text-code-md text-on-surface text-right tabular-nums">0.742</div>
+<div class="col-span-2 text-center">
+<span class="text-code-sm font-code-sm text-outline">float64</span>
+</div>
+<div class="col-span-3 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-surface-container-high text-primary border border-primary/30">FILE: kyc.config.toml</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-5 font-code-md text-code-md text-on-surface flex items-center gap-2">
+<span class="text-outline">λ</span>
+                lease_ttl_seconds
+              </div>
+<div class="col-span-2 font-code-md text-code-md text-on-surface text-right tabular-nums">180</div>
+<div class="col-span-2 text-center">
+<span class="text-code-sm font-code-sm text-outline">int</span>
+</div>
+<div class="col-span-3 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-surface-container-high text-primary border border-primary/30">FILE: kyc.config.toml</span>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-5 font-code-md text-code-md text-on-surface flex items-center gap-2">
+<span class="text-outline">λ</span>
+                duckdb_cache_budget_mb
+              </div>
+<div class="col-span-2 font-code-md text-code-md text-on-surface text-right tabular-nums">256</div>
+<div class="col-span-2 text-center">
+<span class="text-code-sm font-code-sm text-outline">uint32</span>
+</div>
+<div class="col-span-3 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-surface-container-high text-secondary border border-secondary/30">ENV: DUCKDB_CACHE_MB</span>
+</div>
+</div>
+<!-- Row 5 -->
+<div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-5 font-code-md text-code-md text-on-surface flex items-center gap-2">
+<span class="text-outline">λ</span>
+                raft_quorum_heartbeat_ms
+              </div>
+<div class="col-span-2 font-code-md text-code-md text-on-surface text-right tabular-nums">150</div>
+<div class="col-span-2 text-center">
+<span class="text-code-sm font-code-sm text-outline">int</span>
+</div>
+<div class="col-span-3 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-surface-container-high text-outline border border-outline-variant">DEFAULT: engine_v4</span>
+</div>
+</div>
+<!-- Row 6 -->
+<div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-5 font-code-md text-code-md text-on-surface flex items-center gap-2">
+<span class="text-outline">λ</span>
+                shacl_validation_level
+              </div>
+<div class="col-span-2 font-code-md text-code-md text-tertiary text-right">STRICT_ASSERT</div>
+<div class="col-span-2 text-center">
+<span class="text-code-sm font-code-sm text-outline">enum</span>
+</div>
+<div class="col-span-3 text-right">
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-surface-container-high text-outline border border-outline-variant">DEFAULT: engine_v4</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. HOST TOPOLOGY & HARDWARE ALLOCATION SECTION -->
+<section class="space-y-4">
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">memory</span>
+            Host Topology &amp; Hardware Allocation
+          </h3>
+<p class="text-body-sm font-body-sm text-outline mt-0.5">Physical node capacity and calculated concurrent executor allocation budget.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+<!-- Physical Hardware Card (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-low border border-outline-variant rounded p-5 space-y-4">
+<div class="flex justify-between items-center pb-2 border-b border-outline-variant">
+<span class="text-label-md font-label-md text-outline uppercase tracking-wider">Host Node Architecture</span>
+<span class="text-code-sm font-code-sm text-primary font-medium">NUMA Node 0 (Local Host)</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<span class="text-label-sm font-label-sm text-outline uppercase">CPU Architecture</span>
+<div class="text-body-md font-body-md text-on-surface font-medium">16 Cores (AMD EPYC)</div>
+<div class="text-code-sm font-code-sm text-outline">AVX-512 enabled · Base 3.2 GHz</div>
+</div>
+<div class="space-y-1">
+<span class="text-label-sm font-label-sm text-outline uppercase">Physical Memory</span>
+<div class="text-body-md font-body-md text-on-surface font-medium tabular-nums">64 GB Total</div>
+<div class="text-code-sm font-code-sm text-tertiary tabular-nums">41 GB Available / 64.1% free</div>
+</div>
+<div class="space-y-1">
+<span class="text-label-sm font-label-sm text-outline uppercase">Storage Channel</span>
+<div class="text-body-md font-body-md text-on-surface font-medium">NVMe SSD Non-Rotational</div>
+<div class="text-code-sm font-code-sm text-secondary tabular-nums">&lt;2ms IO latency · direct-io</div>
+</div>
+<div class="space-y-1">
+<span class="text-label-sm font-label-sm text-outline uppercase">GPU Accelerator</span>
+<div class="text-body-md font-body-md text-on-surface font-medium">None (CPU Tensor fallback)</div>
+<div class="text-code-sm font-code-sm text-error">CUDA offline · SIMD AVX fallback</div>
+</div>
+</div>
+<!-- Explicit Tensor Fallback / Error Badge -->
+<div class="mt-2 p-3 bg-surface-container-lowest border border-outline-variant rounded flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="text-code-sm font-code-sm text-outline">available: <span class="text-error">false</span></span>
+</div>
+<span class="text-code-sm font-code-sm text-on-surface-variant">
+                [ERR_CUDA_NO_DEVICE: Subsystem tensor fallback to AVX-512 enabled]
+              </span>
+</div>
+</div>
+<!-- Derived Execution Plan (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-low border border-outline-variant rounded p-5 flex flex-col justify-between space-y-4">
+<div class="flex justify-between items-center pb-2 border-b border-outline-variant">
+<span class="text-label-md font-label-md text-outline uppercase tracking-wider">Derived Execution Plan</span>
+<span class="text-code-sm font-code-sm text-outline">Dynamic Scheduler</span>
+</div>
+<div class="grid grid-cols-2 gap-3.5">
+<div class="p-3 bg-surface-container-lowest border border-outline-variant rounded">
+<span class="text-label-sm font-label-sm text-outline uppercase">base_workers</span>
+<div class="text-headline-sm font-code-md text-on-surface mt-1 tabular-nums">8 threads</div>
+<div class="text-code-sm font-code-sm text-outline mt-0.5">50% core pin</div>
+</div>
+<div class="p-3 bg-surface-container-lowest border border-outline-variant rounded">
+<span class="text-label-sm font-label-sm text-outline uppercase">queue_scale</span>
+<div class="text-headline-sm font-code-md text-on-surface mt-1 tabular-nums">2x multiplier</div>
+<div class="text-code-sm font-code-sm text-outline mt-0.5">Spillover buffer</div>
+</div>
+<div class="p-3 bg-surface-container-lowest border border-outline-variant rounded">
+<span class="text-label-sm font-label-sm text-outline uppercase">io_buffer_bytes</span>
+<div class="text-headline-sm font-code-md text-on-surface mt-1 tabular-nums">1 MiB</div>
+<div class="text-code-sm font-code-sm text-outline mt-0.5 tabular-nums">1,048,576 B page</div>
+</div>
+<div class="p-3 bg-surface-container-lowest border border-outline-variant rounded">
+<span class="text-label-sm font-label-sm text-outline uppercase">query_cache_entries</span>
+<div class="text-headline-sm font-code-md text-on-surface mt-1 tabular-nums">512 slots</div>
+<div class="text-code-sm font-code-sm text-outline mt-0.5">LRU eviction</div>
+</div>
+</div>
+<div class="text-code-sm font-code-sm text-outline text-right">
+              State: <span class="text-tertiary">STABLE LEASE</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. AUXILIARY PANELS (Relearn State Machine + Route Summary & API Gateway) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5 pb-12">
+<!-- Relearn State Machine Panel (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-low border border-outline-variant rounded p-5 flex flex-col justify-between space-y-4">
+<div>
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-headline-sm font-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">autorenew</span>
+                Relearn State Machine
+              </h4>
+<span class="px-2 py-0.5 text-label-sm font-label-sm rounded bg-surface-container-high text-tertiary border border-tertiary/30">IDLE</span>
+</div>
+<p class="text-body-sm font-body-sm text-outline">Continuous autonomous knowledge-graph reconciliation loop.</p>
+<div class="mt-4 p-3 bg-surface-container-lowest border border-outline-variant rounded space-y-3">
+<div class="flex justify-between text-code-sm font-code-sm">
+<span class="text-outline">Next cycle in: <span class="text-on-surface font-medium">18m</span></span>
+<span class="text-outline">Last pass: <span class="text-on-surface font-medium">42m ago</span></span>
+</div>
+<!-- Stepper Pipeline -->
+<div class="pt-2">
+<div class="text-label-sm font-label-sm text-outline uppercase mb-2">Stage Pipeline Sequence</div>
+<div class="grid grid-cols-4 gap-1 text-center font-code-sm text-code-sm">
+<div class="py-1.5 rounded bg-primary/20 text-primary border border-primary/40 font-medium">[IDLE]</div>
+<div class="py-1.5 rounded bg-surface-container text-outline border border-outline-variant">[SCAN]</div>
+<div class="py-1.5 rounded bg-surface-container text-outline border border-outline-variant">[DIFF]</div>
+<div class="py-1.5 rounded bg-surface-container text-outline border border-outline-variant">[SYNC]</div>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-2 pt-2 border-t border-outline-variant">
+<div class="flex justify-between text-code-sm font-code-sm text-outline">
+<span>Active Lease Lock:</span>
+<span class="text-on-surface font-code-sm">shared_wal_read</span>
+</div>
+<button class="w-full h-8 px-3 rounded bg-surface-container-high border border-outline-variant hover:border-outline text-on-surface font-label-sm text-label-sm flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-outline">play_arrow</span>
+              Force Relearn [F5]
+            </button>
+</div>
+</div>
+<!-- Route Summary & API Gateway (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest border border-outline-variant rounded overflow-hidden flex flex-col justify-between">
+<div>
+<div class="px-5 py-3 border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<div>
+<span class="text-label-md font-label-md text-outline uppercase tracking-wider">Route Summary &amp; API Gateway</span>
+<span class="ml-2 text-code-sm font-code-sm text-primary">45 routes registered</span>
+</div>
+<div class="text-code-sm font-code-sm text-outline">HTTP/2 IPC Streaming</div>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Route 1 -->
+<div class="px-5 py-2.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="font-code-md text-code-md text-on-surface w-2/5">/v1/graph/traverse</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-secondary bg-secondary/10 border border-secondary/30">GET</span>
+</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-outline bg-surface-container border border-outline-variant">READ</span>
+</div>
+<div class="font-code-sm text-code-sm text-tertiary tabular-nums text-right w-1/4">0.8ms</div>
+</div>
+<!-- Route 2 -->
+<div class="px-5 py-2.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="font-code-md text-code-md text-on-surface w-2/5">/v1/symbols/ast_query</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-primary bg-primary/10 border border-primary/30">POST</span>
+</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-secondary bg-secondary/10 border border-secondary/30">HEAVY</span>
+</div>
+<div class="font-code-sm text-code-sm text-tertiary tabular-nums text-right w-1/4">0.4ms</div>
+</div>
+<!-- Route 3 -->
+<div class="px-5 py-2.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="font-code-md text-code-md text-on-surface w-2/5">/v1/wal/commit</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-tertiary bg-tertiary/10 border border-tertiary/30">PUT</span>
+</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-tertiary bg-tertiary/10 border border-tertiary/30">WRITE</span>
+</div>
+<div class="font-code-sm text-code-sm text-tertiary tabular-nums text-right w-1/4">1.1ms</div>
+</div>
+<!-- Route 4 -->
+<div class="px-5 py-2.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="font-code-md text-code-md text-on-surface w-2/5">/v1/export/jsonld</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-secondary bg-secondary/10 border border-secondary/30">GET</span>
+</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-outline bg-surface-container border border-outline-variant">EXPORT</span>
+</div>
+<div class="font-code-sm text-code-sm text-outline tabular-nums text-right w-1/4">5.8ms</div>
+</div>
+<!-- Route 5 -->
+<div class="px-5 py-2.5 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="font-code-md text-code-md text-on-surface w-2/5">/v1/leases/acquire</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-primary bg-primary/10 border border-primary/30">POST</span>
+</div>
+<div class="w-1/6">
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm text-tertiary bg-tertiary/10 border border-tertiary/30">WRITE</span>
+</div>
+<div class="font-code-sm text-code-sm text-tertiary tabular-nums text-right w-1/4">0.2ms</div>
+</div>
+</div>
+</div>
+<div class="p-3 bg-surface-container-low border-t border-outline-variant flex justify-between items-center text-code-sm font-code-sm text-outline">
+<span>IPC Gateway: unix:///var/run/kyc.sock</span>
+<span class="text-tertiary">0 dropped frames</span>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

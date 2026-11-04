@@ -1,0 +1,1398 @@
+{
+  "composite_vs": {
+    "codegraph": 391.8669,
+    "graphify": 1321.0422
+  },
+  "formula": {
+    "composite": "weighted mean of 7 level relatives; per-opponent only, never merged",
+    "level": "mean of defined metric relatives; unbounded reported separately, never fabricated",
+    "metric_relative": "100 * ours / opponent; opponent==0 -> null if ours>0 (unbounded), 100 if ours==0"
+  },
+  "generated_at": "20261104T082511Z",
+  "levels": [
+    {
+      "description": "engineering professionalism surface (LOC, tests, docs, changelog, license, pins)",
+      "id": "l1",
+      "metrics": [
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.source_loc --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.source_loc --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.source_loc --repo ours"
+          },
+          "description": "non-blank source lines of code",
+          "id": "l1.source_loc",
+          "relative_percent_vs": {
+            "codegraph": 35.1807,
+            "graphify": 77.543
+          },
+          "values": {
+            "codegraph": 172242.0,
+            "graphify": 78145.0,
+            "ours": 60596.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.test_loc --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.test_loc --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.test_loc --repo ours"
+          },
+          "description": "non-blank test lines of code",
+          "id": "l1.test_loc",
+          "relative_percent_vs": {
+            "codegraph": 40.4843,
+            "graphify": 74.0846
+          },
+          "values": {
+            "codegraph": 197469.0,
+            "graphify": 107909.0,
+            "ours": 79944.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.test_files --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.test_files --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.test_files --repo ours"
+          },
+          "description": "number of test files",
+          "id": "l1.test_files",
+          "relative_percent_vs": {
+            "codegraph": 32.8144,
+            "graphify": 64.1686
+          },
+          "values": {
+            "codegraph": 835.0,
+            "graphify": 427.0,
+            "ours": 274.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.test_cases --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.test_cases --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.test_cases --repo ours"
+          },
+          "description": "test case count (def test_ / it()|test())",
+          "id": "l1.test_cases",
+          "relative_percent_vs": {
+            "codegraph": 86.5159,
+            "graphify": 104.3916
+          },
+          "values": {
+            "codegraph": 7913.0,
+            "graphify": 6558.0,
+            "ours": 6846.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.doc_files --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.doc_files --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.doc_files --repo ours"
+          },
+          "description": "markdown doc file count",
+          "id": "l1.doc_files",
+          "relative_percent_vs": {
+            "codegraph": 208.6957,
+            "graphify": 313.0435
+          },
+          "values": {
+            "codegraph": 69.0,
+            "graphify": 46.0,
+            "ours": 144.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.doc_lines --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.doc_lines --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.doc_lines --repo ours"
+          },
+          "description": "non-blank doc lines",
+          "id": "l1.doc_lines",
+          "relative_percent_vs": {
+            "codegraph": 55.4834,
+            "graphify": 90.5207
+          },
+          "values": {
+            "codegraph": 24629.0,
+            "graphify": 15096.0,
+            "ours": 13665.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.changelog_sections --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.changelog_sections --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.changelog_sections --repo ours"
+          },
+          "description": "'## ' sections in CHANGELOG*",
+          "id": "l1.changelog_sections",
+          "relative_percent_vs": {
+            "codegraph": 14.7059,
+            "graphify": 2.1368
+          },
+          "values": {
+            "codegraph": 34.0,
+            "graphify": 234.0,
+            "ours": 5.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.comment_lines --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.comment_lines --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.comment_lines --repo ours"
+          },
+          "description": "comment lines in source (# or //)",
+          "id": "l1.comment_lines",
+          "relative_percent_vs": {
+            "codegraph": 12.9137,
+            "graphify": 21.2684
+          },
+          "values": {
+            "codegraph": 17555.0,
+            "graphify": 10659.0,
+            "ours": 2267.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.license_files --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.license_files --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.license_files --repo ours"
+          },
+          "description": "LICENSE* file count",
+          "id": "l1.license_files",
+          "relative_percent_vs": {
+            "codegraph": 100.0,
+            "graphify": 50.0
+          },
+          "values": {
+            "codegraph": 1.0,
+            "graphify": 2.0,
+            "ours": 1.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l1.pinned_deps --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l1.pinned_deps --repo graphify",
+            "ours": "python bench/verdict/run.py metric l1.pinned_deps --repo ours"
+          },
+          "description": "exactly-pinned dependencies (== / no ^~)",
+          "id": "l1.pinned_deps",
+          "relative_percent_vs": {
+            "codegraph": null,
+            "graphify": 228.5714
+          },
+          "values": {
+            "codegraph": 0.0,
+            "graphify": 7.0,
+            "ours": 16.0
+          }
+        }
+      ],
+      "name": "profesional",
+      "relative_percent_vs": {
+        "codegraph": 65.1993,
+        "graphify": 102.5729
+      },
+      "unbounded_vs": {
+        "codegraph": 1,
+        "graphify": 0
+      },
+      "weight": 1.0
+    },
+    {
+      "description": "structural code inventory (modules, functions, classes, typed errors, enums)",
+      "id": "l2",
+      "metrics": [
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.packages --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.packages --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.packages --repo ours"
+          },
+          "description": "distinct source packages (dirs with code)",
+          "id": "l2.packages",
+          "relative_percent_vs": {
+            "codegraph": 66.6667,
+            "graphify": 466.6667
+          },
+          "values": {
+            "codegraph": 21.0,
+            "graphify": 3.0,
+            "ours": 14.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.public_functions --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.public_functions --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.public_functions --repo ours"
+          },
+          "description": "public function count",
+          "id": "l2.public_functions",
+          "relative_percent_vs": {
+            "codegraph": 112.7639,
+            "graphify": 187.6997
+          },
+          "values": {
+            "codegraph": 1042.0,
+            "graphify": 626.0,
+            "ours": 1175.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.classes --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.classes --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.classes --repo ours"
+          },
+          "description": "class definition count",
+          "id": "l2.classes",
+          "relative_percent_vs": {
+            "codegraph": 53.4687,
+            "graphify": 1708.1081
+          },
+          "values": {
+            "codegraph": 1182.0,
+            "graphify": 37.0,
+            "ours": 632.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.typed_errors --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.typed_errors --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.typed_errors --repo ours"
+          },
+          "description": "typed error classes (Exception/Error heirs)",
+          "id": "l2.typed_errors",
+          "relative_percent_vs": {
+            "codegraph": 1311.7647,
+            "graphify": 22300.0
+          },
+          "values": {
+            "codegraph": 17.0,
+            "graphify": 1.0,
+            "ours": 223.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.enums --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.enums --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.enums --repo ours"
+          },
+          "description": "enum type count",
+          "id": "l2.enums",
+          "relative_percent_vs": {
+            "codegraph": 30.1205,
+            "graphify": 2500.0
+          },
+          "values": {
+            "codegraph": 83.0,
+            "graphify": 1.0,
+            "ours": 25.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.interfaces --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.interfaces --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.interfaces --repo ours"
+          },
+          "description": "interfaces (TS) / Protocol+dataclass (PY)",
+          "id": "l2.interfaces",
+          "relative_percent_vs": {
+            "codegraph": 26.9014,
+            "graphify": 1123.5294
+          },
+          "values": {
+            "codegraph": 710.0,
+            "graphify": 17.0,
+            "ours": 191.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.assertions --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.assertions --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.assertions --repo ours"
+          },
+          "description": "assert/invariant sites in source",
+          "id": "l2.assertions",
+          "relative_percent_vs": {
+            "codegraph": 354.2857,
+            "graphify": 6200.0
+          },
+          "values": {
+            "codegraph": 35.0,
+            "graphify": 2.0,
+            "ours": 124.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.named_constants --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.named_constants --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.named_constants --repo ours"
+          },
+          "description": "module-level UPPER_SNAKE constants",
+          "id": "l2.named_constants",
+          "relative_percent_vs": {
+            "codegraph": 35.2905,
+            "graphify": 1098.0769
+          },
+          "values": {
+            "codegraph": 1618.0,
+            "graphify": 52.0,
+            "ours": 571.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.typed_signatures --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.typed_signatures --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.typed_signatures --repo ours"
+          },
+          "description": "functions with return-type annotation",
+          "id": "l2.typed_signatures",
+          "relative_percent_vs": {
+            "codegraph": 33.8325,
+            "graphify": 124.173
+          },
+          "values": {
+            "codegraph": 7212.0,
+            "graphify": 1965.0,
+            "ours": 2440.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l2.decorators --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l2.decorators --repo graphify",
+            "ours": "python bench/verdict/run.py metric l2.decorators --repo ours"
+          },
+          "description": "decorator applications",
+          "id": "l2.decorators",
+          "relative_percent_vs": {
+            "codegraph": 7960.0,
+            "graphify": 1137.1429
+          },
+          "values": {
+            "codegraph": 5.0,
+            "graphify": 35.0,
+            "ours": 398.0
+          }
+        }
+      ],
+      "name": "codebase",
+      "relative_percent_vs": {
+        "codegraph": 998.5095,
+        "graphify": 3684.5397
+      },
+      "unbounded_vs": {
+        "codegraph": 0,
+        "graphify": 0
+      },
+      "weight": 1.0
+    },
+    {
+      "description": "architecture surface (layers, CLI/HTTP/MCP, schema, migrations, config, kill switches)",
+      "id": "l3",
+      "metrics": [
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.layers --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.layers --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.layers --repo ours"
+          },
+          "description": "top-level architecture layers under src roots",
+          "id": "l3.layers",
+          "relative_percent_vs": {
+            "codegraph": 85.7143,
+            "graphify": 600.0
+          },
+          "values": {
+            "codegraph": 14.0,
+            "graphify": 2.0,
+            "ours": 12.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.cli_commands --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.cli_commands --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.cli_commands --repo ours"
+          },
+          "description": "CLI command registrations",
+          "id": "l3.cli_commands",
+          "relative_percent_vs": {
+            "codegraph": 223.0769,
+            "graphify": null
+          },
+          "values": {
+            "codegraph": 26.0,
+            "graphify": 0.0,
+            "ours": 58.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.http_routes --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.http_routes --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.http_routes --repo ours"
+          },
+          "description": "HTTP route registrations (/v1//api paths)",
+          "id": "l3.http_routes",
+          "relative_percent_vs": {
+            "codegraph": 215.1515,
+            "graphify": 2840.0
+          },
+          "values": {
+            "codegraph": 66.0,
+            "graphify": 5.0,
+            "ours": 142.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.mcp_tools --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.mcp_tools --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.mcp_tools --repo ours"
+          },
+          "description": "MCP tool definitions",
+          "id": "l3.mcp_tools",
+          "relative_percent_vs": {
+            "codegraph": 225.0,
+            "graphify": null
+          },
+          "values": {
+            "codegraph": 8.0,
+            "graphify": 0.0,
+            "ours": 18.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.db_tables --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.db_tables --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.db_tables --repo ours"
+          },
+          "description": "CREATE TABLE count (src + .sql)",
+          "id": "l3.db_tables",
+          "relative_percent_vs": {
+            "codegraph": 144.4444,
+            "graphify": 173.3333
+          },
+          "values": {
+            "codegraph": 18.0,
+            "graphify": 15.0,
+            "ours": 26.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.migrations --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.migrations --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.migrations --repo ours"
+          },
+          "description": "migration files + ALTER TABLE sites",
+          "id": "l3.migrations",
+          "relative_percent_vs": {
+            "codegraph": 84.6154,
+            "graphify": 550.0
+          },
+          "values": {
+            "codegraph": 13.0,
+            "graphify": 2.0,
+            "ours": 11.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.env_vars --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.env_vars --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.env_vars --repo ours"
+          },
+          "description": "distinct environment variables read",
+          "id": "l3.env_vars",
+          "relative_percent_vs": {
+            "codegraph": 110.3093,
+            "graphify": 121.5909
+          },
+          "values": {
+            "codegraph": 97.0,
+            "graphify": 88.0,
+            "ours": 107.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.kill_switch_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.kill_switch_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.kill_switch_sites --repo ours"
+          },
+          "description": "kill-switch env usage sites (DISABLE/ENABLE/NO_/_OFF)",
+          "id": "l3.kill_switch_sites",
+          "relative_percent_vs": {
+            "codegraph": 170.5882,
+            "graphify": 725.0
+          },
+          "values": {
+            "codegraph": 17.0,
+            "graphify": 4.0,
+            "ours": 29.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.config_fields --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.config_fields --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.config_fields --repo ours"
+          },
+          "description": "config dataclass/interface fields",
+          "id": "l3.config_fields",
+          "relative_percent_vs": {
+            "codegraph": 311.1111,
+            "graphify": null
+          },
+          "values": {
+            "codegraph": 18.0,
+            "graphify": 0.0,
+            "ours": 56.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l3.contract_docs --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l3.contract_docs --repo graphify",
+            "ours": "python bench/verdict/run.py metric l3.contract_docs --repo ours"
+          },
+          "description": "contract documentation files",
+          "id": "l3.contract_docs",
+          "relative_percent_vs": {
+            "codegraph": null,
+            "graphify": null
+          },
+          "values": {
+            "codegraph": 0.0,
+            "graphify": 0.0,
+            "ours": 10.0
+          }
+        }
+      ],
+      "name": "arsitektur",
+      "relative_percent_vs": {
+        "codegraph": 174.4457,
+        "graphify": 834.9874
+      },
+      "unbounded_vs": {
+        "codegraph": 1,
+        "graphify": 4
+      },
+      "weight": 1.0
+    },
+    {
+      "description": "operational flow machinery (async, locks, queues, timeouts, retries, shutdown)",
+      "id": "l4",
+      "metrics": [
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.async_functions --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.async_functions --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.async_functions --repo ours"
+          },
+          "description": "async function count",
+          "id": "l4.async_functions",
+          "relative_percent_vs": {
+            "codegraph": 15.0407,
+            "graphify": 308.3333
+          },
+          "values": {
+            "codegraph": 246.0,
+            "graphify": 12.0,
+            "ours": 37.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.await_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.await_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.await_sites --repo ours"
+          },
+          "description": "await sites",
+          "id": "l4.await_sites",
+          "relative_percent_vs": {
+            "codegraph": 7.7922,
+            "graphify": 317.6471
+          },
+          "values": {
+            "codegraph": 693.0,
+            "graphify": 17.0,
+            "ours": 54.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.lock_primitives --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.lock_primitives --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.lock_primitives --repo ours"
+          },
+          "description": "lock/semaphore/mutex constructions",
+          "id": "l4.lock_primitives",
+          "relative_percent_vs": {
+            "codegraph": 520.0,
+            "graphify": 2600.0
+          },
+          "values": {
+            "codegraph": 5.0,
+            "graphify": 1.0,
+            "ours": 26.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.queue_primitives --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.queue_primitives --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.queue_primitives --repo ours"
+          },
+          "description": "queue constructions / maxsize bounds",
+          "id": "l4.queue_primitives",
+          "relative_percent_vs": {
+            "codegraph": 900.0,
+            "graphify": 257.1429
+          },
+          "values": {
+            "codegraph": 2.0,
+            "graphify": 7.0,
+            "ours": 18.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.timeout_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.timeout_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.timeout_sites --repo ours"
+          },
+          "description": "timeout mentions in source",
+          "id": "l4.timeout_sites",
+          "relative_percent_vs": {
+            "codegraph": 49.5935,
+            "graphify": 110.9091
+          },
+          "values": {
+            "codegraph": 123.0,
+            "graphify": 55.0,
+            "ours": 61.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.retry_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.retry_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.retry_sites --repo ours"
+          },
+          "description": "retry/backoff sites",
+          "id": "l4.retry_sites",
+          "relative_percent_vs": {
+            "codegraph": 45.5357,
+            "graphify": 114.6067
+          },
+          "values": {
+            "codegraph": 224.0,
+            "graphify": 89.0,
+            "ours": 102.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.shutdown_handlers --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.shutdown_handlers --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.shutdown_handlers --repo ours"
+          },
+          "description": "shutdown/signal handlers",
+          "id": "l4.shutdown_handlers",
+          "relative_percent_vs": {
+            "codegraph": 30.5556,
+            "graphify": 157.1429
+          },
+          "values": {
+            "codegraph": 36.0,
+            "graphify": 7.0,
+            "ours": 11.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.worker_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.worker_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.worker_sites --repo ours"
+          },
+          "description": "thread/process/worker/spawn sites",
+          "id": "l4.worker_sites",
+          "relative_percent_vs": {
+            "codegraph": 48.0392,
+            "graphify": 122.5
+          },
+          "values": {
+            "codegraph": 102.0,
+            "graphify": 40.0,
+            "ours": 49.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.batch_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.batch_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.batch_sites --repo ours"
+          },
+          "description": "batch processing sites",
+          "id": "l4.batch_sites",
+          "relative_percent_vs": {
+            "codegraph": 53.4884,
+            "graphify": 124.8062
+          },
+          "values": {
+            "codegraph": 301.0,
+            "graphify": 129.0,
+            "ours": 161.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l4.journal_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l4.journal_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l4.journal_sites --repo ours"
+          },
+          "description": "audit/journal/log_event sites",
+          "id": "l4.journal_sites",
+          "relative_percent_vs": {
+            "codegraph": 2553.4884,
+            "graphify": 15685.7143
+          },
+          "values": {
+            "codegraph": 43.0,
+            "graphify": 7.0,
+            "ours": 1098.0
+          }
+        }
+      ],
+      "name": "flow engineering",
+      "relative_percent_vs": {
+        "codegraph": 422.3534,
+        "graphify": 1979.8802
+      },
+      "unbounded_vs": {
+        "codegraph": 0,
+        "graphify": 0
+      },
+      "weight": 1.0
+    },
+    {
+      "description": "code complexity + depth (functions, branches, nesting, imports, test rigor)",
+      "id": "l5",
+      "metrics": [
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.total_functions --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.total_functions --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.total_functions --repo ours"
+          },
+          "description": "total function count (PY AST; TS function+=>)",
+          "id": "l5.total_functions",
+          "relative_percent_vs": {
+            "codegraph": 21.0821,
+            "graphify": 118.4988
+          },
+          "values": {
+            "codegraph": 11607.0,
+            "graphify": 2065.0,
+            "ours": 2447.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.branch_statements --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.branch_statements --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.branch_statements --repo ours"
+          },
+          "description": "branch statements (if/for/while/except/catch/case/switch)",
+          "id": "l5.branch_statements",
+          "relative_percent_vs": {
+            "codegraph": 30.3753,
+            "graphify": 47.3081
+          },
+          "values": {
+            "codegraph": 28003.0,
+            "graphify": 17980.0,
+            "ours": 8506.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.max_nesting --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.max_nesting --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.max_nesting --repo ours"
+          },
+          "description": "max nesting depth (PY AST; TS brace depth)",
+          "id": "l5.max_nesting",
+          "relative_percent_vs": {
+            "codegraph": 38.8889,
+            "graphify": 21.5385
+          },
+          "values": {
+            "codegraph": 36.0,
+            "graphify": 65.0,
+            "ours": 14.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.imports --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.imports --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.imports --repo ours"
+          },
+          "description": "import statements",
+          "id": "l5.imports",
+          "relative_percent_vs": {
+            "codegraph": 98.7274,
+            "graphify": 119.9349
+          },
+          "values": {
+            "codegraph": 1493.0,
+            "graphify": 1229.0,
+            "ours": 1474.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.error_code_literals --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.error_code_literals --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.error_code_literals --repo ours"
+          },
+          "description": "distinct UPPER_SNAKE string literals (error-code proxy)",
+          "id": "l5.error_code_literals",
+          "relative_percent_vs": {
+            "codegraph": 431.4917,
+            "graphify": 476.2195
+          },
+          "values": {
+            "codegraph": 181.0,
+            "graphify": 164.0,
+            "ours": 781.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.property_tests --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.property_tests --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.property_tests --repo ours"
+          },
+          "description": "property-based tests (@given / fc.property)",
+          "id": "l5.property_tests",
+          "relative_percent_vs": {
+            "codegraph": null,
+            "graphify": 8100.0
+          },
+          "values": {
+            "codegraph": 0.0,
+            "graphify": 5.0,
+            "ours": 405.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.parametrized_tests --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.parametrized_tests --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.parametrized_tests --repo ours"
+          },
+          "description": "parametrized test sites",
+          "id": "l5.parametrized_tests",
+          "relative_percent_vs": {
+            "codegraph": 104.4444,
+            "graphify": 96.1988
+          },
+          "values": {
+            "codegraph": 315.0,
+            "graphify": 342.0,
+            "ours": 329.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.test_fixtures --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.test_fixtures --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.test_fixtures --repo ours"
+          },
+          "description": "test fixtures (pytest.fixture/beforeEach/describe)",
+          "id": "l5.test_fixtures",
+          "relative_percent_vs": {
+            "codegraph": 3.2229,
+            "graphify": 254.7619
+          },
+          "values": {
+            "codegraph": 3320.0,
+            "graphify": 42.0,
+            "ours": 107.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.loc_per_function --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.loc_per_function --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.loc_per_function --repo ours"
+          },
+          "description": "source LOC per function",
+          "id": "l5.loc_per_function",
+          "relative_percent_vs": {
+            "codegraph": 166.8749,
+            "graphify": 65.4379
+          },
+          "values": {
+            "codegraph": 14.8395,
+            "graphify": 37.8426,
+            "ours": 24.7634
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l5.distinct_import_roots --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l5.distinct_import_roots --repo graphify",
+            "ours": "python bench/verdict/run.py metric l5.distinct_import_roots --repo ours"
+          },
+          "description": "distinct imported module roots",
+          "id": "l5.distinct_import_roots",
+          "relative_percent_vs": {
+            "codegraph": 145.8333,
+            "graphify": 57.377
+          },
+          "values": {
+            "codegraph": 48.0,
+            "graphify": 122.0,
+            "ours": 70.0
+          }
+        }
+      ],
+      "name": "kompleksitas codebase",
+      "relative_percent_vs": {
+        "codegraph": 115.6601,
+        "graphify": 935.7275
+      },
+      "unbounded_vs": {
+        "codegraph": 1,
+        "graphify": 0
+      },
+      "weight": 1.0
+    },
+    {
+      "description": "architecture complexity (components, edges, surfaces, middleware, events)",
+      "id": "l6",
+      "metrics": [
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.components --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.components --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.components --repo ours"
+          },
+          "description": "top-level components with >=2 files",
+          "id": "l6.components",
+          "relative_percent_vs": {
+            "codegraph": 92.3077,
+            "graphify": 600.0
+          },
+          "values": {
+            "codegraph": 13.0,
+            "graphify": 2.0,
+            "ours": 12.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.inter_layer_edges --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.inter_layer_edges --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.inter_layer_edges --repo ours"
+          },
+          "description": "distinct cross-layer static import edges",
+          "id": "l6.inter_layer_edges",
+          "relative_percent_vs": {
+            "codegraph": 107.8947,
+            "graphify": 2050.0
+          },
+          "values": {
+            "codegraph": 38.0,
+            "graphify": 2.0,
+            "ours": 41.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.surfaces --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.surfaces --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.surfaces --repo ours"
+          },
+          "description": "external surfaces present (cli/http/mcp/ui/exporter, 0-5)",
+          "id": "l6.surfaces",
+          "relative_percent_vs": {
+            "codegraph": 250.0,
+            "graphify": 125.0
+          },
+          "values": {
+            "codegraph": 2.0,
+            "graphify": 4.0,
+            "ours": 5.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.schema_versions --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.schema_versions --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.schema_versions --repo ours"
+          },
+          "description": "distinct schema version constants",
+          "id": "l6.schema_versions",
+          "relative_percent_vs": {
+            "codegraph": 200.0,
+            "graphify": null
+          },
+          "values": {
+            "codegraph": 1.0,
+            "graphify": 0.0,
+            "ours": 2.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.middleware --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.middleware --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.middleware --repo ours"
+          },
+          "description": "middleware constructs",
+          "id": "l6.middleware",
+          "relative_percent_vs": {
+            "codegraph": 91.2281,
+            "graphify": 433.3333
+          },
+          "values": {
+            "codegraph": 57.0,
+            "graphify": 12.0,
+            "ours": 52.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.adapters --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.adapters --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.adapters --repo ours"
+          },
+          "description": "adapter/bridge modules",
+          "id": "l6.adapters",
+          "relative_percent_vs": {
+            "codegraph": 150.0,
+            "graphify": null
+          },
+          "values": {
+            "codegraph": 2.0,
+            "graphify": 0.0,
+            "ours": 3.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.event_types --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.event_types --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.event_types --repo ours"
+          },
+          "description": "distinct dotted event-type literals in event/audit modules",
+          "id": "l6.event_types",
+          "relative_percent_vs": {
+            "codegraph": 145.7831,
+            "graphify": 200.0
+          },
+          "values": {
+            "codegraph": 166.0,
+            "graphify": 121.0,
+            "ours": 242.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.registrations --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.registrations --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.registrations --repo ours"
+          },
+          "description": "registry/command registrations",
+          "id": "l6.registrations",
+          "relative_percent_vs": {
+            "codegraph": 412.0,
+            "graphify": 321.875
+          },
+          "values": {
+            "codegraph": 25.0,
+            "graphify": 32.0,
+            "ours": 103.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.config_keys --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.config_keys --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.config_keys --repo ours"
+          },
+          "description": "total config keys (env vars + config fields)",
+          "id": "l6.config_keys",
+          "relative_percent_vs": {
+            "codegraph": 141.7391,
+            "graphify": 185.2273
+          },
+          "values": {
+            "codegraph": 115.0,
+            "graphify": 88.0,
+            "ours": 163.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l6.kill_switch_breadth --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l6.kill_switch_breadth --repo graphify",
+            "ours": "python bench/verdict/run.py metric l6.kill_switch_breadth --repo ours"
+          },
+          "description": "distinct kill-switch env names",
+          "id": "l6.kill_switch_breadth",
+          "relative_percent_vs": {
+            "codegraph": 1450.0,
+            "graphify": 725.0
+          },
+          "values": {
+            "codegraph": 2.0,
+            "graphify": 4.0,
+            "ours": 29.0
+          }
+        }
+      ],
+      "name": "kompleksitas arsitektur",
+      "relative_percent_vs": {
+        "codegraph": 304.0953,
+        "graphify": 580.0544
+      },
+      "unbounded_vs": {
+        "codegraph": 0,
+        "graphify": 2
+      },
+      "weight": 1.0
+    },
+    {
+      "description": "flow complexity (concurrency breadth, pipelines, recovery, throttling)",
+      "id": "l7",
+      "metrics": [
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.concurrency_breadth --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.concurrency_breadth --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.concurrency_breadth --repo ours"
+          },
+          "description": "distinct concurrency primitives in use (of 20 known)",
+          "id": "l7.concurrency_breadth",
+          "relative_percent_vs": {
+            "codegraph": 75.0,
+            "graphify": 80.0
+          },
+          "values": {
+            "codegraph": 16.0,
+            "graphify": 15.0,
+            "ours": 12.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.pipeline_stages --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.pipeline_stages --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.pipeline_stages --repo ours"
+          },
+          "description": "pipeline modules + stage constructs",
+          "id": "l7.pipeline_stages",
+          "relative_percent_vs": {
+            "codegraph": 188.8889,
+            "graphify": 566.6667
+          },
+          "values": {
+            "codegraph": 9.0,
+            "graphify": 3.0,
+            "ours": 17.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.recovery_paths --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.recovery_paths --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.recovery_paths --repo ours"
+          },
+          "description": "restore/rollback/recover/backup/relearn function defs",
+          "id": "l7.recovery_paths",
+          "relative_percent_vs": {
+            "codegraph": 533.3333,
+            "graphify": 533.3333
+          },
+          "values": {
+            "codegraph": 9.0,
+            "graphify": 9.0,
+            "ours": 48.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.typed_raise_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.typed_raise_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.typed_raise_sites --repo ours"
+          },
+          "description": "distinct exception types raised/thrown",
+          "id": "l7.typed_raise_sites",
+          "relative_percent_vs": {
+            "codegraph": 2310.0,
+            "graphify": 624.3243
+          },
+          "values": {
+            "codegraph": 10.0,
+            "graphify": 37.0,
+            "ours": 231.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.throttle_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.throttle_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.throttle_sites --repo ours"
+          },
+          "description": "throttle/quota/rate-limit/admission sites",
+          "id": "l7.throttle_sites",
+          "relative_percent_vs": {
+            "codegraph": 89.5833,
+            "graphify": 4300.0
+          },
+          "values": {
+            "codegraph": 48.0,
+            "graphify": 1.0,
+            "ours": 43.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.deadline_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.deadline_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.deadline_sites --repo ours"
+          },
+          "description": "deadline sites",
+          "id": "l7.deadline_sites",
+          "relative_percent_vs": {
+            "codegraph": 381.4815,
+            "graphify": null
+          },
+          "values": {
+            "codegraph": 27.0,
+            "graphify": 0.0,
+            "ours": 103.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.watermark_lease_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.watermark_lease_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.watermark_lease_sites --repo ours"
+          },
+          "description": "watermark/lease sites",
+          "id": "l7.watermark_lease_sites",
+          "relative_percent_vs": {
+            "codegraph": 2666.6667,
+            "graphify": null
+          },
+          "values": {
+            "codegraph": 12.0,
+            "graphify": 0.0,
+            "ours": 320.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.flow_tests --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.flow_tests --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.flow_tests --repo ours"
+          },
+          "description": "flow stress tests (storm/concurrency/simulation/deadline/throttle)",
+          "id": "l7.flow_tests",
+          "relative_percent_vs": {
+            "codegraph": 168.75,
+            "graphify": 337.5
+          },
+          "values": {
+            "codegraph": 16.0,
+            "graphify": 8.0,
+            "ours": 27.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.watchdog_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.watchdog_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.watchdog_sites --repo ours"
+          },
+          "description": "watchdog/liveness/health sites",
+          "id": "l7.watchdog_sites",
+          "relative_percent_vs": {
+            "codegraph": 101.3043,
+            "graphify": 1294.4444
+          },
+          "values": {
+            "codegraph": 230.0,
+            "graphify": 18.0,
+            "ours": 233.0
+          }
+        },
+        {
+          "command": {
+            "codegraph": "python bench/verdict/run.py metric l7.drain_sites --repo codegraph",
+            "graphify": "python bench/verdict/run.py metric l7.drain_sites --repo graphify",
+            "ours": "python bench/verdict/run.py metric l7.drain_sites --repo ours"
+          },
+          "description": "drain/shutdown/stop function defs",
+          "id": "l7.drain_sites",
+          "relative_percent_vs": {
+            "codegraph": 113.0435,
+            "graphify": 1300.0
+          },
+          "values": {
+            "codegraph": 23.0,
+            "graphify": 2.0,
+            "ours": 26.0
+          }
+        }
+      ],
+      "name": "kompleksitas flow engineering",
+      "relative_percent_vs": {
+        "codegraph": 662.8052,
+        "graphify": 1129.5336
+      },
+      "unbounded_vs": {
+        "codegraph": 0,
+        "graphify": 2
+      },
+      "weight": 1.0
+    }
+  ],
+  "repos": {
+    "codegraph": "/root/src/codegraph",
+    "graphify": "/root/src/graphify",
+    "ours": "/root/know-your-context"
+  },
+  "suite": "verdict-7-level",
+  "target_met": {
+    "codegraph": false,
+    "graphify": true
+  },
+  "target_percent": 400,
+  "version": "1.0.0"
+}

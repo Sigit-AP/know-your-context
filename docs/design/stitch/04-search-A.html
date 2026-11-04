@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Console</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-fixed": "#001f26",
+            "primary-fixed": "#d8e2ff",
+            "inverse-primary": "#005ac2",
+            "secondary-fixed": "#acedff",
+            "on-primary-fixed": "#001a42",
+            "surface-dim": "#101319",
+            "secondary-container": "#03b5d3",
+            "secondary": "#4cd7f6",
+            "tertiary": "#4edea3",
+            "on-secondary-container": "#00424e",
+            "on-tertiary-fixed": "#002113",
+            "primary-container": "#4d8eff",
+            "on-secondary": "#003640",
+            "on-secondary-fixed-variant": "#004e5c",
+            "surface-tint": "#adc6ff",
+            "on-error": "#690005",
+            "primary": "#adc6ff",
+            "primary-fixed-dim": "#adc6ff",
+            "on-primary-fixed-variant": "#004395",
+            "tertiary-container": "#00a572",
+            "surface-container-high": "#272a30",
+            "on-tertiary-fixed-variant": "#005236",
+            "surface-bright": "#363940",
+            "on-tertiary": "#003824",
+            "on-background": "#e1e2eb",
+            "surface-container": "#1d2026",
+            "tertiary-fixed": "#6ffbbe",
+            "surface-container-highest": "#32353b",
+            "error-container": "#93000a",
+            "on-error-container": "#ffdad6",
+            "error": "#ffb4ab",
+            "outline": "#8c909f",
+            "secondary-fixed-dim": "#4cd7f6",
+            "inverse-surface": "#e1e2eb",
+            "outline-variant": "#424754",
+            "tertiary-fixed-dim": "#4edea3",
+            "inverse-on-surface": "#2d3037",
+            "on-primary": "#002e6a",
+            "background": "#101319",
+            "on-surface": "#e1e2eb",
+            "surface": "#101319",
+            "surface-container-lowest": "#0b0e14",
+            "on-surface-variant": "#c2c6d6",
+            "surface-container-low": "#191c22",
+            "on-primary-container": "#00285d",
+            "surface-variant": "#32353b",
+            "on-tertiary-container": "#00311f"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-lg": "0.75rem",
+            "margin-mobile": "0.5rem",
+            "margin": "0.75rem",
+            "space-md": "0.5rem",
+            "gutter-mobile": "0.25rem",
+            "space-xs": "0.125rem",
+            "gutter": "0.5rem",
+            "space-xl": "1rem",
+            "space-sm": "0.25rem"
+          },
+          "fontFamily": {
+            "code-md": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "code-lg": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Hide scrollbars for dense technical panels while maintaining scroll capability */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased overflow-hidden h-screen w-screen flex select-none">
+<!-- SideNavBar Component -->
+<aside class="fixed top-0 left-0 h-screen w-56 flex flex-col bg-surface-container-lowest border-r border-outline-variant z-30 select-none justify-between py-2 px-1">
+<!-- Brand / Cluster Header -->
+<div class="px-2 pt-1 pb-3 border-b border-outline-variant flex items-center space-x-2">
+<div class="w-6 h-6 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[15px]" data-icon="hub">hub</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight truncate leading-tight">Know Your Context</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant tracking-wider">LOCAL CLUSTER v2.4</span>
+</div>
+</div>
+<!-- Navigation Items List (Tab labels from JSON) -->
+<nav class="flex-1 overflow-y-auto no-scrollbar py-2 space-y-0.5">
+<!-- 1: Overview -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="dashboard">dashboard</span>
+<span class="truncate">Overview</span>
+</a>
+<!-- 2: Activity -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="dynamic_feed">dynamic_feed</span>
+<span class="truncate">Activity</span>
+</a>
+<!-- 3: Graph -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="hub">hub</span>
+<span class="truncate">Graph</span>
+</a>
+<!-- 4: Search (ACTIVE - Mapped to this page's intent) -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider bg-surface-container-high text-primary border-l-2 border-primary pl-2 font-medium">
+<span class="material-symbols-outlined mr-2" data-icon="search">search</span>
+<span class="truncate">Search</span>
+</a>
+<!-- 5: Metrics -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="monitoring">monitoring</span>
+<span class="truncate">Metrics</span>
+</a>
+<!-- 6: Health -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="vital_signs">vital_signs</span>
+<span class="truncate">Health</span>
+</a>
+<!-- 7: Analytics -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="analytics">analytics</span>
+<span class="truncate">Analytics</span>
+</a>
+<!-- 8: Audit -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="history">history</span>
+<span class="truncate">Audit</span>
+</a>
+<!-- 9: Proposals with badge -->
+<a class="flex items-center justify-between h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<div class="flex items-center min-w-0">
+<span class="material-symbols-outlined mr-2" data-icon="rule">rule</span>
+<span class="truncate">Proposals</span>
+</div>
+<span class="font-code-sm text-code-sm bg-surface-container text-primary px-1 border border-outline-variant">3</span>
+</a>
+<!-- 10: Debt with badge -->
+<a class="flex items-center justify-between h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<div class="flex items-center min-w-0">
+<span class="material-symbols-outlined mr-2" data-icon="priority_high">priority_high</span>
+<span class="truncate">Debt</span>
+</div>
+<span class="font-code-sm text-code-sm bg-surface-container text-error px-1 border border-outline-variant">12</span>
+</a>
+<!-- 11: System -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="memory">memory</span>
+<span class="truncate">System</span>
+</a>
+<!-- 12: Setup -->
+<a class="flex items-center h-7 px-2 transition-colors duration-150 rounded-none cursor-pointer font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface">
+<span class="material-symbols-outlined mr-2" data-icon="settings">settings</span>
+<span class="truncate">Setup</span>
+</a>
+</nav>
+<!-- Footer Cluster -->
+<div class="pt-2 border-t border-outline-variant space-y-0.5">
+<a class="flex items-center h-7 px-2 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 hover:bg-surface-container hover:text-on-surface transition-colors duration-150">
+<span class="material-symbols-outlined mr-2" data-icon="menu_book">menu_book</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center h-7 px-2 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant pl-2.5 hover:bg-surface-container hover:text-on-surface transition-colors duration-150">
+<span class="material-symbols-outlined mr-2" data-icon="terminal">terminal</span>
+<span>Terminal</span>
+</a>
+<div class="px-2.5 py-1.5 flex items-center justify-between text-outline text-[10px] font-code-sm tracking-tight border-t border-outline-variant mt-1">
+<span class="flex items-center space-x-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>DAG: SYNCED</span>
+</span>
+<span class="font-code-sm">v2.4.1</span>
+</div>
+</div>
+</aside>
+<!-- Main Viewport Canvas (Fixed 100vh fluid panel architecture) -->
+<div class="flex-1 flex flex-col h-screen pl-56 overflow-hidden bg-surface-container-lowest">
+<!-- TopNavBar Component (Dense Telemetry) -->
+<header class="flex justify-between items-center h-8 w-full px-2 border-b border-outline-variant bg-surface-container-low text-on-surface select-none z-20 flex-shrink-0">
+<!-- Left side: Telemetry state links -->
+<div class="flex items-center space-x-3 font-code-sm text-code-sm">
+<div class="flex items-center space-x-1.5 text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Cluster: node-01.local</span>
+</div>
+<span class="text-outline-variant">|</span>
+<span class="text-tertiary font-semibold">Lock Sync: QUORUM</span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant">State: VALID</span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant">Graph: <span class="text-primary font-code-sm">MAIN-CTX</span> <span class="text-outline font-code-sm">(SHA: 8F2A9C)</span></span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant">Ingest: <span class="text-tertiary">0.4ms</span> <span class="text-outline">RSS: 312MB</span></span>
+</div>
+<!-- Right side: Actions & User cluster -->
+<div class="flex items-center space-x-1 font-code-sm text-code-sm">
+<button class="h-6 px-2 bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-container-high transition-colors duration-75 flex items-center space-x-1">
+<span class="text-error font-medium">Emergency Lock</span>
+</button>
+<button class="h-6 px-2.5 bg-primary-container text-on-primary-container font-medium hover:bg-primary transition-colors duration-75 flex items-center space-x-1 border border-primary">
+<span>Deploy Proposal</span>
+</button>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<button class="h-6 w-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-75" title="Sync Status">
+<span class="material-symbols-outlined text-[15px]" data-icon="sync">sync</span>
+</button>
+<button class="h-6 w-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-75" title="Notifications">
+<span class="material-symbols-outlined text-[15px]" data-icon="notifications">notifications</span>
+</button>
+<button class="h-6 w-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-75" title="Terminal Access">
+<span class="material-symbols-outlined text-[15px]" data-icon="terminal">terminal</span>
+</button>
+<button class="h-6 w-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-75" title="Operator Profile">
+<span class="material-symbols-outlined text-[15px]" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Sub-header: Search & Filter Control Bar (Compact 32px height) -->
+<div class="h-8 bg-surface-container-lowest border-b border-outline-variant px-2 flex items-center justify-between text-code-sm flex-shrink-0">
+<!-- Search Input & Quick Controls -->
+<div class="flex items-center space-x-2 flex-1 max-w-4xl">
+<div class="relative flex items-center flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-2 text-outline text-[14px]" data-icon="search">search</span>
+<input class="h-6 w-full pl-6 pr-12 bg-surface-container-lowest text-on-surface border border-outline-variant font-code-sm text-code-sm rounded-none focus:border-primary focus:ring-0 placeholder:text-outline" placeholder="search symbols..." type="text" value="store.py::acquire_mutation"/>
+<span class="absolute right-1 px-1 bg-surface-container-high border border-outline-variant text-[10px] text-on-surface-variant font-code-sm">⌘K</span>
+</div>
+<!-- Filter Dropdown: Kind -->
+<div class="relative flex items-center">
+<select class="h-6 px-1.5 bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-code-sm text-code-sm pr-5 rounded-none cursor-pointer focus:ring-0 focus:border-outline appearance-none">
+<option>Kind: All Kinds</option>
+<option selected="">Kind: function</option>
+<option>Kind: class</option>
+<option>Kind: method</option>
+<option>Kind: interface</option>
+</select>
+<span class="material-symbols-outlined absolute right-1 pointer-events-none text-[12px] text-outline" data-icon="expand_more">expand_more</span>
+</div>
+<!-- Filter Dropdown: Language -->
+<div class="relative flex items-center">
+<select class="h-6 px-1.5 bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-code-sm text-code-sm pr-5 rounded-none cursor-pointer focus:ring-0 focus:border-outline appearance-none">
+<option selected="">Lang: All Langs</option>
+<option>Lang: py</option>
+<option>Lang: ts</option>
+<option>Lang: rs</option>
+<option>Lang: go</option>
+</select>
+<span class="material-symbols-outlined absolute right-1 pointer-events-none text-[12px] text-outline" data-icon="expand_more">expand_more</span>
+</div>
+<!-- Scope / Partition filter -->
+<div class="relative flex items-center">
+<select class="h-6 px-1.5 bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-code-sm text-code-sm pr-5 rounded-none cursor-pointer focus:ring-0 focus:border-outline appearance-none">
+<option selected="">Scope: P1 Core</option>
+<option>Scope: P2 Ingestion</option>
+<option>Scope: P3 Consensus</option>
+</select>
+<span class="material-symbols-outlined absolute right-1 pointer-events-none text-[12px] text-outline" data-icon="expand_more">expand_more</span>
+</div>
+<!-- Limit selector -->
+<div class="flex items-center space-x-1 border border-outline-variant h-6 px-1 bg-surface-container-lowest">
+<span class="text-outline text-[10px] font-label-md">LIMIT:</span>
+<span class="font-code-sm text-on-surface">50</span>
+</div>
+<!-- Actions -->
+<button class="h-6 px-2 bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-container-high transition-colors font-code-sm">
+          Execute Regex
+        </button>
+<button class="h-6 px-1.5 text-on-surface-variant hover:text-on-surface transition-colors font-code-sm">
+          Clear Filters
+        </button>
+</div>
+<!-- Right telemetry tags -->
+<div class="flex items-center space-x-2 font-code-sm text-[11px]">
+<span class="px-1.5 py-0.5 bg-surface-container border border-outline-variant text-tertiary">
+          1.4ms (DuckDB v0.10.1)
+        </span>
+<span class="text-outline">
+          Index: <span class="text-on-surface font-semibold">42,910</span> symbols
+        </span>
+</div>
+</div>
+<!-- Center Content Split: Multi-panel Split View (Panel 1 and Panel 2) -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- TOP PANEL 1: SYMBOL SEARCH RESULTS TABLE (Fixed height split) -->
+<section class="flex flex-col border-b border-outline-variant h-[46%] min-h-[220px] bg-surface-container-lowest">
+<!-- Panel 1 Header / Telemetry Row -->
+<div class="h-6 px-2 bg-surface-container-low border-b border-outline-variant flex items-center justify-between text-code-sm flex-shrink-0">
+<div class="flex items-center space-x-2">
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider font-semibold">PANEL 1: SYMBOL SEARCH RESULTS</span>
+<span class="text-outline text-[11px] font-code-sm">(7 matches from query: store.py::acquire_mutation)</span>
+</div>
+<div class="flex items-center space-x-2 text-[11px] font-code-sm text-outline">
+<span>SORT: RELEVANCE DESC</span>
+<span>|</span>
+<span class="text-tertiary">100% IN-MEMORY DUCKDB CACHE</span>
+</div>
+</div>
+<!-- Table Header (28px height) -->
+<div class="grid grid-cols-12 h-7 bg-surface-container-low border-b border-outline-variant font-label-md text-label-md text-outline uppercase tracking-wider items-center px-2 flex-shrink-0">
+<div class="col-span-3 text-left">SYMBOL NAME</div>
+<div class="col-span-1 text-left">KIND</div>
+<div class="col-span-4 text-left">FILE LOCATION (PATH:LINE:COL)</div>
+<div class="col-span-1 text-right">SCORE</div>
+<div class="col-span-2 text-right">GRAPH DEGREE</div>
+<div class="col-span-1 text-center">SRC / ACT</div>
+</div>
+<!-- Table Body (28px fixed rows, no wrapping, monospace alignment) -->
+<div class="flex-1 overflow-y-auto no-scrollbar font-code-sm text-code-sm divide-y divide-outline-variant">
+<!-- Row 1: Active / Selected -->
+<div class="grid grid-cols-12 h-7 bg-surface-container-high border-l-2 border-primary items-center px-2 text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 flex items-center space-x-1.5 truncate">
+<span class="material-symbols-outlined text-[13px] text-primary" data-icon="arrow_right">arrow_right</span>
+<span class="font-code-md text-code-md text-primary font-semibold truncate">store.acquire_mutation</span>
+</div>
+<div class="col-span-1">
+<span class="inline-block px-1 py-0 text-[10px] leading-tight font-label-sm border border-secondary/30 bg-secondary/10 text-secondary uppercase">function</span>
+</div>
+<div class="col-span-4 truncate text-on-surface-variant font-code-sm">src/know_your_context/store.py:412:8</div>
+<div class="col-span-1 text-right text-tertiary font-code-sm">0.87</div>
+<div class="col-span-2 text-right text-on-surface-variant font-code-sm">14 <span class="text-outline text-[10px]">(in: 9, out: 5)</span></div>
+<div class="col-span-1 flex items-center justify-center space-x-1">
+<span class="text-[10px] text-outline font-label-sm">py</span>
+<span class="material-symbols-outlined text-[13px] text-primary hover:text-white" data-icon="visibility" title="Inspect Node">visibility</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 flex items-center space-x-1.5 truncate pl-4">
+<span class="font-code-md text-code-md text-on-surface truncate">GraphStoreContext</span>
+</div>
+<div class="col-span-1">
+<span class="inline-block px-1 py-0 text-[10px] leading-tight font-label-sm border border-amber-500/30 bg-amber-500/10 text-amber-300 uppercase">class</span>
+</div>
+<div class="col-span-4 truncate font-code-sm">src/know_your_context/store.py:48:1</div>
+<div class="col-span-1 text-right text-tertiary font-code-sm">0.84</div>
+<div class="col-span-2 text-right font-code-sm">32 <span class="text-outline text-[10px]">(in: 28, out: 4)</span></div>
+<div class="col-span-1 flex items-center justify-center space-x-1">
+<span class="text-[10px] text-outline font-label-sm">py</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-on-surface" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 flex items-center space-x-1.5 truncate pl-4">
+<span class="font-code-md text-code-md text-on-surface truncate">verify_quorum_lease</span>
+</div>
+<div class="col-span-1">
+<span class="inline-block px-1 py-0 text-[10px] leading-tight font-label-sm border border-purple-400/30 bg-purple-400/10 text-purple-300 uppercase">method</span>
+</div>
+<div class="col-span-4 truncate font-code-sm">src/know_your_context/consensus.py:184:12</div>
+<div class="col-span-1 text-right text-tertiary font-code-sm">0.79</div>
+<div class="col-span-2 text-right font-code-sm">8 <span class="text-outline text-[10px]">(in: 3, out: 5)</span></div>
+<div class="col-span-1 flex items-center justify-center space-x-1">
+<span class="text-[10px] text-outline font-label-sm">py</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-on-surface" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 flex items-center space-x-1.5 truncate pl-4">
+<span class="font-code-md text-code-md text-on-surface truncate">MutationLedgerWal</span>
+</div>
+<div class="col-span-1">
+<span class="inline-block px-1 py-0 text-[10px] leading-tight font-label-sm border border-amber-500/30 bg-amber-500/10 text-amber-300 uppercase">class</span>
+</div>
+<div class="col-span-4 truncate font-code-sm">src/know_your_context/wal.py:92:4</div>
+<div class="col-span-1 text-right text-tertiary font-code-sm">0.76</div>
+<div class="col-span-2 text-right font-code-sm">19 <span class="text-outline text-[10px]">(in: 12, out: 7)</span></div>
+<div class="col-span-1 flex items-center justify-center space-x-1">
+<span class="text-[10px] text-outline font-label-sm">py</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-on-surface" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Row 5 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 flex items-center space-x-1.5 truncate pl-4">
+<span class="font-code-md text-code-md text-on-surface truncate">evaluate_heuristics</span>
+</div>
+<div class="col-span-1">
+<span class="inline-block px-1 py-0 text-[10px] leading-tight font-label-sm border border-secondary/30 bg-secondary/10 text-secondary uppercase">function</span>
+</div>
+<div class="col-span-4 truncate font-code-sm">src/know_your_context/retrieval.py:84:12</div>
+<div class="col-span-1 text-right text-tertiary font-code-sm">0.72</div>
+<div class="col-span-2 text-right font-code-sm">6 <span class="text-outline text-[10px]">(in: 2, out: 4)</span></div>
+<div class="col-span-1 flex items-center justify-center space-x-1">
+<span class="text-[10px] text-outline font-label-sm">py</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-on-surface" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Row 6 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 flex items-center space-x-1.5 truncate pl-4">
+<span class="font-code-md text-code-md text-on-surface truncate">NodeInspectorView</span>
+</div>
+<div class="col-span-1">
+<span class="inline-block px-1 py-0 text-[10px] leading-tight font-label-sm border border-tertiary/30 bg-tertiary/10 text-tertiary uppercase">interface</span>
+</div>
+<div class="col-span-4 truncate font-code-sm">packages/ui/src/inspector.ts:114:2</div>
+<div class="col-span-1 text-right text-tertiary font-code-sm">0.69</div>
+<div class="col-span-2 text-right font-code-sm">11 <span class="text-outline text-[10px]">(in: 8, out: 3)</span></div>
+<div class="col-span-1 flex items-center justify-center space-x-1">
+<span class="text-[10px] text-outline font-label-sm">ts</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-on-surface" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Row 7 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 flex items-center space-x-1.5 truncate pl-4">
+<span class="font-code-md text-code-md text-on-surface truncate">commit_duckdb_snapshot</span>
+</div>
+<div class="col-span-1">
+<span class="inline-block px-1 py-0 text-[10px] leading-tight font-label-sm border border-secondary/30 bg-secondary/10 text-secondary uppercase">function</span>
+</div>
+<div class="col-span-4 truncate font-code-sm">src/know_your_context/duckdb_sync.py:228:16</div>
+<div class="col-span-1 text-right text-tertiary font-code-sm">0.65</div>
+<div class="col-span-2 text-right font-code-sm">7 <span class="text-outline text-[10px]">(in: 4, out: 3)</span></div>
+<div class="col-span-1 flex items-center justify-center space-x-1">
+<span class="text-[10px] text-outline font-label-sm">py</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-on-surface" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<!-- BOTTOM PANEL 2: GRAPH NEIGHBORHOOD QUERY PANEL -->
+<section class="flex-1 flex flex-col bg-surface-container-lowest overflow-hidden">
+<!-- Panel 2 Header -->
+<div class="h-6 px-2 bg-surface-container-low border-b border-outline-variant flex items-center justify-between text-code-sm flex-shrink-0">
+<div class="flex items-center space-x-2">
+<span class="font-label-md text-label-md text-on-surface uppercase tracking-wider font-semibold">Graph Neighborhood Query</span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant font-code-sm">Selected Node: <code class="text-primary font-semibold font-code-sm">node:kg_symbol#store_acquire_mutation</code></span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="px-1.5 py-0.5 bg-surface-container border border-outline-variant text-tertiary font-code-sm text-[10px]">18 EDGES RESOLVED</span>
+</div>
+</div>
+<!-- Panel 2 Input & Traversal Parameter Controls Row -->
+<div class="p-1.5 bg-surface-container-lowest border-b border-outline-variant flex flex-wrap items-center gap-2 text-code-sm flex-shrink-0">
+<!-- Node ID Input with quick clear/copy -->
+<div class="flex items-center border border-outline-variant bg-surface-container-low h-6 px-1.5 flex-1 min-w-[280px]">
+<span class="text-outline font-code-sm mr-1">λ</span>
+<input class="bg-transparent border-0 p-0 text-on-surface font-code-sm text-code-sm focus:ring-0 flex-1 leading-none" type="text" value="node:kg_symbol#store_acquire_mutation"/>
+<button class="text-outline hover:text-on-surface" title="Clear">
+<span class="material-symbols-outlined text-[13px]" data-icon="close">close</span>
+</button>
+</div>
+<!-- Direction segmented toggle -->
+<div class="flex items-center border border-outline-variant bg-surface-container-lowest h-6 p-0.5 font-label-md text-[10px]">
+<button class="px-1.5 h-full text-on-surface-variant hover:text-on-surface">in</button>
+<button class="px-1.5 h-full text-on-surface-variant hover:text-on-surface">out</button>
+<button class="px-1.5 h-full bg-surface-container-high text-primary font-medium">both</button>
+</div>
+<!-- Relation Kind Filter Chips -->
+<div class="flex items-center space-x-1">
+<span class="px-1.5 py-0.5 bg-surface-container border border-primary/40 text-primary font-code-sm text-[10px] cursor-pointer flex items-center space-x-0.5">
+<span>depends_on</span>
+<span class="material-symbols-outlined text-[10px]" data-icon="check">check</span>
+</span>
+<span class="px-1.5 py-0.5 bg-surface-container border border-primary/40 text-primary font-code-sm text-[10px] cursor-pointer flex items-center space-x-0.5">
+<span>contradicts</span>
+<span class="material-symbols-outlined text-[10px]" data-icon="check">check</span>
+</span>
+<span class="px-1.5 py-0.5 bg-surface-container border border-primary/40 text-primary font-code-sm text-[10px] cursor-pointer flex items-center space-x-0.5">
+<span>supersedes</span>
+<span class="material-symbols-outlined text-[10px]" data-icon="check">check</span>
+</span>
+<span class="px-1.5 py-0.5 bg-surface-container border border-primary/40 text-primary font-code-sm text-[10px] cursor-pointer flex items-center space-x-0.5">
+<span>parent_of</span>
+<span class="material-symbols-outlined text-[10px]" data-icon="check">check</span>
+</span>
+<span class="px-1.5 py-0.5 bg-surface-container border border-outline-variant text-on-surface-variant font-code-sm text-[10px] cursor-pointer">
+              governed_by
+            </span>
+</div>
+<!-- Max Depth Selector -->
+<div class="flex items-center border border-outline-variant bg-surface-container-lowest h-6 p-0.5 font-label-md text-[10px]">
+<span class="text-outline px-1">Depth:</span>
+<button class="px-1 text-on-surface-variant">1</button>
+<button class="px-1 bg-surface-container-high text-primary font-medium">2</button>
+<button class="px-1 text-on-surface-variant">3</button>
+</div>
+<!-- Traversal Strategy -->
+<div class="flex items-center border border-outline-variant bg-surface-container-lowest h-6 p-0.5 font-label-md text-[10px]">
+<button class="px-1.5 bg-surface-container-high text-primary font-medium">BFS (Acyclic)</button>
+<button class="px-1.5 text-on-surface-variant hover:text-on-surface">DFS</button>
+</div>
+<!-- Run Traversal Action Trigger -->
+<button class="h-6 px-2.5 bg-primary-container text-on-primary-container font-code-sm text-code-sm font-semibold hover:bg-primary transition-colors border border-primary flex items-center space-x-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="play_arrow">play_arrow</span>
+<span>Run Neighborhood Traversal</span>
+</button>
+</div>
+<!-- Resulting Edges Table Header (28px height) -->
+<div class="grid grid-cols-12 h-7 bg-surface-container-low border-b border-outline-variant font-label-md text-label-md text-outline uppercase tracking-wider items-center px-2 flex-shrink-0">
+<div class="col-span-3 text-left">SOURCE</div>
+<div class="col-span-1 text-center">DIR</div>
+<div class="col-span-2 text-left">RELATION KIND</div>
+<div class="col-span-3 text-left">TARGET</div>
+<div class="col-span-1 text-right">WEIGHT</div>
+<div class="col-span-1 text-center">TX PROVENANCE</div>
+<div class="col-span-1 text-right">LOCK STATUS</div>
+</div>
+<!-- Resulting Edges Table Rows (Dense 28px rows, 18 total edges counter) -->
+<div class="flex-1 overflow-y-auto no-scrollbar font-code-sm text-code-sm divide-y divide-outline-variant">
+<!-- Edge Row 1 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 truncate font-code-md text-code-md text-primary">store.acquire_mutation</div>
+<div class="col-span-1 text-center text-outline">→</div>
+<div class="col-span-2 truncate">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-secondary/30 bg-secondary/10 text-secondary uppercase">depends_on</span>
+</div>
+<div class="col-span-3 truncate text-on-surface-variant font-code-md">raft_consensus_v2</div>
+<div class="col-span-1 text-right text-tertiary">0.94</div>
+<div class="col-span-1 text-center text-outline font-code-sm">tx:0x8F4E01</div>
+<div class="col-span-1 text-right">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-amber-500/30 bg-amber-500/10 text-amber-300 uppercase">LOCK_HELD</span>
+</div>
+</div>
+<!-- Edge Row 2 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 truncate font-code-md text-code-md text-on-surface-variant">runtime_allocator</div>
+<div class="col-span-1 text-center text-outline">→</div>
+<div class="col-span-2 truncate">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-secondary/30 bg-secondary/10 text-secondary uppercase">depends_on</span>
+</div>
+<div class="col-span-3 truncate text-primary font-code-md">store.acquire_mutation</div>
+<div class="col-span-1 text-right text-tertiary">0.88</div>
+<div class="col-span-1 text-center text-outline font-code-sm">tx:0x8F4B92</div>
+<div class="col-span-1 text-right">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-tertiary/30 bg-tertiary/10 text-tertiary uppercase">VALID</span>
+</div>
+</div>
+<!-- Edge Row 3 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 truncate font-code-md text-code-md text-primary">store.acquire_mutation</div>
+<div class="col-span-1 text-center text-outline">→</div>
+<div class="col-span-2 truncate">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-purple-400/30 bg-purple-400/10 text-purple-300 uppercase">supersedes</span>
+</div>
+<div class="col-span-3 truncate text-on-surface-variant font-code-md">legacy_store_lock_v1</div>
+<div class="col-span-1 text-right text-tertiary">1.00</div>
+<div class="col-span-1 text-center text-outline font-code-sm">tx:0x7E19CB</div>
+<div class="col-span-1 text-right">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-outline-variant bg-surface-container text-outline uppercase">ARCHIVED</span>
+</div>
+</div>
+<!-- Edge Row 4 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 truncate font-code-md text-code-md text-primary">store.acquire_mutation</div>
+<div class="col-span-1 text-center text-outline">→</div>
+<div class="col-span-2 truncate">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-primary/30 bg-primary/10 text-primary uppercase">parent_of</span>
+</div>
+<div class="col-span-3 truncate text-on-surface-variant font-code-md">store._wal_checkpoint</div>
+<div class="col-span-1 text-right text-tertiary">0.91</div>
+<div class="col-span-1 text-center text-outline font-code-sm">tx:0x8F4E05</div>
+<div class="col-span-1 text-right">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-tertiary/30 bg-tertiary/10 text-tertiary uppercase">VALID</span>
+</div>
+</div>
+<!-- Edge Row 5 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 truncate font-code-md text-code-md text-on-surface-variant">eval_worker_pool</div>
+<div class="col-span-1 text-center text-outline">→</div>
+<div class="col-span-2 truncate">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-error/30 bg-error/10 text-error uppercase">contradicts</span>
+</div>
+<div class="col-span-3 truncate text-primary font-code-md">store.acquire_mutation</div>
+<div class="col-span-1 text-right text-error font-semibold">0.42</div>
+<div class="col-span-1 text-center text-outline font-code-sm">tx:0x3D81B8</div>
+<div class="col-span-1 text-right">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-error/40 bg-error-container/20 text-error uppercase">FLAGGED_AUDIT</span>
+</div>
+</div>
+<!-- Edge Row 6 -->
+<div class="grid grid-cols-12 h-7 items-center px-2 text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-3 truncate font-code-md text-code-md text-on-surface-variant">schema_contract_04</div>
+<div class="col-span-1 text-center text-outline">→</div>
+<div class="col-span-2 truncate">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-outline-variant bg-surface-container text-on-surface-variant uppercase">governed_by</span>
+</div>
+<div class="col-span-3 truncate text-primary font-code-md">store.acquire_mutation</div>
+<div class="col-span-1 text-right text-tertiary">0.99</div>
+<div class="col-span-1 text-center text-outline font-code-sm">tx:0x55C2F0</div>
+<div class="col-span-1 text-right">
+<span class="px-1 py-0 text-[10px] font-label-sm border border-tertiary/30 bg-tertiary/10 text-tertiary uppercase">SYNCHRONIZED</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Status Ticker Bar (Locked docked bottom hairline) -->
+<footer class="h-6 bg-surface-container-low border-t border-outline-variant px-2 flex items-center justify-between text-[11px] font-code-sm text-on-surface-variant flex-shrink-0 z-20">
+<div class="flex items-center space-x-3 truncate">
+<span class="flex items-center space-x-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>DuckDB v0.10.1 in-memory cache hit: <strong class="text-tertiary font-semibold">99.4%</strong></span>
+</span>
+<span class="text-outline-variant">|</span>
+<span>Traversal execution: <strong class="text-on-surface font-semibold">0.8ms</strong></span>
+<span class="text-outline-variant">|</span>
+<span>Total Active Edges: <strong class="text-on-surface font-semibold">3,917</strong></span>
+</div>
+<div class="flex items-center space-x-3 text-right">
+<span class="text-outline">Raft State: <strong class="text-tertiary font-medium">SYNCED [LEADER #1]</strong></span>
+<span class="text-outline-variant">|</span>
+<span class="text-primary font-medium">SHARD: US-WEST-01</span>
+</div>
+</footer>
+</div>
+</body></html>

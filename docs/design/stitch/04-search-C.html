@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Local Knowledge-Graph Operations Console</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed-variant": "#005236",
+            "primary-container": "#4d8eff",
+            "on-tertiary-fixed": "#002113",
+            "on-primary": "#002e6a",
+            "background": "#101319",
+            "primary-fixed": "#d8e2ff",
+            "on-secondary-fixed": "#001f26",
+            "surface-variant": "#32353b",
+            "inverse-surface": "#e1e2eb",
+            "surface-dim": "#101319",
+            "surface-container-low": "#191c22",
+            "on-primary-container": "#00285d",
+            "surface-tint": "#adc6ff",
+            "on-tertiary-container": "#00311f",
+            "inverse-primary": "#005ac2",
+            "on-primary-fixed": "#001a42",
+            "on-primary-fixed-variant": "#004395",
+            "on-background": "#e1e2eb",
+            "on-secondary-fixed-variant": "#004e5c",
+            "surface-container-high": "#272a30",
+            "on-secondary-container": "#00424e",
+            "primary": "#adc6ff",
+            "secondary-fixed": "#acedff",
+            "error": "#ffb4ab",
+            "primary-fixed-dim": "#adc6ff",
+            "surface-container-highest": "#32353b",
+            "on-error": "#690005",
+            "tertiary-container": "#00a572",
+            "secondary": "#4cd7f6",
+            "on-surface-variant": "#c2c6d6",
+            "on-surface": "#e1e2eb",
+            "tertiary": "#4edea3",
+            "tertiary-fixed": "#6ffbbe",
+            "surface-container": "#1d2026",
+            "outline-variant": "#424754",
+            "on-tertiary": "#003824",
+            "on-secondary": "#003640",
+            "surface": "#101319",
+            "surface-bright": "#363940",
+            "secondary-container": "#03b5d3",
+            "on-error-container": "#ffdad6",
+            "inverse-on-surface": "#2d3037",
+            "tertiary-fixed-dim": "#4edea3",
+            "error-container": "#93000a",
+            "surface-container-lowest": "#0b0e14",
+            "outline": "#8c909f",
+            "secondary-fixed-dim": "#4cd7f6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter-mobile": "0.25rem",
+            "margin-mobile": "0.5rem",
+            "space-lg": "0.75rem",
+            "margin": "0.75rem",
+            "space-sm": "0.25rem",
+            "space-xs": "0.125rem",
+            "space-md": "0.5rem",
+            "gutter": "0.5rem",
+            "space-xl": "1rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "code-lg": ["JetBrains Mono"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    /* Surgical hairline precision */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #2A313E #0B0E14;
+    }
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0E14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2A313E;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased overflow-hidden select-none flex h-screen w-screen">
+<!-- ==================== SIDE NAVIGATION BAR (SHARED COMPONENT) ==================== -->
+<aside class="fixed top-0 left-0 h-screen w-56 flex flex-col bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline-variant z-30 select-none">
+<!-- Brand / Cluster Header -->
+<div class="h-10 px-3 flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center space-x-2 truncate">
+<span class="material-symbols-outlined text-primary text-[18px]">hub</span>
+<div class="flex flex-col truncate">
+<span class="font-headline-sm text-headline-sm text-on-surface dark:text-on-surface font-semibold tracking-tight text-[12px] leading-tight truncate">Know Your Context</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-[9px] uppercase tracking-wider leading-none">LOCAL CLUSTER v2.4</span>
+</div>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+</div>
+<!-- Navigation Items List -->
+<nav class="flex-1 overflow-y-auto py-2 px-1 space-y-0.5">
+<!-- 1. Overview -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">dashboard</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Overview</span>
+</div>
+</a>
+<!-- 2. Activity -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">dynamic_feed</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Activity</span>
+</div>
+</a>
+<!-- 3. Graph -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">hub</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Graph</span>
+</div>
+</a>
+<!-- 4. Search (ACTIVE SELECTION) -->
+<a class="flex items-center justify-between h-7 px-2 bg-surface-container-high dark:bg-surface-container-high text-primary dark:text-primary border-l-2 border-primary dark:border-primary pl-2 font-medium cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-primary">Search</span>
+</div>
+<span class="font-code-sm text-code-sm text-primary opacity-80">[⌘K]</span>
+</a>
+<!-- 5. Metrics -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">monitoring</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Metrics</span>
+</div>
+</a>
+<!-- 6. Health -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">vital_signs</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Health</span>
+</div>
+</a>
+<!-- 7. Analytics -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">analytics</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Analytics</span>
+</div>
+</a>
+<!-- 8. Audit -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">history</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Audit</span>
+</div>
+</a>
+<!-- 9. Proposals (Badge 3) -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">rule</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Proposals</span>
+</div>
+<span class="font-code-sm text-[10px] px-1.5 py-0.2 rounded-none bg-surface-container-highest border border-outline-variant text-on-surface">3</span>
+</a>
+<!-- 10. Debt (Badge 12) -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px] text-error">priority_high</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Debt</span>
+</div>
+<span class="font-code-sm text-[10px] px-1.5 py-0.2 rounded-none bg-error-container text-on-error border border-error">12</span>
+</a>
+<!-- 11. System -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">memory</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">System</span>
+</div>
+</a>
+<!-- 12. Setup -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant dark:text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container dark:hover:bg-surface-container hover:text-on-surface dark:hover:text-on-surface transition-colors duration-150 rounded-none cursor-pointer" href="#">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[15px]">settings</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Setup</span>
+</div>
+</a>
+</nav>
+<!-- SideNav Footer Tabs -->
+<div class="p-1 border-t border-outline-variant space-y-0.5">
+<a class="flex items-center space-x-2 h-6 px-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[14px]">menu_book</span>
+<span class="font-label-md text-[10px] uppercase tracking-wider">Documentation</span>
+</a>
+<a class="flex items-center space-x-2 h-6 px-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[14px]">terminal</span>
+<span class="font-label-md text-[10px] uppercase tracking-wider">Terminal</span>
+</a>
+</div>
+</aside>
+<!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+<div class="flex flex-col flex-1 pl-56 h-screen w-full overflow-hidden bg-surface-dim">
+<!-- ==================== TOP TELEMETRY NAV BAR (SHARED COMPONENT) ==================== -->
+<header class="flex justify-between items-center h-8 w-full px-3 border-b border-outline-variant bg-surface-container-low text-on-surface z-20">
+<!-- Left Telemetry Cluster -->
+<div class="flex items-center space-x-3 text-code-sm font-code-sm">
+<span class="flex items-center space-x-1.5 text-on-surface-variant">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+<span>Cluster: node-01.local</span>
+</span>
+<span class="text-outline-variant">|</span>
+<span class="text-tertiary font-semibold">Lock Sync: QUORUM</span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant">State: <span class="text-primary font-code-sm">VALID</span></span>
+</div>
+<!-- Right Action Cluster -->
+<div class="flex items-center space-x-2 text-code-sm font-code-sm">
+<button class="h-6 px-2 border border-outline-variant bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center space-x-1 transition-colors">
+<span class="material-symbols-outlined text-[13px] text-error">lock</span>
+<span>Emergency Lock</span>
+</button>
+<button class="h-6 px-2 bg-primary text-on-primary font-medium hover:bg-primary-container transition-colors flex items-center space-x-1">
+<span class="material-symbols-outlined text-[13px]">rocket_launch</span>
+<span>Deploy Proposal</span>
+</button>
+<div class="flex items-center space-x-1 text-on-surface-variant pl-2 border-l border-outline-variant">
+<button class="p-1 hover:text-on-surface transition-colors" title="Sync"><span class="material-symbols-outlined text-[15px]">sync</span></button>
+<button class="p-1 hover:text-on-surface transition-colors" title="Notifications"><span class="material-symbols-outlined text-[15px]">notifications</span></button>
+<button class="p-1 hover:text-on-surface transition-colors" title="Terminal"><span class="material-symbols-outlined text-[15px]">terminal</span></button>
+<button class="p-1 hover:text-on-surface transition-colors" title="Operator Profile"><span class="material-symbols-outlined text-[15px]">account_circle</span></button>
+</div>
+</div>
+</header>
+<!-- ==================== WORKSPACE SCROLL CANVAS ==================== -->
+<main class="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+<!-- ==================== KPI SUMMARY CARDS GRID ==================== -->
+<div class="grid grid-cols-4 gap-2.5">
+<!-- Card 1: INDEXED SYMBOLS -->
+<div class="bg-surface-container-low border border-outline-variant p-2.5 rounded-none flex flex-col justify-between h-20">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">INDEXED SYMBOLS</span>
+<span class="h-1.5 w-1.5 rounded-full bg-secondary"></span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">42,910</span>
+<span class="font-code-sm text-code-sm text-tertiary bg-surface-container px-1 py-0.5 border border-outline-variant">+128 last build</span>
+</div>
+<div class="flex items-center justify-between pt-1 border-t border-outline-variant/40 mt-1">
+<span class="font-code-sm text-[10px] text-on-surface-variant">DuckDB AST Indexer</span>
+<span class="font-code-sm text-[10px] text-secondary">99.4% cache hit</span>
+</div>
+</div>
+<!-- Card 2: QUERY LATENCY -->
+<div class="bg-surface-container-low border border-outline-variant p-2.5 rounded-none flex flex-col justify-between h-20">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">QUERY LATENCY</span>
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">0.8<span class="text-xs font-normal text-on-surface-variant ml-0.5">ms</span></span>
+<span class="font-code-sm text-[9px] uppercase tracking-wider text-tertiary bg-surface-container px-1 py-0.5 border border-outline-variant">SUB-MILLISECOND P99</span>
+</div>
+<div class="flex items-center justify-between pt-1 border-t border-outline-variant/40 mt-1">
+<span class="font-code-sm text-[10px] text-on-surface-variant truncate">DuckDB in-memory v0.10.1</span>
+<span class="font-code-sm text-[10px] text-on-surface">p50: 0.2ms</span>
+</div>
+</div>
+<!-- Card 3: ACTIVE GRAPH EDGES -->
+<div class="bg-surface-container-low border border-outline-variant p-2.5 rounded-none flex flex-col justify-between h-20">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">ACTIVE GRAPH EDGES</span>
+<span class="h-1.5 w-1.5 rounded-full bg-primary"></span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">3,917</span>
+<span class="font-code-sm text-[9px] uppercase tracking-wider text-primary bg-surface-container px-1 py-0.5 border border-outline-variant">QUORUM VALID</span>
+</div>
+<div class="flex items-center justify-between pt-1 border-t border-outline-variant/40 mt-1">
+<span class="font-code-sm text-[10px] text-on-surface-variant truncate">Directed Acyclic DAG</span>
+<span class="font-code-sm text-[10px] text-on-surface">Epoch #884</span>
+</div>
+</div>
+<!-- Card 4: RESOLVED NEIGHBORHOODS -->
+<div class="bg-surface-container-low border border-outline-variant p-2.5 rounded-none flex flex-col justify-between h-20">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">RESOLVED NEIGHBORHOODS</span>
+<span class="h-1.5 w-1.5 rounded-full bg-secondary"></span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">18 <span class="text-xs font-normal text-on-surface-variant">EDGES</span></span>
+<span class="font-code-sm text-code-sm text-secondary bg-surface-container px-1 py-0.5 border border-outline-variant">14 deg (9 in, 5 out)</span>
+</div>
+<div class="flex items-center justify-between pt-1 border-t border-outline-variant/40 mt-1">
+<span class="font-code-sm text-[10px] text-on-surface-variant truncate">store.py::acquire_mutation</span>
+<span class="font-code-sm text-[10px] text-tertiary">1.00 weight</span>
+</div>
+</div>
+</div>
+<!-- ==================== PANEL 1: SYMBOL SEARCH & AST INDEX QUERY ==================== -->
+<section class="bg-surface-container-low border border-outline-variant rounded-none">
+<!-- Panel Header & Bar -->
+<div class="p-2.5 border-b border-outline-variant bg-surface-container-lowest flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary text-[16px]">manage_search</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight text-[13px]">Symbol Search &amp; AST Index Query</h2>
+<span class="font-code-sm text-[10px] px-1 py-0.2 border border-outline-variant bg-surface-container text-on-surface-variant">AST_ENGINE: READY</span>
+</div>
+<!-- Quick Category Chips -->
+<div class="flex items-center space-x-1.5">
+<button class="font-code-sm text-[11px] px-2 h-6 border border-primary bg-primary/10 text-primary">All [42,910]</button>
+<button class="font-code-sm text-[11px] px-2 h-6 border border-outline-variant bg-surface-container text-on-surface-variant hover:text-on-surface">Functions [28,412]</button>
+<button class="font-code-sm text-[11px] px-2 h-6 border border-outline-variant bg-surface-container text-on-surface-variant hover:text-on-surface">Classes [8,104]</button>
+<button class="font-code-sm text-[11px] px-2 h-6 border border-outline-variant bg-surface-container text-on-surface-variant hover:text-on-surface">Methods [6,394]</button>
+</div>
+</div>
+<!-- Controls Bar -->
+<div class="grid grid-cols-12 gap-2 items-center">
+<!-- Search Input with lambda prefix -->
+<div class="col-span-6 flex items-center bg-surface-container-lowest border border-outline-variant px-2 h-7 focus-within:border-primary">
+<span class="font-code-md text-outline mr-2 text-[12px]">λ:</span>
+<input class="bg-transparent border-none p-0 text-on-surface font-code-md text-code-md w-full focus:ring-0 placeholder-outline" placeholder="search symbols…" type="text" value="store.acquire_mutation"/>
+<span class="font-code-sm text-[10px] text-outline px-1 border border-outline-variant bg-surface-container ml-1">[⌘K]</span>
+</div>
+<!-- Kind Filter Dropdown -->
+<div class="col-span-2">
+<select class="w-full h-7 bg-surface-container-lowest border border-outline-variant px-2 py-0 text-on-surface font-code-sm text-code-sm focus:border-primary focus:ring-0">
+<option selected="">Kind: Function</option>
+<option>All Kinds</option>
+<option>Class</option>
+<option>Method</option>
+<option>Interface</option>
+</select>
+</div>
+<!-- Language Filter Dropdown -->
+<div class="col-span-2">
+<select class="w-full h-7 bg-surface-container-lowest border border-outline-variant px-2 py-0 text-on-surface font-code-sm text-code-sm focus:border-primary focus:ring-0">
+<option selected="">Lang: Python (.py)</option>
+<option>All Languages</option>
+<option>TypeScript (.ts)</option>
+<option>Rust (.rs)</option>
+</select>
+</div>
+<!-- Limit Control & Execute Action -->
+<div class="col-span-2 flex items-center space-x-1.5">
+<div class="flex items-center bg-surface-container-lowest border border-outline-variant px-1.5 h-7 w-16">
+<span class="font-code-sm text-[10px] text-outline mr-1">Lim:</span>
+<input class="bg-transparent border-none p-0 text-on-surface font-code-sm text-code-sm w-full focus:ring-0 text-right" type="text" value="50"/>
+</div>
+<button class="flex-1 h-7 bg-primary text-on-primary font-code-sm text-code-sm font-semibold hover:bg-primary-container transition-colors flex items-center justify-center space-x-1">
+<span class="material-symbols-outlined text-[13px]">play_arrow</span>
+<span>Execute</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Telemetry Results Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-7 bg-surface-container text-outline font-label-md text-label-md uppercase tracking-wider border-b border-outline-variant">
+<th class="px-3 font-semibold">SYMBOL NAME</th>
+<th class="px-2 font-semibold w-24">KIND</th>
+<th class="px-3 font-semibold">FILE LOCATION</th>
+<th class="px-2 font-semibold text-right w-24">RELEVANCE</th>
+<th class="px-3 font-semibold text-right w-36">GRAPH DEGREE</th>
+<th class="px-3 font-semibold text-right w-24">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="font-code-sm text-code-sm divide-y divide-outline-variant/60">
+<!-- Row 1: Selected -->
+<tr class="h-7 bg-surface-container-high border-l-2 border-primary hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium">store.acquire_mutation</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-secondary bg-secondary/10 border border-secondary/30">FUNCTION</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate">src/know_your_context/store.py:412:8</td>
+<td class="px-2 text-right text-tertiary">0.87</td>
+<td class="px-3 text-right text-on-surface">14 deg <span class="text-outline text-[10px]">[in 9, out 5]</span></td>
+<td class="px-3 text-right space-x-1">
+<button class="text-primary hover:underline text-[11px]">Inspect</button>
+<span class="text-outline">·</span>
+<button class="text-on-surface-variant hover:text-on-surface text-[11px]">Jump</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium">GraphStoreContext</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-primary bg-primary/10 border border-primary/30">CLASS</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate">src/know_your_context/store.py:48:1</td>
+<td class="px-2 text-right text-tertiary">0.84</td>
+<td class="px-3 text-right text-on-surface">32 deg <span class="text-outline text-[10px]">[in 20, out 12]</span></td>
+<td class="px-3 text-right space-x-1">
+<button class="text-primary hover:underline text-[11px]">Inspect</button>
+<span class="text-outline">·</span>
+<button class="text-on-surface-variant hover:text-on-surface text-[11px]">Jump</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium">verify_quorum_lease</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-tertiary bg-tertiary/10 border border-tertiary/30">METHOD</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate">src/know_your_context/consensus.py:184:12</td>
+<td class="px-2 text-right text-tertiary">0.79</td>
+<td class="px-3 text-right text-on-surface">8 deg <span class="text-outline text-[10px]">[in 6, out 2]</span></td>
+<td class="px-3 text-right space-x-1">
+<button class="text-primary hover:underline text-[11px]">Inspect</button>
+<span class="text-outline">·</span>
+<button class="text-on-surface-variant hover:text-on-surface text-[11px]">Jump</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium">MutationLedgerWal</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-primary bg-primary/10 border border-primary/30">CLASS</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate">src/know_your_context/wal.py:92:4</td>
+<td class="px-2 text-right text-tertiary">0.76</td>
+<td class="px-3 text-right text-on-surface">19 deg <span class="text-outline text-[10px]">[in 11, out 8]</span></td>
+<td class="px-3 text-right space-x-1">
+<button class="text-primary hover:underline text-[11px]">Inspect</button>
+<span class="text-outline">·</span>
+<button class="text-on-surface-variant hover:text-on-surface text-[11px]">Jump</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium">evaluate_heuristics</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-secondary bg-secondary/10 border border-secondary/30">FUNCTION</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate">src/know_your_context/retrieval.py:84:12</td>
+<td class="px-2 text-right text-tertiary">0.72</td>
+<td class="px-3 text-right text-on-surface">6 deg <span class="text-outline text-[10px]">[in 4, out 2]</span></td>
+<td class="px-3 text-right space-x-1">
+<button class="text-primary hover:underline text-[11px]">Inspect</button>
+<span class="text-outline">·</span>
+<button class="text-on-surface-variant hover:text-on-surface text-[11px]">Jump</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- ==================== PANEL 2: GRAPH NEIGHBORHOOD QUERY ==================== -->
+<section class="bg-surface-container-low border border-outline-variant rounded-none">
+<!-- Panel Header -->
+<div class="p-2.5 border-b border-outline-variant bg-surface-container-lowest flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary text-[16px]">account_tree</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight text-[13px]">Graph Neighborhood Query</h2>
+<span class="font-code-sm text-[10px] px-1.5 py-0.2 bg-secondary/10 text-secondary border border-secondary/30">18 Edges Resolved</span>
+<span class="font-code-sm text-[10px] px-1.5 py-0.2 bg-surface-container text-on-surface-variant border border-outline-variant truncate max-w-xs">node:kg_symbol#store.acquire_mutation</span>
+</div>
+<!-- Depth Selector -->
+<div class="flex items-center space-x-1">
+<span class="font-code-sm text-[10px] text-outline uppercase mr-1">Depth:</span>
+<button class="font-code-sm text-[10px] px-2 h-5 border border-outline-variant bg-surface-container text-on-surface-variant hover:text-on-surface">1</button>
+<button class="font-code-sm text-[10px] px-2 h-5 border border-primary bg-primary/20 text-primary font-semibold">2</button>
+<button class="font-code-sm text-[10px] px-2 h-5 border border-outline-variant bg-surface-container text-on-surface-variant hover:text-on-surface">3</button>
+</div>
+</div>
+<!-- Neighborhood Traversal Controls -->
+<div class="flex items-center justify-between gap-2 pt-1 border-t border-outline-variant/40">
+<!-- Node ID Input -->
+<div class="flex-1 flex items-center bg-surface-container-lowest border border-outline-variant px-2 h-7 focus-within:border-secondary">
+<span class="font-code-sm text-outline mr-1 text-[11px]">node_id:</span>
+<input class="bg-transparent border-none p-0 text-on-surface font-code-sm text-code-sm w-full focus:ring-0" type="text" value="node:kg_symbol#store.acquire_mutation"/>
+</div>
+<!-- Direction Segmented Toggle -->
+<div class="flex items-center border border-outline-variant bg-surface-container-lowest h-7 p-0.5">
+<button class="px-2 text-code-sm font-code-sm text-outline hover:text-on-surface h-full">in</button>
+<button class="px-2 text-code-sm font-code-sm text-outline hover:text-on-surface h-full">out</button>
+<button class="px-2 text-code-sm font-code-sm bg-surface-container text-secondary border border-secondary/30 h-full font-semibold">[both]</button>
+</div>
+<!-- Relation Multi-Select Pills -->
+<div class="flex items-center space-x-1">
+<button class="font-code-sm text-[10px] px-1.5 h-7 border border-secondary/40 bg-secondary/10 text-secondary">[depends_on]</button>
+<button class="font-code-sm text-[10px] px-1.5 h-7 border border-secondary/40 bg-secondary/10 text-secondary">[contradicts]</button>
+<button class="font-code-sm text-[10px] px-1.5 h-7 border border-secondary/40 bg-secondary/10 text-secondary">[supersedes]</button>
+<button class="font-code-sm text-[10px] px-1.5 h-7 border border-outline-variant bg-surface-container text-outline">[parent_of]</button>
+<button class="font-code-sm text-[10px] px-1.5 h-7 border border-outline-variant bg-surface-container text-outline">[governed_by]</button>
+</div>
+<!-- Run Action Button -->
+<button class="h-7 px-3 bg-secondary text-on-secondary font-code-sm text-code-sm font-semibold hover:bg-secondary-container transition-colors flex items-center space-x-1">
+<span class="material-symbols-outlined text-[13px]">refresh</span>
+<span>Run Neighborhood Traversal</span>
+</button>
+</div>
+</div>
+<!-- Resulting Edges Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-7 bg-surface-container text-outline font-label-md text-label-md uppercase tracking-wider border-b border-outline-variant">
+<th class="px-3 font-semibold">SOURCE</th>
+<th class="px-1 text-center w-8">DIR</th>
+<th class="px-2 font-semibold">RELATION KIND</th>
+<th class="px-3 font-semibold">TARGET</th>
+<th class="px-2 font-semibold text-right w-16">WEIGHT</th>
+<th class="px-3 font-semibold text-right w-28">TX PROVENANCE</th>
+<th class="px-3 font-semibold text-right w-28">LOCK STATUS</th>
+</tr>
+</thead>
+<tbody class="font-code-sm text-code-sm divide-y divide-outline-variant/60">
+<!-- Edge 1 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium truncate max-w-xs">kg_symbol#store.acquire_mutation</td>
+<td class="px-1 text-center text-outline">→</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-secondary bg-secondary/10 border border-secondary/30">DEPENDS_ON</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate max-w-xs">kg_symbol#consensus.verify_quorum_lease</td>
+<td class="px-2 text-right text-tertiary">0.94</td>
+<td class="px-3 text-right text-outline">0x8F4E01</td>
+<td class="px-3 text-right">
+<span class="text-tertiary bg-tertiary/10 border border-tertiary/30 px-1 py-0.2 text-[9px] font-semibold">VALID</span>
+</td>
+</tr>
+<!-- Edge 2 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium truncate max-w-xs">kg_symbol#store.acquire_mutation</td>
+<td class="px-1 text-center text-outline">→</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-secondary bg-secondary/10 border border-secondary/30">DEPENDS_ON</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate max-w-xs">kg_symbol#wal.MutationLedgerWal</td>
+<td class="px-2 text-right text-tertiary">0.88</td>
+<td class="px-3 text-right text-outline">0x8F4E09</td>
+<td class="px-3 text-right">
+<span class="text-primary bg-primary/10 border border-primary/30 px-1 py-0.2 text-[9px] font-semibold">LOCK_HELD</span>
+</td>
+</tr>
+<!-- Edge 3 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium truncate max-w-xs">kg_symbol#store.acquire_mutation</td>
+<td class="px-1 text-center text-outline">→</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-tertiary bg-tertiary/10 border border-tertiary/30">SUPERSEDES</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate max-w-xs">kg_symbol#store.v1_legacy_mutate</td>
+<td class="px-2 text-right text-on-surface">1.00</td>
+<td class="px-3 text-right text-outline">0x8F4DFA</td>
+<td class="px-3 text-right">
+<span class="text-outline bg-surface-container border border-outline-variant px-1 py-0.2 text-[9px]">ARCHIVED</span>
+</td>
+</tr>
+<!-- Edge 4 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium truncate max-w-xs">kg_symbol#GraphStoreContext</td>
+<td class="px-1 text-center text-outline">→</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-primary bg-primary/10 border border-primary/30">PARENT_OF</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate max-w-xs">kg_symbol#store.acquire_mutation</td>
+<td class="px-2 text-right text-tertiary">0.96</td>
+<td class="px-3 text-right text-outline">0x8F4DC2</td>
+<td class="px-3 text-right">
+<span class="text-tertiary bg-tertiary/10 border border-tertiary/30 px-1 py-0.2 text-[9px] font-semibold">VALID</span>
+</td>
+</tr>
+<!-- Edge 5 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium truncate max-w-xs">kg_symbol#policy.MutationBoundaryRule</td>
+<td class="px-1 text-center text-outline">→</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-outline bg-surface-container border border-outline-variant">GOVERNED_BY</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate max-w-xs">kg_symbol#store.acquire_mutation</td>
+<td class="px-2 text-right text-tertiary">0.91</td>
+<td class="px-3 text-right text-outline">0x8F4E33</td>
+<td class="px-3 text-right">
+<span class="text-tertiary bg-tertiary/10 border border-tertiary/30 px-1 py-0.2 text-[9px] font-semibold">VALID</span>
+</td>
+</tr>
+<!-- Edge 6 -->
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-3 text-on-surface font-medium truncate max-w-xs">kg_symbol#store.acquire_mutation</td>
+<td class="px-1 text-center text-error">→</td>
+<td class="px-2">
+<span class="inline-block px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-semibold text-error bg-error/10 border border-error/30">CONTRADICTS</span>
+</td>
+<td class="px-3 text-on-surface-variant truncate max-w-xs">kg_symbol#compat.read_uncommitted_fallback</td>
+<td class="px-2 text-right text-error">0.65</td>
+<td class="px-3 text-right text-outline">0x8F4E88</td>
+<td class="px-3 text-right">
+<span class="text-error bg-error-container text-on-error border border-error px-1 py-0.2 text-[9px] font-semibold">FLAGGED_AUDIT</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+<!-- ==================== FOOTER TELEMETRY STATUS BAR ==================== -->
+<footer class="h-6 px-3 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between text-code-sm font-code-sm text-outline select-none">
+<div class="flex items-center space-x-3">
+<span class="flex items-center space-x-1 text-on-surface">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+<span>Node-01 Localhost:9241</span>
+</span>
+<span class="text-outline-variant">|</span>
+<span>Sync: <span class="text-tertiary">Realtime</span></span>
+<span class="text-outline-variant">|</span>
+<span>DuckDB In-Memory: <span class="text-on-surface">99.4% hit</span></span>
+</div>
+<div class="flex items-center space-x-3">
+<span>WAL Offset: <span class="text-primary">0x4F09B1</span></span>
+<span class="text-outline-variant">|</span>
+<span>Cluster: <span class="text-secondary">raft-quor-3</span></span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant">FPS: 60.0 (16.6ms)</span>
+</div>
+</footer>
+</div>
+</body></html>

@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Improvement Proposals &amp; Mutation Review</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed-variant": "#005236",
+            "on-surface": "#e1e2eb",
+            "on-primary": "#002e6a",
+            "inverse-on-surface": "#2d3037",
+            "secondary-container": "#03b5d3",
+            "surface-tint": "#adc6ff",
+            "surface-container-high": "#272a30",
+            "primary-fixed-dim": "#adc6ff",
+            "surface-container": "#1d2026",
+            "on-primary-container": "#00285d",
+            "surface-container-lowest": "#0b0e14",
+            "on-secondary-fixed-variant": "#004e5c",
+            "on-secondary-fixed": "#001f26",
+            "tertiary-fixed-dim": "#4edea3",
+            "secondary": "#4cd7f6",
+            "surface-container-low": "#191c22",
+            "on-secondary-container": "#00424e",
+            "surface-variant": "#32353b",
+            "outline-variant": "#424754",
+            "on-tertiary-container": "#00311f",
+            "error-container": "#93000a",
+            "on-surface-variant": "#c2c6d6",
+            "on-error-container": "#ffdad6",
+            "inverse-primary": "#005ac2",
+            "on-tertiary": "#003824",
+            "on-primary-fixed": "#001a42",
+            "primary-fixed": "#d8e2ff",
+            "primary": "#adc6ff",
+            "background": "#101319",
+            "secondary-fixed-dim": "#4cd7f6",
+            "inverse-surface": "#e1e2eb",
+            "outline": "#8c909f",
+            "error": "#ffb4ab",
+            "tertiary-fixed": "#6ffbbe",
+            "on-tertiary-fixed": "#002113",
+            "on-secondary": "#003640",
+            "on-primary-fixed-variant": "#004395",
+            "tertiary": "#4edea3",
+            "on-error": "#690005",
+            "surface-dim": "#101319",
+            "surface": "#101319",
+            "tertiary-container": "#00a572",
+            "on-background": "#e1e2eb",
+            "surface-container-highest": "#32353b",
+            "surface-bright": "#363940",
+            "primary-container": "#4d8eff",
+            "secondary-fixed": "#acedff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-lg": "0.75rem",
+            "space-xl": "1rem",
+            "gutter": "0.5rem",
+            "margin-mobile": "0.5rem",
+            "space-xs": "0.125rem",
+            "space-sm": "0.25rem",
+            "margin": "0.75rem",
+            "space-md": "0.5rem",
+            "gutter-mobile": "0.25rem"
+          },
+          "fontFamily": {
+            "body-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "code-lg": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "code-md": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "label-md": ["JetBrains Mono"],
+            "headline-lg": ["Inter"]
+          },
+          "fontSize": {
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Technical console base rules */
+    body {
+      background-color: #0B0D11;
+      color: #e1e2eb;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #101319;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #272a30;
+      border-radius: 2px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .row-28 {
+      height: 28px;
+      min-height: 28px;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex overflow-hidden text-on-surface">
+<!-- ========================================================================= -->
+<!-- 1. LEFT SIDEBAR: SideNavBar (Shared Component JSON Blueprint)             -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 h-screen w-64 flex flex-col z-30 bg-surface-container-low border-r border-outline-variant select-none">
+<!-- Header Node / Cluster Emblem -->
+<div class="h-12 px-margin flex items-center gap-space-md border-b border-outline-variant bg-surface-container-lowest">
+<div class="w-6 h-6 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary flex-shrink-0" title="Knowledge graph cluster node emblem">
+<span class="material-symbols-outlined text-[15px]">account_tree</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm font-semibold tracking-tight text-on-surface truncate">Know Your Context</span>
+<span class="font-code-sm text-code-sm text-outline tracking-tight truncate leading-none">Local Runtime v2.4</span>
+</div>
+</div>
+<!-- Navigation Scroll Area (Strict 12 items, Proposals Active) -->
+<div class="flex-1 py-space-sm overflow-y-auto custom-scroll flex flex-col">
+<div class="px-space-md py-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider">Navigation</div>
+<!-- 1. Overview -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">dashboard</span>
+<span class="font-body-sm text-body-sm flex-1">Overview</span>
+</a>
+<!-- 2. Activity -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">pulse_alert</span>
+<span class="font-body-sm text-body-sm flex-1">Activity</span>
+</a>
+<!-- 3. Graph -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">account_tree</span>
+<span class="font-body-sm text-body-sm flex-1">Graph</span>
+</a>
+<!-- 4. Search -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">search</span>
+<span class="font-body-sm text-body-sm flex-1">Search</span>
+</a>
+<!-- 5. Metrics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">monitoring</span>
+<span class="font-body-sm text-body-sm flex-1">Metrics</span>
+</a>
+<!-- 6. Health -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">vital_signs</span>
+<span class="font-body-sm text-body-sm flex-1">Health</span>
+</a>
+<!-- 7. Analytics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">analytics</span>
+<span class="font-body-sm text-body-sm flex-1">Analytics</span>
+</a>
+<!-- 8. Audit -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">policy</span>
+<span class="font-body-sm text-body-sm flex-1">Audit</span>
+</a>
+<!-- 9. Proposals (ACTIVE PER SOURCE SPEC & PROMPT) -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm bg-surface-container-highest text-primary font-medium border-l-2 border-primary rounded-none transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-primary">assignment_turned_in</span>
+<span class="font-body-sm text-body-sm flex-1 font-semibold text-primary">Proposals</span>
+<span class="px-1.5 py-0.2 bg-primary-container text-on-primary-container font-code-sm text-[10px] font-bold rounded">3</span>
+</a>
+<!-- 10. Debt -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">balance</span>
+<span class="font-body-sm text-body-sm flex-1">Debt</span>
+<span class="px-1.5 py-0.2 bg-surface-container-high text-outline font-code-sm text-[10px] rounded">12</span>
+</a>
+<!-- 11. System -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">tune</span>
+<span class="font-body-sm text-body-sm flex-1">System</span>
+</a>
+<!-- 12. Setup -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span class="font-body-sm text-body-sm flex-1">Setup</span>
+</a>
+<!-- Primary Action CTA -->
+<div class="px-space-md mt-space-md">
+<button class="w-full h-7 bg-primary hover:bg-surface-tint active:bg-primary-container text-on-primary font-code-sm text-code-sm font-semibold flex items-center justify-center gap-1 rounded transition-colors duration-150 shadow-none">
+<span class="material-symbols-outlined text-[14px]">add_circle</span>
+          Propose Mutation
+        </button>
+</div>
+</div>
+<!-- Footer Utility Links -->
+<div class="p-space-sm border-t border-outline-variant bg-surface-container-lowest flex flex-col gap-0.5">
+<a class="flex items-center gap-space-md px-space-md py-1 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface rounded transition-colors text-code-sm font-code-sm" href="#">
+<span class="material-symbols-outlined text-outline text-[14px]">menu_book</span>
+        Documentation
+      </a>
+<a class="flex items-center gap-space-md px-space-md py-1 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface rounded transition-colors text-code-sm font-code-sm" href="#">
+<span class="material-symbols-outlined text-outline text-[14px]">terminal</span>
+        Terminal
+      </a>
+<div class="pt-2 px-space-md text-[10px] font-code-sm text-outline flex items-center justify-between border-t border-outline-variant/50 mt-1">
+<span>PID: 88219</span>
+<span class="flex items-center gap-1 text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+          RUNNING
+        </span>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- 2. MAIN VIEWPORT CANVAS (Offset by 64 = 256px)                            -->
+<!-- ========================================================================= -->
+<main class="ml-64 flex-1 flex flex-col h-screen overflow-hidden bg-background">
+<!-- TOP HEADER / TELEMETRY BAR: TopNavBar (JSON Match) -->
+<header class="sticky top-0 right-0 h-12 w-full flex items-center justify-between px-margin border-b border-outline-variant bg-surface z-20 select-none">
+<!-- Left cluster telemetry pills -->
+<div class="flex items-center gap-space-md">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+          cluster-us-east-primary
+        </span>
+<div class="h-3.5 w-px bg-outline-variant"></div>
+<span class="font-code-sm text-code-sm text-secondary bg-surface-container-high px-1.5 py-0.5 rounded">
+          raft:synced
+        </span>
+<span class="font-code-sm text-code-sm text-tertiary bg-surface-container-high px-1.5 py-0.5 rounded">
+          lease:active
+        </span>
+<div class="h-3.5 w-px bg-outline-variant"></div>
+<span class="font-code-sm text-code-sm text-outline">WAL: <span class="text-on-surface">CLEAN</span></span>
+<span class="font-code-sm text-code-sm text-outline">Epoch: <span class="text-primary font-mono">0x8F4E</span></span>
+</div>
+<!-- Center Query / Filter Input -->
+<div class="w-72 relative">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[14px]">search</span>
+</div>
+<input class="w-full h-7 pl-7 pr-3 bg-surface-container-lowest border border-outline-variant rounded font-code-sm text-code-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition-colors" placeholder="Filter node, hash, or epoch..." type="text" value="prop-"/>
+</div>
+<!-- Right Trailing Actions & Icons -->
+<div class="flex items-center gap-2">
+<button class="h-7 px-2.5 bg-surface-container border border-outline-variant hover:bg-surface-container-high text-on-surface font-code-sm text-code-sm rounded flex items-center gap-1 transition-colors" title="Recompute DAG Invariants (F5)">
+<span class="material-symbols-outlined text-[13px] text-primary">sync</span>
+          Recompute Invariants <span class="text-outline text-[10px]">F5</span>
+</button>
+<button class="h-7 px-2.5 bg-primary hover:bg-surface-tint text-on-primary font-code-sm text-code-sm font-semibold rounded flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+          Execute Query
+        </button>
+<button class="h-7 px-2 bg-error-container/40 border border-error/40 hover:bg-error-container text-error font-code-sm text-code-sm rounded flex items-center gap-1 transition-colors" title="Trigger Cluster Freeze">
+<span class="material-symbols-outlined text-[13px]">emergency_home</span>
+          Freeze
+        </button>
+<div class="h-4 w-px bg-outline-variant mx-0.5"></div>
+<button class="w-7 h-7 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded" title="Notifications">
+<span class="material-symbols-outlined text-[16px]">notifications</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container rounded" title="Terminal session">
+<span class="material-symbols-outlined text-[16px]">terminal</span>
+</button>
+<!-- Profile badge -->
+<div class="w-6 h-6 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center text-[10px] font-code-sm text-primary font-bold ml-1" title="Operator avatar badge">
+          OP
+        </div>
+</div>
+</header>
+<!-- SUB-HEADER TITLE & VIEWPORT FILTER TABS -->
+<div class="h-10 px-margin flex items-center justify-between border-b border-outline-variant bg-surface-container-low select-none">
+<div class="flex items-center gap-space-lg">
+<h1 class="font-headline-sm text-headline-sm font-semibold text-on-surface tracking-tight">
+          Improvement Proposals &amp; Mutation Review
+        </h1>
+<div class="flex items-center border border-outline-variant rounded bg-surface-container-lowest p-0.5">
+<button class="px-2 py-0.5 bg-surface-container-high text-primary font-code-sm text-code-sm font-medium rounded">
+            Active Queue (3)
+          </button>
+<button class="px-2 py-0.5 text-outline hover:text-on-surface font-code-sm text-code-sm rounded">
+            All (18)
+          </button>
+<button class="px-2 py-0.5 text-outline hover:text-on-surface font-code-sm text-code-sm rounded">
+            History / Applied (42)
+          </button>
+<button class="px-2 py-0.5 text-outline hover:text-secondary font-code-sm text-code-sm rounded border-l border-outline-variant ml-1" id="toggle-empty-btn">
+            Empty State Preview
+          </button>
+<button class="px-2 py-0.5 text-outline hover:text-error font-code-sm text-code-sm rounded" id="toggle-404-btn">
+            Typed 404 Slot
+          </button>
+</div>
+</div>
+<!-- Quick Action Buttons -->
+<div class="flex items-center gap-space-sm text-code-sm font-code-sm text-outline">
+<span>Sort: <strong class="text-on-surface font-mono">quorums_desc</strong></span>
+<span class="text-outline-variant">|</span>
+<span>DAG Integrity: <strong class="text-tertiary">100% VALID</strong></span>
+</div>
+</div>
+<!-- QUICK TELEMETRY KPI STRIP (4 Strict Dense Blocks) -->
+<section class="h-14 border-b border-outline-variant bg-surface-container-lowest px-margin grid grid-cols-4 gap-space-md py-1.5">
+<!-- Block 1 -->
+<div class="bg-surface-container-low border border-outline-variant rounded px-2.5 py-1 flex items-center justify-between">
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Open Proposals</div>
+<div class="flex items-baseline gap-2 mt-0.5">
+<span class="font-code-lg text-code-lg font-bold text-on-surface">3</span>
+<span class="font-code-sm text-code-sm text-outline">Pending: <span class="text-secondary font-mono">2</span> | Blocked: <span class="text-error font-mono">1</span></span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary text-[18px]">assignment_turned_in</span>
+</div>
+<!-- Block 2 -->
+<div class="bg-surface-container-low border border-outline-variant rounded px-2.5 py-1 flex items-center justify-between">
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Active Review Signals</div>
+<div class="flex items-baseline gap-2 mt-0.5">
+<span class="font-code-lg text-code-lg font-bold text-on-surface">9</span>
+<span class="font-code-sm text-code-sm text-outline">Low Conf: <span class="text-amber-400 font-mono">4</span> | Stale: <span class="text-outline font-mono">3</span> | Orphan: <span class="text-error font-mono">2</span></span>
+</div>
+</div>
+<span class="material-symbols-outlined text-amber-400 text-[18px]">warning</span>
+</div>
+<!-- Block 3 -->
+<div class="bg-surface-container-low border border-outline-variant rounded px-2.5 py-1 flex items-center justify-between">
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Extraction Review (v4)</div>
+<div class="flex items-baseline gap-2 mt-0.5">
+<span class="font-code-lg text-code-lg font-bold text-on-surface">4 Receipts</span>
+<span class="font-code-sm text-code-sm text-tertiary">In Queue [Strict]</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified</span>
+</div>
+<!-- Block 4 -->
+<div class="bg-surface-container-low border border-outline-variant rounded px-2.5 py-1 flex items-center justify-between">
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Auto-Merge SLA</div>
+<div class="flex items-baseline gap-2 mt-0.5">
+<span class="font-code-lg text-code-lg font-bold text-on-surface">4h 12m</span>
+<span class="font-code-sm text-code-sm text-outline">Avg Turnaround</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-[18px]">timer</span>
+</div>
+</section>
+<!-- OPTIONAL BANNER SLOTS (Rendered or toggled) -->
+<div class="hidden px-margin py-1.5 bg-error-container/30 border-b border-error/50 flex items-center justify-between text-code-sm font-code-sm" id="slot-404">
+<div class="flex items-center gap-2 text-error">
+<span class="material-symbols-outlined text-[15px]">error</span>
+<span>Proposal 'prop-000000' not found in local DuckDB snapshot <strong class="underline">[ERR_404_PROP_NOT_INDEXED]</strong></span>
+</div>
+<button class="text-outline hover:text-on-surface" onclick="document.getElementById('slot-404').classList.add('hidden')">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+<!-- ========================================================================= -->
+<!-- 3. THREE-COLUMN DENSE TECHNICAL WORKSPACE LAYOUT                          -->
+<!-- ========================================================================= -->
+<div class="flex-1 flex overflow-hidden">
+<!-- --------------------------------------------------------------------- -->
+<!-- COLUMN 1: LEFT REVIEW SIGNALS (280px)                                  -->
+<!-- --------------------------------------------------------------------- -->
+<aside class="w-[280px] flex-shrink-0 border-r border-outline-variant flex flex-col bg-surface-container-low">
+<!-- Header with signal count chips -->
+<div class="h-8 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-1.5 font-label-md text-label-md uppercase text-on-surface font-semibold tracking-wider">
+<span class="material-symbols-outlined text-[14px] text-primary">sensors</span>
+            Review Signals
+          </div>
+<div class="flex items-center gap-1">
+<span class="font-code-sm text-[9px] px-1 bg-amber-950/60 text-amber-400 border border-amber-800/60 rounded">LOW:4</span>
+<span class="font-code-sm text-[9px] px-1 bg-surface-variant text-outline border border-outline-variant rounded">STL:3</span>
+<span class="font-code-sm text-[9px] px-1 bg-rose-950/60 text-error border border-rose-900/60 rounded">ORP:2</span>
+</div>
+</div>
+<!-- Filter Sub-bar -->
+<div class="h-6 px-2 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between text-code-sm font-code-sm text-outline">
+<span>Sort: Detected (Newest)</span>
+<span class="hover:text-on-surface cursor-pointer">Filter [All]</span>
+</div>
+<!-- Signal Rows Stream -->
+<div class="flex-1 overflow-y-auto custom-scroll divide-y divide-outline-variant">
+<!-- Item 1 -->
+<div class="px-2 py-1.5 hover:bg-surface-container transition-colors group">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface truncate max-w-[150px]" title="node:kg_sym#store_mutate">
+                node:kg_sym#store_mutate
+              </span>
+<span class="font-label-sm text-[9px] px-1 py-0.2 bg-amber-950/60 text-amber-400 border border-amber-700/60 rounded">
+                LOW_CONF 0.42
+              </span>
+</div>
+<div class="flex items-center justify-between mt-1 text-code-sm font-code-sm text-outline">
+<span>Det: 14:38:12Z</span>
+<button class="opacity-0 group-hover:opacity-100 px-1.5 py-0.2 bg-primary-container text-on-primary-container font-code-sm text-[10px] rounded hover:bg-primary transition-opacity">
+                Draft Prop
+              </button>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="px-2 py-1.5 hover:bg-surface-container transition-colors group">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface truncate max-w-[150px]" title="node:concept_419">
+                node:concept_419
+              </span>
+<span class="font-label-sm text-[9px] px-1 py-0.2 bg-surface-variant text-on-surface-variant border border-outline-variant rounded">
+                STALE_REF
+              </span>
+</div>
+<div class="flex items-center justify-between mt-1 text-code-sm font-code-sm text-outline">
+<span>Det: 14:35:40Z</span>
+<button class="opacity-0 group-hover:opacity-100 px-1.5 py-0.2 bg-surface-container-high text-on-surface border border-outline-variant text-[10px] rounded transition-opacity">
+                Inspect
+              </button>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="px-2 py-1.5 hover:bg-surface-container transition-colors group bg-error-container/10">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-semibold text-error truncate max-w-[150px]" title="node:edge_rel_882">
+                node:edge_rel_882
+              </span>
+<span class="font-label-sm text-[9px] px-1 py-0.2 bg-rose-950/60 text-error border border-rose-900/60 rounded">
+                ORPHAN_NODE
+              </span>
+</div>
+<div class="flex items-center justify-between mt-1 text-code-sm font-code-sm text-outline">
+<span>Det: 14:29:11Z</span>
+<button class="opacity-0 group-hover:opacity-100 px-1.5 py-0.2 bg-error text-on-error font-code-sm text-[10px] rounded transition-opacity">
+                Prune
+              </button>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="px-2 py-1.5 hover:bg-surface-container transition-colors group">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface truncate max-w-[150px]" title="node:subgraph_tier2">
+                node:subgraph_tier2
+              </span>
+<span class="font-label-sm text-[9px] px-1 py-0.2 bg-amber-950/60 text-amber-400 border border-amber-700/60 rounded">
+                LOW_CONF 0.38
+              </span>
+</div>
+<div class="flex items-center justify-between mt-1 text-code-sm font-code-sm text-outline">
+<span>Det: 14:22:05Z</span>
+<button class="opacity-0 group-hover:opacity-100 px-1.5 py-0.2 bg-primary-container text-on-primary-container text-[10px] rounded transition-opacity">
+                Draft Prop
+              </button>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="px-2 py-1.5 hover:bg-surface-container transition-colors group">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface truncate max-w-[150px]" title="node:idx_hnsw_l0">
+                node:idx_hnsw_l0
+              </span>
+<span class="font-label-sm text-[9px] px-1 py-0.2 bg-surface-variant text-on-surface-variant border border-outline-variant rounded">
+                STALE_REF
+              </span>
+</div>
+<div class="flex items-center justify-between mt-1 text-code-sm font-code-sm text-outline">
+<span>Det: 14:15:00Z</span>
+<button class="opacity-0 group-hover:opacity-100 px-1.5 py-0.2 bg-surface-container-high text-on-surface border border-outline-variant text-[10px] rounded transition-opacity">
+                Inspect
+              </button>
+</div>
+</div>
+<!-- Item 6 -->
+<div class="px-2 py-1.5 hover:bg-surface-container transition-colors group">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface truncate max-w-[150px]" title="node:cache_sym#dispatch">
+                node:cache_sym#dispatch
+              </span>
+<span class="font-label-sm text-[9px] px-1 py-0.2 bg-amber-950/60 text-amber-400 border border-amber-700/60 rounded">
+                LOW_CONF 0.49
+              </span>
+</div>
+<div class="flex items-center justify-between mt-1 text-code-sm font-code-sm text-outline">
+<span>Det: 13:58:12Z</span>
+<button class="opacity-0 group-hover:opacity-100 px-1.5 py-0.2 bg-primary-container text-on-primary-container text-[10px] rounded transition-opacity">
+                Draft Prop
+              </button>
+</div>
+</div>
+<!-- Item 7 -->
+<div class="px-2 py-1.5 hover:bg-surface-container transition-colors group">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-semibold text-error truncate max-w-[150px]" title="node:lease_tok#882">
+                node:lease_tok#882
+              </span>
+<span class="font-label-sm text-[9px] px-1 py-0.2 bg-rose-950/60 text-error border border-rose-900/60 rounded">
+                ORPHAN_NODE
+              </span>
+</div>
+<div class="flex items-center justify-between mt-1 text-code-sm font-code-sm text-outline">
+<span>Det: 13:42:01Z</span>
+<button class="opacity-0 group-hover:opacity-100 px-1.5 py-0.2 bg-error text-on-error text-[10px] rounded transition-opacity">
+                Prune
+              </button>
+</div>
+</div>
+</div>
+<!-- Footer status in Column 1 -->
+<div class="h-6 px-2 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between text-code-sm font-code-sm text-outline">
+<span>Buffer: 9 / 1024</span>
+<span class="text-tertiary">Ingest Active</span>
+</div>
+</aside>
+<!-- --------------------------------------------------------------------- -->
+<!-- COLUMN 2: CENTER WORKSPACE (IMPROVEMENT PROPOSALS)                     -->
+<!-- --------------------------------------------------------------------- -->
+<section class="flex-1 flex flex-col min-w-0 bg-surface">
+<!-- Table Control / Sub Filter Bar -->
+<div class="h-8 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between select-none">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md uppercase text-on-surface font-semibold tracking-wider">
+              Improvement Proposals
+            </span>
+<span class="px-1.5 py-0.2 bg-surface-container-highest text-primary font-code-sm text-[10px] rounded">
+              3 ACTIVE
+            </span>
+</div>
+<!-- Search & State Filters -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1 text-code-sm font-code-sm">
+<span class="text-outline">Status:</span>
+<span class="text-primary cursor-pointer hover:underline">All</span>
+<span class="text-outline-variant">/</span>
+<span class="text-outline cursor-pointer hover:text-on-surface">Proposed</span>
+<span class="text-outline-variant">/</span>
+<span class="text-outline cursor-pointer hover:text-on-surface">In Review</span>
+<span class="text-outline-variant">/</span>
+<span class="text-outline cursor-pointer hover:text-on-surface">Applied</span>
+</div>
+<div class="h-3.5 w-px bg-outline-variant mx-1"></div>
+<button class="px-2 py-0.5 bg-surface-container-high border border-outline-variant hover:bg-surface-container-highest text-on-surface font-code-sm text-code-sm rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">filter_alt</span>
+              Filter Target Node
+            </button>
+</div>
+</div>
+<!-- Empty state slot (hidden by default, toggleable) -->
+<div class="hidden p-6 border-b border-outline-variant bg-surface-container-low text-center" id="slot-empty">
+<span class="material-symbols-outlined text-outline text-[32px] mb-2">inbox</span>
+<div class="font-code-md text-code-md text-on-surface font-semibold">No open proposals in queue for shard-04</div>
+<p class="font-body-sm text-body-sm text-outline mt-1 max-w-sm mx-auto">
+            All pending heuristic mutation triggers have resolved with consensus or expired leasing fences.
+          </p>
+<button class="mt-3 px-3 py-1 bg-surface-container border border-outline-variant hover:bg-surface-container-high text-primary font-code-sm text-code-sm rounded">
+            Check Neighboring Shard US-EAST-02
+          </button>
+</div>
+<!-- Telemetry Table Structure -->
+<div class="flex-1 overflow-y-auto custom-scroll">
+<!-- Table Header (Strict 28px) -->
+<div class="sticky top-0 bg-surface-container-lowest border-b border-outline-variant flex items-center px-space-md text-outline font-label-md text-label-md uppercase tracking-wider row-28 z-10 select-none">
+<div class="w-28 flex-shrink-0">Proposal ID</div>
+<div class="flex-1 min-w-[180px]">Target Node ID</div>
+<div class="w-24 text-center">Impact</div>
+<div class="w-48">Status / Quorum</div>
+<div class="w-28 text-right">Proposed</div>
+<div class="w-28 text-right">Applied</div>
+<div class="w-36 text-right">Actions</div>
+</div>
+<!-- ROW 1: prop-9f2c1a (ACTIVE & EXPANDED) -->
+<div class="bg-surface-container-high border-b border-outline-variant border-l-2 border-l-primary flex items-center px-space-md row-28 text-code-sm font-code-sm hover:bg-surface-container-highest transition-colors">
+<div class="w-28 flex-shrink-0 font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+              prop-9f2c1a
+            </div>
+<div class="flex-1 min-w-[180px] text-on-surface truncate font-mono" title="node:heuristics-catalog">
+              node:heuristics-catalog
+            </div>
+<div class="w-24 text-center">
+<span class="px-1.5 py-0.2 bg-amber-950/60 text-amber-400 border border-amber-700/60 text-[10px] font-bold rounded">
+                HIGH
+              </span>
+</div>
+<div class="w-48 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-secondary font-medium">IN_REVIEW</span>
+<span class="text-outline text-[10px] font-mono">[quorum 2/3]</span>
+</div>
+<div class="w-28 text-right text-on-surface-variant font-mono">14:32:04Z</div>
+<div class="w-28 text-right text-outline font-mono">- (pending)</div>
+<div class="w-36 text-right flex items-center justify-end gap-1">
+<button class="px-1.5 py-0.5 bg-surface-container border border-outline-variant hover:bg-surface-variant text-on-surface text-[10px] rounded">Diff</button>
+<button class="px-1.5 py-0.5 bg-primary text-on-primary font-bold text-[10px] rounded hover:bg-surface-tint">Review</button>
+</div>
+</div>
+<!-- EXPANDED DETAIL VIEW FOR prop-9f2c1a: Visual Event Trail -->
+<div class="bg-surface-container-lowest border-b border-outline-variant px-6 py-3">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm uppercase text-outline tracking-wider">Sequential Milestone Trail</span>
+<span class="font-code-sm text-[10px] px-1 bg-surface-container text-tertiary rounded">DAG MUTATION PIPELINE</span>
+</div>
+<span class="font-code-sm text-[11px] text-outline font-mono">Target: DAG:node:heuristics-catalog • Subgraph: core-v2</span>
+</div>
+<!-- Milestone Trail 3-step Container -->
+<div class="space-y-2 border-l border-outline-variant pl-4 ml-2">
+<!-- Step 1: Proposed -->
+<div class="relative">
+<span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-secondary border-2 border-surface-container-lowest"></span>
+<div class="bg-surface-container border border-outline-variant rounded p-2 text-code-sm font-code-sm">
+<div class="flex items-center justify-between text-outline text-[11px]">
+<span class="text-on-surface font-semibold flex items-center gap-1.5">
+<span class="text-secondary">#1 PROPOSED</span> • actor: <span class="text-primary font-mono">agent-2 (autonomous_indexer)</span>
+</span>
+<span>seq: <strong class="text-on-surface">#10418</strong> | time: <span class="font-mono">14:32:04.112Z</span></span>
+</div>
+<div class="mt-1 text-on-surface-variant bg-surface-container-lowest p-1.5 rounded border border-outline-variant/60 font-mono text-[11px]">
+                    payload: "Replace linear citation scan with vector cluster traversal"
+                  </div>
+</div>
+</div>
+<!-- Step 2: Reviewed -->
+<div class="relative">
+<span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-primary border-2 border-surface-container-lowest"></span>
+<div class="bg-surface-container border border-outline-variant rounded p-2 text-code-sm font-code-sm">
+<div class="flex items-center justify-between text-outline text-[11px]">
+<span class="text-on-surface font-semibold flex items-center gap-1.5">
+<span class="text-primary">#2 REVIEWED</span> • actor: <span class="text-tertiary font-mono">operator (interactive_console)</span>
+</span>
+<span>seq: <strong class="text-on-surface">#10420</strong> | time: <span class="font-mono">14:38:12.804Z</span></span>
+</div>
+<div class="mt-1 text-on-surface-variant bg-surface-container-lowest p-1.5 rounded border border-outline-variant/60 font-mono text-[11px]">
+                    verdict: "Approved with fencing token 0x9f1a"
+                  </div>
+</div>
+</div>
+<!-- Step 3: Applied -->
+<div class="relative">
+<span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-tertiary border-2 border-surface-container-lowest"></span>
+<div class="bg-surface-container border border-outline-variant rounded p-2 text-code-sm font-code-sm">
+<div class="flex items-center justify-between text-outline text-[11px]">
+<span class="text-on-surface font-semibold flex items-center gap-1.5">
+<span class="text-tertiary">#3 APPLIED</span> • actor: <span class="text-secondary font-mono">sub-139 (vector_embedder)</span>
+</span>
+<span>seq: <strong class="text-on-surface">#10421</strong> | time: <span class="font-mono">14:41:58.204Z</span></span>
+</div>
+<div class="mt-1 text-tertiary bg-surface-container-lowest p-1.5 rounded border border-outline-variant/60 font-mono text-[11px]">
+                    result: "DAG edge mutated. Verification: 11/11 pass"
+                  </div>
+</div>
+</div>
+</div>
+</div>
+<!-- ROW 2: prop-8a1d44 -->
+<div class="border-b border-outline-variant flex items-center px-space-md row-28 text-code-sm font-code-sm hover:bg-surface-container transition-colors">
+<div class="w-28 flex-shrink-0 font-medium text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_right</span>
+              prop-8a1d44
+            </div>
+<div class="flex-1 min-w-[180px] text-on-surface-variant truncate font-mono" title="node:vector-indexer-p3">
+              node:vector-indexer-p3
+            </div>
+<div class="w-24 text-center">
+<span class="px-1.5 py-0.2 bg-cyan-950/60 text-secondary border border-cyan-700/60 text-[10px] font-bold rounded">
+                MEDIUM
+              </span>
+</div>
+<div class="w-48 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-amber-400"></span>
+<span class="text-amber-400 font-medium">PROPOSED</span>
+<span class="text-outline text-[10px] font-mono">[quorum 1/3]</span>
+</div>
+<div class="w-28 text-right text-on-surface-variant font-mono">14:18:22Z</div>
+<div class="w-28 text-right text-outline font-mono">-</div>
+<div class="w-36 text-right flex items-center justify-end gap-1">
+<button class="px-1.5 py-0.5 bg-surface-container border border-outline-variant hover:bg-surface-variant text-on-surface text-[10px] rounded">Diff</button>
+<button class="px-1.5 py-0.5 bg-primary text-on-primary font-bold text-[10px] rounded hover:bg-surface-tint">Apply</button>
+</div>
+</div>
+<!-- ROW 3: prop-77e19c -->
+<div class="border-b border-outline-variant flex items-center px-space-md row-28 text-code-sm font-code-sm hover:bg-surface-container transition-colors">
+<div class="w-28 flex-shrink-0 font-medium text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_right</span>
+              prop-77e19c
+            </div>
+<div class="flex-1 min-w-[180px] text-on-surface-variant truncate font-mono" title="node:store.acquire_mutation">
+              node:store.acquire_mutation
+            </div>
+<div class="w-24 text-center">
+<span class="px-1.5 py-0.2 bg-surface-variant text-outline border border-outline-variant text-[10px] font-bold rounded">
+                LOW
+              </span>
+</div>
+<div class="w-48 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-tertiary font-medium">APPLIED</span>
+<span class="text-outline text-[10px] font-mono">[seq #1042]</span>
+</div>
+<div class="w-28 text-right text-on-surface-variant font-mono">14:02:51Z</div>
+<div class="w-28 text-right text-on-surface-variant font-mono">14:41:58Z</div>
+<div class="w-36 text-right flex items-center justify-end gap-1">
+<button class="px-1.5 py-0.5 bg-surface-container border border-outline-variant hover:bg-surface-variant text-on-surface text-[10px] rounded">Inspect</button>
+</div>
+</div>
+<!-- Additional filler dense rows to match observability high throughput -->
+<!-- ROW 4 -->
+<div class="border-b border-outline-variant flex items-center px-space-md row-28 text-code-sm font-code-sm hover:bg-surface-container transition-colors opacity-75">
+<div class="w-28 flex-shrink-0 font-medium text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_right</span>
+              prop-62c00a
+            </div>
+<div class="flex-1 min-w-[180px] text-outline truncate font-mono" title="node:telemetry_stream_sh4">
+              node:telemetry_stream_sh4
+            </div>
+<div class="w-24 text-center">
+<span class="px-1.5 py-0.2 bg-surface-variant text-outline border border-outline-variant text-[10px] font-bold rounded">
+                LOW
+              </span>
+</div>
+<div class="w-48 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-tertiary font-medium">APPLIED</span>
+<span class="text-outline text-[10px] font-mono">[seq #1039]</span>
+</div>
+<div class="w-28 text-right text-outline font-mono">13:45:10Z</div>
+<div class="w-28 text-right text-outline font-mono">13:50:00Z</div>
+<div class="w-36 text-right flex items-center justify-end gap-1">
+<button class="px-1.5 py-0.5 bg-surface-container border border-outline-variant text-outline text-[10px] rounded">Inspect</button>
+</div>
+</div>
+<!-- ROW 5 -->
+<div class="border-b border-outline-variant flex items-center px-space-md row-28 text-code-sm font-code-sm hover:bg-surface-container transition-colors opacity-75">
+<div class="w-28 flex-shrink-0 font-medium text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_right</span>
+              prop-55a9b3
+            </div>
+<div class="flex-1 min-w-[180px] text-outline truncate font-mono" title="node:schema_entity_actor">
+              node:schema_entity_actor
+            </div>
+<div class="w-24 text-center">
+<span class="px-1.5 py-0.2 bg-amber-950/60 text-amber-400 border border-amber-700/60 text-[10px] font-bold rounded">
+                HIGH
+              </span>
+</div>
+<div class="w-48 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-tertiary font-medium">APPLIED</span>
+<span class="text-outline text-[10px] font-mono">[seq #1035]</span>
+</div>
+<div class="w-28 text-right text-outline font-mono">13:22:44Z</div>
+<div class="w-28 text-right text-outline font-mono">13:30:12Z</div>
+<div class="w-36 text-right flex items-center justify-end gap-1">
+<button class="px-1.5 py-0.5 bg-surface-container border border-outline-variant text-outline text-[10px] rounded">Inspect</button>
+</div>
+</div>
+</div>
+<!-- Center Workspace Bottom Status / Pagination -->
+<div class="h-6 px-space-md bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between text-code-sm font-code-sm text-outline select-none">
+<div class="flex items-center gap-3">
+<span>Showing 3 of 42 mutations</span>
+<span>DAG validation time: <strong class="text-on-surface">1.4ms</strong></span>
+</div>
+<div class="flex items-center gap-2">
+<span>Page 1 / 1</span>
+<span class="text-outline-variant">|</span>
+<span class="text-primary hover:underline cursor-pointer">Export Ledger JSON</span>
+</div>
+</div>
+</section>
+<!-- --------------------------------------------------------------------- -->
+<!-- COLUMN 3: RIGHT EXTRACTION REVIEW QUEUE (350px)                       -->
+<!-- --------------------------------------------------------------------- -->
+<aside class="w-[350px] flex-shrink-0 border-l border-outline-variant flex flex-col bg-surface-container-low">
+<!-- Header with contract spec badge -->
+<div class="h-8 px-space-md bg-surface-container border-b border-outline-variant flex items-center justify-between select-none">
+<div class="flex items-center gap-1.5 font-label-md text-label-md uppercase text-on-surface font-semibold tracking-wider">
+<span class="material-symbols-outlined text-[14px] text-tertiary">rule</span>
+            Extraction Review Queue
+          </div>
+<span class="font-code-sm text-[9px] px-1.5 py-0.2 bg-tertiary/10 text-tertiary border border-tertiary/30 rounded font-bold">
+            CONTRACT_V4_STRICT
+          </span>
+</div>
+<!-- Metric comparison subtitle -->
+<div class="h-6 px-2 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between text-code-sm font-code-sm text-outline">
+<span>Pending Receipts: <strong class="text-on-surface font-mono">4</strong></span>
+<span>Threshold: <strong class="text-primary font-mono">&gt;=0.70</strong></span>
+</div>
+<!-- Extraction Cards Scroll Container -->
+<div class="flex-1 overflow-y-auto custom-scroll p-space-sm space-y-space-sm">
+<!-- Extraction Card 1 (Pending Review) -->
+<div class="bg-surface-container border border-outline-variant rounded p-2.5 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-bold text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                rcpt-04a91b
+              </span>
+<span class="px-1.5 py-0.2 bg-secondary/10 text-secondary border border-secondary/30 font-code-sm text-[9px] font-bold rounded">
+                PENDING
+              </span>
+</div>
+<!-- Confidence Delta Visualization -->
+<div class="bg-surface-container-lowest border border-outline-variant/60 rounded p-1.5 text-code-sm font-code-sm">
+<div class="flex items-center justify-between text-outline text-[11px]">
+<span>Reported: <strong class="text-on-surface font-mono">0.92</strong></span>
+<span>Effective: <strong class="text-amber-400 font-mono">0.71</strong> <span class="text-error">(-0.21 delta)</span></span>
+</div>
+<!-- Dual-level metric bar -->
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-1.5 overflow-hidden flex">
+<div class="bg-tertiary h-full" style="width: 71%"></div>
+<div class="bg-amber-500/50 h-full" style="width: 21%"></div>
+</div>
+</div>
+<!-- Metadata info chips -->
+<div class="grid grid-cols-2 gap-1 text-code-sm font-code-sm text-outline text-[11px]">
+<div>Agent: <span class="text-on-surface font-mono">agent-2</span></div>
+<div>Corroborators: <span class="text-tertiary font-mono">2</span></div>
+<div>Decided: <span class="text-on-surface font-mono">consensus_rule_v4</span></div>
+<div>Contradictions: <span class="text-on-surface font-mono">0</span></div>
+</div>
+<!-- Action Trigger Row -->
+<div class="flex items-center gap-1 pt-1 border-t border-outline-variant/60">
+<button class="flex-1 h-6 bg-tertiary-container/30 border border-tertiary/40 hover:bg-tertiary-container text-tertiary hover:text-on-tertiary font-code-sm text-[10px] font-bold rounded transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check</span> Approve (A)
+              </button>
+<button class="flex-1 h-6 bg-error-container/20 border border-error/30 hover:bg-error-container text-error hover:text-on-error font-code-sm text-[10px] font-bold rounded transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[12px]">close</span> Reject (R)
+              </button>
+<button class="h-6 px-1.5 bg-surface-container-high border border-outline-variant hover:bg-surface-variant text-on-surface font-code-sm text-[10px] rounded" title="Inspect Diff">
+                Diff
+              </button>
+</div>
+</div>
+<!-- Extraction Card 2 (Approved Item) -->
+<div class="bg-surface-container border border-outline-variant rounded p-2.5 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-bold text-on-surface flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                rcpt-88f21c
+              </span>
+<span class="px-1.5 py-0.2 bg-tertiary/10 text-tertiary border border-tertiary/30 font-code-sm text-[9px] font-bold rounded">
+                APPROVED
+              </span>
+</div>
+<!-- Confidence Delta Visualization -->
+<div class="bg-surface-container-lowest border border-outline-variant/60 rounded p-1.5 text-code-sm font-code-sm">
+<div class="flex items-center justify-between text-outline text-[11px]">
+<span>Reported: <strong class="text-on-surface font-mono">0.88</strong></span>
+<span>Effective: <strong class="text-tertiary font-mono">0.88</strong> <span class="text-tertiary">(0.00 delta)</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-1.5 overflow-hidden flex">
+<div class="bg-tertiary h-full" style="width: 88%"></div>
+</div>
+</div>
+<!-- Metadata info chips -->
+<div class="grid grid-cols-2 gap-1 text-code-sm font-code-sm text-outline text-[11px]">
+<div>Agent: <span class="text-on-surface font-mono">agent-7</span></div>
+<div>Corroborators: <span class="text-tertiary font-mono">4</span></div>
+<div>Decided: <span class="text-primary font-mono">operator</span></div>
+<div>Contradictions: <span class="text-on-surface font-mono">0</span></div>
+</div>
+<!-- Verified badge -->
+<div class="flex items-center justify-between pt-1 border-t border-outline-variant/60 text-code-sm font-code-sm text-outline text-[10px]">
+<span class="text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">done_all</span> Verified in Ledger
+              </span>
+<button class="text-outline hover:text-on-surface underline">Inspect Proof</button>
+</div>
+</div>
+<!-- Extraction Card 3 (Pending Item) -->
+<div class="bg-surface-container border border-outline-variant rounded p-2.5 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-bold text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                rcpt-33e14d
+              </span>
+<span class="px-1.5 py-0.2 bg-secondary/10 text-secondary border border-secondary/30 font-code-sm text-[9px] font-bold rounded">
+                PENDING
+              </span>
+</div>
+<!-- Confidence Delta Visualization -->
+<div class="bg-surface-container-lowest border border-outline-variant/60 rounded p-1.5 text-code-sm font-code-sm">
+<div class="flex items-center justify-between text-outline text-[11px]">
+<span>Reported: <strong class="text-on-surface font-mono">0.74</strong></span>
+<span>Effective: <strong class="text-amber-400 font-mono">0.69</strong> <span class="text-error">(-0.05 delta)</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-1.5 overflow-hidden flex">
+<div class="bg-amber-400 h-full" style="width: 69%"></div>
+</div>
+</div>
+<!-- Metadata info chips -->
+<div class="grid grid-cols-2 gap-1 text-code-sm font-code-sm text-outline text-[11px]">
+<div>Agent: <span class="text-on-surface font-mono">agent-2</span></div>
+<div>Corroborators: <span class="text-amber-400 font-mono">1</span></div>
+<div>Decided: <span class="text-outline font-mono">eval_pending</span></div>
+<div>Contradictions: <span class="text-error font-mono">1</span></div>
+</div>
+<!-- Action Trigger Row -->
+<div class="flex items-center gap-1 pt-1 border-t border-outline-variant/60">
+<button class="flex-1 h-6 bg-tertiary-container/30 border border-tertiary/40 hover:bg-tertiary-container text-tertiary hover:text-on-tertiary font-code-sm text-[10px] font-bold rounded transition-colors flex items-center justify-center gap-1">
+                Approve (A)
+              </button>
+<button class="flex-1 h-6 bg-error-container/20 border border-error/30 hover:bg-error-container text-error hover:text-on-error font-code-sm text-[10px] font-bold rounded transition-colors flex items-center justify-center gap-1">
+                Reject (R)
+              </button>
+<button class="h-6 px-1.5 bg-surface-container-high border border-outline-variant hover:bg-surface-variant text-on-surface font-code-sm text-[10px] rounded">
+                Diff
+              </button>
+</div>
+</div>
+</div>
+<!-- Footer for Extraction Column -->
+<div class="h-6 px-2 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between text-code-sm font-code-sm text-outline select-none">
+<span>Batch: <strong class="text-on-surface font-mono">b-1092</strong></span>
+<span class="text-primary hover:underline cursor-pointer">Clear Approved</span>
+</div>
+</aside>
+</div>
+<!-- ========================================================================= -->
+<!-- 4. BOTTOM PERSISTENT TELEMETRY STATUS BAR                                 -->
+<!-- ========================================================================= -->
+<footer class="h-7 w-full border-t border-outline-variant bg-surface-container-lowest px-margin flex items-center justify-between text-code-sm font-code-sm text-outline select-none z-20">
+<div class="flex items-center gap-4">
+<!-- Raft Quorum status -->
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Raft Quorum: <strong class="text-on-surface font-mono">3/3 ACK</strong></span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<!-- WAL Offset -->
+<div>
+          WAL Offset: <strong class="text-secondary font-mono">0x4F09B1</strong>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<!-- DuckDB In-Memory -->
+<div>
+          DuckDB In-Memory: <strong class="text-tertiary font-mono">99.4% cache hit</strong>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Proposals Shard -->
+<div>
+          Proposals Shard: <strong class="text-on-surface font-mono">US-EAST-01</strong>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<!-- Local Sync Latency -->
+<div>
+          Sync Latency: <strong class="text-on-surface font-mono">0.42ms</strong>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<!-- Viewport Size -->
+<div class="text-outline">
+          Viewport: <strong class="text-primary font-mono">1440x900 Fixed</strong>
+</div>
+</div>
+</footer>
+</main>
+<!-- Interactive script for toggles and micro-interactions -->
+<script>
+    // Empty state toggle
+    const toggleEmptyBtn = document.getElementById('toggle-empty-btn');
+    const slotEmpty = document.getElementById('slot-empty');
+    if (toggleEmptyBtn && slotEmpty) {
+      toggleEmptyBtn.addEventListener('click', () => {
+        slotEmpty.classList.toggle('hidden');
+      });
+    }
+
+    // Typed 404 slot preview toggle
+    const toggle404Btn = document.getElementById('toggle-404-btn');
+    const slot404 = document.getElementById('slot-404');
+    if (toggle404Btn && slot404) {
+      toggle404Btn.addEventListener('click', () => {
+        slot404.classList.toggle('hidden');
+      });
+    }
+  </script>
+</body></html>

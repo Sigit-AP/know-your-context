@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Context - System Introspection (Dense Technical)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            base: '#0B0D11',
+            surface: {
+              DEFAULT: '#12151B',
+              elevated: '#1A1E26',
+              high: '#202632',
+              highlight: '#262D3B',
+            },
+            border: {
+              subtle: '#1C222C',
+              hairline: '#2A313E',
+              focused: '#3E495D',
+            },
+            accent: {
+              primary: '#3B82F6',
+              cyan: '#06B6D4',
+              emerald: '#10B981',
+              amber: '#F59E0B',
+              rose: '#EF4444',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D11;
+      color: #E2E8F0;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      font-size: 12px;
+      line-height: 1.35;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom compact scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0D11;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2A313E;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3E495D;
+    }
+    .table-compact th {
+      padding: 5px 8px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+    .table-compact td {
+      padding: 4px 8px;
+      height: 28px;
+      white-space: nowrap;
+      border-bottom: 1px solid #1C222C;
+    }
+  </style>
+</head>
+<body class="bg-base text-[#D1D5DB] min-h-screen flex flex-col antialiased select-none">
+
+  <!-- TOP STATUS / TELEMETRY RUNTIME STRIP (Compact 36px) -->
+  <header class="h-9 bg-[#12151B] border-b border-[#2A313E] flex items-center justify-between px-3 text-[11px] z-30 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5 font-semibold text-slate-100 uppercase tracking-wider text-[11px]">
+        <svg class="w-3.5 h-3.5 text-[#3B82F6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span class="tracking-tight text-slate-200">KYC // CORE-DAEMON</span>
+      </div>
+      <div class="h-3 w-px bg-[#2A313E]"></div>
+      <div class="flex items-center gap-1.5 text-slate-400">
+        <span class="text-slate-500 font-mono text-[10px]">CLUSTER:</span>
+        <span class="font-mono text-slate-200">node-01.local:9042</span>
+      </div>
+      <div class="h-3 w-px bg-[#2A313E]"></div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+        <span class="font-mono text-[10px] text-[#10B981] font-semibold">RAFT: QUORUM_REACHED</span>
+        <span class="text-slate-500 font-mono text-[10px]">(3/3 NODES)</span>
+      </div>
+      <div class="h-3 w-px bg-[#2A313E]"></div>
+      <div class="flex items-center gap-1 text-slate-400">
+        <span class="text-slate-500 font-mono text-[10px]">EPOCH:</span>
+        <span class="font-mono text-cyan-400 text-[10px]">0x8F4E</span>
+      </div>
+      <div class="h-3 w-px bg-[#2A313E]"></div>
+      <div class="flex items-center gap-1 text-slate-400">
+        <span class="text-slate-500 font-mono text-[10px]">WAL_SEQ:</span>
+        <span class="font-mono text-slate-300 text-[10px]">#829</span>
+      </div>
+    </div>
+
+    <!-- Right utility status tags -->
+    <div class="flex items-center gap-2 font-mono text-[10px]">
+      <div class="flex items-center gap-1 bg-[#1A1E26] px-2 py-0.5 rounded border border-[#2A313E] text-slate-300">
+        <span class="text-slate-500">MEM_RSS:</span>
+        <span class="text-slate-200 font-semibold">46.2 MB</span>
+      </div>
+      <div class="flex items-center gap-1 bg-[#1A1E26] px-2 py-0.5 rounded border border-[#2A313E] text-slate-300">
+        <span class="text-slate-500">P99:</span>
+        <span class="text-emerald-400 font-semibold">1.42ms</span>
+      </div>
+      <button class="flex items-center gap-1 bg-[#1A1E26] hover:bg-[#202632] text-slate-200 px-2 py-0.5 rounded border border-[#2A313E] transition-colors">
+        <svg class="w-3 h-3 text-[#3B82F6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+        </svg>
+        <span>RECHECK [F5]</span>
+      </button>
+      <button class="bg-[#3B82F6] hover:bg-blue-600 text-white font-sans font-semibold px-2 py-0.5 rounded flex items-center gap-1 text-[11px] transition-colors">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>APPLY CONFIG</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE: SIDEBAR + QUADRANT DASHBOARD -->
+  <div class="flex flex-1 min-h-0">
+    
+    <!-- PERSISTENT LEFT SIDEBAR: Exactly 12 nav items (System active), utility buttons strictly outside -->
+    <aside class="w-56 bg-[#12151B] border-r border-[#2A313E] flex flex-col justify-between shrink-0 z-20">
+      <div class="flex flex-col">
+        <!-- Brand Title & Version -->
+        <div class="p-3 border-b border-[#2A313E]">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded bg-[#1A1E26] border border-[#2A313E] flex items-center justify-center text-[#3B82F6]">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </div>
+            <div>
+              <h1 class="font-semibold text-xs tracking-tight text-white leading-none">Know Your Context</h1>
+              <span class="font-mono text-[9px] text-slate-500 uppercase tracking-widest mt-0.5 block">LOCAL RUNTIME v2.4</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12 NAVIGATION ITEMS EXACT -->
+        <nav class="p-1.5 space-y-0.5 text-[11px] font-medium" aria-label="Main Navigation">
+          
+          <!-- 1. Overview -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="9"></rect>
+                <rect x="14" y="3" width="7" height="5"></rect>
+                <rect x="14" y="12" width="7" height="9"></rect>
+                <rect x="3" y="16" width="7" height="5"></rect>
+              </svg>
+              <span>Overview</span>
+            </div>
+          </a>
+
+          <!-- 2. Activity -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span>Activity</span>
+            </div>
+            <span class="font-mono text-[9px] bg-[#1A1E26] text-slate-400 px-1 py-0.2 rounded border border-[#2A313E]">LIVE</span>
+          </a>
+
+          <!-- 3. Graph -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="6" cy="6" r="3"></circle>
+                <circle cx="18" cy="18" r="3"></circle>
+                <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"></line>
+              </svg>
+              <span>Graph</span>
+            </div>
+            <span class="font-mono text-[9px] text-slate-500">DAG</span>
+          </a>
+
+          <!-- 4. Search -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span>Search</span>
+            </div>
+            <span class="font-mono text-[9px] text-slate-500">/</span>
+          </a>
+
+          <!-- 5. Metrics -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Metrics</span>
+            </div>
+          </a>
+
+          <!-- 6. Health -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+              </svg>
+              <span>Health</span>
+            </div>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          </a>
+
+          <!-- 7. Analytics (PERSISTENT & INCLUDED) -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+              </svg>
+              <span>Analytics</span>
+            </div>
+          </a>
+
+          <!-- 8. Audit -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Audit</span>
+            </div>
+            <span class="font-mono text-[9px] text-slate-500">100%</span>
+          </a>
+
+          <!-- 9. Proposals -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>Proposals</span>
+            </div>
+            <span class="font-mono text-[9px] bg-[#1A1E26] text-amber-400 px-1 rounded border border-[#2A313E]">3</span>
+          </a>
+
+          <!-- 10. Debt -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>Debt</span>
+            </div>
+            <span class="font-mono text-[9px] bg-[#1A1E26] text-rose-400 px-1 rounded border border-[#2A313E]">12</span>
+          </a>
+
+          <!-- 11. System (CURRENT ACTIVE SCREEN) -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded bg-[#1A1E26] text-[#3B82F6] font-semibold border-l-2 border-[#3B82F6] transition-colors shadow-sm">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-[#3B82F6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+              </svg>
+              <span>System</span>
+            </div>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#3B82F6]"></span>
+          </a>
+
+          <!-- 12. Setup -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#1A1E26] transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span>Setup</span>
+            </div>
+            <span class="font-mono text-[9px] text-slate-500">INIT</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- UTILITY BUTTONS (Strictly outside nav list, in bottom bar) -->
+      <div class="p-2 border-t border-[#2A313E] space-y-1.5 bg-[#0E1116]">
+        <div class="flex items-center justify-between text-[10px] font-mono text-slate-500 px-1">
+          <span>IPC SOCKET:</span>
+          <span class="text-emerald-400 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            ACTIVE (0.12ms)
+          </span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button class="bg-[#1A1E26] hover:bg-[#202632] text-slate-300 text-[10px] font-medium py-1 px-1.5 rounded border border-[#2A313E] flex items-center justify-center gap-1 transition-colors">
+            <svg class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 17l6-6-6-6m8 14h8"></path>
+            </svg>
+            <span>Terminal</span>
+          </button>
+          <button class="bg-[#1A1E26] hover:bg-[#202632] text-slate-300 text-[10px] font-medium py-1 px-1.5 rounded border border-[#2A313E] flex items-center justify-center gap-1 transition-colors">
+            <svg class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+            <span>Docs</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER / WORKSPACE: DENSE 4-QUADRANT LAYOUT + 2 SMALL PANELS (No scroll needed on 1440x900) -->
+    <main class="flex-1 bg-base flex flex-col p-2.5 gap-2.5 overflow-hidden">
+      
+      <!-- SUB-HEADER STRIP: INTROSPECTION CONTEXT -->
+      <div class="flex items-center justify-between bg-[#12151B] border border-[#2A313E] px-3 py-1.5 rounded">
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-[10px] bg-[#1A1E26] text-blue-400 px-1.5 py-0.5 rounded border border-[#2A313E] font-semibold">0xSYS_INTROSPECT</span>
+          <h2 class="text-xs font-semibold text-white tracking-tight uppercase">System Introspection & Autonomous Engine Topology</h2>
+          <div class="h-3 w-px bg-[#2A313E]"></div>
+          <span class="text-slate-400 text-[11px]">Storage Engine, Safety Kill Switches, Runtime Knobs & Hardware Bounds</span>
+        </div>
+        <div class="flex items-center gap-2 font-mono text-[10px]">
+          <span class="text-slate-500">HOT_RELOAD:</span>
+          <span class="text-emerald-400 font-semibold">SIGHUP_ARMED</span>
+          <div class="h-2.5 w-px bg-[#2A313E]"></div>
+          <span class="text-slate-500">STATE_MUTATIONS:</span>
+          <span class="text-slate-300">FENCED (LEASE_0x9A)</span>
+        </div>
+      </div>
+
+      <!-- MAIN 4 QUADRANTS GRID (2x2 equal proportion) -->
+      <div class="grid grid-cols-2 gap-2.5 flex-1 min-h-0">
+        
+        <!-- ============================================== -->
+        <!-- QUADRANT 1: STORE QUADRANT (SQLite / WAL / Pages) -->
+        <!-- ============================================== -->
+        <section class="bg-[#12151B] border border-[#2A313E] rounded flex flex-col min-h-0 overflow-hidden" aria-labelledby="store-heading">
+          <!-- Header -->
+          <div class="h-7 bg-[#1A1E26] border-b border-[#2A313E] px-2.5 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+              <h3 id="store-heading" class="font-mono text-[10px] font-bold text-slate-200 uppercase tracking-wider">01 // STORE QUADRANT · RELATIONAL ENGINE & WAL</h3>
+            </div>
+            <div class="font-mono text-[10px] text-slate-400 flex items-center gap-2">
+              <span>DRIVER: <strong class="text-slate-200">libsqlite3/wal2 v5.0.2</strong></span>
+              <span class="text-emerald-400 bg-[#12151B] px-1 py-0.2 rounded border border-[#2A313E]">SYNCED</span>
+            </div>
+          </div>
+
+          <!-- Store KPI Strip (Strict Values) -->
+          <div class="grid grid-cols-5 gap-1.5 p-2 bg-[#0E1116] border-b border-[#2A313E] shrink-0 font-mono text-[10px]">
+            <div class="bg-[#12151B] border border-[#2A313E] p-1.5 rounded">
+              <div class="text-slate-500 text-[9px] uppercase">PAGE_COUNT</div>
+              <div class="text-sm font-bold text-slate-100">11,280</div>
+              <div class="text-[9px] text-slate-500">46.2 MB total</div>
+            </div>
+            <div class="bg-[#12151B] border border-[#2A313E] p-1.5 rounded">
+              <div class="text-slate-500 text-[9px] uppercase">PAGE_SIZE</div>
+              <div class="text-sm font-bold text-slate-100">4,096 <span class="text-[9px] text-slate-500 font-normal">B</span></div>
+              <div class="text-[9px] text-slate-500">cluster uniform</div>
+            </div>
+            <div class="bg-[#12151B] border border-[#2A313E] p-1.5 rounded">
+              <div class="text-slate-500 text-[9px] uppercase">FREELIST_PAGES</div>
+              <div class="text-sm font-bold text-slate-100">12 <span class="text-[9px] text-slate-500 font-normal">pgs</span></div>
+              <div class="text-[9px] text-emerald-400">0.11% frag</div>
+            </div>
+            <div class="bg-[#12151B] border border-[#2A313E] p-1.5 rounded">
+              <div class="text-slate-500 text-[9px] uppercase">JOURNAL_MODE</div>
+              <div class="text-sm font-bold text-cyan-400">WAL</div>
+              <div class="text-[9px] text-slate-500">seq #829</div>
+            </div>
+            <div class="bg-[#12151B] border border-[#2A313E] p-1.5 rounded">
+              <div class="text-slate-500 text-[9px] uppercase">SCHEMA_VERSIONS</div>
+              <div class="text-sm font-bold text-emerald-400">1→5</div>
+              <div class="text-[9px] text-slate-500">migration pass</div>
+            </div>
+          </div>
+
+          <!-- Tables Content (Exact rows: event_log 1,521 · node_revision 1,284 · node_relation 3,917 · evidence 860 · symbols 2,204) -->
+          <div class="flex-1 overflow-y-auto min-h-0">
+            <table class="w-full text-left table-compact font-mono text-[11px]">
+              <thead class="bg-[#161B23] text-slate-400 sticky top-0 border-b border-[#2A313E]">
+                <tr>
+                  <th>TABLE IDENTIFIER</th>
+                  <th class="text-right">ROW COUNT</th>
+                  <th class="text-right">EST. DISK</th>
+                  <th>INVARIANT PROOF</th>
+                  <th class="text-right">INTEGRITY</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#1C222C] text-slate-300">
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5"></span>event_log
+                  </td>
+                  <td class="text-right text-cyan-400 font-bold">1,521</td>
+                  <td class="text-right text-slate-400">6.2 MB</td>
+                  <td class="text-slate-400 text-[10px]">Monotonic SHA-256 HMAC</td>
+                  <td class="text-right">
+                    <span class="bg-[#1A1E26] text-emerald-400 px-1.5 py-0.5 rounded border border-[#2A313E] text-[10px] font-semibold">VALIDATED</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5"></span>node_revision
+                  </td>
+                  <td class="text-right text-cyan-400 font-bold">1,284</td>
+                  <td class="text-right text-slate-400">14.8 MB</td>
+                  <td class="text-slate-400 text-[10px]">11/11 Invariants Pass</td>
+                  <td class="text-right">
+                    <span class="bg-[#1A1E26] text-emerald-400 px-1.5 py-0.5 rounded border border-[#2A313E] text-[10px] font-semibold">VALIDATED</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5"></span>node_relation
+                  </td>
+                  <td class="text-right text-cyan-400 font-bold">3,917</td>
+                  <td class="text-right text-slate-400">18.2 MB</td>
+                  <td class="text-slate-400 text-[10px]">Directed Acyclic Graph</td>
+                  <td class="text-right">
+                    <span class="bg-[#1A1E26] text-emerald-400 px-1.5 py-0.5 rounded border border-[#2A313E] text-[10px] font-semibold">VALIDATED</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5"></span>evidence
+                  </td>
+                  <td class="text-right text-cyan-400 font-bold">860</td>
+                  <td class="text-right text-slate-400">4.1 MB</td>
+                  <td class="text-slate-400 text-[10px]">Receipt Arbitration v4</td>
+                  <td class="text-right">
+                    <span class="bg-[#1A1E26] text-emerald-400 px-1.5 py-0.5 rounded border border-[#2A313E] text-[10px] font-semibold">AUDITED</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5"></span>symbols
+                  </td>
+                  <td class="text-right text-cyan-400 font-bold">2,204</td>
+                  <td class="text-right text-slate-400">2.9 MB</td>
+                  <td class="text-slate-400 text-[10px]">AST DuckDB Index Ready</td>
+                  <td class="text-right">
+                    <span class="bg-[#1A1E26] text-emerald-400 px-1.5 py-0.5 rounded border border-[#2A313E] text-[10px] font-semibold">READY</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Footer micro-meta -->
+          <div class="h-6 bg-[#0E1116] border-t border-[#2A313E] px-2.5 flex items-center justify-between font-mono text-[9px] text-slate-500 shrink-0">
+            <span>STORAGE ENGINE: SQLite 3.42.0 (WAL-enabled)</span>
+            <span>TOTAL ROWS: <strong class="text-slate-300">9,786</strong></span>
+            <span>MERKLE ROOT: 0x9f8a...c3b1</span>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- QUADRANT 2: KILL SWITCHES (Triage Emergency Overrides) -->
+        <!-- ============================================== -->
+        <section class="bg-[#12151B] border border-[#2A313E] rounded flex flex-col min-h-0 overflow-hidden" aria-labelledby="switches-heading">
+          <!-- Header -->
+          <div class="h-7 bg-[#1A1E26] border-b border-[#2A313E] px-2.5 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <h3 id="switches-heading" class="font-mono text-[10px] font-bold text-slate-200 uppercase tracking-wider">02 // KILL SWITCHES · TRIAGE CIRCUIT BREAKERS</h3>
+            </div>
+            <div class="font-mono text-[10px] text-slate-400 flex items-center gap-2">
+              <span>ARMED: <strong class="text-emerald-400">3 / 3 ACTIVE</strong></span>
+              <span class="text-slate-500">POLICY: FAIL-SAFE STRICT</span>
+            </div>
+          </div>
+
+          <!-- Switch Cards Grid (KYS_DEBT_QUEUE, KYS_WEBVIEW_EXPORT, KYS_INGEST) -->
+          <div class="p-2 space-y-2 flex-1 overflow-y-auto min-h-0">
+            
+            <!-- Switch 1: KYS_DEBT_QUEUE -->
+            <div class="bg-[#161B23] border border-[#2A313E] rounded p-2 flex flex-col justify-between gap-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 font-mono">
+                  <span class="text-xs font-bold text-white tracking-tight">KYS_DEBT_QUEUE</span>
+                  <span class="text-[9px] bg-[#12151B] text-slate-400 px-1.5 py-0.5 rounded border border-[#2A313E]">ENV_VAR</span>
+                  <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-bold">STATE: ON</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button class="bg-[#1A1E26] hover:bg-rose-950 hover:text-rose-300 hover:border-rose-700 text-slate-300 font-mono text-[10px] font-semibold px-2 py-0.5 rounded border border-[#2A313E] transition-colors">
+                    TRIP SWITCH
+                  </button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-[11px] bg-[#0E1116] p-1.5 rounded border border-[#2A313E]/60">
+                <div>
+                  <span class="text-[9px] font-mono text-slate-500 uppercase block">AFFECTS</span>
+                  <p class="text-slate-300 leading-tight">Background heuristic debt scanner & burndown pipeline (12 open items).</p>
+                </div>
+                <div>
+                  <span class="text-[9px] font-mono text-slate-500 uppercase block">FAIL_SAFE POLICY</span>
+                  <p class="text-amber-400 font-mono text-[10px] leading-tight font-semibold">FAIL_OPEN <span class="text-slate-400 font-normal font-sans">(degrade to read-only manual inspection)</span></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Switch 2: KYS_WEBVIEW_EXPORT -->
+            <div class="bg-[#161B23] border border-[#2A313E] rounded p-2 flex flex-col justify-between gap-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 font-mono">
+                  <span class="text-xs font-bold text-white tracking-tight">KYS_WEBVIEW_EXPORT</span>
+                  <span class="text-[9px] bg-[#12151B] text-slate-400 px-1.5 py-0.5 rounded border border-[#2A313E]">ENV_VAR</span>
+                  <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-bold">STATE: ON</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button class="bg-[#1A1E26] hover:bg-rose-950 hover:text-rose-300 hover:border-rose-700 text-slate-300 font-mono text-[10px] font-semibold px-2 py-0.5 rounded border border-[#2A313E] transition-colors">
+                    TRIP SWITCH
+                  </button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-[11px] bg-[#0E1116] p-1.5 rounded border border-[#2A313E]/60">
+                <div>
+                  <span class="text-[9px] font-mono text-slate-500 uppercase block">AFFECTS</span>
+                  <p class="text-slate-300 leading-tight">Interactive DAG visualizer canvas & JSON-LD snapshot serialization runtime.</p>
+                </div>
+                <div>
+                  <span class="text-[9px] font-mono text-slate-500 uppercase block">FAIL_SAFE POLICY</span>
+                  <p class="text-rose-400 font-mono text-[10px] leading-tight font-semibold">FAIL_CLOSED <span class="text-slate-400 font-normal font-sans">(fallback to raw CLI AST dump)</span></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Switch 3: KYS_INGEST -->
+            <div class="bg-[#161B23] border border-[#2A313E] rounded p-2 flex flex-col justify-between gap-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 font-mono">
+                  <span class="text-xs font-bold text-white tracking-tight">KYS_INGEST</span>
+                  <span class="text-[9px] bg-[#12151B] text-slate-400 px-1.5 py-0.5 rounded border border-[#2A313E]">ENV_VAR</span>
+                  <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-bold">STATE: ON</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button class="bg-[#1A1E26] hover:bg-rose-950 hover:text-rose-300 hover:border-rose-700 text-slate-300 font-mono text-[10px] font-semibold px-2 py-0.5 rounded border border-[#2A313E] transition-colors">
+                    TRIP SWITCH
+                  </button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-[11px] bg-[#0E1116] p-1.5 rounded border border-[#2A313E]/60">
+                <div>
+                  <span class="text-[9px] font-mono text-slate-500 uppercase block">AFFECTS</span>
+                  <p class="text-slate-300 leading-tight">Real-time agent mutation stream & write-ahead log ingestion broker.</p>
+                </div>
+                <div>
+                  <span class="text-[9px] font-mono text-slate-500 uppercase block">FAIL_SAFE POLICY</span>
+                  <p class="text-amber-400 font-mono text-[10px] leading-tight font-semibold">FAIL_PAUSE <span class="text-slate-400 font-normal font-sans">(buffer in-memory ring up to 50k pkts)</span></p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Warning Banner -->
+          <div class="h-6 bg-[#0E1116] border-t border-[#2A313E] px-2.5 flex items-center justify-between font-mono text-[9px] text-slate-500 shrink-0">
+            <span>MUTATION GUARD: Quorum fencing token active (0x9F1A)</span>
+            <span class="text-emerald-400">TRIP PROTECTION: ARMED</span>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- QUADRANT 3: CONFIG QUADRANT (Knobs & Provenance) -->
+        <!-- ============================================== -->
+        <section class="bg-[#12151B] border border-[#2A313E] rounded flex flex-col min-h-0 overflow-hidden" aria-labelledby="config-heading">
+          <!-- Header -->
+          <div class="h-7 bg-[#1A1E26] border-b border-[#2A313E] px-2.5 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+              <h3 id="config-heading" class="font-mono text-[10px] font-bold text-slate-200 uppercase tracking-wider">03 // CONFIG QUADRANT · RUNTIME KNOBS & PROVENANCE</h3>
+            </div>
+            <div class="font-mono text-[10px] text-slate-400 flex items-center gap-2">
+              <span>FILTER:</span>
+              <span class="bg-[#12151B] px-1 py-0.2 rounded border border-[#2A313E] text-slate-300">ALL (6)</span>
+            </div>
+          </div>
+
+          <!-- Knobs Table (Exact: name, value, provenance chip default/env/file) -->
+          <div class="flex-1 overflow-y-auto min-h-0">
+            <table class="w-full text-left table-compact font-mono text-[11px]">
+              <thead class="bg-[#161B23] text-slate-400 sticky top-0 border-b border-[#2A313E]">
+                <tr>
+                  <th>KNOB IDENTIFIER</th>
+                  <th>VALUE</th>
+                  <th>TYPE</th>
+                  <th class="text-right">PROVENANCE CHIP</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#1C222C] text-slate-300">
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">max_event_buffer_pkts</td>
+                  <td class="text-cyan-400 font-bold">50,000</td>
+                  <td class="text-slate-500 text-[10px]">uint32</td>
+                  <td class="text-right">
+                    <span class="bg-[#1E293B] text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-800 text-[9px] font-semibold">env: KYS_MAX_BUF</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">heuristic_entropy_threshold</td>
+                  <td class="text-cyan-400 font-bold">0.742</td>
+                  <td class="text-slate-500 text-[10px]">float64</td>
+                  <td class="text-right">
+                    <span class="bg-[#1F2937] text-blue-300 px-1.5 py-0.5 rounded border border-blue-800 text-[9px] font-semibold">file: kyc.config.toml</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">lease_ttl_seconds</td>
+                  <td class="text-cyan-400 font-bold">180</td>
+                  <td class="text-slate-500 text-[10px]">int</td>
+                  <td class="text-right">
+                    <span class="bg-[#1F2937] text-blue-300 px-1.5 py-0.5 rounded border border-blue-800 text-[9px] font-semibold">file: kyc.config.toml</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">duckdb_cache_budget_mb</td>
+                  <td class="text-cyan-400 font-bold">256</td>
+                  <td class="text-slate-500 text-[10px]">uint32</td>
+                  <td class="text-right">
+                    <span class="bg-[#1E293B] text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-800 text-[9px] font-semibold">env: DUCKDB_CACHE_MB</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">raft_quorum_heartbeat_ms</td>
+                  <td class="text-cyan-400 font-bold">150</td>
+                  <td class="text-slate-500 text-[10px]">int</td>
+                  <td class="text-right">
+                    <span class="bg-[#181E29] text-slate-400 px-1.5 py-0.5 rounded border border-[#2A313E] text-[9px] font-semibold">default: engine_v4</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">shacl_validation_level</td>
+                  <td class="text-cyan-400 font-bold">STRICT_ASSERT</td>
+                  <td class="text-slate-500 text-[10px]">enum</td>
+                  <td class="text-right">
+                    <span class="bg-[#181E29] text-slate-400 px-1.5 py-0.5 rounded border border-[#2A313E] text-[9px] font-semibold">default: engine_v4</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom Config Footer -->
+          <div class="h-6 bg-[#0E1116] border-t border-[#2A313E] px-2.5 flex items-center justify-between font-mono text-[9px] text-slate-500 shrink-0">
+            <span>PROVENANCE KEYS: 2 ENV · 2 FILE · 2 DEFAULT</span>
+            <span class="text-slate-400">LAST HOT-RELOAD: 14m ago</span>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- QUADRANT 4: HARDWARE QUADRANT (Allocation & GPU Fail) -->
+        <!-- ============================================== -->
+        <section class="bg-[#12151B] border border-[#2A313E] rounded flex flex-col min-h-0 overflow-hidden" aria-labelledby="hardware-heading">
+          <!-- Header -->
+          <div class="h-7 bg-[#1A1E26] border-b border-[#2A313E] px-2.5 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <h3 id="hardware-heading" class="font-mono text-[10px] font-bold text-slate-200 uppercase tracking-wider">04 // HARDWARE QUADRANT · TOPOLOGY & DERIVED PLAN</h3>
+            </div>
+            <div class="font-mono text-[10px] text-slate-400 flex items-center gap-2">
+              <span>HOST: <strong class="text-slate-200">x86_64 Linux 6.8.0-local</strong></span>
+            </div>
+          </div>
+
+          <div class="p-2 space-y-2 flex-1 overflow-y-auto min-h-0">
+            <!-- Hardware Inventory Cards (cpu_count 16, memory 64 GB / 41 GB avail, disk nvme non-rotational, gpu none) -->
+            <div class="grid grid-cols-4 gap-1.5 font-mono text-[10px]">
+              <div class="bg-[#161B23] border border-[#2A313E] p-1.5 rounded">
+                <span class="text-slate-500 text-[9px] uppercase block">CPU_COUNT</span>
+                <span class="text-sm font-bold text-white">16</span>
+                <span class="text-[9px] text-slate-400 block truncate">AMD EPYC · AVX-512</span>
+              </div>
+              <div class="bg-[#161B23] border border-[#2A313E] p-1.5 rounded">
+                <span class="text-slate-500 text-[9px] uppercase block">MEMORY TOTAL / AVAIL</span>
+                <span class="text-sm font-bold text-white">64 GB <span class="text-[10px] text-emerald-400 font-normal">/ 41 GB</span></span>
+                <span class="text-[9px] text-emerald-400 block">64.1% free window</span>
+              </div>
+              <div class="bg-[#161B23] border border-[#2A313E] p-1.5 rounded">
+                <span class="text-slate-500 text-[9px] uppercase block">PRIMARY DISK</span>
+                <span class="text-sm font-bold text-white">NVMe</span>
+                <span class="text-[9px] text-slate-400 block">Non-Rotational (&lt;2ms)</span>
+              </div>
+              <div class="bg-[#161B23] border border-[#2A313E] p-1.5 rounded">
+                <span class="text-slate-500 text-[9px] uppercase block">GPU ACCELERATOR</span>
+                <span class="text-sm font-bold text-slate-400">NONE</span>
+                <span class="text-[9px] text-amber-400 block font-semibold">SIMD AVX FALLBACK</span>
+              </div>
+            </div>
+
+            <!-- MANDATORY STATE: GPU 'available: false' with explicit typed error message -->
+            <div class="bg-[#1C1618] border border-[#7F1D1D] rounded p-2 flex items-start gap-2.5">
+              <div class="w-5 h-5 rounded bg-rose-950/80 border border-rose-800 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+              <div class="flex-1 font-mono text-[10px] leading-tight">
+                <div class="flex items-center gap-2">
+                  <span class="text-rose-400 font-bold uppercase">HARDWARE STATE ASSERTION:</span>
+                  <span class="text-[9px] bg-rose-950 text-rose-300 px-1 rounded border border-rose-800">available: false</span>
+                  <span class="text-slate-400 text-[9px]">DEVICE: /dev/nvidia* (absent)</span>
+                </div>
+                <p class="text-slate-300 mt-1">
+                  <strong class="text-rose-300">[ERR_CUDA_NO_DEVICE]:</strong> No compatible CUDA/ROCm acceleration hardware detected on PCIe bus. Subsystem tensor vector indexing and embedding ranking automatically fallback to vectorized AVX-512 CPU intrinsics.
+                </p>
+              </div>
+            </div>
+
+            <!-- Derived Plan (base_workers 8, queue_scale 2, io_buffer_bytes 1 MiB, query_cache_entries 512) -->
+            <div class="bg-[#0E1116] border border-[#2A313E] rounded p-2">
+              <div class="text-[9px] font-mono text-slate-500 uppercase font-semibold mb-1.5 flex items-center justify-between">
+                <span>DERIVED SYSTEM EXECUTION PLAN (AUTONOMOUS ENGINE)</span>
+                <span class="text-emerald-400">PLAN_STATUS: OPTIMAL</span>
+              </div>
+              <div class="grid grid-cols-4 gap-2 font-mono text-[10px]">
+                <div class="bg-[#12151B] p-1.5 rounded border border-[#2A313E]">
+                  <span class="text-slate-500 text-[9px] block">BASE_WORKERS</span>
+                  <span class="text-sm font-bold text-white">8 <span class="text-[9px] text-slate-400 font-normal">threads</span></span>
+                  <span class="text-[9px] text-slate-500 block">50% core allocation</span>
+                </div>
+                <div class="bg-[#12151B] p-1.5 rounded border border-[#2A313E]">
+                  <span class="text-slate-500 text-[9px] block">QUEUE_SCALE</span>
+                  <span class="text-sm font-bold text-white">2x <span class="text-[9px] text-slate-400 font-normal">multiplier</span></span>
+                  <span class="text-[9px] text-slate-500 block">spillover safety</span>
+                </div>
+                <div class="bg-[#12151B] p-1.5 rounded border border-[#2A313E]">
+                  <span class="text-slate-500 text-[9px] block">IO_BUFFER_BYTES</span>
+                  <span class="text-sm font-bold text-white">1 MiB</span>
+                  <span class="text-[9px] text-slate-500 block">1,048,576 B ring</span>
+                </div>
+                <div class="bg-[#12151B] p-1.5 rounded border border-[#2A313E]">
+                  <span class="text-slate-500 text-[9px] block">QUERY_CACHE_ENTRIES</span>
+                  <span class="text-sm font-bold text-white">512 <span class="text-[9px] text-slate-400 font-normal">slots</span></span>
+                  <span class="text-[9px] text-slate-500 block">LRU eviction window</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="h-6 bg-[#0E1116] border-t border-[#2A313E] px-2.5 flex items-center justify-between font-mono text-[9px] text-slate-500 shrink-0">
+            <span>SCHEDULER: Linux CFS · 8 pinned workers</span>
+            <span class="text-slate-300">GPU FALLBACK: ACTIVE (AVX-512)</span>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- SECTION 5: SMALL PANELS (Relearn State Machine + Route Summary) -->
+      <!-- ============================================== -->
+      <div class="grid grid-cols-12 gap-2.5 h-36 shrink-0">
+        
+        <!-- Panel 5A: Relearn State Machine (IDLE) (4 cols) -->
+        <section class="col-span-4 bg-[#12151B] border border-[#2A313E] rounded flex flex-col justify-between p-2 font-mono text-[10px]" aria-labelledby="relearn-heading">
+          <div>
+            <div class="flex items-center justify-between border-b border-[#2A313E] pb-1.5 mb-1.5">
+              <div class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                <h4 id="relearn-heading" class="font-bold text-slate-200 uppercase tracking-wider text-[10px]">RELEARN STATE MACHINE</h4>
+              </div>
+              <span class="bg-cyan-950 text-cyan-300 px-1.5 py-0.2 rounded border border-cyan-800 font-bold">STATE: IDLE</span>
+            </div>
+            
+            <p class="text-slate-400 text-[10px] leading-tight mb-2">
+              Continuous autonomous graph heuristic reconciliation loop. Scans AST diffs against committed DuckDB indexes.
+            </p>
+
+            <!-- State Sequence Bar -->
+            <div class="grid grid-cols-4 gap-1 text-center font-bold text-[9px] mb-2">
+              <div class="bg-[#1E293B] text-cyan-300 py-1 rounded border border-cyan-700">
+                [ IDLE ]
+              </div>
+              <div class="bg-[#161B23] text-slate-600 py-1 rounded border border-[#2A313E]">
+                SCAN
+              </div>
+              <div class="bg-[#161B23] text-slate-600 py-1 rounded border border-[#2A313E]">
+                DIFF
+              </div>
+              <div class="bg-[#161B23] text-slate-600 py-1 rounded border border-[#2A313E]">
+                SYNC
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1.5 border-t border-[#2A313E] text-[9px] text-slate-500">
+            <span>NEXT CYCLE: <strong class="text-slate-300">18m 22s</strong></span>
+            <span>LAST PASS: <strong class="text-slate-300">42m ago (0 err)</strong></span>
+            <button class="bg-[#1A1E26] hover:bg-[#202632] text-slate-300 px-1.5 py-0.5 rounded border border-[#2A313E]">
+              FORCE TRIGGER
+            </button>
+          </div>
+        </section>
+
+        <!-- Panel 5B: Route Summary (45 routes: path, method, access, class read/heavy/export) (8 cols) -->
+        <section class="col-span-8 bg-[#12151B] border border-[#2A313E] rounded flex flex-col justify-between overflow-hidden" aria-labelledby="routes-heading">
+          <div class="h-6 bg-[#1A1E26] border-b border-[#2A313E] px-2.5 flex items-center justify-between shrink-0 font-mono text-[10px]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+              <h4 id="routes-heading" class="font-bold text-slate-200 uppercase tracking-wider text-[10px]">ROUTE SUMMARY · API GATEWAY</h4>
+            </div>
+            <div class="flex items-center gap-3 text-slate-400 text-[10px]">
+              <span>TOTAL REGISTERED: <strong class="text-slate-200">45 ROUTES</strong></span>
+              <span>IPC PROTOCOL: <strong class="text-emerald-400">UNIX_DOMAIN</strong></span>
+            </div>
+          </div>
+
+          <!-- Compact Routes Table (Displaying sample representative of the 45 routes) -->
+          <div class="flex-1 overflow-y-auto min-h-0">
+            <table class="w-full text-left table-compact font-mono text-[10px]">
+              <thead class="bg-[#161B23] text-slate-400 sticky top-0 border-b border-[#2A313E]">
+                <tr>
+                  <th>PATH</th>
+                  <th>METHOD</th>
+                  <th>ACCESS</th>
+                  <th>CLASS</th>
+                  <th class="text-right">LATENCY P95</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#1C222C] text-slate-300">
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">/v1/graph/traverse</td>
+                  <td><span class="text-blue-400 bg-blue-950/60 px-1 rounded border border-blue-900 font-bold">GET</span></td>
+                  <td class="text-slate-400">READ_ONLY</td>
+                  <td><span class="text-emerald-400 bg-[#1A1E26] px-1 rounded border border-[#2A313E]">read</span></td>
+                  <td class="text-right text-emerald-400 font-semibold">0.8ms</td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">/v1/symbols/ast_query</td>
+                  <td><span class="text-amber-400 bg-amber-950/60 px-1 rounded border border-amber-900 font-bold">POST</span></td>
+                  <td class="text-slate-400">PROTECTED</td>
+                  <td><span class="text-amber-400 bg-[#1A1E26] px-1 rounded border border-[#2A313E]">heavy</span></td>
+                  <td class="text-right text-slate-300 font-semibold">14.2ms</td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">/v1/wal/commit</td>
+                  <td><span class="text-emerald-400 bg-emerald-950/60 px-1 rounded border border-emerald-900 font-bold">PUT</span></td>
+                  <td class="text-slate-400">WRITE_EXCLUSIVE</td>
+                  <td><span class="text-cyan-400 bg-[#1A1E26] px-1 rounded border border-[#2A313E]">heavy</span></td>
+                  <td class="text-right text-emerald-400 font-semibold">1.1ms</td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">/v1/export/jsonld</td>
+                  <td><span class="text-blue-400 bg-blue-950/60 px-1 rounded border border-blue-900 font-bold">GET</span></td>
+                  <td class="text-slate-400">READ_ONLY</td>
+                  <td><span class="text-purple-400 bg-[#1A1E26] px-1 rounded border border-[#2A313E]">export</span></td>
+                  <td class="text-right text-slate-300 font-semibold">5.8ms</td>
+                </tr>
+                <tr class="hover:bg-[#1A1E26] transition-colors">
+                  <td class="font-semibold text-slate-100">/v1/leases/acquire</td>
+                  <td><span class="text-amber-400 bg-amber-950/60 px-1 rounded border border-amber-900 font-bold">POST</span></td>
+                  <td class="text-slate-400">FENCED_QUORUM</td>
+                  <td><span class="text-emerald-400 bg-[#1A1E26] px-1 rounded border border-[#2A313E]">read</span></td>
+                  <td class="text-right text-emerald-400 font-semibold">0.2ms</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="h-5 bg-[#0E1116] border-t border-[#2A313E] px-2.5 flex items-center justify-between font-mono text-[9px] text-slate-500 shrink-0">
+            <span>SHOWING 5 OF 45 REGISTERED HANDLERS</span>
+            <span>CLASSES: 28 read · 11 heavy · 6 export</span>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- PERSISTENT SYSTEM TELEMETRY DOCK FOOTER (Compact 24px) -->
+  <footer class="h-6 bg-[#0E1116] border-t border-[#2A313E] px-3 flex items-center justify-between font-mono text-[10px] text-slate-400 z-30 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <span class="text-slate-200">LOCAL ENGINE: OK</span>
+      </div>
+      <div class="h-3 w-px bg-[#2A313E]"></div>
+      <div class="text-slate-500">
+        PAGE_OFFSET: <span class="text-slate-300">0x4F09B1</span>
+      </div>
+      <div class="h-3 w-px bg-[#2A313E]"></div>
+      <div class="text-slate-500">
+        DUCKDB_IN_MEMORY: <span class="text-emerald-400 font-semibold">99.4% HIT</span>
+      </div>
+      <div class="h-3 w-px bg-[#2A313E]"></div>
+      <div class="text-slate-500">
+        INVARIANT CHECKS: <span class="text-emerald-400 font-semibold">11/11 PASS</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="text-slate-500">
+        VIEWPORT: <span class="text-slate-300">1440x900 FIXED CONSOLE</span>
+      </div>
+      <div class="h-3 w-px bg-[#2A313E]"></div>
+      <div class="flex items-center gap-1">
+        <span class="text-slate-500">HOTKEY:</span>
+        <kbd class="bg-[#1A1E26] text-slate-300 px-1 rounded border border-[#2A313E] text-[9px]">Ctrl+K</kbd>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Graph Explorer</title>
+<!-- Google Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-low": "#191c22",
+            "primary-container": "#4d8eff",
+            "on-background": "#e1e2eb",
+            "on-tertiary-fixed": "#002113",
+            "inverse-on-surface": "#2d3037",
+            "secondary-fixed": "#acedff",
+            "on-primary-fixed": "#001a42",
+            "on-primary-container": "#00285d",
+            "surface-container-lowest": "#0b0e14",
+            "inverse-surface": "#e1e2eb",
+            "surface-container-highest": "#32353b",
+            "on-surface-variant": "#c2c6d6",
+            "on-error": "#690005",
+            "tertiary": "#4edea3",
+            "on-tertiary-fixed-variant": "#005236",
+            "on-secondary-container": "#00424e",
+            "outline-variant": "#424754",
+            "secondary-container": "#03b5d3",
+            "primary-fixed-dim": "#adc6ff",
+            "on-secondary-fixed": "#001f26",
+            "surface-dim": "#101319",
+            "on-primary-fixed-variant": "#004395",
+            "error": "#ffb4ab",
+            "tertiary-fixed-dim": "#4edea3",
+            "tertiary-container": "#00a572",
+            "secondary": "#4cd7f6",
+            "surface-container-high": "#272a30",
+            "background": "#101319",
+            "tertiary-fixed": "#6ffbbe",
+            "surface-variant": "#32353b",
+            "surface-container": "#1d2026",
+            "on-error-container": "#ffdad6",
+            "on-tertiary": "#003824",
+            "on-secondary": "#003640",
+            "inverse-primary": "#005ac2",
+            "primary": "#adc6ff",
+            "outline": "#8c909f",
+            "on-secondary-fixed-variant": "#004e5c",
+            "on-primary": "#002e6a",
+            "surface-tint": "#adc6ff",
+            "error-container": "#93000a",
+            "secondary-fixed-dim": "#4cd7f6",
+            "surface-bright": "#363940",
+            "on-surface": "#e1e2eb",
+            "surface": "#101319",
+            "primary-fixed": "#d8e2ff",
+            "on-tertiary-container": "#00311f"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xl": "1rem",
+            "space-sm": "0.25rem",
+            "space-md": "0.5rem",
+            "gutter-mobile": "0.25rem",
+            "space-xs": "0.125rem",
+            "space-lg": "0.75rem",
+            "margin-mobile": "0.5rem",
+            "margin": "0.75rem",
+            "gutter": "0.5rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "code-lg": ["JetBrains Mono"],
+            "label-md": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "headline-md": ["1.25rem", { lineHeight: "1.625rem", letterSpacing: "-0.015em", fontWeight: "600" }],
+            "headline-lg": ["1.5rem", { lineHeight: "1.875rem", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "code-md": ["0.75rem", { lineHeight: "1.125rem", letterSpacing: "-0.005em", fontWeight: "500" }],
+            "body-sm": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0em", fontWeight: "400" }],
+            "label-sm": ["0.625rem", { lineHeight: "0.75rem", letterSpacing: "0.06em", fontWeight: "600" }],
+            "body-md": ["0.8125rem", { lineHeight: "1.125rem", letterSpacing: "0em", fontWeight: "400" }],
+            "body-lg": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "-0.005em", fontWeight: "400" }],
+            "headline-sm": ["1rem", { lineHeight: "1.375rem", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "code-sm": ["0.6875rem", { lineHeight: "0.9375rem", letterSpacing: "0em", fontWeight: "400" }],
+            "code-lg": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "-0.01em", fontWeight: "500" }],
+            "label-md": ["0.6875rem", { lineHeight: "0.875rem", letterSpacing: "0.04em", fontWeight: "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .custom-canvas-grid {
+      background-color: #0b0e14;
+      background-image: radial-gradient(#272a30 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #101319;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272a30;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden select-none h-screen w-screen flex flex-col font-body-md">
+<!-- ==================== TOP TELEMETRY BAR ==================== -->
+<header class="flex justify-between items-center h-8 w-full pl-56 pr-2 z-20 bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-code-sm text-code-sm">
+<!-- Left telemetry status group -->
+<div class="flex items-center space-x-4 pl-3">
+<div class="flex items-center space-x-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-on-surface font-code-sm text-code-sm">Cluster: node-01.local</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="flex items-center space-x-1.5">
+<span class="text-outline-variant font-code-sm text-code-sm">Lock Sync:</span>
+<span class="text-secondary font-code-sm text-code-sm font-semibold">QUORUM</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="flex items-center space-x-1.5">
+<span class="text-outline-variant font-code-sm text-code-sm">State:</span>
+<span class="text-tertiary font-code-sm text-code-sm font-semibold">VALID</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="flex items-center space-x-1.5">
+<span class="text-outline-variant font-code-sm text-code-sm">WAL Seq:</span>
+<span class="text-primary font-code-sm text-code-sm">#829</span>
+</div>
+</div>
+<!-- Right Telemetry Actions & Icons -->
+<div class="flex items-center space-x-2">
+<!-- Pause Stream -->
+<button class="h-6 px-2 flex items-center space-x-1 bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline-variant rounded transition-colors duration-100">
+<span class="material-symbols-outlined text-[14px]">pause</span>
+<span class="font-code-sm text-code-sm">Pause Stream</span>
+</button>
+<!-- Export JSON-LD -->
+<button class="h-6 px-2 flex items-center space-x-1 bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline-variant rounded transition-colors duration-100">
+<span class="material-symbols-outlined text-[14px]">download</span>
+<span class="font-code-sm text-code-sm">Export JSON-LD</span>
+</button>
+<!-- Secondary Action: Emergency Lock -->
+<button class="h-6 px-2 flex items-center space-x-1 bg-error-container text-error hover:bg-error-container/80 border border-error/30 rounded transition-colors duration-100">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+<span class="font-code-sm text-code-sm font-semibold">Emergency Lock</span>
+</button>
+<!-- Primary Action: Deploy Proposal -->
+<button class="h-6 px-2.5 flex items-center space-x-1 bg-primary-container text-on-primary-container hover:bg-primary-container/90 rounded transition-colors duration-100 font-semibold">
+<span class="material-symbols-outlined text-[14px]">rocket_launch</span>
+<span class="font-code-sm text-code-sm">Deploy Proposal</span>
+</button>
+<!-- Utility Icons -->
+<div class="flex items-center space-x-0.5 ml-2 border-l border-outline-variant pl-2 text-on-surface-variant">
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container hover:text-on-surface rounded transition-colors" title="Sync">
+<span class="material-symbols-outlined">sync</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container hover:text-on-surface rounded transition-colors" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container hover:text-on-surface rounded transition-colors" title="Terminal">
+<span class="material-symbols-outlined">terminal</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container hover:text-on-surface rounded transition-colors" title="Operator Profile">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ==================== MAIN SHELL CONTAINER ==================== -->
+<div class="flex flex-1 w-full overflow-hidden">
+<!-- ==================== PERSISTENT LEFT SIDEBAR ==================== -->
+<aside class="fixed top-0 left-0 h-screen w-56 flex flex-col bg-surface-container-lowest border-r border-outline-variant z-30 select-none justify-between py-2 px-1">
+<!-- App Brand Header -->
+<div class="px-2 pt-1 pb-3 border-b border-outline-variant/60">
+<div class="flex items-center space-x-2">
+<div class="w-5 h-5 rounded bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[14px]">hub</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight leading-tight">Know Your Context</div>
+<div class="font-label-sm text-label-sm text-outline tracking-wider">LOCAL CLUSTER v2.4</div>
+</div>
+</div>
+</div>
+<!-- 12 Navigation Tabs -->
+<nav class="flex-1 py-2 space-y-0.5 overflow-y-auto">
+<!-- Tab 1: Overview -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- Tab 2: Activity -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">dynamic_feed</span>
+<span>Activity</span>
+</a>
+<!-- Tab 3: Graph (ACTIVE) -->
+<a class="flex items-center space-x-2 py-1.5 rounded transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider bg-surface-container-high text-primary border-l-2 border-primary pl-2 font-medium">
+<span class="material-symbols-outlined text-[16px]">hub</span>
+<span>Graph</span>
+</a>
+<!-- Tab 4: Search -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">search</span>
+<span>Search</span>
+</a>
+<!-- Tab 5: Metrics -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">monitoring</span>
+<span>Metrics</span>
+</a>
+<!-- Tab 6: Health -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">vital_signs</span>
+<span>Health</span>
+</a>
+<!-- Tab 7: Analytics -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">analytics</span>
+<span>Analytics</span>
+</a>
+<!-- Tab 8: Audit -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span>Audit</span>
+</a>
+<!-- Tab 9: Proposals -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+<span>Proposals</span>
+</a>
+<!-- Tab 10: Debt -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">priority_high</span>
+<span>Debt</span>
+</a>
+<!-- Tab 11: System -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">memory</span>
+<span>System</span>
+</a>
+<!-- Tab 12: Setup -->
+<a class="flex items-center space-x-2 py-1.5 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">settings</span>
+<span>Setup</span>
+</a>
+</nav>
+<!-- Footer navigation & Socket status -->
+<div class="pt-2 border-t border-outline-variant/60 space-y-1">
+<a class="flex items-center space-x-2 py-1 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center space-x-2 py-1 pl-2.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors duration-100 ease-in-out cursor-pointer font-label-md text-label-md uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">terminal</span>
+<span>Terminal</span>
+</a>
+<!-- IPC status line -->
+<div class="px-2.5 pt-1.5 flex items-center justify-between text-outline font-label-sm text-label-sm border-t border-outline-variant/30 mt-1">
+<div class="flex items-center space-x-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>IPC SOCKET: LIVE</span>
+</div>
+<span>127.0.0.1:9042</span>
+</div>
+</div>
+</aside>
+<!-- ==================== MAIN CONTENT AREA ==================== -->
+<main class="flex flex-1 ml-56 flex-col overflow-hidden bg-background">
+<!-- Top Banner Slot: Cluster Graph Status -->
+<div class="h-7 bg-surface-container border-b border-outline-variant px-3 flex items-center justify-between text-on-surface font-code-sm text-code-sm flex-shrink-0">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-tertiary text-[15px]">check_circle</span>
+<span class="text-on-surface font-medium">Cluster Graph Synchronized:</span>
+<span class="text-on-surface-variant font-mono">1,284 nodes, 3,917 directed edges.</span>
+<span class="text-tertiary font-mono">Invariant checks passing.</span>
+</div>
+<div class="flex items-center space-x-3 text-outline">
+<span class="font-code-sm text-code-sm">Epoch: #18,204</span>
+<button class="hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+</div>
+<!-- WORKSPACE & INSPECTOR SPLIT -->
+<div class="flex flex-1 overflow-hidden relative">
+<!-- ==================== 1. CENTRAL GRAPH WORKSPACE ==================== -->
+<section class="flex-1 flex flex-col overflow-hidden relative border-r border-outline-variant">
+<!-- Toolbar Header -->
+<div class="h-10 bg-surface-container-low border-b border-outline-variant px-3 flex items-center justify-between flex-shrink-0">
+<!-- Search Focus Input -->
+<div class="flex items-center space-x-2">
+<div class="relative flex items-center">
+<span class="absolute left-2 text-outline material-symbols-outlined text-[14px]">search</span>
+<input class="h-7 pl-7 pr-12 w-64 bg-surface-container-lowest border border-outline-variant rounded font-code-md text-code-md text-on-surface placeholder-outline focus:border-primary focus:outline-none" placeholder="Search nodes..." type="text" value="heuristics-catalog"/>
+<span class="absolute right-2 px-1 py-0.5 bg-surface-container text-outline rounded font-code-sm text-code-sm border border-outline-variant">⌘K</span>
+</div>
+<!-- Domain filter chips P1 through P7 -->
+<div class="flex items-center space-x-1 pl-2">
+<button class="h-6 px-2 flex items-center space-x-1 rounded bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm">P1 Core (342)</span>
+</button>
+<!-- P2 Active Filter -->
+<button class="h-6 px-2 flex items-center space-x-1 rounded bg-tertiary-container/30 text-tertiary border border-tertiary/50 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="font-label-sm text-label-sm">P2 Ingestion (218)</span>
+</button>
+<button class="h-6 px-2 flex items-center space-x-1 rounded bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm">P3 Vector (189)</span>
+</button>
+<button class="h-6 px-2 flex items-center space-x-1 rounded bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+<span class="font-label-sm text-label-sm">P4 Schema (156)</span>
+</button>
+<button class="h-6 px-2 flex items-center space-x-1 rounded bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+<span class="font-label-sm text-label-sm">P5 Security (112)</span>
+</button>
+<button class="h-6 px-2 flex items-center space-x-1 rounded bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+<span class="font-label-sm text-label-sm">P6 Inference (145)</span>
+</button>
+<button class="h-6 px-2 flex items-center space-x-1 rounded bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+<span class="font-label-sm text-label-sm">P7 Eval (122)</span>
+</button>
+</div>
+</div>
+<!-- View Controls -->
+<div class="flex items-center space-x-1 text-on-surface-variant">
+<div class="flex items-center bg-surface-container border border-outline-variant rounded h-6 px-1">
+<button class="px-1 hover:text-on-surface font-code-sm text-code-sm">-</button>
+<span class="px-1.5 text-on-surface font-code-sm text-code-sm">100%</span>
+<button class="px-1 hover:text-on-surface font-code-sm text-code-sm">+</button>
+</div>
+<button class="h-6 px-2 bg-surface-container hover:bg-surface-container-high border border-outline-variant rounded font-code-sm text-code-sm hover:text-on-surface transition-colors">
+                Fit View
+              </button>
+<div class="flex items-center bg-surface-container border border-outline-variant rounded h-6 px-1.5 space-x-1 font-code-sm text-code-sm">
+<span class="text-outline">Layout:</span>
+<span class="text-on-surface font-medium">DAG / Directed</span>
+</div>
+<button class="h-6 px-2 flex items-center space-x-1 bg-surface-container hover:bg-surface-container-high border border-outline-variant rounded font-code-sm text-code-sm hover:text-on-surface transition-colors" title="Lock Layout">
+<span class="material-symbols-outlined text-[13px]">lock</span>
+<span>Lock</span>
+</button>
+</div>
+</div>
+<!-- Interactive Knowledge Graph Canvas -->
+<div class="flex-1 relative custom-canvas-grid overflow-hidden">
+<!-- SVG Graph Overlay for Directed Edges -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+<defs>
+<marker id="arrow" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="8" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#424754"></path>
+</marker>
+<marker id="arrow-active" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="8" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#4edea3"></path>
+</marker>
+<marker id="arrow-dashed" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="8" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#8c909f"></path>
+</marker>
+</defs>
+<!-- Connection 1: retrieval-core (320, 110) -> heuristics-catalog (320, 270) -->
+<path d="M 320 120 L 320 270" fill="none" marker-end="url(#arrow-active)" stroke="#4edea3" stroke-width="1.5"></path>
+<text class="font-code-sm text-[10px]" fill="#4edea3" x="325" y="195">depends_on</text>
+<!-- Connection 2: heuristics-catalog (320, 360) -> heuristics-v1 (110, 430) (Dashed) -->
+<path d="M 230 315 L 125 430" fill="none" marker-end="url(#arrow-dashed)" stroke="#8c909f" stroke-dasharray="4,4" stroke-width="1.2"></path>
+<text class="font-code-sm text-[10px]" fill="#8c909f" x="140" y="365">supersedes</text>
+<!-- Connection 3: heuristics-catalog (410, 315) -> vector-indexer-p3 (540, 315) -->
+<path d="M 410 315 L 530 315" fill="none" marker-end="url(#arrow)" stroke="#424754" stroke-width="1.2"></path>
+<text class="font-code-sm text-[10px]" fill="#8c909f" x="445" y="307">indexed_by</text>
+<!-- Connection 4: heuristics-catalog (320, 360) -> schema-contract-04 (320, 470) -->
+<path d="M 320 360 L 320 460" fill="none" marker-end="url(#arrow)" stroke="#424754" stroke-width="1.2"></path>
+<text class="font-code-sm text-[10px]" fill="#8c909f" x="325" y="415">governed_by</text>
+<!-- Connection 5: retrieval-core (400, 80) -> lease-arbiter (540, 130) -->
+<path d="M 400 85 L 530 120" fill="none" marker-end="url(#arrow)" stroke="#424754" stroke-width="1"></path>
+<text class="font-code-sm text-[10px]" fill="#8c909f" x="450" y="98">locked_by</text>
+<!-- Connection 6: vector-indexer-p3 (600, 360) -> eval-loop-async (600, 460) -->
+<path d="M 620 360 L 620 460" fill="none" marker-end="url(#arrow)" stroke="#424754" stroke-width="1"></path>
+<text class="font-code-sm text-[10px]" fill="#8c909f" x="625" y="415">evaluates</text>
+<!-- Connection 7: wal-checkpoint (120, 170) -> retrieval-core (240, 85) -->
+<path d="M 170 170 L 240 95" fill="none" marker-end="url(#arrow)" stroke="#424754" stroke-width="1"></path>
+<text class="font-code-sm text-[10px]" fill="#8c909f" x="175" y="125">commits</text>
+</svg>
+<!-- Node 1: retrieval-core (P1 Core, root) -->
+<div class="absolute top-[48px] left-[240px] w-48 bg-surface-container border border-primary/40 rounded p-2 z-10 hover:border-primary cursor-pointer transition-colors shadow-none">
+<div class="flex items-center justify-between mb-1">
+<span class="h-4 px-1.5 bg-primary/10 text-primary border border-primary/30 rounded text-[9px] font-code-sm uppercase">P1 Core</span>
+<span class="text-outline font-code-sm text-[10px]">#01</span>
+</div>
+<div class="font-code-md text-code-md text-on-surface font-semibold truncate">retrieval-core</div>
+<div class="text-[10px] text-outline truncate font-mono mt-0.5">kind: orchestrator | root</div>
+</div>
+<!-- Node 2: wal-checkpoint (P5 Security) -->
+<div class="absolute top-[150px] left-[40px] w-44 bg-surface-container border border-outline-variant rounded p-2 z-10 hover:border-outline cursor-pointer transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="h-4 px-1.5 bg-rose-950/40 text-rose-300 border border-rose-800/40 rounded text-[9px] font-code-sm uppercase">P5 Security</span>
+<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+</div>
+<div class="font-code-md text-code-md text-on-surface truncate">wal-checkpoint</div>
+<div class="text-[10px] text-outline truncate font-mono mt-0.5">seq: #829</div>
+</div>
+<!-- Node 3: lease-arbiter (P5 Security) -->
+<div class="absolute top-[100px] left-[530px] w-44 bg-surface-container border border-outline-variant rounded p-2 z-10 hover:border-outline cursor-pointer transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="h-4 px-1.5 bg-rose-950/40 text-rose-300 border border-rose-800/40 rounded text-[9px] font-code-sm uppercase">P5 Security</span>
+<span class="text-[9px] text-outline font-mono">LOCK:QUORUM</span>
+</div>
+<div class="font-code-md text-code-md text-on-surface truncate">lease-arbiter</div>
+<div class="text-[10px] text-outline truncate font-mono mt-0.5">active lease: 42s</div>
+</div>
+<!-- HERO SELECTED NODE: heuristics-catalog (Domain P2 Ingestion) -->
+<div class="absolute top-[260px] left-[225px] w-52 bg-surface-container-high border-2 border-tertiary rounded p-2.5 z-20 shadow-none ring-1 ring-tertiary/20">
+<div class="flex items-center justify-between mb-1.5">
+<span class="h-4 px-1.5 bg-tertiary-container/30 text-tertiary border border-tertiary/40 rounded text-[9px] font-code-sm uppercase font-semibold">P2 Ingestion</span>
+<div class="flex items-center space-x-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+<span class="text-tertiary font-code-sm text-[10px] font-mono">ACTIVE</span>
+</div>
+</div>
+<div class="font-code-md text-code-md text-on-surface font-semibold text-[13px] tracking-tight">heuristics-catalog</div>
+<div class="flex items-center justify-between text-[10px] text-outline font-mono mt-1 border-t border-outline-variant/60 pt-1">
+<span>SHA: 9f2c1a</span>
+<span class="text-tertiary">Conf: 0.912</span>
+</div>
+</div>
+<!-- Node 5: heuristics-v1 (P2 Deprecated/Archived) -->
+<div class="absolute top-[420px] left-[40px] w-44 bg-surface-container-lowest border border-dashed border-outline-variant rounded p-2 z-10 opacity-70 hover:opacity-100 cursor-pointer transition-opacity">
+<div class="flex items-center justify-between mb-1">
+<span class="h-4 px-1.5 bg-surface-variant text-outline rounded text-[9px] font-code-sm uppercase">P2 Deprecated</span>
+<span class="text-[9px] text-outline font-mono">v1.2</span>
+</div>
+<div class="font-code-md text-code-md text-on-surface-variant truncate line-through">heuristics-v1</div>
+<div class="text-[10px] text-outline truncate font-mono mt-0.5">superseded at #8102</div>
+</div>
+<!-- Node 6: vector-indexer-p3 (P3 Vector) -->
+<div class="absolute top-[280px] left-[535px] w-48 bg-surface-container border border-secondary/40 rounded p-2 z-10 hover:border-secondary cursor-pointer transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="h-4 px-1.5 bg-secondary-container/20 text-secondary border border-secondary/30 rounded text-[9px] font-code-sm uppercase">P3 Vector</span>
+<span class="text-[9px] text-secondary font-mono">dim: 1536</span>
+</div>
+<div class="font-code-md text-code-md text-on-surface truncate font-medium">vector-indexer-p3</div>
+<div class="text-[10px] text-outline truncate font-mono mt-0.5">hnsw_cosine | synced</div>
+</div>
+<!-- Node 7: schema-contract-04 (P4 Schema) -->
+<div class="absolute top-[460px] left-[235px] w-48 bg-surface-container border border-amber-600/40 rounded p-2 z-10 hover:border-amber-500 cursor-pointer transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="h-4 px-1.5 bg-amber-950/30 text-amber-300 border border-amber-800/40 rounded text-[9px] font-code-sm uppercase">P4 Schema</span>
+<span class="text-[9px] text-amber-400 font-mono">v4.1</span>
+</div>
+<div class="font-code-md text-code-md text-on-surface truncate font-medium">schema-contract-04</div>
+<div class="text-[10px] text-outline truncate font-mono mt-0.5">strict_json_ld</div>
+</div>
+<!-- Node 8: eval-loop-async (P7 Eval) -->
+<div class="absolute top-[460px] left-[535px] w-44 bg-surface-container border border-outline-variant rounded p-2 z-10 hover:border-outline cursor-pointer transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="h-4 px-1.5 bg-emerald-950/30 text-emerald-300 border border-emerald-800/40 rounded text-[9px] font-code-sm uppercase">P7 Eval</span>
+<span class="text-[9px] text-emerald-400 font-mono">PASS</span>
+</div>
+<div class="font-code-md text-code-md text-on-surface truncate font-medium">eval-loop-async</div>
+<div class="text-[10px] text-outline truncate font-mono mt-0.5">precision: 0.941</div>
+</div>
+<!-- Minimap preview in lower-right of canvas -->
+<div class="absolute bottom-10 right-4 w-36 h-24 bg-surface-container-low/90 border border-outline-variant rounded p-1.5 pointer-events-none backdrop-blur-sm z-20">
+<div class="flex justify-between items-center text-[9px] text-outline font-label-sm uppercase mb-1">
+<span>Minimap</span>
+<span class="text-tertiary">Live</span>
+</div>
+<div class="w-full h-16 bg-surface-container-lowest border border-outline-variant/40 rounded relative overflow-hidden">
+<!-- Mini dots representing node clusters -->
+<div class="absolute top-2 left-8 w-1.5 h-1.5 rounded-full bg-primary/60"></div>
+<div class="absolute top-6 left-8 w-2 h-2 rounded-full bg-tertiary ring-1 ring-tertiary"></div>
+<div class="absolute top-6 left-16 w-1.5 h-1.5 rounded-full bg-secondary/60"></div>
+<div class="absolute top-10 left-8 w-1.5 h-1.5 rounded-full bg-amber-400/60"></div>
+<div class="absolute top-10 left-16 w-1.5 h-1.5 rounded-full bg-emerald-400/60"></div>
+<!-- Viewport Rect Indicator -->
+<div class="absolute top-1 left-4 w-20 h-14 border border-primary/50 bg-primary/5 rounded-xs"></div>
+</div>
+</div>
+</div>
+<!-- Bottom Graph Status Bar -->
+<div class="h-6 bg-surface-container border-t border-outline-variant px-3 flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm flex-shrink-0">
+<div class="flex items-center space-x-3">
+<div class="flex items-center space-x-1.5">
+<span class="text-outline">Rendered:</span>
+<span class="text-on-surface font-mono">42 visible nodes, 89 edges</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="flex items-center space-x-1.5">
+<span class="text-outline">Selected:</span>
+<span class="text-tertiary font-mono font-semibold">heuristics-catalog</span>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<div class="flex items-center space-x-1.5">
+<span class="text-outline">Layout Engine:</span>
+<span class="text-on-surface font-mono">Dagre-Euler v2</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="flex items-center space-x-1.5">
+<span class="text-outline">Frame Latency:</span>
+<span class="text-tertiary font-mono">0.8ms</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ==================== 2. RIGHT INSPECTOR PANEL ==================== -->
+<aside class="w-96 flex flex-col bg-surface-container-lowest overflow-hidden flex-shrink-0">
+<!-- Node Summary Header -->
+<div class="p-3 border-b border-outline-variant bg-surface-container-low flex-shrink-0">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center space-x-1.5">
+<span class="h-4 px-1.5 bg-tertiary-container/30 text-tertiary border border-tertiary/40 rounded font-code-sm text-[10px] font-semibold">P2 Ingestion</span>
+<span class="h-4 px-1.5 bg-surface-container text-on-surface-variant border border-outline-variant rounded font-code-sm text-[10px]">leaf</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline font-mono">ID: 9f2c1ab414</span>
+</div>
+<div class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight truncate">
+              heuristics-catalog
+            </div>
+<!-- Metadata tags -->
+<div class="flex items-center space-x-2 mt-1.5 text-[10px] font-code-sm text-outline">
+<span>v3.0.4-rc1</span>
+<span>•</span>
+<span class="text-tertiary font-semibold">LIFECYCLE: ACTIVE</span>
+<span>•</span>
+<span class="text-secondary">IMMUTABLE_LOCK</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2 leading-relaxed">
+              Centralized heuristic registry and pattern matching engine for multi-agent contextual extraction and edge weighting.
+            </p>
+</div>
+<!-- Inspector Scrollable Body -->
+<div class="flex-1 overflow-y-auto p-3 space-y-4">
+<!-- SCORES & TELEMETRY -->
+<div class="space-y-2">
+<div class="flex items-center justify-between text-[11px] font-label-sm uppercase tracking-wider text-outline border-b border-outline-variant/60 pb-1">
+<span>Scores &amp; Telemetry</span>
+<span class="text-primary font-mono">Tier Level: L2</span>
+</div>
+<!-- Metric Bars -->
+<div class="space-y-1.5 pt-1">
+<!-- Precision -->
+<div class="space-y-0.5">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Precision</span>
+<span class="text-on-surface font-mono font-medium">0.828</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-primary rounded-sm" style="width: 82.8%"></div>
+</div>
+</div>
+<!-- Magnitude -->
+<div class="space-y-0.5">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Magnitude</span>
+<span class="text-on-surface font-mono font-medium">0.341</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-secondary rounded-sm" style="width: 34.1%"></div>
+</div>
+</div>
+<!-- Entropy -->
+<div class="space-y-0.5">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Entropy</span>
+<span class="text-on-surface font-mono font-medium">0.898</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-amber-400 rounded-sm" style="width: 89.8%"></div>
+</div>
+</div>
+<!-- Uncertainty -->
+<div class="space-y-0.5">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Uncertainty</span>
+<span class="text-on-surface font-mono font-medium">0.050</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-rose-400 rounded-sm" style="width: 5%"></div>
+</div>
+</div>
+<!-- Confidence -->
+<div class="space-y-0.5">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Confidence</span>
+<span class="text-tertiary font-mono font-semibold">0.912</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-sm overflow-hidden">
+<div class="h-full bg-tertiary rounded-sm" style="width: 91.2%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- RELATIONS LIST -->
+<div class="space-y-1.5">
+<div class="text-[11px] font-label-sm uppercase tracking-wider text-outline border-b border-outline-variant/60 pb-1">
+                Relations List (4)
+              </div>
+<div class="space-y-1 font-code-sm text-code-sm">
+<!-- Relation 1 -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container rounded border border-outline-variant/50">
+<div class="flex items-center space-x-1.5">
+<span class="text-tertiary font-mono">depends_on</span>
+<span class="text-outline">→</span>
+<span class="text-on-surface font-medium truncate">retrieval-core</span>
+</div>
+<span class="text-[9px] px-1 bg-primary/20 text-primary rounded font-mono">P1 Core</span>
+</div>
+<!-- Relation 2 -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container rounded border border-outline-variant/50">
+<div class="flex items-center space-x-1.5">
+<span class="text-outline font-mono">supersedes</span>
+<span class="text-outline">→</span>
+<span class="text-on-surface-variant font-medium truncate">heuristics-v1</span>
+</div>
+<span class="text-[9px] px-1 bg-surface-variant text-outline rounded font-mono">P2 Depr</span>
+</div>
+<!-- Relation 3 -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container rounded border border-outline-variant/50">
+<div class="flex items-center space-x-1.5">
+<span class="text-secondary font-mono">indexed_by</span>
+<span class="text-outline">→</span>
+<span class="text-on-surface font-medium truncate">vector-indexer-p3</span>
+</div>
+<span class="text-[9px] px-1 bg-secondary-container/20 text-secondary rounded font-mono">P3 Vector</span>
+</div>
+<!-- Relation 4 -->
+<div class="flex items-center justify-between p-1.5 bg-surface-container rounded border border-outline-variant/50">
+<div class="flex items-center space-x-1.5">
+<span class="text-amber-400 font-mono">governed_by</span>
+<span class="text-outline">→</span>
+<span class="text-on-surface font-medium truncate">schema-contract-04</span>
+</div>
+<span class="text-[9px] px-1 bg-amber-950/40 text-amber-300 rounded font-mono">P4 Schema</span>
+</div>
+</div>
+</div>
+<!-- EVIDENCE IDS -->
+<div class="space-y-1.5">
+<div class="text-[11px] font-label-sm uppercase tracking-wider text-outline border-b border-outline-variant/60 pb-1">
+                Verified Evidence (2)
+              </div>
+<div class="space-y-1 font-code-sm text-code-sm">
+<div class="p-1.5 bg-surface-container rounded border border-outline-variant/50 flex justify-between items-center">
+<div class="flex items-center space-x-1.5">
+<span class="text-tertiary font-mono">ev-0081</span>
+<span class="text-outline text-[10px]">(score: 0.94)</span>
+</div>
+<span class="text-on-surface-variant text-[10px] font-mono">sub-139</span>
+</div>
+<div class="p-1.5 bg-surface-container rounded border border-outline-variant/50 flex justify-between items-center">
+<div class="flex items-center space-x-1.5">
+<span class="text-tertiary font-mono">ev-0082</span>
+<span class="text-outline text-[10px]">(score: 0.91)</span>
+</div>
+<span class="text-on-surface-variant text-[10px] font-mono">operator</span>
+</div>
+</div>
+</div>
+<!-- SYMBOL BLOCK -->
+<div class="space-y-1.5">
+<div class="text-[11px] font-label-sm uppercase tracking-wider text-outline border-b border-outline-variant/60 pb-1">
+                Underlying Symbol
+              </div>
+<div class="p-2 bg-surface-container-low rounded border border-outline-variant font-code-sm text-code-sm space-y-1">
+<div class="flex justify-between items-center">
+<span class="text-outline">Symbol:</span>
+<span class="text-primary font-mono font-medium">evaluate_heuristics()</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-outline">Kind:</span>
+<span class="text-on-surface font-mono">function (async gen)</span>
+</div>
+<div class="flex flex-col pt-0.5">
+<span class="text-outline text-[10px]">Source:</span>
+<span class="text-on-surface-variant font-mono text-[10px] truncate">src/know_your_context/retrieval.py:84:0</span>
+</div>
+<div class="flex justify-between items-center pt-0.5">
+<span class="text-outline text-[10px]">SHA256:</span>
+<span class="text-tertiary font-mono text-[10px]">9f2c1ab4146a8d00</span>
+</div>
+</div>
+</div>
+<!-- PROVENANCE PANEL ('Five-Link Chain') -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-[11px] font-label-sm uppercase tracking-wider text-outline border-b border-outline-variant/60 pb-1">
+<span>Provenance Chain</span>
+<span class="px-1.5 py-0.2 bg-tertiary-container/30 text-tertiary border border-tertiary/40 rounded text-[9px] font-bold">VERIFIED 5/5</span>
+</div>
+<div class="space-y-1 font-code-sm text-[10px]">
+<div class="p-1 bg-surface-container-high rounded border border-outline-variant/60 flex items-center justify-between font-mono">
+<span class="text-primary">0x9f2c1ab414</span>
+<span class="text-outline">H:48102</span>
+<span class="text-on-surface-variant">14:41:58.204</span>
+<span class="text-tertiary font-semibold">GENESIS_SPEC</span>
+</div>
+<div class="p-1 bg-surface-container rounded border border-outline-variant/40 flex items-center justify-between font-mono">
+<span class="text-primary">0x8a1d440f16</span>
+<span class="text-outline">H:48109</span>
+<span class="text-on-surface-variant">14:41:57.912</span>
+<span class="text-on-surface">MUTATION_PROP</span>
+</div>
+<div class="p-1 bg-surface-container rounded border border-outline-variant/40 flex items-center justify-between font-mono">
+<span class="text-primary">0x77e19cb214</span>
+<span class="text-outline">H:48115</span>
+<span class="text-on-surface-variant">14:41:56.688</span>
+<span class="text-secondary">RAFT_CONSENSUS</span>
+</div>
+<div class="p-1 bg-surface-container rounded border border-outline-variant/40 flex items-center justify-between font-mono">
+<span class="text-primary">0x3d81b89914</span>
+<span class="text-outline">H:48120</span>
+<span class="text-on-surface-variant">14:41:54.340</span>
+<span class="text-amber-400">MERKLE_SEAL</span>
+</div>
+<div class="p-1 bg-surface-container rounded border border-outline-variant/40 flex items-center justify-between font-mono">
+<span class="text-primary">0x55c2f0a114</span>
+<span class="text-outline">H:48126</span>
+<span class="text-on-surface-variant">14:41:53.119</span>
+<span class="text-emerald-400">ATTEST_SIG</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Inspector Footer Actions -->
+<div class="p-2.5 bg-surface-container-low border-t border-outline-variant flex items-center space-x-2 flex-shrink-0">
+<button class="flex-1 h-7 flex items-center justify-center space-x-1 bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant rounded font-code-sm text-code-sm transition-colors">
+<span class="material-symbols-outlined text-[13px]">edit_note</span>
+<span>Edit Spec</span>
+</button>
+<button class="flex-1 h-7 flex items-center justify-center space-x-1 bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant rounded font-code-sm text-code-sm transition-colors">
+<span class="material-symbols-outlined text-[13px]">timeline</span>
+<span>Trace Lineage</span>
+</button>
+<button class="h-7 px-2.5 flex items-center justify-center bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant rounded font-code-sm text-code-sm transition-colors" title="Copy URI">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</body></html>

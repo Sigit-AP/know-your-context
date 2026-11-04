@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#0B0D11',
+            panel: '#12151B',
+            'panel-elevated': '#1A1E26',
+            borderline: '#2A313E',
+            'border-light': '#363F4E',
+            primary: '#3B82F6',
+            accent: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444',
+            mono: '#94A3B8'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar for dense telemetry tables */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0B0D11; }
+    ::-webkit-scrollbar-thumb { background: #2A313E; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+    .hairline-border { border: 1px solid #2A313E; }
+    .hairline-r { border-right: 1px solid #2A313E; }
+    .hairline-b { border-bottom: 1px solid #2A313E; }
+    .hairline-t { border-top: 1px solid #2A313E; }
+    .hairline-l { border-left: 1px solid #2A313E; }
+  </style>
+</head>
+<body class="bg-base text-[#D1D5DB] font-sans text-xs antialiased overflow-hidden select-none h-screen w-[1440px] flex">
+
+  <!-- ================= PERSISTENT SIDEBAR ================= -->
+  <aside class="w-56 h-screen flex-shrink-0 bg-panel hairline-r flex flex-col justify-between z-30">
+    <div>
+      <!-- Product Header -->
+      <div class="h-12 hairline-b px-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 bg-panel-elevated hairline-border flex items-center justify-center rounded-none text-primary">
+            <svg class="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-[11px] font-bold text-white tracking-wider uppercase font-mono leading-none">Know Your Context</h1>
+            <span class="text-[9px] text-[#64748B] font-mono tracking-tight">LOCAL-FIRST v2.4</span>
+          </div>
+        </div>
+        <span class="w-1.5 h-1.5 rounded-full bg-accent" title="Local node active"></span>
+      </div>
+
+      <!-- Navigation items (Exactly 12 items, Analytics highlighted) -->
+      <nav class="py-2 flex flex-col space-y-0.5">
+        <!-- 1. Overview -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="text-[11px]">Overview</span>
+        </a>
+
+        <!-- 2. Activity -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="text-[11px]">Activity</span>
+        </a>
+
+        <!-- 3. Graph -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="6" cy="18" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="6" y1="9" x2="6" y2="15"/></svg>
+          <span class="text-[11px]">Graph</span>
+        </a>
+
+        <!-- 4. Search -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span class="text-[11px]">Search</span>
+        </a>
+
+        <!-- 5. Metrics -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span class="text-[11px]">Metrics</span>
+        </a>
+
+        <!-- 6. Health -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span class="text-[11px]">Health</span>
+        </a>
+
+        <!-- 7. Analytics (ACTIVE / HIGHLIGHTED) -->
+        <a href="#" class="flex items-center justify-between px-3 py-1.5 bg-panel-elevated text-primary border-l-2 border-primary font-medium">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            <span class="text-[11px] font-semibold text-white">Analytics</span>
+          </div>
+          <span class="text-[8px] font-mono px-1 py-0.2 bg-primary/20 text-primary border border-primary/30 uppercase">DAG</span>
+        </a>
+
+        <!-- 8. Audit -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span class="text-[11px]">Audit</span>
+        </a>
+
+        <!-- 9. Proposals -->
+        <a href="#" class="flex items-center justify-between px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span class="text-[11px]">Proposals</span>
+          </div>
+          <span class="font-mono text-[9px] text-[#64748B] px-1 bg-base hairline-border">3</span>
+        </a>
+
+        <!-- 10. Debt -->
+        <a href="#" class="flex items-center justify-between px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span class="text-[11px]">Debt</span>
+          </div>
+          <span class="font-mono text-[9px] text-warning/90 px-1 bg-base hairline-border">12</span>
+        </a>
+
+        <!-- 11. System -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="8" rx="0"/><rect x="2" y="14" width="20" height="8" rx="0"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <span class="text-[11px]">System</span>
+        </a>
+
+        <!-- 12. Setup -->
+        <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 text-[#94A3B8] hover:bg-panel-elevated hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span class="text-[11px]">Setup</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Sidebar footer status -->
+    <div class="p-2 hairline-t bg-panel space-y-1.5">
+      <div class="px-2 py-1 bg-base hairline-border flex items-center justify-between font-mono text-[9px]">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+          <span class="text-white">IPC SOCKET</span>
+        </div>
+        <span class="text-[#64748B]">127.0.0.1:9042</span>
+      </div>
+      <div class="flex items-center justify-between px-1 text-[10px] text-[#64748B] font-mono">
+        <span>DAG_ENGINE: v2.4</span>
+        <span class="text-accent">SYNCED</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT VIEWPORT ================= -->
+  <main class="flex-1 flex flex-col h-screen overflow-hidden bg-base">
+    
+    <!-- Top Telemetry Utility Bar -->
+    <header class="h-10 hairline-b bg-panel px-4 flex items-center justify-between flex-shrink-0 z-20">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="font-mono uppercase tracking-wider text-[11px] font-bold text-white">ANALYTICS</span>
+          <span class="text-[#475569] font-mono">/</span>
+          <span class="text-[10px] font-mono uppercase text-[#94A3B8]">Graph Structure Intelligence</span>
+        </div>
+
+        <div class="h-3 w-px bg-borderline"></div>
+
+        <!-- COMPONENT 1: Header Stats -->
+        <div class="flex items-center gap-3 font-mono text-[10px]">
+          <div class="flex items-center gap-1.5 bg-panel-elevated px-2 py-0.5 hairline-border">
+            <span class="text-[#64748B] uppercase">node_count</span>
+            <span class="text-white font-semibold">1,284</span>
+            <span class="text-[#475569]">/</span>
+            <span class="text-[#64748B]">total</span>
+            <span class="text-white font-semibold">1,284</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 bg-panel-elevated px-2 py-0.5 hairline-border">
+            <span class="text-[#64748B]">partial=</span>
+            <span class="text-accent font-semibold">false</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 bg-panel-elevated px-2 py-0.5 hairline-border text-[#94A3B8]">
+            <span class="text-[#64748B]">ALGO:</span>
+            <span class="text-white">PAGERANK + LOUVAIN</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-2 font-mono text-[10px]">
+        <!-- View State Switcher (for Spec States showcase) -->
+        <div class="flex items-center bg-base hairline-border p-0.5 mr-2">
+          <button id="btn-state-active" onclick="switchState('active')" class="px-2 py-0.5 bg-panel-elevated text-primary font-medium border border-borderline">Active Data</button>
+          <button id="btn-state-computing" onclick="switchState('computing')" class="px-2 py-0.5 text-[#64748B] hover:text-white">Computing Skeleton</button>
+          <button id="btn-state-empty" onclick="switchState('empty')" class="px-2 py-0.5 text-[#64748B] hover:text-white">No Nodes Empty</button>
+        </div>
+
+        <div class="flex items-center gap-1.5 px-2 py-1 bg-panel-elevated hairline-border">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+          <span class="text-[10px] text-white">EPOCH 0x48FA</span>
+        </div>
+
+        <button class="px-2.5 py-1 bg-primary hover:bg-blue-600 text-white font-medium hairline-border flex items-center gap-1.5 transition-colors">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span>RECOMPUTE [F5]</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sub-header Metric Summary Ribbon -->
+    <div class="h-8 hairline-b bg-[#0E1116] px-4 flex items-center justify-between text-[10px] font-mono flex-shrink-0">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-1.5">
+          <span class="text-[#64748B] uppercase">Centrality Convergence:</span>
+          <span class="text-white">100% (14 iterations)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[#64748B] uppercase">Modularity Q:</span>
+          <span class="text-accent font-semibold">0.7428</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[#64748B] uppercase">Active Partitions:</span>
+          <span class="text-white font-semibold">6 Communities (C1..C6)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[#64748B] uppercase">Cut Edge Ratio:</span>
+          <span class="text-white">0.038 (12 / 3,917)</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-[#64748B]">
+        <span>ENGINE: DuckDB + In-Memory GraphBLAS</span>
+        <span class="text-[#363F4E]">|</span>
+        <span>LATENCY: 4.2ms</span>
+      </div>
+    </div>
+
+    <!-- ================= THREE-COLUMN TECHNICAL SPLIT ================= -->
+    <!-- STATE 1: ACTIVE CONTENT VIEW -->
+    <div id="view-active" class="flex-1 flex overflow-hidden">
+
+      <!-- ================= COLUMN 1: CENTRALITY LEADERBOARD (32% width) ================= -->
+      <section class="w-[33%] hairline-r flex flex-col bg-panel">
+        <!-- Column Header -->
+        <div class="h-9 hairline-b px-3 flex items-center justify-between bg-panel-elevated flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-primary"></span>
+            <h2 class="font-mono uppercase font-bold text-[10px] text-white tracking-wider">CENTRALITY LEADERBOARD</h2>
+            <span class="text-[9px] font-mono text-[#64748B]">(EIGENVECTOR / PAGERANK)</span>
+          </div>
+          <div class="flex items-center gap-1 font-mono text-[9px] text-[#64748B]">
+            <span>SORT:</span>
+            <span class="text-primary font-medium">SCORE DESC</span>
+          </div>
+        </div>
+
+        <!-- Filter & Search Sub-bar -->
+        <div class="h-7 hairline-b px-2 flex items-center justify-between bg-base flex-shrink-0 font-mono text-[9px]">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[#64748B]">FILTER DOMAIN:</span>
+            <button class="px-1.5 py-0.5 bg-panel-elevated hairline-border text-white hover:border-primary">ALL</button>
+            <button class="px-1.5 py-0.5 bg-panel hairline-border text-[#64748B] hover:text-white">P1</button>
+            <button class="px-1.5 py-0.5 bg-panel hairline-border text-[#64748B] hover:text-white">P2</button>
+            <button class="px-1.5 py-0.5 bg-panel hairline-border text-[#64748B] hover:text-white">P3..P7</button>
+          </div>
+          <span class="text-[#64748B]">TOP 14 / 1,284 NODES</span>
+        </div>
+
+        <!-- Leaderboard Table Container (28px row height) -->
+        <div class="flex-1 overflow-y-auto">
+          <table class="w-full text-left font-mono border-collapse">
+            <thead class="sticky top-0 bg-[#0E1116] hairline-b text-[9px] uppercase text-[#64748B] z-10">
+              <tr class="h-6">
+                <th class="pl-3 pr-1 w-8 text-center font-normal">#</th>
+                <th class="px-2 font-normal">Node ID</th>
+                <th class="px-2 text-right font-normal">12-Decimal Score</th>
+                <th class="pr-3 pl-2 text-right font-normal">Domain</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-borderline text-[10px]">
+              
+              <!-- Row 1: heuristics-catalog (Exact specified score 0.828000000000) -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group bg-primary/5">
+                <td class="pl-3 pr-1 text-center font-bold text-primary">01</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+                    <span class="text-white font-medium group-hover:text-primary">heuristics-catalog</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-accent font-mono tracking-tight font-medium">0.828000000000</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#064E3B] text-[#34D399] border border-[#059669] text-[9px] font-semibold">P2</span>
+                </td>
+              </tr>
+
+              <!-- Row 2: retrieval-core -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">02</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">retrieval-core</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.794210984120</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#1E3A8A] text-[#93C5FD] border border-[#2563EB] text-[9px] font-semibold">P1</span>
+                </td>
+              </tr>
+
+              <!-- Row 3: store.acquire_mutation -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">03</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">store.acquire_mutation</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.741008451992</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#1E3A8A] text-[#93C5FD] border border-[#2563EB] text-[9px] font-semibold">P1</span>
+                </td>
+              </tr>
+
+              <!-- Row 4: schema-contract-04 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">04</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">schema-contract-04</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.698301140023</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#78350F] text-[#FCD34D] border border-[#D97706] text-[9px] font-semibold">P4</span>
+                </td>
+              </tr>
+
+              <!-- Row 5: vector-indexer-p3 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">05</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">vector-indexer-p3</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.641920849100</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#0284C7]/20 text-[#38BDF8] border border-[#0284C7]/50 text-[9px] font-semibold">P3</span>
+                </td>
+              </tr>
+
+              <!-- Row 6: lease-arbiter -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">06</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">lease-arbiter</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.589140229341</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#831843]/30 text-[#F472B6] border border-[#DB2777]/50 text-[9px] font-semibold">P5</span>
+                </td>
+              </tr>
+
+              <!-- Row 7: wal-checkpoint -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">07</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">wal-checkpoint</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.521884019284</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#831843]/30 text-[#F472B6] border border-[#DB2777]/50 text-[9px] font-semibold">P5</span>
+                </td>
+              </tr>
+
+              <!-- Row 8: eval-loop-async -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">08</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">eval-loop-async</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.487190412891</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#581C87]/30 text-[#C084FC] border border-[#9333EA]/50 text-[9px] font-semibold">P7</span>
+                </td>
+              </tr>
+
+              <!-- Row 9: kg-entity-4402 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">09</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">kg-entity-4402</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.432019481200</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#064E3B] text-[#34D399] border border-[#059669] text-[9px] font-semibold">P2</span>
+                </td>
+              </tr>
+
+              <!-- Row 10: raft_consensus_v2 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">10</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">raft_consensus_v2</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.398410291444</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#831843]/30 text-[#F472B6] border border-[#DB2777]/50 text-[9px] font-semibold">P5</span>
+                </td>
+              </tr>
+
+              <!-- Row 11: GraphStoreContext -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">11</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">GraphStoreContext</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.362194018274</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#1E3A8A] text-[#93C5FD] border border-[#2563EB] text-[9px] font-semibold">P1</span>
+                </td>
+              </tr>
+
+              <!-- Row 12: inference-runtime-p6 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">12</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">inference-runtime-p6</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.310482190012</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#047857]/20 text-[#6EE7B7] border border-[#059669]/50 text-[9px] font-semibold">P6</span>
+                </td>
+              </tr>
+
+              <!-- Row 13: concept_419 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">13</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">concept_419</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.274198200192</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#064E3B] text-[#34D399] border border-[#059669] text-[9px] font-semibold">P2</span>
+                </td>
+              </tr>
+
+              <!-- Row 14: dag:subgraph_tier2 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1 text-center font-medium text-[#94A3B8]">14</td>
+                <td class="px-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-white/40 rounded-full"></span>
+                    <span class="text-white group-hover:text-primary">dag:subgraph_tier2</span>
+                  </div>
+                </td>
+                <td class="px-2 text-right text-white font-mono tracking-tight">0.221049182390</td>
+                <td class="pr-3 pl-2 text-right">
+                  <span class="inline-block px-1.5 py-0.2 bg-[#0284C7]/20 text-[#38BDF8] border border-[#0284C7]/50 text-[9px] font-semibold">P3</span>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Leaderboard Footer Summary -->
+        <div class="h-7 hairline-t px-3 flex items-center justify-between bg-base font-mono text-[9px] text-[#64748B] flex-shrink-0">
+          <span>POWER ITERATION RESIDUAL: &lt; 1e-12</span>
+          <span class="text-white">DAMPING: 0.85</span>
+        </div>
+      </section>
+
+      <!-- ================= COLUMN 2: COMMUNITIES CARDS C1..C6 (33% width) ================= -->
+      <section class="w-[33%] hairline-r flex flex-col bg-panel">
+        <!-- Column Header -->
+        <div class="h-9 hairline-b px-3 flex items-center justify-between bg-panel-elevated flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-accent"></span>
+            <h2 class="font-mono uppercase font-bold text-[10px] text-white tracking-wider">GRAPH COMMUNITIES (C1..C6)</h2>
+            <span class="text-[9px] font-mono text-[#64748B]">[LOUVAIN PARTITIONS]</span>
+          </div>
+          <span class="text-[9px] font-mono text-accent bg-accent/10 px-1.5 py-0.5 border border-accent/20">MODULARITY 0.7428</span>
+        </div>
+
+        <!-- Density bar -->
+        <div class="h-7 hairline-b px-3 flex items-center justify-between bg-base flex-shrink-0 font-mono text-[9px]">
+          <span class="text-[#64748B]">TOTAL PARTITIONS: <strong class="text-white">6</strong></span>
+          <span class="text-[#64748B]">AVG DENSITY: <strong class="text-white">0.428</strong></span>
+          <span class="text-[#64748B]">INTER-EDGE COUPLING: <strong class="text-white">3.1%</strong></span>
+        </div>
+
+        <!-- Community Cards Scroll Area -->
+        <div class="flex-1 overflow-y-auto p-2.5 space-y-2">
+
+          <!-- Community Card C1 -->
+          <div class="bg-base hairline-border p-2.5 hover:border-primary transition-colors">
+            <div class="flex items-center justify-between pb-1.5 hairline-b mb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 bg-primary/20 text-primary border border-primary/40 font-mono text-[10px] font-bold">C1</span>
+                <div>
+                  <h3 class="text-[11px] font-semibold text-white">Execution Orchestration & Store</h3>
+                  <span class="text-[9px] font-mono text-[#64748B]">Core runtime state machine</span>
+                </div>
+              </div>
+              <div class="text-right font-mono">
+                <span class="text-[11px] font-bold text-white">342</span>
+                <span class="text-[9px] text-[#64748B]"> members (26.6%)</span>
+              </div>
+            </div>
+            <!-- Member Node Chips -->
+            <div class="flex flex-wrap gap-1">
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">retrieval-core</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">store.acquire_mutation</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">GraphStoreContext</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-[#94A3B8] hover:border-border-light cursor-pointer">agent-2.executor</span>
+              <span class="px-1.5 py-0.5 bg-panel hairline-border font-mono text-[9px] text-[#64748B]">+338 more</span>
+            </div>
+          </div>
+
+          <!-- Community Card C2 -->
+          <div class="bg-base hairline-border p-2.5 hover:border-primary transition-colors border-l-2 border-l-accent">
+            <div class="flex items-center justify-between pb-1.5 hairline-b mb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 bg-accent/20 text-accent border border-accent/40 font-mono text-[10px] font-bold">C2</span>
+                <div>
+                  <h3 class="text-[11px] font-semibold text-white">Heuristics & Ontology Catalog</h3>
+                  <span class="text-[9px] font-mono text-[#64748B]">Context extraction rules</span>
+                </div>
+              </div>
+              <div class="text-right font-mono">
+                <span class="text-[11px] font-bold text-white">218</span>
+                <span class="text-[9px] text-[#64748B]"> members (17.0%)</span>
+              </div>
+            </div>
+            <!-- Member Node Chips -->
+            <div class="flex flex-wrap gap-1">
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-accent font-semibold hover:border-border-light cursor-pointer">heuristics-catalog</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">kg-entity-4402</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">concept_419</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-[#94A3B8] hover:border-border-light cursor-pointer">edge_rel_882</span>
+              <span class="px-1.5 py-0.5 bg-panel hairline-border font-mono text-[9px] text-[#64748B]">+214 more</span>
+            </div>
+          </div>
+
+          <!-- Community Card C3 -->
+          <div class="bg-base hairline-border p-2.5 hover:border-primary transition-colors">
+            <div class="flex items-center justify-between pb-1.5 hairline-b mb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 bg-[#0284C7]/20 text-[#38BDF8] border border-[#0284C7]/40 font-mono text-[10px] font-bold">C3</span>
+                <div>
+                  <h3 class="text-[11px] font-semibold text-white">Vector Space & KNN Embeddings</h3>
+                  <span class="text-[9px] font-mono text-[#64748B]">HNSW vector index & DuckDB</span>
+                </div>
+              </div>
+              <div class="text-right font-mono">
+                <span class="text-[11px] font-bold text-white">189</span>
+                <span class="text-[9px] text-[#64748B]"> members (14.7%)</span>
+              </div>
+            </div>
+            <!-- Member Node Chips -->
+            <div class="flex flex-wrap gap-1">
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">vector-indexer-p3</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">dag:subgraph_tier2</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">hnsw_cosine_level0</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-[#94A3B8] hover:border-border-light cursor-pointer">sub-139.embedder</span>
+              <span class="px-1.5 py-0.5 bg-panel hairline-border font-mono text-[9px] text-[#64748B]">+185 more</span>
+            </div>
+          </div>
+
+          <!-- Community Card C4 -->
+          <div class="bg-base hairline-border p-2.5 hover:border-primary transition-colors">
+            <div class="flex items-center justify-between pb-1.5 hairline-b mb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 bg-[#D97706]/20 text-[#FBBF24] border border-[#D97706]/40 font-mono text-[10px] font-bold">C4</span>
+                <div>
+                  <h3 class="text-[11px] font-semibold text-white">JSON-LD Schema & Invariant Contracts</h3>
+                  <span class="text-[9px] font-mono text-[#64748B]">SHACL & deterministic rules</span>
+                </div>
+              </div>
+              <div class="text-right font-mono">
+                <span class="text-[11px] font-bold text-white">156</span>
+                <span class="text-[9px] text-[#64748B]"> members (12.1%)</span>
+              </div>
+            </div>
+            <!-- Member Node Chips -->
+            <div class="flex flex-wrap gap-1">
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">schema-contract-04</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">strict_json_ld_v5</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">shacl_invariants</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-[#94A3B8] hover:border-border-light cursor-pointer">validator_hook</span>
+              <span class="px-1.5 py-0.5 bg-panel hairline-border font-mono text-[9px] text-[#64748B]">+152 more</span>
+            </div>
+          </div>
+
+          <!-- Community Card C5 -->
+          <div class="bg-base hairline-border p-2.5 hover:border-primary transition-colors">
+            <div class="flex items-center justify-between pb-1.5 hairline-b mb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 bg-[#DB2777]/20 text-[#F472B6] border border-[#DB2777]/40 font-mono text-[10px] font-bold">C5</span>
+                <div>
+                  <h3 class="text-[11px] font-semibold text-white">Consensus, Leases & Fencing</h3>
+                  <span class="text-[9px] font-mono text-[#64748B]">Raft quorum synchronization</span>
+                </div>
+              </div>
+              <div class="text-right font-mono">
+                <span class="text-[11px] font-bold text-white">112</span>
+                <span class="text-[9px] text-[#64748B]"> members (8.7%)</span>
+              </div>
+            </div>
+            <!-- Member Node Chips -->
+            <div class="flex flex-wrap gap-1">
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">lease-arbiter</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">wal-checkpoint</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">raft_consensus_v2</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-[#94A3B8] hover:border-border-light cursor-pointer">fencing_token_mgr</span>
+              <span class="px-1.5 py-0.5 bg-panel hairline-border font-mono text-[9px] text-[#64748B]">+108 more</span>
+            </div>
+          </div>
+
+          <!-- Community Card C6 -->
+          <div class="bg-base hairline-border p-2.5 hover:border-primary transition-colors">
+            <div class="flex items-center justify-between pb-1.5 hairline-b mb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 bg-[#7C3AED]/20 text-[#A78BFA] border border-[#7C3AED]/40 font-mono text-[10px] font-bold">C6</span>
+                <div>
+                  <h3 class="text-[11px] font-semibold text-white">Evaluation & Feedback Loop</h3>
+                  <span class="text-[9px] font-mono text-[#64748B]">Continuous telemetry validation</span>
+                </div>
+              </div>
+              <div class="text-right font-mono">
+                <span class="text-[11px] font-bold text-white">267</span>
+                <span class="text-[9px] text-[#64748B]"> members (20.8%)</span>
+              </div>
+            </div>
+            <!-- Member Node Chips -->
+            <div class="flex flex-wrap gap-1">
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">eval-loop-async</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">inference-runtime-p6</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-white hover:border-border-light cursor-pointer">metric-probe-01</span>
+              <span class="px-1.5 py-0.5 bg-panel-elevated hairline-border font-mono text-[9px] text-[#94A3B8] hover:border-border-light cursor-pointer">feedback_recorder</span>
+              <span class="px-1.5 py-0.5 bg-panel hairline-border font-mono text-[9px] text-[#64748B]">+263 more</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Community Card Footer -->
+        <div class="h-7 hairline-t px-3 flex items-center justify-between bg-base font-mono text-[9px] text-[#64748B] flex-shrink-0">
+          <span>SUM(MEMBERS): 1,284 NODES</span>
+          <span class="text-accent">0 ORPHAN NODES</span>
+        </div>
+      </section>
+
+      <!-- ================= COLUMN 3: BRIDGES COLUMN (34% width) ================= -->
+      <section class="w-[34%] flex flex-col bg-panel">
+        <!-- Column Header -->
+        <div class="h-9 hairline-b px-3 flex items-center justify-between bg-panel-elevated flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-warning"></span>
+            <h2 class="font-mono uppercase font-bold text-[10px] text-white tracking-wider">COMMUNITY BRIDGE EDGES</h2>
+            <span class="text-[9px] font-mono text-[#64748B]">[CUT EDGES / INTER-CLUSTER]</span>
+          </div>
+          <span class="text-[9px] font-mono px-1.5 py-0.5 bg-base hairline-border text-white">THRESHOLD &ge; 0.70</span>
+        </div>
+
+        <!-- COMPONENT 4 METRICS RIBBON: candidates 41 / emitted 12; by_kind breakdown -->
+        <div class="p-2.5 hairline-b bg-base flex-shrink-0 space-y-2">
+          <!-- Bridge Counts Metric Bar -->
+          <div class="flex items-center justify-between bg-panel hairline-border p-2 font-mono">
+            <div>
+              <span class="text-[9px] text-[#64748B] uppercase block">Bridge Candidates</span>
+              <span class="text-[13px] font-bold text-white">41</span>
+            </div>
+            <div class="h-6 w-px bg-borderline"></div>
+            <div>
+              <span class="text-[9px] text-[#64748B] uppercase block">Emitted Bridges</span>
+              <span class="text-[13px] font-bold text-accent">12</span>
+            </div>
+            <div class="h-6 w-px bg-borderline"></div>
+            <div>
+              <span class="text-[9px] text-[#64748B] uppercase block">Emission Rate</span>
+              <span class="text-[13px] font-bold text-white">29.3%</span>
+            </div>
+          </div>
+
+          <!-- by_kind breakdown: depends_on 7, contradicts 2, supersedes 3 -->
+          <div>
+            <div class="flex items-center justify-between text-[9px] font-mono mb-1">
+              <span class="text-[#64748B] uppercase">BY_KIND BREAKDOWN</span>
+              <span class="text-[#94A3B8]">TOTAL = 12 EMITTED</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 font-mono text-[9px]">
+              <!-- depends_on 7 -->
+              <div class="bg-panel-elevated hairline-border px-2 py-1 flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 bg-primary rounded-none"></span>
+                  <span class="text-[#94A3B8]">depends_on</span>
+                </div>
+                <span class="text-white font-bold">7</span>
+              </div>
+              <!-- contradicts 2 -->
+              <div class="bg-panel-elevated hairline-border px-2 py-1 flex items-center justify-between border-l-2 border-l-danger">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 bg-danger rounded-none"></span>
+                  <span class="text-[#94A3B8]">contradicts</span>
+                </div>
+                <span class="text-danger font-bold">2</span>
+              </div>
+              <!-- supersedes 3 -->
+              <div class="bg-panel-elevated hairline-border px-2 py-1 flex items-center justify-between border-l-2 border-l-warning">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 bg-warning rounded-none"></span>
+                  <span class="text-[#94A3B8]">supersedes</span>
+                </div>
+                <span class="text-warning font-bold">3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table of Bridge Edges Between Communities (Compact 28px rows) -->
+        <div class="flex-1 overflow-y-auto">
+          <table class="w-full text-left font-mono border-collapse">
+            <thead class="sticky top-0 bg-[#0E1116] hairline-b text-[9px] uppercase text-[#64748B] z-10">
+              <tr class="h-6">
+                <th class="pl-3 pr-1 font-normal">Edge Source &rarr; Target</th>
+                <th class="px-2 font-normal">Path</th>
+                <th class="px-2 font-normal">Kind</th>
+                <th class="pr-3 pl-2 text-right font-normal">Weight</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-borderline text-[10px]">
+
+              <!-- 1. depends_on #1 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1">
+                  <span class="text-white group-hover:text-primary">heuristics-catalog</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">retrieval-core</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-white">C2 &rarr; C1</span></td>
+                <td class="px-2"><span class="text-[9px] text-primary">depends_on</span></td>
+                <td class="pr-3 pl-2 text-right text-white">0.94</td>
+              </tr>
+
+              <!-- 2. depends_on #2 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1">
+                  <span class="text-white group-hover:text-primary">vector-indexer-p3</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">heuristics-catalog</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-white">C3 &rarr; C2</span></td>
+                <td class="px-2"><span class="text-[9px] text-primary">depends_on</span></td>
+                <td class="pr-3 pl-2 text-right text-white">0.91</td>
+              </tr>
+
+              <!-- 3. depends_on #3 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1">
+                  <span class="text-white group-hover:text-primary">schema-contract-04</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">store.acquire_mutation</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-white">C4 &rarr; C1</span></td>
+                <td class="px-2"><span class="text-[9px] text-primary">depends_on</span></td>
+                <td class="pr-3 pl-2 text-right text-white">0.89</td>
+              </tr>
+
+              <!-- 4. depends_on #4 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1">
+                  <span class="text-white group-hover:text-primary">eval-loop-async</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">vector-indexer-p3</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-white">C6 &rarr; C3</span></td>
+                <td class="px-2"><span class="text-[9px] text-primary">depends_on</span></td>
+                <td class="pr-3 pl-2 text-right text-white">0.87</td>
+              </tr>
+
+              <!-- 5. depends_on #5 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1">
+                  <span class="text-white group-hover:text-primary">lease-arbiter</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">retrieval-core</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-white">C5 &rarr; C1</span></td>
+                <td class="px-2"><span class="text-[9px] text-primary">depends_on</span></td>
+                <td class="pr-3 pl-2 text-right text-white">0.85</td>
+              </tr>
+
+              <!-- 6. depends_on #6 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1">
+                  <span class="text-white group-hover:text-primary">wal-checkpoint</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">store.acquire_mutation</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-white">C5 &rarr; C1</span></td>
+                <td class="px-2"><span class="text-[9px] text-primary">depends_on</span></td>
+                <td class="pr-3 pl-2 text-right text-white">0.83</td>
+              </tr>
+
+              <!-- 7. depends_on #7 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group">
+                <td class="pl-3 pr-1">
+                  <span class="text-white group-hover:text-primary">inference-runtime-p6</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">heuristics-catalog</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-white">C6 &rarr; C2</span></td>
+                <td class="px-2"><span class="text-[9px] text-primary">depends_on</span></td>
+                <td class="pr-3 pl-2 text-right text-white">0.80</td>
+              </tr>
+
+              <!-- 8. contradicts #1 (CRITICAL WARNING) -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group bg-danger/5">
+                <td class="pl-3 pr-1">
+                  <span class="text-danger font-semibold group-hover:underline">eval_worker_pool</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">store.acquire_mutation</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-danger">C6 &rarr; C1</span></td>
+                <td class="px-2"><span class="text-[9px] text-danger font-semibold">contradicts</span></td>
+                <td class="pr-3 pl-2 text-right text-danger font-semibold">0.65</td>
+              </tr>
+
+              <!-- 9. contradicts #2 (CRITICAL WARNING) -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group bg-danger/5">
+                <td class="pl-3 pr-1">
+                  <span class="text-danger font-semibold group-hover:underline">compat.read_uncommitted</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">schema-contract-04</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-danger">C1 &rarr; C4</span></td>
+                <td class="px-2"><span class="text-[9px] text-danger font-semibold">contradicts</span></td>
+                <td class="pr-3 pl-2 text-right text-danger font-semibold">0.72</td>
+              </tr>
+
+              <!-- 10. supersedes #1 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group bg-warning/5">
+                <td class="pl-3 pr-1">
+                  <span class="text-warning group-hover:underline">heuristics-catalog</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">heuristics-v1 (archived)</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-warning">C2 &rarr; C2*</span></td>
+                <td class="px-2"><span class="text-[9px] text-warning">supersedes</span></td>
+                <td class="pr-3 pl-2 text-right text-white">1.00</td>
+              </tr>
+
+              <!-- 11. supersedes #2 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group bg-warning/5">
+                <td class="pl-3 pr-1">
+                  <span class="text-warning group-hover:underline">store.acquire_mutation</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">legacy_store_lock_v1</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-warning">C1 &rarr; C5</span></td>
+                <td class="px-2"><span class="text-[9px] text-warning">supersedes</span></td>
+                <td class="pr-3 pl-2 text-right text-white">1.00</td>
+              </tr>
+
+              <!-- 12. supersedes #3 -->
+              <tr class="h-7 hover:bg-panel-elevated cursor-pointer group bg-warning/5">
+                <td class="pl-3 pr-1">
+                  <span class="text-warning group-hover:underline">strict_json_ld_v5</span>
+                  <span class="text-[#64748B]">&rarr;</span>
+                  <span class="text-[#94A3B8]">schema_v4_legacy</span>
+                </td>
+                <td class="px-2"><span class="text-[9px] px-1 bg-base hairline-border text-warning">C4 &rarr; C4*</span></td>
+                <td class="px-2"><span class="text-[9px] text-warning">supersedes</span></td>
+                <td class="pr-3 pl-2 text-right text-white">0.96</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bridges Footer Summary -->
+        <div class="h-7 hairline-t px-3 flex items-center justify-between bg-base font-mono text-[9px] text-[#64748B] flex-shrink-0">
+          <span>INTER-COMMUNITY COUPLING: NOMINAL</span>
+          <span class="text-warning">2 CONTRADICTION EDGES</span>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ================= STATE 2: THREE-COLUMN SKELETON WHILE COMPUTING ================= -->
+    <div id="view-computing" class="flex-1 flex overflow-hidden hidden">
+      <!-- Col 1 Skeleton -->
+      <div class="w-[33%] hairline-r flex flex-col bg-panel p-3 space-y-3">
+        <div class="h-6 bg-panel-elevated hairline-border flex items-center px-2 justify-between">
+          <div class="w-32 h-2.5 bg-[#2A313E] animate-pulse"></div>
+          <div class="w-12 h-2.5 bg-[#2A313E] animate-pulse"></div>
+        </div>
+        <div class="h-5 bg-base hairline-border"></div>
+        <div class="space-y-1.5">
+          <div class="h-7 bg-panel-elevated/60 hairline-border flex items-center px-3 justify-between">
+            <div class="w-6 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-28 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-24 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-8 h-3 bg-[#2A313E] animate-pulse"></div>
+          </div>
+          <div class="h-7 bg-panel-elevated/40 hairline-border flex items-center px-3 justify-between">
+            <div class="w-6 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-24 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-24 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-8 h-3 bg-[#2A313E] animate-pulse"></div>
+          </div>
+          <div class="h-7 bg-panel-elevated/30 hairline-border flex items-center px-3 justify-between">
+            <div class="w-6 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-36 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-24 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-8 h-3 bg-[#2A313E] animate-pulse"></div>
+          </div>
+          <div class="h-7 bg-panel-elevated/20 hairline-border flex items-center px-3 justify-between">
+            <div class="w-6 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-32 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-24 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-8 h-3 bg-[#2A313E] animate-pulse"></div>
+          </div>
+          <div class="h-7 bg-panel-elevated/20 hairline-border flex items-center px-3 justify-between">
+            <div class="w-6 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-28 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-24 h-2 bg-[#2A313E] animate-pulse"></div>
+            <div class="w-8 h-3 bg-[#2A313E] animate-pulse"></div>
+          </div>
+        </div>
+        <div class="pt-8 text-center font-mono text-[10px] text-[#64748B]">
+          <span class="inline-block w-2 h-2 rounded-full bg-primary animate-ping mr-2"></span>
+          COMPUTING EIGENVECTOR CENTRALITY (ITERATION 8/14)...
+        </div>
+      </div>
+
+      <!-- Col 2 Skeleton -->
+      <div class="w-[33%] hairline-r flex flex-col bg-panel p-3 space-y-3">
+        <div class="h-6 bg-panel-elevated hairline-border flex items-center px-2 justify-between">
+          <div class="w-36 h-2.5 bg-[#2A313E] animate-pulse"></div>
+          <div class="w-16 h-2.5 bg-[#2A313E] animate-pulse"></div>
+        </div>
+        <div class="h-5 bg-base hairline-border"></div>
+        <div class="space-y-2">
+          <div class="h-20 bg-base hairline-border p-2.5 space-y-2">
+            <div class="flex justify-between">
+              <div class="w-24 h-3 bg-[#2A313E] animate-pulse"></div>
+              <div class="w-12 h-3 bg-[#2A313E] animate-pulse"></div>
+            </div>
+            <div class="flex gap-1">
+              <div class="w-16 h-3 bg-[#2A313E] animate-pulse"></div>
+              <div class="w-20 h-3 bg-[#2A313E] animate-pulse"></div>
+              <div class="w-14 h-3 bg-[#2A313E] animate-pulse"></div>
+            </div>
+          </div>
+          <div class="h-20 bg-base hairline-border p-2.5 space-y-2">
+            <div class="flex justify-between">
+              <div class="w-28 h-3 bg-[#2A313E] animate-pulse"></div>
+              <div class="w-12 h-3 bg-[#2A313E] animate-pulse"></div>
+            </div>
+            <div class="flex gap-1">
+              <div class="w-20 h-3 bg-[#2A313E] animate-pulse"></div>
+              <div class="w-16 h-3 bg-[#2A313E] animate-pulse"></div>
+              <div class="w-18 h-3 bg-[#2A313E] animate-pulse"></div>
+            </div>
+          </div>
+          <div class="h-20 bg-base hairline-border p-2.5 space-y-2">
+            <div class="flex justify-between">
+              <div class="w-20 h-3 bg-[#2A313E] animate-pulse"></div>
+              <div class="w-12 h-3 bg-[#2A313E] animate-pulse"></div>
+            </div>
+            <div class="flex gap-1">
+              <div class="w-14 h-3 bg-[#2A313E] animate-pulse"></div>
+              <div class="w-22 h-3 bg-[#2A313E] animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pt-8 text-center font-mono text-[10px] text-[#64748B]">
+          OPTIMIZING LOUVAIN MODULARITY...
+        </div>
+      </div>
+
+      <!-- Col 3 Skeleton -->
+      <div class="w-[34%] flex flex-col bg-panel p-3 space-y-3">
+        <div class="h-6 bg-panel-elevated hairline-border flex items-center px-2 justify-between">
+          <div class="w-40 h-2.5 bg-[#2A313E] animate-pulse"></div>
+          <div class="w-16 h-2.5 bg-[#2A313E] animate-pulse"></div>
+        </div>
+        <div class="h-14 bg-base hairline-border p-2 flex justify-between">
+          <div class="w-20 h-full bg-[#2A313E] animate-pulse"></div>
+          <div class="w-20 h-full bg-[#2A313E] animate-pulse"></div>
+          <div class="w-20 h-full bg-[#2A313E] animate-pulse"></div>
+        </div>
+        <div class="space-y-1.5">
+          <div class="h-7 bg-panel-elevated/50 hairline-border"></div>
+          <div class="h-7 bg-panel-elevated/40 hairline-border"></div>
+          <div class="h-7 bg-panel-elevated/30 hairline-border"></div>
+          <div class="h-7 bg-panel-elevated/20 hairline-border"></div>
+        </div>
+        <div class="pt-8 text-center font-mono text-[10px] text-[#64748B]">
+          EVALUATING CUT EDGES &amp; BRIDGE PRUNING...
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= STATE 3: 'NO NODES' EMPTY STATE ================= -->
+    <div id="view-empty" class="flex-1 flex flex-col items-center justify-center bg-base p-8 hidden">
+      <div class="w-[460px] bg-panel hairline-border p-6 text-center space-y-4 shadow-2xl">
+        <div class="w-12 h-12 bg-panel-elevated hairline-border mx-auto flex items-center justify-center text-[#64748B]">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+        </div>
+        <div class="space-y-1">
+          <h3 class="font-mono text-xs uppercase font-bold text-white tracking-wider">NO NODES LOADED IN GRAPH</h3>
+          <p class="text-[11px] text-[#94A3B8]">Graph structure intelligence engine requires indexed nodes to compute centrality, community detection, and bridge boundaries.</p>
+        </div>
+        <div class="bg-base hairline-border p-2.5 text-left font-mono text-[10px] space-y-1">
+          <div class="text-[#64748B] flex justify-between">
+            <span>node_count:</span>
+            <span class="text-white">0</span>
+          </div>
+          <div class="text-[#64748B] flex justify-between">
+            <span>total_edges:</span>
+            <span class="text-white">0</span>
+          </div>
+          <div class="text-[#64748B] flex justify-between">
+            <span>partial:</span>
+            <span class="text-warning">false (empty graph)</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-2">
+          <button onclick="switchState('active')" class="px-3 py-1.5 bg-primary hover:bg-blue-600 text-white font-mono text-[10px] hairline-border transition-colors">
+            LOAD DEFAULT TEST CONTEXT
+          </button>
+          <button class="px-3 py-1.5 bg-panel-elevated hover:bg-[#2A313E] text-[#94A3B8] font-mono text-[10px] hairline-border transition-colors">
+            CONNECT IPC SOCKET
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PERSISTENT BOTTOM TELEMETRY DOCK ================= -->
+    <footer class="h-7 hairline-t bg-[#0B0D11] px-3 flex items-center justify-between text-[10px] font-mono text-[#64748B] flex-shrink-0 z-30">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+          <span class="text-white font-medium">RAFT QUORUM:</span>
+          <span class="text-white">3/3 SYNCD (term 84)</span>
+        </div>
+        <span class="text-[#2A313E]">|</span>
+        <div class="flex items-center gap-1">
+          <span>WAL OFFSET:</span>
+          <span class="text-white">0x44B9E0</span>
+        </div>
+        <span class="text-[#2A313E]">|</span>
+        <div class="flex items-center gap-1">
+          <span>DuckDB Cache:</span>
+          <span class="text-accent">99.4%</span>
+        </div>
+        <span class="text-[#2A313E]">|</span>
+        <div class="flex items-center gap-1">
+          <span>RSS:</span>
+          <span class="text-white">46.2 MB</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1">
+          <span>FS CONTENTION:</span>
+          <span class="text-accent">0 (CLEAN)</span>
+        </div>
+        <span class="text-[#2A313E]">|</span>
+        <div class="flex items-center gap-1">
+          <span>INVARIANTS:</span>
+          <span class="text-accent font-semibold">11/11 PASS</span>
+        </div>
+        <span class="text-[#2A313E]">|</span>
+        <span class="text-white">1440x900 FIXED VIEWPORT</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Interactive script to toggle state demonstration cleanly -->
+  <script>
+    function switchState(state) {
+      document.getElementById('view-active').classList.add('hidden');
+      document.getElementById('view-computing').classList.add('hidden');
+      document.getElementById('view-empty').classList.add('hidden');
+
+      const btnActive = document.getElementById('btn-state-active');
+      const btnComputing = document.getElementById('btn-state-computing');
+      const btnEmpty = document.getElementById('btn-state-empty');
+
+      [btnActive, btnComputing, btnEmpty].forEach(btn => {
+        btn.className = 'px-2 py-0.5 text-[#64748B] hover:text-white';
+      });
+
+      if (state === 'active') {
+        document.getElementById('view-active').classList.remove('hidden');
+        btnActive.className = 'px-2 py-0.5 bg-panel-elevated text-primary font-medium border border-borderline';
+      } else if (state === 'computing') {
+        document.getElementById('view-computing').classList.remove('hidden');
+        btnComputing.className = 'px-2 py-0.5 bg-panel-elevated text-primary font-medium border border-borderline';
+      } else if (state === 'empty') {
+        document.getElementById('view-empty').classList.remove('hidden');
+        btnEmpty.className = 'px-2 py-0.5 bg-panel-elevated text-primary font-medium border border-borderline';
+      }
+    }
+  </script>
+</body>
+</html>

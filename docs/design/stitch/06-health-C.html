@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Local Cluster Operations</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-container": "#00a572",
+            "surface-container-highest": "#32353b",
+            "on-secondary-container": "#00424e",
+            "surface-bright": "#363940",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-secondary": "#003640",
+            "on-background": "#e1e2eb",
+            "secondary-container": "#03b5d3",
+            "on-secondary-fixed": "#001f26",
+            "tertiary-fixed": "#6ffbbe",
+            "surface-container-low": "#191c22",
+            "surface-container": "#1d2026",
+            "primary-container": "#4d8eff",
+            "on-secondary-fixed-variant": "#004e5c",
+            "on-error": "#690005",
+            "primary-fixed-dim": "#adc6ff",
+            "on-primary-container": "#00285d",
+            "on-tertiary": "#003824",
+            "outline-variant": "#424754",
+            "on-error-container": "#ffdad6",
+            "surface-variant": "#32353b",
+            "surface-tint": "#adc6ff",
+            "on-tertiary-fixed": "#002113",
+            "secondary-fixed-dim": "#4cd7f6",
+            "surface-container-high": "#272a30",
+            "outline": "#8c909f",
+            "surface-container-lowest": "#0b0e14",
+            "inverse-surface": "#e1e2eb",
+            "on-surface": "#e1e2eb",
+            "on-surface-variant": "#c2c6d6",
+            "secondary": "#4cd7f6",
+            "primary-fixed": "#d8e2ff",
+            "inverse-primary": "#005ac2",
+            "on-tertiary-container": "#00311f",
+            "on-primary": "#002e6a",
+            "surface-dim": "#101319",
+            "background": "#101319",
+            "on-primary-fixed": "#001a42",
+            "on-primary-fixed-variant": "#004395",
+            "error-container": "#93000a",
+            "secondary-fixed": "#acedff",
+            "primary": "#adc6ff",
+            "inverse-on-surface": "#2d3037",
+            "error": "#ffb4ab",
+            "tertiary": "#4edea3",
+            "surface": "#101319",
+            "on-tertiary-fixed-variant": "#005236"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "margin-mobile": "0.5rem",
+            "space-lg": "0.75rem",
+            "space-sm": "0.25rem",
+            "space-xl": "1rem",
+            "gutter-mobile": "0.25rem",
+            "space-xs": "0.125rem",
+            "space-md": "0.5rem",
+            "margin": "0.75rem",
+            "gutter": "0.5rem"
+          },
+          "fontFamily": {
+            "code-lg": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #0B0D11;
+      color: #e1e2eb;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0B0D11;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #2A313E;
+      border-radius: 2px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+    .mono-num {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface select-none overflow-hidden h-screen w-screen flex flex-col font-body-md text-body-md antialiased">
+<!-- TOP NAV BAR (Shared Components Tokenized Implementation) -->
+<header class="flex justify-between items-center h-8 w-full pl-56 pr-2 z-20 bg-surface-container-low border-b border-outline-variant fixed top-0 left-0 text-on-surface font-code-sm text-code-sm">
+<div class="flex items-center space-x-3">
+<div class="flex items-center space-x-1.5 px-2 py-0.5 bg-surface-container border border-outline-variant rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="font-code-sm text-code-sm text-on-surface">Cluster: node-01.local</span>
+</div>
+<div class="flex items-center space-x-2 text-on-surface-variant font-code-sm text-code-sm">
+<span>Lock Sync: <strong class="text-tertiary font-semibold">QUORUM</strong></span>
+<span class="text-outline-variant">|</span>
+<span>State: <strong class="text-tertiary font-semibold">VALID</strong></span>
+<span class="text-outline-variant">|</span>
+<span>WAL Seq: <span class="text-primary font-code-sm text-code-sm">#829</span></span>
+<span class="text-outline-variant">|</span>
+<span>DuckDB: <span class="text-tertiary font-code-sm text-code-sm">READY</span></span>
+</div>
+</div>
+<!-- Right actions cluster -->
+<div class="flex items-center space-x-2">
+<button class="h-6 px-2.5 bg-primary-container text-on-primary-container font-code-sm text-code-sm rounded hover:bg-primary transition-colors flex items-center space-x-1">
+<span class="material-symbols-outlined text-xs leading-none" data-icon="play_arrow">play_arrow</span>
+<span>Trigger Invariant Probe</span>
+</button>
+<button class="h-6 px-2 bg-surface-container border border-outline-variant text-on-surface font-code-sm text-code-sm rounded hover:bg-surface-container-high transition-colors">
+        Re-run Diagnostics [F1]
+      </button>
+<button class="h-6 px-2 bg-surface-container border border-outline-variant text-on-surface font-code-sm text-code-sm rounded hover:bg-surface-container-high transition-colors flex items-center space-x-1">
+<span class="material-symbols-outlined text-xs leading-none" data-icon="file_download">file_download</span>
+<span>Export Audit JSON</span>
+</button>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<div class="flex items-center space-x-1 text-on-surface-variant">
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container rounded" title="Sync telemetry">
+<span class="material-symbols-outlined text-sm" data-icon="sync">sync</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container rounded relative" title="Notifications">
+<span class="material-symbols-outlined text-sm" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-1.5 h-1.5 bg-secondary-container rounded-full"></span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container rounded" title="Terminal">
+<span class="material-symbols-outlined text-sm" data-icon="terminal">terminal</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container rounded text-primary" title="Operator profile">
+<span class="material-symbols-outlined text-sm" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- PERSISTENT LEFT SIDEBAR -->
+<aside class="fixed top-0 left-0 h-screen w-56 flex flex-col justify-between py-2 px-1 z-30 select-none bg-surface-container-lowest border-r border-outline-variant">
+<!-- Brand / Cluster Header -->
+<div class="px-2 pt-1 pb-2 border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="w-5 h-5 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm leading-none" data-icon="hub">hub</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight text-xs">Know Your Context</div>
+<div class="font-code-sm text-code-sm text-outline tracking-wider text-[9px] uppercase">LOCAL CLUSTER v2.4</div>
+</div>
+</div>
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+</div>
+<!-- Navigation List (12 Tabs, Health = ACTIVE) -->
+<nav class="flex-1 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
+<!-- 1. Overview -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#overview">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="dashboard">dashboard</span>
+<span>Overview</span>
+</div>
+</a>
+<!-- 2. Activity -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#activity">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="dynamic_feed">dynamic_feed</span>
+<span>Activity</span>
+</div>
+</a>
+<!-- 3. Graph -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#graph">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="hub">hub</span>
+<span>Graph</span>
+</div>
+</a>
+<!-- 4. Search -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#search">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="search">search</span>
+<span>Search</span>
+</div>
+</a>
+<!-- 5. Metrics -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#metrics">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="monitoring">monitoring</span>
+<span>Metrics</span>
+</div>
+</a>
+<!-- 6. Health (HIGHLIGHTED / ACTIVE) -->
+<a class="flex items-center justify-between h-7 rounded bg-surface-container-high text-primary border-l-2 border-primary pl-2 font-medium transition-colors font-label-md text-label-md" href="#health">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="vital_signs">vital_signs</span>
+<span class="text-on-surface">Health</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary mr-2"></span>
+</a>
+<!-- 7. Analytics -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#analytics">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</div>
+</a>
+<!-- 8. Audit -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#audit">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="history">history</span>
+<span>Audit</span>
+</div>
+</a>
+<!-- 9. Proposals (badge: 3) -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 pr-2 font-normal transition-colors font-label-md text-label-md" href="#proposals">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="rule">rule</span>
+<span>Proposals</span>
+</div>
+<span class="h-4 px-1.5 rounded text-[10px] font-code-sm bg-surface-container-highest text-primary border border-outline-variant">3</span>
+</a>
+<!-- 10. Debt (badge: 12) -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 pr-2 font-normal transition-colors font-label-md text-label-md" href="#debt">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="priority_high">priority_high</span>
+<span>Debt</span>
+</div>
+<span class="h-4 px-1.5 rounded text-[10px] font-code-sm bg-surface-container-highest text-secondary border border-outline-variant">12</span>
+</a>
+<!-- 11. System -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#system">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="memory">memory</span>
+<span>System</span>
+</div>
+</a>
+<!-- 12. Setup -->
+<a class="flex items-center justify-between h-7 rounded hover:bg-surface-container text-on-surface-variant pl-2.5 font-normal transition-colors font-label-md text-label-md" href="#setup">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm" data-icon="settings">settings</span>
+<span>Setup</span>
+</div>
+</a>
+</nav>
+<!-- Footer tabs -->
+<div class="pt-2 border-t border-outline-variant space-y-1 font-label-md text-label-md">
+<a class="flex items-center justify-between h-6 px-2 rounded hover:bg-surface-container text-on-surface-variant" href="#docs">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-xs" data-icon="menu_book">menu_book</span>
+<span>Documentation</span>
+</div>
+</a>
+<div class="flex items-center justify-between h-6 px-2 rounded bg-surface-container-low text-on-surface-variant border border-outline-variant">
+<div class="flex items-center space-x-2 font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-xs text-tertiary" data-icon="terminal">terminal</span>
+<span class="text-xs">Terminal</span>
+</div>
+<span class="font-code-sm text-code-sm text-[10px] text-tertiary">LIVE 0.1ms</span>
+</div>
+</div>
+</aside>
+<!-- MAIN SCROLLABLE CONTENT CANVAS (Layout Direction C: Modular Dashboard Cards) -->
+<main class="ml-56 mt-8 flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3 bg-surface-container-lowest">
+<!-- 1. TOP MODULAR STATUS BANNER CARD -->
+<section class="bg-surface-container-low border border-outline-variant rounded p-3 flex items-center justify-between shadow-none">
+<div class="flex items-center space-x-4">
+<!-- Health Status Pill -->
+<div class="flex items-center space-x-2 px-3 py-1.5 bg-surface-container-high border border-outline-variant rounded">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary inline-block"></span>
+<span class="font-label-md text-label-md tracking-wider font-semibold text-tertiary">HEALTHY</span>
+</div>
+<div class="h-6 w-px bg-outline-variant"></div>
+<!-- Diagnostic proof telemetry metrics -->
+<div class="flex items-center space-x-5 font-code-md text-code-md text-on-surface-variant">
+<div>
+<span class="text-outline font-label-sm text-label-sm block">exit_code</span>
+<span class="text-on-surface font-semibold mono-num">0 <span class="text-tertiary font-normal">(SUCCESS)</span></span>
+</div>
+<div>
+<span class="text-outline font-label-sm text-label-sm block">worst_severity</span>
+<span class="text-secondary font-medium">INFO</span>
+</div>
+<div>
+<span class="text-outline font-label-sm text-label-sm block">error_count</span>
+<span class="text-on-surface mono-num">0 <span class="text-tertiary font-normal">(100% clean)</span></span>
+</div>
+<div>
+<span class="text-outline font-label-sm text-label-sm block">warning_count</span>
+<span class="text-secondary-fixed-dim mono-num font-medium">2 <span class="text-outline text-[11px] font-normal">(Non-blocking)</span></span>
+</div>
+<div>
+<span class="text-outline font-label-sm text-label-sm block">cadence</span>
+<span class="text-on-surface mono-num">15s <span class="text-outline text-[10px] font-normal">(probe: 420ms ago)</span></span>
+</div>
+</div>
+</div>
+<!-- Action Triggers -->
+<div class="flex items-center space-x-2">
+<button class="h-7 px-3 bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high rounded font-code-sm text-code-sm flex items-center space-x-1.5 transition-colors">
+<span class="material-symbols-outlined text-xs leading-none" data-icon="refresh">refresh</span>
+<span>Re-run Diagnostics</span>
+</button>
+<button class="h-7 px-3 bg-primary-container text-on-primary-container hover:bg-primary rounded font-code-sm text-code-sm flex items-center space-x-1.5 transition-colors font-medium">
+<span class="material-symbols-outlined text-xs leading-none" data-icon="play_arrow">play_arrow</span>
+<span>Trigger Invariant Probe</span>
+</button>
+</div>
+</section>
+<!-- 2. TOP KPI CARDS GRID (Scannable in 5 seconds) -->
+<section class="grid grid-cols-4 gap-3">
+<!-- Card 1: System Health -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-3 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">SYSTEM HEALTH</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="py-1">
+<div class="font-headline-md text-headline-md text-tertiary tracking-tight font-semibold mono-num">HEALTHY</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant pt-0.5">exit_code: 0 · deterministic pass</div>
+</div>
+<div class="pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm text-outline">
+<span>Root Hash:</span>
+<span class="text-on-surface mono-num">0x9c4f...e18a</span>
+</div>
+</div>
+<!-- Card 2: Severity Level -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-3 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">SEVERITY LEVEL</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</div>
+<div class="py-1">
+<div class="font-headline-md text-headline-md text-secondary tracking-tight font-semibold">INFO</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant pt-0.5">0 fatal traps · isolation active</div>
+</div>
+<div class="pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm text-outline">
+<span>Shield Mode:</span>
+<span class="text-tertiary font-medium">FAIL-CLOSED</span>
+</div>
+</div>
+<!-- Card 3: Error Rate & Count -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-3 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">ERROR ASSERTIONS</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<div class="py-1">
+<div class="font-headline-md text-headline-md text-on-surface tracking-tight font-semibold mono-num">0 <span class="text-xs font-normal text-outline">/ 144 checks</span></div>
+<div class="font-code-sm text-code-sm text-on-surface-variant pt-0.5">0.00% invariant error rate</div>
+</div>
+<div class="pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm text-outline">
+<span>Failed Traps:</span>
+<span class="text-tertiary mono-num font-semibold">0</span>
+</div>
+</div>
+<!-- Card 4: Warnings -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-3 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">WARNING QUEUE</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim"></span>
+</div>
+<div class="py-1">
+<div class="font-headline-md text-headline-md text-secondary-fixed-dim tracking-tight font-semibold mono-num">2 <span class="text-xs font-normal text-outline">pending</span></div>
+<div class="font-code-sm text-code-sm text-on-surface-variant pt-0.5">stale embeddings &amp; unindexed tags</div>
+</div>
+<div class="pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm text-outline">
+<span>Action:</span>
+<span class="text-primary font-code-sm text-code-sm">BACKGROUND INDEX</span>
+</div>
+</div>
+</section>
+<!-- 3. PANEL: 11 FAIL-CLOSED CHECKS (Modular Diagnostic Grid) -->
+<section class="bg-surface-container-low border border-outline-variant rounded p-3">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant mb-3">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="check_circle">check_circle</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface text-xs uppercase tracking-wide">11 Fail-Closed Diagnostics</span>
+<span class="text-xs font-code-sm text-code-sm text-tertiary bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">ALL PASS</span>
+</div>
+<div class="flex items-center space-x-2 text-on-surface-variant font-code-sm text-code-sm">
+<span class="flex items-center space-x-1">
+<span class="w-2 h-2 rounded-full border border-primary border-t-transparent animate-spin inline-block"></span>
+<span class="text-outline">Probe Active</span>
+</span>
+<span class="text-outline">| Total Latency: <strong class="text-on-surface mono-num">6.8ms</strong></span>
+</div>
+</div>
+<!-- 11 Diagnostic Grid Cards -->
+<div class="grid grid-cols-4 gap-2">
+<!-- 1 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">store_readable</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">fs::check_fd</span>
+<span class="text-on-surface mono-num text-[11px]">0.4ms</span>
+</div>
+</div>
+<!-- 2 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">chain_integrity</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">sha256_merkle_verify</span>
+<span class="text-on-surface mono-num text-[11px]">1.8ms</span>
+</div>
+</div>
+<!-- 3 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">projection_fresh</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">wal_lag == 0</span>
+<span class="text-on-surface mono-num text-[11px]">0.9ms</span>
+</div>
+</div>
+<!-- 4 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">leases_consistent</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">raft_quorum_ack</span>
+<span class="text-on-surface mono-num text-[11px]">0.5ms</span>
+</div>
+</div>
+<!-- 5 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">schema_version</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">v5_migration_clean</span>
+<span class="text-on-surface mono-num text-[11px]">0.2ms</span>
+</div>
+</div>
+<!-- 6 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">journal_mode</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">wal_seq_829</span>
+<span class="text-on-surface mono-num text-[11px]">0.1ms</span>
+</div>
+</div>
+<!-- 7 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">freelist_bounds</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">freelist_pages &lt;= 64</span>
+<span class="text-on-surface mono-num text-[11px]">0.6ms</span>
+</div>
+</div>
+<!-- 8 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">kill_switches</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">all_circuits_closed</span>
+<span class="text-on-surface mono-num text-[11px]">0.1ms</span>
+</div>
+</div>
+<!-- 9 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">hardware_probe</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">nvme_io &lt; 2ms</span>
+<span class="text-on-surface mono-num text-[11px]">1.2ms</span>
+</div>
+</div>
+<!-- 10 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">sidecars</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">3/3 IPC sockets</span>
+<span class="text-on-surface mono-num text-[11px]">0.7ms</span>
+</div>
+</div>
+<!-- 11 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate">contracts_frozen</span>
+<span class="h-4 px-1 bg-surface-container-high text-tertiary border border-outline-variant text-[10px] font-code-sm rounded">PASS</span>
+</div>
+<div class="flex items-center justify-between pt-1.5 font-code-sm text-code-sm text-outline">
+<span class="text-[10px]">deterministic_dag</span>
+<span class="text-on-surface mono-num text-[11px]">0.3ms</span>
+</div>
+</div>
+<!-- Dynamic probe slot / worker -->
+<div class="p-2 bg-surface-container rounded border border-dashed border-outline-variant flex items-center justify-between opacity-80">
+<div class="flex items-center space-x-1.5 font-code-sm text-code-sm text-outline">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[11px]">continuous_verifier</span>
+</div>
+<span class="font-code-sm text-code-sm text-[10px] text-primary">SCHED: 14.8s</span>
+</div>
+</div>
+</section>
+<!-- 4. MIDDLE TWO-COLUMN SPLIT: FINDINGS TABLE & STORE SUMMARY -->
+<div class="grid grid-cols-12 gap-3">
+<!-- FINDINGS TABLE CARD (8 cols) -->
+<section class="col-span-8 bg-surface-container-low border border-outline-variant rounded p-3 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm text-secondary-fixed-dim" data-icon="troubleshoot">troubleshoot</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface text-xs uppercase tracking-wide">Diagnostic Findings &amp; Invariants</span>
+</div>
+<div class="flex items-center space-x-2 font-code-sm text-code-sm">
+<span class="text-outline">Active Filter:</span>
+<span class="text-secondary-fixed-dim bg-surface-container px-1 rounded border border-outline-variant">WARN (2)</span>
+<span class="text-secondary bg-surface-container px-1 rounded border border-outline-variant">INFO (3)</span>
+</div>
+</div>
+<!-- Strict Telemetry Table -->
+<div class="mt-2 divide-y divide-outline-variant text-code-sm font-code-sm">
+<!-- Header -->
+<div class="h-7 bg-surface-container flex items-center px-2 text-outline font-label-md text-label-md font-semibold">
+<div class="w-14">ID</div>
+<div class="w-16">SEVERITY</div>
+<div class="flex-1">FINDING DESCRIPTION</div>
+<div class="w-24 text-right">TIME</div>
+<div class="w-24 text-right">ACTION</div>
+</div>
+<!-- Finding 1 -->
+<div class="h-8 flex items-center px-2 hover:bg-surface-container transition-colors">
+<div class="w-14 text-on-surface font-semibold">W-104</div>
+<div class="w-16">
+<span class="h-4.5 px-1.5 bg-surface-container-high text-secondary-fixed-dim border border-outline-variant text-[10px] font-code-sm rounded">WARN</span>
+</div>
+<div class="flex-1 truncate pr-2">
+<span class="text-on-surface font-medium">Stale embedding pointers detected</span>
+<span class="text-outline ml-1.5 text-[10px] font-normal">edge_rel_882 missing cosine projection</span>
+</div>
+<div class="w-24 text-right text-outline mono-num">T-18m</div>
+<div class="w-24 text-right">
+<button class="h-5 px-2 bg-surface-container-high border border-outline-variant text-primary text-[10px] rounded hover:bg-surface-bright">Re-index</button>
+</div>
+</div>
+<!-- Finding 2 -->
+<div class="h-8 flex items-center px-2 hover:bg-surface-container transition-colors">
+<div class="w-14 text-on-surface font-semibold">W-089</div>
+<div class="w-16">
+<span class="h-4.5 px-1.5 bg-surface-container-high text-secondary-fixed-dim border border-outline-variant text-[10px] font-code-sm rounded">WARN</span>
+</div>
+<div class="flex-1 truncate pr-2">
+<span class="text-on-surface font-medium">Unindexed legacy semantic tags</span>
+<span class="text-outline ml-1.5 text-[10px] font-normal">tag '#legacy' referenced in 42 nodes</span>
+</div>
+<div class="w-24 text-right text-outline mono-num">T-42m</div>
+<div class="w-24 text-right">
+<button class="h-5 px-2 bg-surface-container-high border border-outline-variant text-primary text-[10px] rounded hover:bg-surface-bright">Build Index</button>
+</div>
+</div>
+<!-- Finding 3 -->
+<div class="h-8 flex items-center px-2 hover:bg-surface-container transition-colors">
+<div class="w-14 text-on-surface font-semibold">I-412</div>
+<div class="w-16">
+<span class="h-4.5 px-1.5 bg-surface-container text-secondary border border-outline-variant text-[10px] font-code-sm rounded">INFO</span>
+</div>
+<div class="flex-1 truncate pr-2">
+<span class="text-on-surface font-medium">WAL checkpoint cycle clean</span>
+<span class="text-outline ml-1.5 text-[10px] font-normal">zero contention on shared_wal_read</span>
+</div>
+<div class="w-24 text-right text-outline mono-num">T-2m</div>
+<div class="w-24 text-right">
+<button class="h-5 px-2 bg-surface-container border border-outline-variant text-on-surface-variant text-[10px] rounded hover:bg-surface-container-high">Inspect</button>
+</div>
+</div>
+<!-- Finding 4 -->
+<div class="h-8 flex items-center px-2 hover:bg-surface-container transition-colors">
+<div class="w-14 text-on-surface font-semibold">I-305</div>
+<div class="w-16">
+<span class="h-4.5 px-1.5 bg-surface-container text-secondary border border-outline-variant text-[10px] font-code-sm rounded">INFO</span>
+</div>
+<div class="flex-1 truncate pr-2">
+<span class="text-on-surface font-medium">Raft lease quorum renewal</span>
+<span class="text-outline ml-1.5 text-[10px] font-normal">leader term 84 acknowledged by all 3 nodes</span>
+</div>
+<div class="w-24 text-right text-outline mono-num">T-12s</div>
+<div class="w-24 text-right">
+<button class="h-5 px-2 bg-surface-container border border-outline-variant text-on-surface-variant text-[10px] rounded hover:bg-surface-container-high">Inspect</button>
+</div>
+</div>
+<!-- Finding 5 -->
+<div class="h-8 flex items-center px-2 hover:bg-surface-container transition-colors">
+<div class="w-14 text-on-surface font-semibold">I-201</div>
+<div class="w-16">
+<span class="h-4.5 px-1.5 bg-surface-container text-secondary border border-outline-variant text-[10px] font-code-sm rounded">INFO</span>
+</div>
+<div class="flex-1 truncate pr-2">
+<span class="text-on-surface font-medium">Schema invariants verified</span>
+<span class="text-outline ml-1.5 text-[10px] font-normal">1,284 nodes and 3,917 edges match schema v5</span>
+</div>
+<div class="w-24 text-right text-outline mono-num">T-4m</div>
+<div class="w-24 text-right">
+<button class="h-5 px-2 bg-surface-container border border-outline-variant text-on-surface-variant text-[10px] rounded hover:bg-surface-container-high">Inspect</button>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-2 border-t border-outline-variant flex items-center justify-between text-outline font-code-sm text-code-sm">
+<span>Showing 5 verified assertions</span>
+<span class="text-tertiary">Invariant state deterministic</span>
+</div>
+</section>
+<!-- 5. STORE SUMMARY CARD & STORAGE ENGINE TELEMETRY (4 cols) -->
+<section class="col-span-4 bg-surface-container-low border border-outline-variant rounded p-3 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="database">database</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface text-xs uppercase tracking-wide">Storage Engine State</span>
+</div>
+<span class="text-[10px] font-code-sm text-code-sm text-tertiary px-1 bg-surface-container rounded border border-outline-variant">ONLINE</span>
+</div>
+<!-- Key-value metrics -->
+<div class="mt-2 space-y-2 font-code-sm text-code-sm">
+<div class="flex items-center justify-between py-0.5 border-b border-outline-variant">
+<span class="text-outline">Driver:</span>
+<span class="text-on-surface font-medium">libsqlite3/wal2 v5.0.2-local</span>
+</div>
+<div class="flex items-center justify-between py-0.5 border-b border-outline-variant">
+<span class="text-outline">Tables:</span>
+<span class="text-on-surface mono-num">18 <span class="text-outline text-[10px]">(relational + graph index)</span></span>
+</div>
+<div class="flex items-center justify-between py-0.5 border-b border-outline-variant">
+<span class="text-outline">Schema Versions:</span>
+<span class="text-on-surface mono-num">1→5 <span class="text-tertiary font-medium">(v5 clean)</span></span>
+</div>
+<div class="flex items-center justify-between py-0.5 border-b border-outline-variant">
+<span class="text-outline">File Size:</span>
+<span class="text-on-surface mono-num">46.2 MB <span class="text-outline text-[10px]">(alloc: 64.0 MB)</span></span>
+</div>
+<div class="flex items-center justify-between py-0.5 border-b border-outline-variant">
+<span class="text-outline">Freelist Pages:</span>
+<span class="text-on-surface mono-num">12 pgs <span class="text-outline text-[10px]">(page: 4096 B)</span></span>
+</div>
+<div class="flex items-center justify-between py-0.5 border-b border-outline-variant">
+<span class="text-outline">WAL Mode:</span>
+<span class="text-tertiary font-semibold">ACTIVE <span class="text-outline text-[10px] font-normal">(sync 1000ms)</span></span>
+</div>
+<div class="flex items-center justify-between py-0.5 border-b border-outline-variant">
+<span class="text-outline">DuckDB Cache Hit:</span>
+<span class="text-tertiary font-semibold mono-num">99.4%</span>
+</div>
+<div class="flex items-center justify-between py-0.5">
+<span class="text-outline">Memory RSS:</span>
+<span class="text-on-surface font-medium mono-num">46.2 MB</span>
+</div>
+</div>
+</div>
+<div class="pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm text-outline">
+<span>Lock State: <strong class="text-on-surface">SHARED_READ</strong></span>
+<span class="text-primary font-medium">Auto-vacuum: INCREMENTAL</span>
+</div>
+</section>
+</div>
+<!-- 6. REQUEST TIMING MINI-PANEL (Per-route Latency Micro-benchmarks) -->
+<section class="bg-surface-container-low border border-outline-variant rounded p-3">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant mb-2">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="speed">speed</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface text-xs uppercase tracking-wide">Route Telemetry &amp; Latency Micro-benchmarks</span>
+</div>
+<div class="text-outline font-code-sm text-code-sm">
+          Sampling Window: <strong class="text-on-surface mono-num">50,000 reqs</strong> · P50 / P99 NOMINAL
+        </div>
+</div>
+<div class="grid grid-cols-5 gap-3">
+<!-- Route 1 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant">
+<div class="text-[11px] font-code-sm text-code-sm text-outline truncate pb-1">GET /v1/graph/traverse</div>
+<div class="flex items-baseline justify-between">
+<span class="text-on-surface font-headline-sm text-headline-sm font-semibold mono-num">0.8ms</span>
+<span class="text-outline font-code-sm text-code-sm text-[10px]">p99: 1.4ms</span>
+</div>
+<!-- Micro Bar Indicator -->
+<div class="w-full bg-surface-container-highest h-1 rounded mt-1.5 overflow-hidden">
+<div class="bg-tertiary h-full" style="width: 22%"></div>
+</div>
+</div>
+<!-- Route 2 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant">
+<div class="text-[11px] font-code-sm text-code-sm text-outline truncate pb-1">POST /v1/symbols/ast_query</div>
+<div class="flex items-baseline justify-between">
+<span class="text-on-surface font-headline-sm text-headline-sm font-semibold mono-num">0.4ms</span>
+<span class="text-outline font-code-sm text-code-sm text-[10px]">p99: 0.9ms</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded mt-1.5 overflow-hidden">
+<div class="bg-tertiary h-full" style="width: 14%"></div>
+</div>
+</div>
+<!-- Route 3 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant">
+<div class="text-[11px] font-code-sm text-code-sm text-outline truncate pb-1">POST /v1/leases/acquire</div>
+<div class="flex items-baseline justify-between">
+<span class="text-on-surface font-headline-sm text-headline-sm font-semibold mono-num">0.2ms</span>
+<span class="text-outline font-code-sm text-code-sm text-[10px]">p99: 0.5ms</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded mt-1.5 overflow-hidden">
+<div class="bg-tertiary h-full" style="width: 8%"></div>
+</div>
+</div>
+<!-- Route 4 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant">
+<div class="text-[11px] font-code-sm text-code-sm text-outline truncate pb-1">PUT /v1/wal/commit</div>
+<div class="flex items-baseline justify-between">
+<span class="text-on-surface font-headline-sm text-headline-sm font-semibold mono-num">1.1ms</span>
+<span class="text-outline font-code-sm text-code-sm text-[10px]">p99: 2.1ms</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded mt-1.5 overflow-hidden">
+<div class="bg-secondary-container h-full" style="width: 38%"></div>
+</div>
+</div>
+<!-- Route 5 -->
+<div class="p-2 bg-surface-container rounded border border-outline-variant">
+<div class="text-[11px] font-code-sm text-code-sm text-outline truncate pb-1">POST /v1/vector/knn_search</div>
+<div class="flex items-baseline justify-between">
+<span class="text-on-surface font-headline-sm text-headline-sm font-semibold mono-num">5.8ms</span>
+<span class="text-outline font-code-sm text-code-sm text-[10px]">p99: 9.2ms</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded mt-1.5 overflow-hidden">
+<div class="bg-secondary-fixed-dim h-full" style="width: 65%"></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- FOOTER TELEMETRY STATUS BAR -->
+<footer class="h-6 w-full pl-56 bg-surface-container-lowest border-t border-outline-variant fixed bottom-0 left-0 z-20 flex items-center justify-between px-3 text-[11px] font-code-sm text-code-sm text-on-surface-variant">
+<div class="flex items-center space-x-3">
+<span class="flex items-center space-x-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Raft Quorum: <strong class="text-on-surface">3/3 nodes synced (term 84)</strong></span>
+</span>
+<span class="text-outline-variant">·</span>
+<span>WAL Offset: <span class="text-primary font-medium mono-num">0x44B9E0</span></span>
+<span class="text-outline-variant">·</span>
+<span>DuckDB Cache: <span class="text-tertiary font-medium">IN-MEMORY L1</span></span>
+<span class="text-outline-variant">·</span>
+<span>IPC: <span class="text-on-surface mono-num">UNIX SOCK 0</span></span>
+<span class="text-outline-variant">·</span>
+<span>FS Contention: <span class="text-tertiary mono-num font-semibold">0</span></span>
+</div>
+<div class="flex items-center space-x-2 text-outline">
+<span class="mono-num" id="utc-clock">2025-05-18T10:42:01.824Z</span>
+<span class="text-outline-variant">|</span>
+<span class="text-tertiary font-semibold">ALL INVARIANTS PASS</span>
+</div>
+</footer>
+<script>
+    // Lightweight timestamp updater
+    function updateClock() {
+      const el = document.getElementById('utc-clock');
+      if (el) {
+        const now = new Date();
+        el.textContent = now.toISOString();
+      }
+    }
+    setInterval(updateClock, 1000);
+  </script>
+</body></html>

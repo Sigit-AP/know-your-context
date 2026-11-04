@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<title>Know Your Context - System Introspection</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "tertiary-fixed": "#6ffbbe",
+            "secondary-container": "#03b5d3",
+            "surface-variant": "#32353b",
+            "on-tertiary-container": "#00311f",
+            "on-surface-variant": "#c2c6d6",
+            "tertiary": "#4edea3",
+            "primary": "#adc6ff",
+            "on-background": "#e1e2eb",
+            "inverse-surface": "#e1e2eb",
+            "secondary-fixed": "#acedff",
+            "on-secondary-fixed": "#001f26",
+            "on-primary-fixed-variant": "#004395",
+            "tertiary-fixed-dim": "#4edea3",
+            "outline-variant": "#424754",
+            "on-primary-fixed": "#001a42",
+            "surface-container-high": "#272a30",
+            "on-primary-container": "#00285d",
+            "inverse-on-surface": "#2d3037",
+            "surface-container-highest": "#32353b",
+            "on-error-container": "#ffdad6",
+            "inverse-primary": "#005ac2",
+            "outline": "#8c909f",
+            "on-primary": "#002e6a",
+            "on-tertiary-fixed": "#002113",
+            "secondary": "#4cd7f6",
+            "surface-bright": "#363940",
+            "surface": "#101319",
+            "primary-fixed-dim": "#adc6ff",
+            "background": "#101319",
+            "primary-fixed": "#d8e2ff",
+            "error": "#ffb4ab",
+            "on-error": "#690005",
+            "surface-container": "#1d2026",
+            "error-container": "#93000a",
+            "secondary-fixed-dim": "#4cd7f6",
+            "surface-dim": "#101319",
+            "on-secondary-container": "#00424e",
+            "on-surface": "#e1e2eb",
+            "on-secondary": "#003640",
+            "on-tertiary": "#003824",
+            "on-secondary-fixed-variant": "#004e5c",
+            "primary-container": "#4d8eff",
+            "tertiary-container": "#00a572",
+            "surface-tint": "#adc6ff",
+            "surface-container-lowest": "#0b0e14",
+            "surface-container-low": "#191c22",
+            "on-tertiary-fixed-variant": "#005236"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          fontFamily: {
+            "code-sm": ["JetBrains Mono"],
+            "body-lg": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "code-lg": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-md": ["JetBrains Mono"]
+          },
+          fontSize: {
+            "code-sm": ["0.6875rem", { lineHeight: "0.9375rem", letterSpacing: "0em", fontWeight: "400" }],
+            "body-lg": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "-0.005em", fontWeight: "400" }],
+            "code-md": ["0.75rem", { lineHeight: "1.125rem", letterSpacing: "-0.005em", fontWeight: "500" }],
+            "label-sm": ["0.625rem", { lineHeight: "0.75rem", letterSpacing: "0.06em", fontWeight: "600" }],
+            "body-md": ["0.8125rem", { lineHeight: "1.125rem", letterSpacing: "0em", fontWeight: "400" }],
+            "headline-md": ["1.25rem", { lineHeight: "1.625rem", letterSpacing: "-0.015em", fontWeight: "600" }],
+            "code-lg": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "-0.01em", fontWeight: "500" }],
+            "body-sm": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0em", fontWeight: "400" }],
+            "headline-sm": ["1rem", { lineHeight: "1.375rem", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-lg": ["1.5rem", { lineHeight: "1.875rem", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "label-md": ["0.6875rem", { lineHeight: "0.875rem", letterSpacing: "0.04em", fontWeight: "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Precision styling rules from Style Guidance */
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      background-color: #0B0D11;
+      color: #e1e2eb;
+      overflow-x: hidden;
+    }
+    .material-symbols-outlined {
+      font-size: 14px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0D11;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2A313E;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased flex h-screen w-screen overflow-hidden select-none">
+<!-- ========================================================================= -->
+<!-- LEFT PERSISTENT SIDE NAVIGATION BAR                                        -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 h-screen w-56 flex flex-col bg-surface-container-lowest border-r border-outline-variant z-30 select-none justify-between py-2 px-1">
+<!-- Nav Header -->
+<div class="flex flex-col gap-1 px-2.5 pt-1 pb-2 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-base">hub</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight leading-none">Know Your Context</span>
+</div>
+<div class="font-label-md text-label-md text-outline tracking-wider uppercase">LOCAL CLUSTER v2.4</div>
+</div>
+<!-- 12 Primary Nav Tabs -->
+<nav class="flex-1 flex flex-col gap-0.5 my-2 overflow-y-auto">
+<!-- 1. Overview -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- 2. Activity -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">dynamic_feed</span>
+<span>Activity</span>
+</a>
+<!-- 3. Graph -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">hub</span>
+<span>Graph</span>
+</a>
+<!-- 4. Search -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">search</span>
+<span>Search</span>
+</a>
+<!-- 5. Metrics -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">monitoring</span>
+<span>Metrics</span>
+</a>
+<!-- 6. Health -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">vital_signs</span>
+<span>Health</span>
+</a>
+<!-- 7. Analytics -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">analytics</span>
+<span>Analytics</span>
+</a>
+<!-- 8. Audit -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">history</span>
+<span>Audit</span>
+</a>
+<!-- 9. Proposals -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">rule</span>
+<span>Proposals</span>
+</a>
+<!-- 10. Debt -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">priority_high</span>
+<span>Debt</span>
+</a>
+<!-- 11. System (CURRENTLY ACTIVE) -->
+<a class="h-7 flex items-center gap-2 px-2 rounded-DEFAULT bg-surface-container-high text-primary border-l-2 border-primary pl-2 font-medium font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-primary">memory</span>
+<span>System</span>
+</a>
+<!-- 12. Setup -->
+<a class="h-7 flex items-center gap-2.5 px-2 rounded-DEFAULT text-on-surface-variant pl-2.5 font-normal hover:bg-surface-container hover:text-on-surface transition-colors duration-150 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span>Setup</span>
+</a>
+</nav>
+<!-- Nav Footer -->
+<div class="pt-2 border-t border-outline-variant flex flex-col gap-1">
+<a class="h-6 flex items-center gap-2 px-2 text-on-surface-variant hover:text-on-surface transition-colors duration-100 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">menu_book</span>
+<span>Documentation</span>
+</a>
+<a class="h-6 flex items-center gap-2 px-2 text-on-surface-variant hover:text-on-surface transition-colors duration-100 font-label-md text-label-md uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-outline">terminal</span>
+<span>Terminal</span>
+</a>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE VIEWPORT                                                   -->
+<!-- ========================================================================= -->
+<div class="flex-1 flex flex-col ml-56 h-screen overflow-hidden bg-surface-container-lowest">
+<!-- TOP TELEMETRY NAV BAR -->
+<header class="flex justify-between items-center h-8 w-full px-3 border-b border-outline-variant bg-surface-container-low z-20 shrink-0 font-code-sm text-code-sm">
+<!-- Left Telemetry Breadcrumb -->
+<div class="flex items-center gap-3 font-code-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 text-on-surface font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Cluster: node-01.local:9042</span>
+</div>
+<span class="text-outline-variant">·</span>
+<span class="text-tertiary font-medium">Raft: QUORUM_REACHED (3/3 nodes)</span>
+<span class="text-outline-variant">·</span>
+<span>Epoch: <span class="text-on-surface font-medium">0x8F4E</span></span>
+<span class="text-outline-variant">·</span>
+<span>WAL_SEQ: <span class="text-primary font-medium">#829</span></span>
+<span class="text-outline-variant">·</span>
+<span>Mem_RSS: <span class="text-on-surface">46.2 MB</span></span>
+<span class="text-outline-variant">·</span>
+<span>p99: <span class="text-secondary font-medium">1.42ms</span></span>
+</div>
+<!-- Right Action Triggers -->
+<div class="flex items-center gap-2">
+<button class="h-5 px-2 bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors font-code-sm text-code-sm rounded flex items-center gap-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">sync</span>
+<span>Recheck [F5]</span>
+</button>
+<button class="h-5 px-2.5 bg-primary-container text-on-primary-container font-code-sm text-code-sm font-semibold rounded hover:bg-primary transition-colors flex items-center gap-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">tune</span>
+<span>Apply Config</span>
+</button>
+<div class="h-3 w-px bg-outline-variant mx-0.5"></div>
+<button class="text-on-surface-variant hover:text-on-surface" title="Emergency Lock">
+<span class="material-symbols-outlined">lock</span>
+</button>
+<button class="text-on-surface-variant hover:text-on-surface" title="System Settings">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- MAIN SCROLLABLE CONTENT CANVAS (Layout Direction C: Dashboard Cards) -->
+<main class="flex-1 overflow-y-auto p-2.5 flex flex-col gap-2.5">
+<!-- ===================================================================== -->
+<!-- TOP KPI BAR: 5 SCANNABLE METRIC CARDS                                 -->
+<!-- ===================================================================== -->
+<section class="grid grid-cols-5 gap-2 shrink-0">
+<!-- KPI 1: Total Pages -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-2 flex flex-col justify-between h-18">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">TOTAL PAGES</span>
+<span class="px-1 py-0.5 bg-tertiary-container/20 text-tertiary border border-tertiary/30 rounded-DEFAULT font-label-sm text-label-sm">SYNCED</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-md text-headline-md text-on-surface font-semibold font-code-lg">
+              11,280 <span class="font-code-sm text-code-sm text-outline font-normal">(46.2 MB)</span>
+</div>
+<!-- Sparkline Hairline -->
+<svg class="w-14 h-4" fill="none" viewbox="0 0 56 16">
+<path d="M1 12 L10 10 L18 13 L28 6 L38 8 L48 3 L55 2" stroke="#4edea3" stroke-linecap="round" stroke-width="1.2"></path>
+</svg>
+</div>
+<div class="font-code-sm text-code-sm text-outline-variant flex items-center justify-between">
+<span>page_size: 4096 B</span>
+<span class="text-on-surface-variant font-code-sm">wal2: clean</span>
+</div>
+</div>
+<!-- KPI 2: Kill Switches -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-2 flex flex-col justify-between h-18">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">ACTIVE KILL SWITCHES</span>
+<span class="px-1 py-0.5 bg-secondary/10 text-secondary border border-secondary/30 rounded-DEFAULT font-label-sm text-label-sm">PROTECTED</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-md text-headline-md text-on-surface font-semibold font-code-lg text-primary">
+              3 / 3 <span class="font-code-sm text-code-sm text-on-surface-variant font-normal">ARMED</span>
+</div>
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+</div>
+</div>
+<div class="font-code-sm text-code-sm text-outline-variant flex items-center justify-between">
+<span>Policy: STRICT FAIL-SAFE</span>
+<span class="text-tertiary">0 TRIPPED</span>
+</div>
+</div>
+<!-- KPI 3: Host Allocation -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-2 flex flex-col justify-between h-18">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">HOST ALLOCATION</span>
+<span class="px-1 py-0.5 bg-tertiary-container/20 text-tertiary border border-tertiary/30 rounded-DEFAULT font-label-sm text-label-sm">OPTIMAL</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-md text-headline-md text-on-surface font-semibold font-code-lg">
+              16 vCPU <span class="text-outline font-normal">/</span> 64 GB
+            </div>
+<span class="font-code-sm text-code-sm text-tertiary">35.9% USED</span>
+</div>
+<div class="font-code-sm text-code-sm text-outline-variant flex items-center justify-between">
+<span>41 GB Free (64.1%)</span>
+<span class="text-outline">EPYC · 2.8GHz</span>
+</div>
+</div>
+<!-- KPI 4: Relearn Engine -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-2 flex flex-col justify-between h-18">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">RELEARN ENGINE</span>
+<span class="px-1 py-0.5 bg-surface-container text-outline border border-outline-variant rounded-DEFAULT font-label-sm text-label-sm">STANDBY</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-md text-headline-md text-secondary font-semibold font-code-lg">
+              IDLE <span class="font-code-sm text-code-sm text-outline font-normal">pass</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">Loop: continuous</span>
+</div>
+<div class="font-code-sm text-code-sm text-outline-variant flex items-center justify-between">
+<span>Next: 18m 22s</span>
+<span>Last: 42m ago (0 err)</span>
+</div>
+</div>
+<!-- KPI 5: API Gateway Routes -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-2 flex flex-col justify-between h-18">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">API GATEWAY</span>
+<span class="px-1 py-0.5 bg-primary/10 text-primary border border-primary/30 rounded-DEFAULT font-label-sm text-label-sm">UNIX DOMAIN</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-md text-headline-md text-on-surface font-semibold font-code-lg">
+              45 ROUTES
+            </div>
+<span class="font-code-sm text-code-sm text-secondary font-medium">p95: 0.8ms</span>
+</div>
+<div class="font-code-sm text-code-sm text-outline-variant flex items-center justify-between">
+<span>IPC: UNIX_DOMAIN</span>
+<span class="text-tertiary">0 drops / 100% ok</span>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- BENTO / DASHBOARD CARDS GRID: 6 SPECIALIZED SECTIONS                  -->
+<!-- ===================================================================== -->
+<section class="grid grid-cols-12 gap-2.5 flex-1 items-start">
+<!-- CARD 1: STORE QUADRANT (Relational Engine & WAL) - 6 Cols -->
+<div class="col-span-6 bg-surface-container-low border border-outline-variant rounded-lg p-2.5 flex flex-col gap-2">
+<!-- Card Header -->
+<div class="flex items-center justify-between pb-1.5 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-semibold text-primary uppercase tracking-wide">01 // STORE QUADRANT</span>
+<span class="font-code-sm text-code-sm text-outline">libsqlite3/wal2 v5.0.2</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm text-on-surface-variant">
+<span>Journal: <strong class="text-on-surface">WAL</strong></span>
+<span class="text-outline">·</span>
+<span>Freelist: <span class="text-tertiary font-mono">12 pgs (0.11%)</span></span>
+<span class="text-outline">·</span>
+<span>Schema: <span class="text-primary font-mono">1-&gt;5</span></span>
+</div>
+</div>
+<!-- Structured Telemetry Table -->
+<div class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<table class="w-full text-left font-code-sm text-code-sm">
+<thead class="bg-surface-container-low text-outline border-b border-outline-variant font-label-sm text-label-sm uppercase">
+<tr class="h-6">
+<th class="px-2 font-medium">Table Namespace</th>
+<th class="px-2 font-medium text-right">Rows</th>
+<th class="px-2 font-medium text-right">Size</th>
+<th class="px-2 font-medium">Integrity Scheme</th>
+<th class="px-2 font-medium text-right">State</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/60 font-code-sm text-code-sm">
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-medium flex items-center gap-1.5 pt-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    event_log
+                  </td>
+<td class="px-2 text-right text-on-surface">1,521</td>
+<td class="px-2 text-right text-outline">6.2 MB</td>
+<td class="px-2 text-on-surface-variant">Monotonic SHA-256 HMAC</td>
+<td class="px-2 text-right">
+<span class="px-1 py-0.5 rounded text-tertiary bg-tertiary/10 border border-tertiary/30 font-label-sm text-label-sm">VALIDATED</span>
+</td>
+</tr>
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-medium flex items-center gap-1.5 pt-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    node_revision
+                  </td>
+<td class="px-2 text-right text-on-surface">1,284</td>
+<td class="px-2 text-right text-outline">14.8 MB</td>
+<td class="px-2 text-on-surface-variant">11/11 Invariants Pass</td>
+<td class="px-2 text-right">
+<span class="px-1 py-0.5 rounded text-tertiary bg-tertiary/10 border border-tertiary/30 font-label-sm text-label-sm">VALIDATED</span>
+</td>
+</tr>
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-medium flex items-center gap-1.5 pt-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    node_relation
+                  </td>
+<td class="px-2 text-right text-on-surface">3,917</td>
+<td class="px-2 text-right text-outline">18.2 MB</td>
+<td class="px-2 text-on-surface-variant">Directed Acyclic Graph</td>
+<td class="px-2 text-right">
+<span class="px-1 py-0.5 rounded text-tertiary bg-tertiary/10 border border-tertiary/30 font-label-sm text-label-sm">VALIDATED</span>
+</td>
+</tr>
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-medium flex items-center gap-1.5 pt-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    evidence
+                  </td>
+<td class="px-2 text-right text-on-surface">860</td>
+<td class="px-2 text-right text-outline">4.1 MB</td>
+<td class="px-2 text-on-surface-variant">Receipt Arbitration v4</td>
+<td class="px-2 text-right">
+<span class="px-1 py-0.5 rounded text-secondary bg-secondary/10 border border-secondary/30 font-label-sm text-label-sm">AUDITED</span>
+</td>
+</tr>
+<tr class="h-7 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-medium flex items-center gap-1.5 pt-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    symbols
+                  </td>
+<td class="px-2 text-right text-on-surface">2,204</td>
+<td class="px-2 text-right text-outline">2.9 MB</td>
+<td class="px-2 text-on-surface-variant">AST DuckDB Index Ready</td>
+<td class="px-2 text-right">
+<span class="px-1 py-0.5 rounded text-primary bg-primary/10 border border-primary/30 font-label-sm text-label-sm">READY</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between text-outline text-code-sm font-code-sm pt-0.5">
+<span>Storage Ring: /var/kyc/cluster/storage.wal2</span>
+<span>Sync Latency: 0.14ms · Write Barrier: STRICT</span>
+</div>
+</div>
+<!-- CARD 2: KILL SWITCHES QUADRANT (Triage Circuit Breakers) - 6 Cols -->
+<div class="col-span-6 bg-surface-container-low border border-outline-variant rounded-lg p-2.5 flex flex-col gap-2">
+<!-- Card Header -->
+<div class="flex items-center justify-between pb-1.5 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-semibold text-primary uppercase tracking-wide">02 // KILL SWITCHES QUADRANT</span>
+<span class="font-code-sm text-code-sm text-outline">Triage Circuit Breakers</span>
+</div>
+<span class="font-code-sm text-code-sm px-1.5 py-0.2 bg-secondary/10 text-secondary border border-secondary/30 rounded">3 ARMED · 0 TRIPPED</span>
+</div>
+<!-- 3 Breaker Rows/Cards -->
+<div class="flex flex-col gap-1.5">
+<!-- Breaker 1 -->
+<div class="border border-outline-variant rounded bg-surface-container-lowest p-2 flex items-center justify-between">
+<div class="flex flex-col gap-0.5 max-w-[78%]">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-code-md text-code-md font-semibold text-on-surface">KYS_DEBT_QUEUE</span>
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-1 rounded">ENV_VAR</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">STATE: ON</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                  Affects: Background heuristic debt scanner &amp; burndown pipeline (12 open items)
+                </div>
+<div class="font-code-sm text-code-sm text-outline">
+                  FAIL_SAFE: <span class="text-on-surface">FAIL_OPEN</span> (degrade to read-only manual inspection)
+                </div>
+</div>
+<button class="h-6 px-2.5 bg-surface-container border border-error-container text-error font-code-sm text-code-sm rounded hover:bg-error-container/30 transition-colors cursor-pointer shrink-0">
+                TRIP SWITCH
+              </button>
+</div>
+<!-- Breaker 2 -->
+<div class="border border-outline-variant rounded bg-surface-container-lowest p-2 flex items-center justify-between">
+<div class="flex flex-col gap-0.5 max-w-[78%]">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-code-md text-code-md font-semibold text-on-surface">KYS_WEBVIEW_EXPORT</span>
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-1 rounded">ENV_VAR</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">STATE: ON</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                  Affects: Interactive DAG visualizer canvas &amp; JSON-LD snapshot serialization runtime
+                </div>
+<div class="font-code-sm text-code-sm text-outline">
+                  FAIL_SAFE: <span class="text-on-surface">FAIL_CLOSED</span> (fallback to raw CLI AST dump)
+                </div>
+</div>
+<button class="h-6 px-2.5 bg-surface-container border border-error-container text-error font-code-sm text-code-sm rounded hover:bg-error-container/30 transition-colors cursor-pointer shrink-0">
+                TRIP SWITCH
+              </button>
+</div>
+<!-- Breaker 3 -->
+<div class="border border-outline-variant rounded bg-surface-container-lowest p-2 flex items-center justify-between">
+<div class="flex flex-col gap-0.5 max-w-[78%]">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-code-md text-code-md font-semibold text-on-surface">KYS_INGEST</span>
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-1 rounded">ENV_VAR</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">STATE: ON</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">
+                  Affects: Real-time agent mutation stream &amp; write-ahead log ingestion broker
+                </div>
+<div class="font-code-sm text-code-sm text-outline">
+                  FAIL_SAFE: <span class="text-on-surface">FAIL_PAUSE</span> (buffer in-memory ring up to 50k pkts)
+                </div>
+</div>
+<button class="h-6 px-2.5 bg-surface-container border border-error-container text-error font-code-sm text-code-sm rounded hover:bg-error-container/30 transition-colors cursor-pointer shrink-0">
+                TRIP SWITCH
+              </button>
+</div>
+</div>
+</div>
+<!-- CARD 3: CONFIG QUADRANT (Runtime Knobs & Provenance) - 6 Cols -->
+<div class="col-span-6 bg-surface-container-low border border-outline-variant rounded-lg p-2.5 flex flex-col gap-2">
+<!-- Card Header & Filters -->
+<div class="flex items-center justify-between pb-1.5 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-semibold text-primary uppercase tracking-wide">03 // CONFIG QUADRANT</span>
+<span class="font-code-sm text-code-sm text-outline">Runtime Knobs &amp; Provenance</span>
+</div>
+<!-- Filter Pills -->
+<div class="flex items-center gap-1 font-code-sm text-code-sm">
+<button class="h-5 px-1.5 bg-surface-container-high text-primary border border-primary/40 rounded font-medium">ALL (6)</button>
+<button class="h-5 px-1.5 bg-surface-container text-on-surface-variant hover:text-on-surface rounded">ENV (2)</button>
+<button class="h-5 px-1.5 bg-surface-container text-on-surface-variant hover:text-on-surface rounded">FILE (2)</button>
+<button class="h-5 px-1.5 bg-surface-container text-on-surface-variant hover:text-on-surface rounded">DEFAULT (2)</button>
+</div>
+</div>
+<!-- Config Knobs Grid -->
+<div class="border border-outline-variant rounded bg-surface-container-lowest divide-y divide-outline-variant/60 font-code-sm text-code-sm">
+<!-- Row 1 -->
+<div class="h-7 px-2.5 flex items-center justify-between hover:bg-surface-container transition-colors">
+<span class="text-on-surface font-medium">max_event_buffer_pkts</span>
+<div class="flex items-center gap-2">
+<span class="text-secondary font-semibold">50,000</span>
+<span class="text-outline text-xs">(uint32)</span>
+<span class="px-1.5 py-0.2 bg-secondary/10 text-secondary border border-secondary/30 rounded font-label-sm text-label-sm">env: KYS_MAX_BUF</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="h-7 px-2.5 flex items-center justify-between hover:bg-surface-container transition-colors">
+<span class="text-on-surface font-medium">heuristic_entropy_threshold</span>
+<div class="flex items-center gap-2">
+<span class="text-secondary font-semibold">0.742</span>
+<span class="text-outline text-xs">(float64)</span>
+<span class="px-1.5 py-0.2 bg-primary/10 text-primary border border-primary/30 rounded font-label-sm text-label-sm">file: kyc.config.toml</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="h-7 px-2.5 flex items-center justify-between hover:bg-surface-container transition-colors">
+<span class="text-on-surface font-medium">lease_ttl_seconds</span>
+<div class="flex items-center gap-2">
+<span class="text-secondary font-semibold">180</span>
+<span class="text-outline text-xs">(int)</span>
+<span class="px-1.5 py-0.2 bg-primary/10 text-primary border border-primary/30 rounded font-label-sm text-label-sm">file: kyc.config.toml</span>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="h-7 px-2.5 flex items-center justify-between hover:bg-surface-container transition-colors">
+<span class="text-on-surface font-medium">duckdb_cache_budget_mb</span>
+<div class="flex items-center gap-2">
+<span class="text-secondary font-semibold">256</span>
+<span class="text-outline text-xs">(uint32)</span>
+<span class="px-1.5 py-0.2 bg-secondary/10 text-secondary border border-secondary/30 rounded font-label-sm text-label-sm">env: DUCKDB_CACHE_MB</span>
+</div>
+</div>
+<!-- Row 5 -->
+<div class="h-7 px-2.5 flex items-center justify-between hover:bg-surface-container transition-colors">
+<span class="text-on-surface font-medium">raft_quorum_heartbeat_ms</span>
+<div class="flex items-center gap-2">
+<span class="text-secondary font-semibold">150</span>
+<span class="text-outline text-xs">(int)</span>
+<span class="px-1.5 py-0.2 bg-surface-container text-outline border border-outline-variant rounded font-label-sm text-label-sm">default: engine_v4</span>
+</div>
+</div>
+<!-- Row 6 -->
+<div class="h-7 px-2.5 flex items-center justify-between hover:bg-surface-container transition-colors">
+<span class="text-on-surface font-medium">shacl_validation_level</span>
+<div class="flex items-center gap-2">
+<span class="text-secondary font-semibold">STRICT_ASSERT</span>
+<span class="text-outline text-xs">(enum)</span>
+<span class="px-1.5 py-0.2 bg-surface-container text-outline border border-outline-variant rounded font-label-sm text-label-sm">default: engine_v4</span>
+</div>
+</div>
+</div>
+<div class="text-right text-outline text-code-sm font-code-sm pt-0.5">
+            Snapshot: 2025-05-18T04:12:09.112Z · Hash: 0x7c9f...44a1
+          </div>
+</div>
+<!-- CARD 4: HARDWARE QUADRANT & TOPOLOGY PLAN - 6 Cols -->
+<div class="col-span-6 bg-surface-container-low border border-outline-variant rounded-lg p-2.5 flex flex-col gap-2">
+<!-- Card Header -->
+<div class="flex items-center justify-between pb-1.5 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-semibold text-primary uppercase tracking-wide">04 // HARDWARE QUADRANT</span>
+<span class="font-code-sm text-code-sm text-outline">Topology Execution Plan</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface font-mono">ARCH: x86_64</span>
+</div>
+<!-- Hardware Specs Bar -->
+<div class="grid grid-cols-4 gap-1.5 font-code-sm text-code-sm">
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<div class="text-outline text-xs">CPU RUNTIME</div>
+<div class="text-on-surface font-semibold truncate">16C AMD EPYC</div>
+<div class="text-tertiary text-xs">AVX-512 ACTIVE</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<div class="text-outline text-xs">RAM ALLOC</div>
+<div class="text-on-surface font-semibold truncate">64 GB TOTAL</div>
+<div class="text-tertiary text-xs">41 GB Free</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<div class="text-outline text-xs">PRIMARY DISK</div>
+<div class="text-on-surface font-semibold truncate">NVMe Storage</div>
+<div class="text-outline text-xs">&lt;2ms Latency</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<div class="text-outline text-xs">ACCELERATOR</div>
+<div class="text-error font-semibold truncate">NONE DETECTED</div>
+<div class="text-secondary text-xs">SIMD Fallback</div>
+</div>
+</div>
+<!-- Prominent Hardware Error Box -->
+<div class="border border-error-container/80 bg-error-container/20 rounded p-2 flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-sm">warning</span>
+<span class="font-code-sm text-code-sm font-semibold text-error tracking-tight">HARDWARE STATE ASSERTION: available: false</span>
+<span class="px-1 py-0.2 bg-error-container text-error rounded font-label-sm text-label-sm">[ERR_CUDA_NO_DEVICE]</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+              No compatible CUDA/ROCm acceleration hardware detected on PCIe bus. Subsystem tensor vector indexing and embedding ranking automatically fallback to vectorized AVX-512 CPU intrinsics.
+            </p>
+</div>
+<!-- Derived Execution Plan Cards -->
+<div class="grid grid-cols-4 gap-1.5 font-code-sm text-code-sm pt-0.5">
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<span class="text-outline text-xs block">Base Workers</span>
+<span class="text-primary font-semibold">8 threads</span>
+<span class="text-outline text-xs block">50% core alloc</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<span class="text-outline text-xs block">Queue Scale</span>
+<span class="text-primary font-semibold">2x multiplier</span>
+<span class="text-outline text-xs block">Spillover safety</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<span class="text-outline text-xs block">IO Buffer</span>
+<span class="text-primary font-semibold">1 MiB ring</span>
+<span class="text-outline text-xs block">1,048,576 B</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-1.5 rounded">
+<span class="text-outline text-xs block">Query Cache</span>
+<span class="text-primary font-semibold">512 slots</span>
+<span class="text-outline text-xs block">LRU eviction</span>
+</div>
+</div>
+</div>
+<!-- CARD 5: RELEARN STATE MACHINE (Autonomous Loop) - 6 Cols -->
+<div class="col-span-6 bg-surface-container-low border border-outline-variant rounded-lg p-2.5 flex flex-col gap-2">
+<!-- Card Header -->
+<div class="flex items-center justify-between pb-1.5 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-semibold text-primary uppercase tracking-wide">05 // RELEARN STATE MACHINE</span>
+<span class="font-code-sm text-code-sm text-outline">Autonomous Reconciliation</span>
+</div>
+<button class="h-5 px-2 bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors font-code-sm text-code-sm rounded flex items-center gap-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">play_arrow</span>
+<span>Force Trigger</span>
+</button>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+            Continuous autonomous graph heuristic reconciliation loop. Scans AST diffs against committed DuckDB indexes.
+          </div>
+<!-- State Machine Pipeline -->
+<div class="grid grid-cols-4 gap-2 py-1">
+<!-- Step 1: IDLE -->
+<div class="bg-surface-container-lowest border-2 border-primary rounded p-2 flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-1 text-primary font-code-md text-code-md font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span>IDLE</span>
+</div>
+<span class="text-outline font-code-sm text-code-sm mt-0.5">Awaiting Timer</span>
+</div>
+<!-- Step 2: SCAN -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-2 flex flex-col items-center justify-center text-center opacity-60">
+<span class="text-on-surface font-code-md text-code-md font-medium">SCAN</span>
+<span class="text-outline font-code-sm text-code-sm mt-0.5">AST Diffs</span>
+</div>
+<!-- Step 3: DIFF -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-2 flex flex-col items-center justify-center text-center opacity-60">
+<span class="text-on-surface font-code-md text-code-md font-medium">DIFF</span>
+<span class="text-outline font-code-sm text-code-sm mt-0.5">Heuristic Burndown</span>
+</div>
+<!-- Step 4: SYNC -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-2 flex flex-col items-center justify-center text-center opacity-60">
+<span class="text-on-surface font-code-md text-code-md font-medium">SYNC</span>
+<span class="text-outline font-code-sm text-code-sm mt-0.5">DuckDB Index</span>
+</div>
+</div>
+<!-- Status Bar -->
+<div class="flex items-center justify-between border-t border-outline-variant/60 pt-1.5 font-code-sm text-code-sm text-on-surface-variant">
+<span>Current Status: <strong class="text-tertiary">STANDBY</strong></span>
+<span>Next Cycle: <span class="text-on-surface font-mono">18m 22s</span></span>
+<span>Last Pass: <span class="text-on-surface font-mono">42m ago</span> (0 errors)</span>
+</div>
+</div>
+<!-- CARD 6: ROUTE SUMMARY // API GATEWAY - 6 Cols -->
+<div class="col-span-6 bg-surface-container-low border border-outline-variant rounded-lg p-2.5 flex flex-col gap-2">
+<!-- Card Header -->
+<div class="flex items-center justify-between pb-1.5 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-semibold text-primary uppercase tracking-wide">06 // ROUTE SUMMARY</span>
+<span class="font-code-sm text-code-sm text-outline">API Gateway Dispatcher</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">Total Registered: <span class="text-on-surface font-medium">45 Routes</span></span>
+</div>
+<!-- Micro-Table of Routes -->
+<div class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden font-code-sm text-code-sm">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low text-outline border-b border-outline-variant font-label-sm text-label-sm uppercase">
+<tr class="h-6">
+<th class="px-2 font-medium">Endpoint</th>
+<th class="px-2 font-medium">Method</th>
+<th class="px-2 font-medium">Policy</th>
+<th class="px-2 font-medium">Class</th>
+<th class="px-2 font-medium text-right">Latency</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/60">
+<tr class="h-6 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-mono">/v1/graph/traverse</td>
+<td class="px-2"><span class="px-1 py-0.2 bg-secondary/10 text-secondary border border-secondary/30 rounded text-xs font-semibold">GET</span></td>
+<td class="px-2 text-outline">READ_ONLY</td>
+<td class="px-2"><span class="text-xs text-secondary font-mono">[read]</span></td>
+<td class="px-2 text-right text-tertiary font-mono">0.8ms p95</td>
+</tr>
+<tr class="h-6 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-mono">/v1/symbols/ast_query</td>
+<td class="px-2"><span class="px-1 py-0.2 bg-primary/10 text-primary border border-primary/30 rounded text-xs font-semibold">POST</span></td>
+<td class="px-2 text-outline">PROTECTED</td>
+<td class="px-2"><span class="text-xs text-primary font-mono">[heavy]</span></td>
+<td class="px-2 text-right text-on-surface font-mono">14.2ms p95</td>
+</tr>
+<tr class="h-6 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-mono">/v1/wal/commit</td>
+<td class="px-2"><span class="px-1 py-0.2 bg-tertiary-container/30 text-tertiary border border-tertiary/40 rounded text-xs font-semibold">PUT</span></td>
+<td class="px-2 text-outline">WRITE_EXCLUSIVE</td>
+<td class="px-2"><span class="text-xs text-primary font-mono">[heavy]</span></td>
+<td class="px-2 text-right text-tertiary font-mono">1.1ms p95</td>
+</tr>
+<tr class="h-6 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-mono">/v1/export/jsonld</td>
+<td class="px-2"><span class="px-1 py-0.2 bg-secondary/10 text-secondary border border-secondary/30 rounded text-xs font-semibold">GET</span></td>
+<td class="px-2 text-outline">BATCH_EXPORT</td>
+<td class="px-2"><span class="text-xs text-outline font-mono">[export]</span></td>
+<td class="px-2 text-right text-on-surface font-mono">5.8ms p95</td>
+</tr>
+<tr class="h-6 hover:bg-surface-container transition-colors">
+<td class="px-2 text-on-surface font-mono">/v1/leases/acquire</td>
+<td class="px-2"><span class="px-1 py-0.2 bg-primary/10 text-primary border border-primary/30 rounded text-xs font-semibold">POST</span></td>
+<td class="px-2 text-outline">WRITE_EXCLUSIVE</td>
+<td class="px-2"><span class="text-xs text-primary font-mono">[heavy]</span></td>
+<td class="px-2 text-right text-tertiary font-mono">0.2ms p95</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between font-code-sm text-code-sm text-outline pt-0.5">
+<span>IPC Protocol: UNIX_DOMAIN SOCKET</span>
+<span>Active Descriptors: 18 / 1024</span>
+</div>
+</div>
+</section>
+</main>
+<!-- ========================================================================= -->
+<!-- BOTTOM STATUS TICKER BAR                                                  -->
+<!-- ========================================================================= -->
+<footer class="h-6 w-full bg-surface-container-lowest border-t border-outline-variant px-3 flex items-center justify-between shrink-0 font-code-sm text-code-sm text-on-surface-variant">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>IPC Socket: <strong class="text-tertiary">ACTIVE (0.12ms)</strong></span>
+</div>
+<span class="text-outline-variant">·</span>
+<span>PAGE_OFFSET: <span class="font-mono text-on-surface">0x4F09B1</span></span>
+<span class="text-outline-variant">·</span>
+<span>DUCKDB_IN_MEMORY: <span class="text-tertiary font-mono">99.4% HIT</span></span>
+</div>
+<div class="flex items-center gap-3">
+<span>INVARIANT CHECKS: <span class="text-tertiary font-mono">11/11 PASS</span></span>
+<span class="text-outline-variant">·</span>
+<span>Merkle Root: <span class="text-primary font-mono">0x9f8a...c3b1</span></span>
+<span class="text-outline-variant">·</span>
+<span class="text-outline font-mono">UTC: 04:12:09</span>
+</div>
+</footer>
+</div>
+</body></html>

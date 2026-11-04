@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Audit Ledger</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#c2c6d6",
+            "secondary-container": "#03b5d3",
+            "secondary-fixed-dim": "#4cd7f6",
+            "primary-fixed-dim": "#adc6ff",
+            "secondary-fixed": "#acedff",
+            "on-primary-fixed-variant": "#004395",
+            "on-primary": "#002e6a",
+            "on-primary-container": "#00285d",
+            "tertiary-container": "#00a572",
+            "on-tertiary-fixed-variant": "#005236",
+            "outline": "#8c909f",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-secondary-container": "#00424e",
+            "error": "#ffb4ab",
+            "on-error": "#690005",
+            "secondary": "#4cd7f6",
+            "on-surface": "#e1e2eb",
+            "surface": "#101319",
+            "primary": "#adc6ff",
+            "on-primary-fixed": "#001a42",
+            "primary-container": "#4d8eff",
+            "outline-variant": "#424754",
+            "inverse-primary": "#005ac2",
+            "inverse-on-surface": "#2d3037",
+            "surface-tint": "#adc6ff",
+            "surface-container-high": "#272a30",
+            "tertiary": "#4edea3",
+            "on-background": "#e1e2eb",
+            "on-secondary": "#003640",
+            "on-tertiary-fixed": "#002113",
+            "surface-variant": "#32353b",
+            "on-tertiary-container": "#00311f",
+            "surface-container-lowest": "#0b0e14",
+            "background": "#101319",
+            "surface-dim": "#101319",
+            "surface-container-highest": "#32353b",
+            "on-secondary-fixed-variant": "#004e5c",
+            "primary-fixed": "#d8e2ff",
+            "tertiary-fixed": "#6ffbbe",
+            "surface-container": "#1d2026",
+            "error-container": "#93000a",
+            "surface-bright": "#363940",
+            "on-tertiary": "#003824",
+            "on-secondary-fixed": "#001f26",
+            "on-error-container": "#ffdad6",
+            "inverse-surface": "#e1e2eb",
+            "surface-container-low": "#191c22"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xl": "1rem",
+            "space-md": "0.5rem",
+            "gutter-mobile": "0.25rem",
+            "space-sm": "0.25rem",
+            "margin-mobile": "0.5rem",
+            "space-lg": "0.75rem",
+            "margin": "0.75rem",
+            "space-xs": "0.125rem",
+            "gutter": "0.5rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "code-lg": ["JetBrains Mono"],
+            "code-md": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Technical scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #101319;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272a30;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased select-none overflow-hidden h-screen flex">
+<!-- ========================================================================= -->
+<!-- 1. LEFT PERSISTENT SIDEBAR (Shared Component: SideNavBar)                  -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 h-screen w-64 flex flex-col z-30 bg-surface-container-low border-r border-outline-variant">
+<div class="w-64 h-full flex flex-col justify-between py-margin px-gutter overflow-y-auto">
+<!-- Top Brand Header -->
+<div class="flex flex-col gap-space-sm mb-space-md pb-space-md border-b border-outline-variant">
+<div class="flex items-center gap-space-md">
+<div class="w-6 h-6 rounded bg-primary-container text-on-primary-container flex items-center justify-center font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">account_tree</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm font-semibold tracking-tight text-on-surface">Know Your Context</div>
+<div class="font-code-sm text-code-sm text-outline">Local Runtime v2.4</div>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="px-space-xs mb-space-md">
+<button class="w-full h-7 px-space-md bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-code-md text-code-md rounded flex items-center justify-between transition-colors duration-150 active:bg-surface-container-highest">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-tertiary">add_circle</span>
+            Propose Mutation
+          </span>
+<span class="font-code-sm text-code-sm text-outline">⌘M</span>
+</button>
+</div>
+<!-- Main Navigation Cluster (12 Tabs) -->
+<nav class="flex-1 flex flex-col gap-0.5 overflow-y-auto pr-0.5">
+<!-- Overview -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm text-body-sm">Overview</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">pulse_alert</span>
+<span class="font-body-sm text-body-sm">Activity</span>
+</a>
+<!-- Graph -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-body-sm text-body-sm">Graph</span>
+</a>
+<!-- Search -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-body-sm text-body-sm">Search</span>
+</a>
+<!-- Metrics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-body-sm text-body-sm">Metrics</span>
+</a>
+<!-- Health -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">vital_signs</span>
+<span class="font-body-sm text-body-sm">Health</span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-sm text-body-sm">Analytics</span>
+</a>
+<!-- Audit (ACTIVE DESTINATION) -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm bg-surface-container-highest text-primary font-medium border-l-2 border-primary rounded-none transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-primary">policy</span>
+<span class="font-body-sm text-body-sm font-medium">Audit</span>
+</a>
+<!-- Proposals -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="font-body-sm text-body-sm">Proposals</span>
+</a>
+<!-- Debt -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">balance</span>
+<span class="font-body-sm text-body-sm">Debt</span>
+</a>
+<!-- System -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">tune</span>
+<span class="font-body-sm text-body-sm">System</span>
+</a>
+<!-- Setup -->
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-sm text-body-sm">Setup</span>
+</a>
+</nav>
+<!-- Footer Utilities -->
+<div class="mt-space-md pt-space-md border-t border-outline-variant flex flex-col gap-0.5">
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-body-sm text-body-sm">Documentation</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-space-sm text-on-surface-variant rounded-none hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">terminal</span>
+<span class="font-body-sm text-body-sm">Terminal</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- 2. MAIN VIEWPORT CANVAS (Offset by 256px sidebar)                         -->
+<!-- ========================================================================= -->
+<main class="ml-64 flex-1 flex flex-col h-screen overflow-hidden bg-surface-container-lowest">
+<!-- TopNavBar (Shared Component) -->
+<header class="sticky top-0 right-0 h-12 w-full flex items-center z-20 border-b border-outline-variant bg-surface">
+<div class="flex justify-between items-center h-12 px-margin w-full bg-surface">
+<!-- Left: Search and Runtime Metadata Nodes -->
+<div class="flex items-center gap-space-lg">
+<div class="relative flex items-center">
+<span class="absolute left-2 text-outline font-label-md text-label-md">λ</span>
+<input class="h-7 w-72 pl-6 pr-space-md bg-surface-container-lowest border border-outline-variant rounded font-code-md text-code-md text-on-surface placeholder:text-outline focus:border-primary focus:outline-none transition-colors" placeholder="grep ledger (event, seq, actor)..." type="text"/>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<!-- Navigation Links / Telemetry Pills -->
+<div class="flex items-center gap-space-md font-code-sm text-code-sm">
+<span class="text-primary font-code-sm text-code-sm border-b border-primary pb-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+              cluster-us-east-primary
+            </span>
+<span class="text-on-surface-variant font-code-sm text-code-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary inline-block"></span>
+              raft:synced
+            </span>
+<span class="text-on-surface-variant font-code-sm text-code-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
+              lease:active
+            </span>
+</div>
+</div>
+<!-- Right: Actions and Status Indicators -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<button class="h-7 w-7 rounded flex items-center justify-center hover:bg-surface-container transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-[16px]">notifications</span>
+</button>
+<button class="h-7 w-7 rounded flex items-center justify-center hover:bg-surface-container transition-colors" title="Terminal CLI">
+<span class="material-symbols-outlined text-[16px]">terminal</span>
+</button>
+<button class="h-7 w-7 rounded flex items-center justify-center hover:bg-surface-container transition-colors" title="Synchronize">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</button>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<button class="h-7 px-space-md bg-surface-container border border-outline-variant hover:bg-surface-container-high text-on-surface font-code-md text-code-md rounded flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[14px]">file_download</span>
+            Export Graph
+          </button>
+<button class="h-7 px-space-md bg-primary hover:bg-primary-container text-on-primary font-code-md text-code-md rounded flex items-center gap-1.5 font-medium transition-colors">
+<span class="material-symbols-outlined text-[14px]">terminal</span>
+            Execute Query
+          </button>
+<div class="w-6 h-6 rounded bg-surface-container-highest border border-outline-variant flex items-center justify-center text-on-surface font-code-sm text-code-sm">
+            OP
+          </div>
+</div>
+</div>
+</header>
+<!-- Sub-Header: Node Telemetry & Audit Mode Switcher -->
+<div class="h-10 px-margin bg-surface-container-low border-b border-outline-variant flex items-center justify-between flex-shrink-0">
+<div class="flex items-center gap-space-lg">
+<!-- Epoch and Node Details -->
+<div class="flex items-center gap-space-md font-code-sm text-code-sm">
+<span class="text-outline">Node:</span>
+<span class="text-on-surface font-medium">node-01.local</span>
+<span class="text-outline">|</span>
+<span class="text-outline">Lock:</span>
+<span class="text-tertiary">QUORUM</span>
+<span class="text-outline">|</span>
+<span class="text-outline">State:</span>
+<span class="text-tertiary">VALID</span>
+<span class="text-outline">|</span>
+<span class="text-outline">DuckDB:</span>
+<span class="text-secondary">READY</span>
+<span class="text-outline">|</span>
+<span class="text-outline">Epoch:</span>
+<span class="text-on-surface">0x8F4E</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<!-- Mode Toggle Pills -->
+<div class="flex items-center gap-1 bg-surface-container-lowest p-0.5 rounded border border-outline-variant">
+<button class="px-2 py-0.5 text-primary bg-surface-container border border-outline-variant rounded font-code-sm text-code-sm font-medium">
+            Active Chain (Verified)
+          </button>
+<button class="px-2 py-0.5 text-outline hover:text-on-surface rounded font-code-sm text-code-sm transition-colors">
+            Simulated Broken Chain (seq #829)
+          </button>
+<button class="px-2 py-0.5 text-outline hover:text-on-surface rounded font-code-sm text-code-sm transition-colors">
+            Neutral Ledger Absent State
+          </button>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="flex items-center gap-space-md">
+<button class="h-6 px-2 bg-surface-container hover:bg-surface-container-high border border-outline-variant rounded font-code-sm text-code-sm text-on-surface flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[13px] text-tertiary">verified_user</span>
+          Verify Chain Integrity <span class="text-outline">[F5]</span>
+</button>
+<button class="h-6 px-2 bg-surface-container hover:bg-surface-container-high border border-outline-variant rounded font-code-sm text-code-sm text-on-surface flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[13px]">download</span>
+          Export Audit JSONL
+        </button>
+</div>
+</div>
+<!-- Scrollable Workspace Canvas -->
+<div class="flex-1 overflow-y-auto p-margin flex flex-col gap-margin pb-10">
+<!-- ===================================================================== -->
+<!-- LAYOUT DIRECTION C: TOP DASHBOARD KPI CARDS (Scan in 5 seconds)       -->
+<!-- ===================================================================== -->
+<section class="grid grid-cols-4 gap-gutter">
+<!-- Card 1: Chain Integrity -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-space-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase text-outline">Chain Integrity</span>
+<span class="px-1.5 py-0.5 bg-tertiary-container/20 text-tertiary border border-tertiary/40 rounded font-code-sm text-code-sm font-medium">
+              VERIFIED ok=true
+            </span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-lg text-headline-lg font-semibold text-on-surface tracking-tight">100% OK</div>
+<span class="font-code-sm text-code-sm text-outline">0 broken</span>
+</div>
+<!-- Sparkline representation: flat deterministic line -->
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex items-center justify-between text-outline font-code-sm text-code-sm">
+<span>1,521 events verified</span>
+<span class="text-tertiary flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-tertiary rounded-full"></span> SHA-256
+            </span>
+</div>
+</div>
+<!-- Card 2: Cryptographic Invariants -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-space-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase text-outline">Cryptographic Invariants</span>
+<span class="px-1.5 py-0.5 bg-tertiary-container/20 text-tertiary border border-tertiary/40 rounded font-code-sm text-code-sm font-medium">
+              PASS
+            </span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-lg text-headline-lg font-semibold text-on-surface tracking-tight">4/4 PASS</div>
+<span class="font-code-sm text-code-sm text-secondary">1.4ms replay</span>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex items-center justify-between text-outline font-code-sm text-code-sm">
+<span>SHA-256 HMAC proofs</span>
+<span class="text-on-surface-variant">deterministic</span>
+</div>
+</div>
+<!-- Card 3: Quarantine Faults -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-space-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase text-outline">Quarantine Faults</span>
+<span class="px-1.5 py-0.5 bg-surface-container-highest text-outline border border-outline-variant rounded font-code-sm text-code-sm">
+              ISOLATED: 0
+            </span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-lg text-headline-lg font-semibold text-on-surface tracking-tight">0 CLEAN</div>
+<span class="font-code-sm text-code-sm text-outline">seq: none</span>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex items-center justify-between text-outline font-code-sm text-code-sm">
+<span>first_bad_seq: none</span>
+<span class="text-tertiary">0 faults</span>
+</div>
+</div>
+<!-- Card 4: Sub-Ledger Sync -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-space-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase text-outline">Sub-Ledger Sync</span>
+<span class="px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/30 rounded font-code-sm text-code-sm font-medium">
+              IN-MEMORY
+            </span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-lg text-headline-lg font-semibold text-on-surface tracking-tight">3/3 MONOTONIC</div>
+<span class="font-code-sm text-code-sm text-primary">In Sync</span>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex items-center justify-between text-outline font-code-sm text-code-sm">
+<span>Health, Debt, Rerank</span>
+<span class="text-secondary font-code-sm text-code-sm">Ack: 3/3</span>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- VERIFICATION BANNER                                                   -->
+<!-- ===================================================================== -->
+<section class="bg-surface-container border border-outline-variant rounded-lg p-space-md px-space-lg flex items-center justify-between">
+<div class="flex items-center gap-space-lg">
+<div class="w-8 h-8 rounded bg-tertiary/10 border border-tertiary/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<div>
+<div class="flex items-center gap-space-md">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface tracking-tight">CHAIN INTEGRITY OK: 100% PASS</span>
+<span class="px-1.5 py-0.2 bg-surface-container-highest text-secondary border border-outline-variant rounded font-code-sm text-code-sm font-medium">[SHA-256 HMAC]</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">
+              Deterministic replay asserted across 1,521 sequential states without divergence. Zero state-corruption or unlinked pointers detected.
+            </p>
+</div>
+</div>
+<!-- Telemetry Chips -->
+<div class="flex items-center gap-space-md font-code-sm text-code-sm">
+<div class="flex flex-col items-end">
+<span class="text-outline">root_merkle_hash</span>
+<span class="text-primary font-medium">0x9f1a...c3b1</span>
+</div>
+<div class="h-6 w-px bg-outline-variant"></div>
+<div class="flex flex-col items-end">
+<span class="text-outline">checked</span>
+<span class="text-on-surface">1,521 events</span>
+</div>
+<div class="h-6 w-px bg-outline-variant"></div>
+<div class="flex flex-col items-end">
+<span class="text-outline">quarantine</span>
+<span class="text-tertiary font-medium">0 faults</span>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- SPLIT VIEW: AUDIT TABLE (LEFT 70%) & SUB-LEDGERS STACK (RIGHT 30%)    -->
+<!-- ===================================================================== -->
+<div class="grid grid-cols-12 gap-gutter flex-1">
+<!-- Left: Main Audit Table Card (8 Columns) -->
+<div class="col-span-8 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col overflow-hidden">
+<!-- Table Controls Header -->
+<div class="px-space-md py-space-sm border-b border-outline-variant bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Immutable Hash Ledger</span>
+<span class="text-outline font-code-sm text-code-sm">showing 10 of 1,521 events</span>
+</div>
+<!-- Filters -->
+<div class="flex items-center gap-1 font-code-sm text-code-sm">
+<button class="px-2 py-0.5 bg-primary/20 text-primary border border-primary/40 rounded font-medium">All 1,521</button>
+<button class="px-2 py-0.5 bg-surface-container-highest text-outline hover:text-on-surface rounded transition-colors">knowledge.query</button>
+<button class="px-2 py-0.5 bg-surface-container-highest text-outline hover:text-on-surface rounded transition-colors">knowledge.log_event</button>
+<button class="px-2 py-0.5 bg-surface-container-highest text-outline hover:text-on-surface rounded transition-colors">knowledge.apply_improvement</button>
+<button class="px-2 py-0.5 bg-surface-container-highest text-outline hover:text-on-surface rounded transition-colors">knowledge.rollback</button>
+</div>
+</div>
+<!-- Strict 28px Height Telemetry Table -->
+<div class="flex-1 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-7 bg-surface border-b border-outline-variant font-label-md text-label-md text-outline">
+<th class="px-space-md w-16">SEQ</th>
+<th class="px-space-md w-36">EVENT_TYPE</th>
+<th class="px-space-md w-24">ACTOR</th>
+<th class="px-space-md w-32">OCCURRED_AT</th>
+<th class="px-space-md w-52">HASH CHAIN (PREV → ENTRY)</th>
+<th class="px-space-md text-right">PAYLOAD PREVIEW</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/60 font-code-sm text-code-sm">
+<!-- Row #01521 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01521</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-secondary-container/20 text-secondary-fixed-dim border border-secondary-container/40 rounded uppercase font-label-sm text-label-sm">
+                      apply_improvement
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">agent-2</td>
+<td class="px-space-md text-outline">12:38:14.902Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x3fa1...</span> → <span class="text-primary font-medium">0x8e42...99a0</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    {"node": "ctx_vector_49", "mutation": "weight_boost"}
+                  </td>
+</tr>
+<!-- Row #01520 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01520</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-tertiary-container/20 text-tertiary border border-tertiary-container/40 rounded uppercase font-label-sm text-label-sm">
+                      log_event
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">operator</td>
+<td class="px-space-md text-outline">12:38:12.110Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x99a0...</span> → <span class="text-primary font-medium">0x3fa1...c22b</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    {"action": "session_checkpoint", "sync_ack": true}
+                  </td>
+</tr>
+<!-- Row #01519 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01519</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-surface-container-highest text-secondary border border-outline-variant rounded uppercase font-label-sm text-label-sm">
+                      query
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">sub-139</td>
+<td class="px-space-md text-outline">12:37:58.441Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x7bc2...</span> → <span class="text-primary font-medium">0x99a0...11ef</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    SELECT FROM graph_triples WHERE predicate = "depends_on"
+                  </td>
+</tr>
+<!-- Row #01518 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01518</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-secondary-container/20 text-secondary-fixed-dim border border-secondary-container/40 rounded uppercase font-label-sm text-label-sm">
+                      apply_improvement
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">agent-2</td>
+<td class="px-space-md text-outline">12:37:40.092Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x11ef...</span> → <span class="text-primary font-medium">0x7bc2...55ad</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    {"edge": "ref_to_debt", "op": "reconcile"}
+                  </td>
+</tr>
+<!-- Row #01517 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01517</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-tertiary-container/20 text-tertiary border border-tertiary-container/40 rounded uppercase font-label-sm text-label-sm">
+                      log_event
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">operator</td>
+<td class="px-space-md text-outline">12:37:19.821Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x55ad...</span> → <span class="text-primary font-medium">0x11ef...9b20</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    {"quarantine_check": "clean", "scan_len": 128}
+                  </td>
+</tr>
+<!-- Row #01516 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01516</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-surface-container-highest text-secondary border border-outline-variant rounded uppercase font-label-sm text-label-sm">
+                      query
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">sub-139</td>
+<td class="px-space-md text-outline">12:36:55.104Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x9b20...</span> → <span class="text-primary font-medium">0x55ad...aa33</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    MATCH (n:Entity)-[r]-&gt;(m) RETURN count(r)
+                  </td>
+</tr>
+<!-- Row #01515 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01515</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-tertiary-container/20 text-tertiary border border-tertiary-container/40 rounded uppercase font-label-sm text-label-sm">
+                      log_event
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">operator</td>
+<td class="px-space-md text-outline">12:36:44.200Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0xaa33...</span> → <span class="text-primary font-medium">0x9b20...4e11</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    {"heartbeat": "cluster-us-east", "latency_ms": 1.2}
+                  </td>
+</tr>
+<!-- Row #01514 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01514</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-error-container/20 text-error border border-error-container/40 rounded uppercase font-label-sm text-label-sm">
+                      rollback
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">agent-2</td>
+<td class="px-space-md text-outline">12:36:12.782Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x4e11...</span> → <span class="text-primary font-medium">0xaa33...00c1</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    {"target": "mutation_#8491", "reason": "invariant_fail"}
+                  </td>
+</tr>
+<!-- Row #01513 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01513</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-secondary-container/20 text-secondary-fixed-dim border border-secondary-container/40 rounded uppercase font-label-sm text-label-sm">
+                      apply_improvement
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">agent-2</td>
+<td class="px-space-md text-outline">12:35:48.330Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x00c1...</span> → <span class="text-primary font-medium">0x4e11...7fa2</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    {"patch": "re-index experience memory shard 4"}
+                  </td>
+</tr>
+<!-- Row #01512 -->
+<tr class="h-7 hover:bg-surface-container transition-colors group">
+<td class="px-space-md text-primary font-medium">#01512</td>
+<td class="px-space-md">
+<span class="px-1.5 py-0.2 bg-surface-container-highest text-secondary border border-outline-variant rounded uppercase font-label-sm text-label-sm">
+                      query
+                    </span>
+</td>
+<td class="px-space-md text-on-surface-variant">sub-139</td>
+<td class="px-space-md text-outline">12:35:22.091Z</td>
+<td class="px-space-md text-outline font-code-sm">
+<span class="text-on-surface-variant">0x7fa2...</span> → <span class="text-primary font-medium">0x00c1...da45</span>
+</td>
+<td class="px-space-md text-right text-outline truncate max-w-xs group-hover:text-on-surface">
+                    GET /schema/definition?hash=latest
+                  </td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination Footer -->
+<div class="px-space-md py-space-xs border-t border-outline-variant bg-surface flex items-center justify-between text-outline font-code-sm text-code-sm">
+<div>Showing 1-10 of 1,521 events (SHA-256 HMAC algorithm)</div>
+<div class="flex items-center gap-1">
+<button class="px-2 py-0.5 border border-outline-variant rounded hover:text-on-surface disabled:opacity-30" disabled="">prev</button>
+<span class="px-2 py-0.5 text-primary">1</span>
+<button class="px-2 py-0.5 border border-outline-variant rounded hover:text-on-surface">2</button>
+<button class="px-2 py-0.5 border border-outline-variant rounded hover:text-on-surface">3</button>
+<span class="px-1">...</span>
+<button class="px-2 py-0.5 border border-outline-variant rounded hover:text-on-surface">153</button>
+<button class="px-2 py-0.5 border border-outline-variant rounded hover:text-on-surface">next</button>
+</div>
+</div>
+</div>
+<!-- Right: Side Stack of 3 Self-Contained Sub-Ledger Cards (4 Columns) -->
+<div class="col-span-4 flex flex-col gap-gutter">
+<!-- Card A: Health Ledger Snapshots -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between border-b border-outline-variant pb-space-sm mb-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-tertiary">vital_signs</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Health Ledger</span>
+</div>
+<span class="px-1.5 py-0.2 bg-tertiary-container/20 text-tertiary border border-tertiary-container/40 rounded font-code-sm text-code-sm font-medium">
+                SYNCED // 100% PASS
+              </span>
+</div>
+<!-- Content items -->
+<div class="space-y-space-sm font-code-sm text-code-sm">
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex justify-between items-center">
+<span class="text-outline">2026-11-04T12:35:00Z</span>
+<span class="text-tertiary font-medium">Score: 99.8% (exit: 0 OK)</span>
+</div>
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex justify-between items-center">
+<span class="text-outline">2026-11-04T12:30:00Z</span>
+<span class="text-tertiary font-medium">Score: 100.0% (exit: 0 OK)</span>
+</div>
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex justify-between items-center">
+<span class="text-outline">2026-11-04T12:25:00Z</span>
+<span class="text-tertiary font-medium">Score: 99.9% (exit: 0 OK)</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant/60 flex items-center justify-between text-outline font-code-sm text-code-sm">
+<span>invariants: 11/11 checked</span>
+<span class="text-on-surface">replay latency: 0.8ms</span>
+</div>
+</div>
+<!-- Card B: Debt Ledger Entries -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between border-b border-outline-variant pb-space-sm mb-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-secondary">balance</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Debt Ledger</span>
+</div>
+<span class="px-1.5 py-0.2 bg-surface-container-highest text-secondary border border-outline-variant rounded font-code-sm text-code-sm font-medium">
+                AUDITED // 12 ITEMS
+              </span>
+</div>
+<!-- Content items -->
+<div class="space-y-space-sm font-code-sm text-code-sm">
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex flex-col gap-0.5">
+<div class="flex justify-between items-center">
+<span class="text-primary font-medium">DEBT-01: stale citations detected</span>
+<span class="text-outline">age: 4h 12m</span>
+</div>
+<div class="text-outline truncate">ptr: 0x221a...88e1 (sub-cluster: memory-4)</div>
+</div>
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex flex-col gap-0.5">
+<div class="flex justify-between items-center">
+<span class="text-primary font-medium">DEBT-02: cyclic references</span>
+<span class="text-outline">age: 18h 40m</span>
+</div>
+<div class="text-outline truncate">ptr: 0x6bb3...10cc (schema: entity_loop)</div>
+</div>
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex flex-col gap-0.5">
+<div class="flex justify-between items-center">
+<span class="text-primary font-medium">DEBT-03: unindexed semantic tag</span>
+<span class="text-outline">age: 2d 01h</span>
+</div>
+<div class="text-outline truncate">ptr: 0x81ef...099a (tag: #autonomous)</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant/60 flex items-center justify-between text-outline font-code-sm text-code-sm">
+<span>reconciliation rate: 94.2%</span>
+<span class="text-secondary">active locks: 0</span>
+</div>
+</div>
+<!-- Card C: Experience Rerank Journal -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between border-b border-outline-variant pb-space-sm mb-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-tertiary">tune</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Experience Rerank</span>
+</div>
+<span class="px-1.5 py-0.2 bg-tertiary-container/20 text-tertiary border border-tertiary-container/40 rounded font-code-sm text-code-sm font-medium">
+                TAMPER_OK // MONOTONIC
+              </span>
+</div>
+<!-- Content items -->
+<div class="space-y-space-sm font-code-sm text-code-sm">
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex justify-between items-center">
+<div>
+<span class="text-primary font-medium">step_seq #492</span>
+<span class="text-tertiary ml-1">(+0.038 score)</span>
+</div>
+<span class="text-outline font-code-sm">0x8a1d44 → 0x9f2c1a</span>
+</div>
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex justify-between items-center">
+<div>
+<span class="text-primary font-medium">step_seq #491</span>
+<span class="text-tertiary ml-1">(+0.012 score)</span>
+</div>
+<span class="text-outline font-code-sm">0x4b901a → 0x8a1d44</span>
+</div>
+<div class="p-1.5 bg-surface rounded border border-outline-variant/50 flex justify-between items-center">
+<div>
+<span class="text-primary font-medium">step_seq #490</span>
+<span class="text-tertiary ml-1">(+0.045 score)</span>
+</div>
+<span class="text-outline font-code-sm">0x12dcf9 → 0x4b901a</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant/60 flex items-center justify-between text-outline font-code-sm text-code-sm">
+<span>decay algorithm: half-life 7d</span>
+<span class="text-tertiary">state: monotonic</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 5. BOTTOM FIXED TELEMETRY STATUS BAR                                      -->
+<!-- ========================================================================= -->
+<footer class="h-6 w-full bg-surface-container-low border-t border-outline-variant px-margin flex items-center justify-between text-outline font-code-sm text-code-sm flex-shrink-0 z-20">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-on-surface">IMMUTABLE_APPEND_ONLY</span>
+</div>
+<span class="text-outline">|</span>
+<div>Engine: <span class="text-on-surface">DuckDB v1.1.2 embedded</span></div>
+<span class="text-outline">|</span>
+<div>Local Quorum: <span class="text-tertiary">3 of 3 ACK</span></div>
+<span class="text-outline">|</span>
+<div>Deterministic Seed: <span class="text-primary font-medium">0xdeadbeef</span></div>
+</div>
+<div class="flex items-center gap-space-md">
+<span>WAL Checkpoint: <span class="text-on-surface">0.42s ago</span></span>
+<span class="text-outline">|</span>
+<span class="text-secondary font-medium">MEM: 142.8 MB / 4.00 GB</span>
+</div>
+</footer>
+</main>
+</body></html>

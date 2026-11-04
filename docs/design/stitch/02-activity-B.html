@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context — Agent Activity Log</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#4cd7f6",
+            "on-primary-container": "#00285d",
+            "on-tertiary-fixed": "#002113",
+            "outline-variant": "#424754",
+            "primary-fixed": "#d8e2ff",
+            "primary": "#adc6ff",
+            "on-surface": "#e1e2eb",
+            "on-secondary-fixed-variant": "#004e5c",
+            "inverse-surface": "#e1e2eb",
+            "secondary-container": "#03b5d3",
+            "surface-bright": "#363940",
+            "on-error": "#690005",
+            "error": "#ffb4ab",
+            "secondary-fixed": "#acedff",
+            "outline": "#8c909f",
+            "on-secondary-fixed": "#001f26",
+            "inverse-primary": "#005ac2",
+            "on-surface-variant": "#c2c6d6",
+            "surface-variant": "#32353b",
+            "surface-container": "#1d2026",
+            "on-background": "#e1e2eb",
+            "tertiary-fixed": "#6ffbbe",
+            "surface-container-high": "#272a30",
+            "on-primary-fixed": "#001a42",
+            "background": "#101319",
+            "on-tertiary": "#003824",
+            "on-error-container": "#ffdad6",
+            "surface-container-lowest": "#0b0e14",
+            "on-secondary": "#003640",
+            "primary-fixed-dim": "#adc6ff",
+            "surface-tint": "#adc6ff",
+            "error-container": "#93000a",
+            "surface-container-highest": "#32353b",
+            "on-secondary-container": "#00424e",
+            "inverse-on-surface": "#2d3037",
+            "on-tertiary-fixed-variant": "#005236",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-tertiary-container": "#00311f",
+            "secondary-fixed-dim": "#4cd7f6",
+            "tertiary": "#4edea3",
+            "surface-dim": "#101319",
+            "tertiary-container": "#00a572",
+            "surface": "#101319",
+            "primary-container": "#4d8eff",
+            "on-primary": "#002e6a",
+            "surface-container-low": "#191c22",
+            "on-primary-fixed-variant": "#004395"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "0.5rem",
+            "gutter-mobile": "0.25rem",
+            "space-sm": "0.25rem",
+            "space-xs": "0.125rem",
+            "space-xl": "1rem",
+            "gutter": "0.5rem",
+            "margin": "0.75rem",
+            "margin-mobile": "0.5rem",
+            "space-lg": "0.75rem"
+          },
+          "fontFamily": {
+            "code-md": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "label-md": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "code-lg": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "code-md": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.005em", "fontWeight": "500" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md": ["1.25rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.75rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "label-md": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-sm": ["1rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "code-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "0.9375rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.005em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Custom scrollbar matching hairline aesthetic */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0e14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272a30;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #424754;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased overflow-hidden select-none font-body-md h-screen w-screen flex flex-col">
+<!-- ==================== TOP TELEMETRY NAVBAR ==================== -->
+<header class="h-8 w-full pl-56 pr-3 bg-surface-container-low border-b border-outline-variant flex justify-between items-center z-20 shrink-0 font-code-sm text-code-sm uppercase tracking-tight">
+<!-- Left telemetry status group -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-mono">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+<span class="text-tertiary font-semibold">Cluster: node-01.local</span>
+</div>
+<span class="text-outline-variant">|</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-mono">
+<span class="material-symbols-outlined text-[13px] text-primary" data-icon="lock">lock</span>
+<span>Lock Sync: QUORUM</span>
+</div>
+<span class="text-outline-variant">|</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-mono">
+<span class="material-symbols-outlined text-[13px] text-tertiary" data-icon="check_circle">check_circle</span>
+<span>State: VALID</span>
+</div>
+<span class="text-outline-variant">|</span>
+<div class="text-outline font-mono text-[10px] tracking-normal">
+        BUFFER: 10,421 / 50,000 PKTS (20.8%)
+      </div>
+</div>
+<!-- Right action group -->
+<div class="flex items-center gap-2">
+<button class="h-6 px-2 bg-surface-container border border-outline-variant hover:border-outline text-on-surface hover:text-on-surface transition-colors duration-100 flex items-center gap-1 rounded text-code-sm">
+<span class="material-symbols-outlined text-[13px]" data-icon="pause">pause</span>
+<span>Pause Stream</span>
+</button>
+<button class="h-6 px-2 bg-surface-container border border-outline-variant hover:border-outline text-on-surface hover:text-on-surface transition-colors duration-100 flex items-center gap-1 rounded text-code-sm">
+<span class="material-symbols-outlined text-[13px]" data-icon="filter_alt_off">filter_alt_off</span>
+<span>Clear Filters</span>
+</button>
+<button class="h-6 px-2 bg-surface-container border border-outline-variant hover:border-outline text-on-surface hover:text-on-surface transition-colors duration-100 flex items-center gap-1 rounded text-code-sm">
+<span class="material-symbols-outlined text-[13px]" data-icon="download">download</span>
+<span>Export JSONL</span>
+</button>
+<div class="h-3 w-[1px] bg-outline-variant mx-1"></div>
+<button class="h-6 px-2.5 bg-primary hover:bg-primary-container text-on-primary font-medium rounded transition-colors duration-100 flex items-center gap-1 text-code-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-[13px]" data-icon="bolt">bolt</span>
+<span>Deploy Proposal</span>
+</button>
+<button class="h-6 px-2 bg-error-container/40 border border-error/30 hover:bg-error-container/60 text-error rounded transition-colors duration-100 flex items-center gap-1 text-code-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-[13px]" data-icon="lock_clock">lock_clock</span>
+<span>Emergency Lock</span>
+</button>
+<div class="flex items-center gap-1 ml-2 text-on-surface-variant">
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container rounded" title="Sync"><span class="material-symbols-outlined text-[15px]" data-icon="sync">sync</span></button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container rounded" title="Notifications"><span class="material-symbols-outlined text-[15px]" data-icon="notifications">notifications</span></button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container rounded" title="Terminal"><span class="material-symbols-outlined text-[15px]" data-icon="terminal">terminal</span></button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-container rounded" title="Account"><span class="material-symbols-outlined text-[15px]" data-icon="account_circle">account_circle</span></button>
+</div>
+</div>
+</header>
+<!-- ==================== SHELL WRAPPER ==================== -->
+<div class="flex-1 flex overflow-hidden">
+<!-- ==================== SIDE NAVBAR ==================== -->
+<aside class="fixed top-0 left-0 h-screen w-56 flex flex-col justify-between py-2 px-1 z-30 select-none bg-surface-container-lowest border-r border-outline-variant font-label-md text-label-md uppercase tracking-wider">
+<!-- Sidebar Header -->
+<div class="px-2.5 pt-1.5 pb-3">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="hub">hub</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight leading-none normal-case">Know Your Context</div>
+<div class="text-[9px] font-mono text-outline tracking-wider mt-1 text-left">LOCAL CLUSTER v2.4</div>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs (12 items) -->
+<div class="flex-1 overflow-y-auto space-y-0.5 pr-0.5">
+<!-- Overview -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="dashboard">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- Activity (ACTIVE) -->
+<a class="flex items-center gap-2.5 h-7 px-2 bg-surface-container-high text-primary border-l-2 border-primary pl-2 font-medium transition-colors duration-100 cursor-pointer rounded-sm" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="dynamic_feed">dynamic_feed</span>
+<span>Activity</span>
+</a>
+<!-- Graph -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="hub">hub</span>
+<span>Graph</span>
+</a>
+<!-- Search -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="search">search</span>
+<span>Search</span>
+</a>
+<!-- Metrics -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="monitoring">monitoring</span>
+<span>Metrics</span>
+</a>
+<!-- Health -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="vital_signs">vital_signs</span>
+<span>Health</span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+<!-- Audit -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="history">history</span>
+<span>Audit</span>
+</a>
+<!-- Proposals (badge 3) -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="rule">rule</span>
+<span>Proposals</span>
+</div>
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-surface-container border border-outline-variant text-primary font-medium">3</span>
+</a>
+<!-- Debt (badge 12) -->
+<a class="flex items-center justify-between h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="priority_high">priority_high</span>
+<span>Debt</span>
+</div>
+<span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-surface-container border border-outline-variant text-error font-medium">12</span>
+</a>
+<!-- System -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="memory">memory</span>
+<span>System</span>
+</a>
+<!-- Setup -->
+<a class="flex items-center gap-2.5 h-7 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-sm pl-2.5 font-normal" href="#">
+<span class="material-symbols-outlined text-[15px] opacity-80" data-icon="settings">settings</span>
+<span>Setup</span>
+</a>
+</div>
+<!-- Footer links -->
+<div class="pt-2 border-t border-outline-variant space-y-0.5 px-0.5">
+<a class="flex items-center gap-2 h-6 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors rounded text-code-sm font-mono normal-case" href="#">
+<span class="material-symbols-outlined text-[14px]" data-icon="menu_book">menu_book</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center gap-2 h-6 px-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors rounded text-code-sm font-mono normal-case" href="#">
+<span class="material-symbols-outlined text-[14px]" data-icon="terminal">terminal</span>
+<span>Terminal</span>
+</a>
+</div>
+</aside>
+<!-- ==================== MAIN CONTENT CANVAS ==================== -->
+<main class="ml-56 flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
+<!-- SECTION 1: TOP HEADER & FILTER BAR -->
+<section class="px-6 pt-5 pb-4 border-b border-outline-variant bg-surface-container-lowest shrink-0">
+<!-- Title & Operational Telemetry Metrics -->
+<div class="flex items-center justify-between mb-4">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Agent Activity Log</h1>
+<span class="px-2 py-0.5 rounded text-code-sm font-mono bg-tertiary-container/20 text-tertiary border border-tertiary/30 uppercase">LIVE STREAM</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline mt-1 font-mono">Real-time distributed state mutation log &amp; active lease arbitration stream across local nodes.</p>
+</div>
+<!-- Quick Metrics Bar -->
+<div class="flex items-center gap-6 bg-surface-container-low border border-outline-variant px-4 py-2 rounded">
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">STREAM STATUS</div>
+<div class="font-code-md text-code-md text-tertiary flex items-center gap-1.5 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>CONNECTED (0 ms jitter)</span>
+</div>
+</div>
+<div class="w-[1px] h-6 bg-outline-variant"></div>
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">BUFFER OCCUPANCY</div>
+<div class="font-code-md text-code-md text-on-surface font-mono mt-0.5">
+<span class="text-primary font-semibold">10,421</span> <span class="text-outline">/ 50,000</span>
+</div>
+</div>
+<div class="w-[1px] h-6 bg-outline-variant"></div>
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">INGEST RATE</div>
+<div class="font-code-md text-code-md text-on-surface font-mono mt-0.5">
+<span class="text-secondary font-semibold">184</span> <span class="text-outline">evts/sec</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter Toolbar -->
+<div class="flex items-center justify-between gap-3 pt-2">
+<!-- Level filters & Agent chips -->
+<div class="flex items-center gap-2 flex-wrap">
+<!-- Level filter chips -->
+<div class="flex items-center bg-surface-container border border-outline-variant rounded p-0.5">
+<button class="px-2.5 py-1 rounded text-code-sm font-mono bg-surface-container-high text-primary font-medium border border-primary/30">ALL [10,421]</button>
+<button class="px-2.5 py-1 rounded text-code-sm font-mono text-outline hover:text-on-surface transition-colors">INFO [9,812]</button>
+<button class="px-2.5 py-1 rounded text-code-sm font-mono text-outline hover:text-on-surface transition-colors">WARN [582]</button>
+<button class="px-2.5 py-1 rounded text-code-sm font-mono text-outline hover:text-on-surface transition-colors">ERROR [27]</button>
+</div>
+<div class="w-[1px] h-5 bg-outline-variant mx-1"></div>
+<!-- Agent filter chips -->
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider mr-1">AGENT:</span>
+<button class="h-6 px-2 rounded bg-surface-container border border-outline-variant text-code-sm font-mono text-on-surface hover:border-primary transition-colors flex items-center gap-1">
+<span>agent-2</span>
+<span class="material-symbols-outlined text-[11px] text-outline" data-icon="close">close</span>
+</button>
+<button class="h-6 px-2 rounded bg-surface-container border border-outline-variant text-code-sm font-mono text-on-surface hover:border-primary transition-colors flex items-center gap-1">
+<span>sub-139</span>
+<span class="material-symbols-outlined text-[11px] text-outline" data-icon="close">close</span>
+</button>
+<button class="h-6 px-2 rounded bg-surface-container border border-outline-variant text-code-sm font-mono text-outline hover:text-on-surface hover:border-outline transition-colors flex items-center gap-1">
+<span>+ operator</span>
+</button>
+</div>
+</div>
+<!-- Free-text query console & toggles -->
+<div class="flex items-center gap-3">
+<div class="relative w-80">
+<span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-outline font-mono text-code-sm">λ</span>
+<input class="w-full h-7 pl-6 pr-3 bg-surface-container-lowest border border-outline-variant rounded font-code-sm text-code-sm text-on-surface placeholder:text-outline focus:border-primary focus:outline-none transition-colors" placeholder="filter by action, node id, or hash..." type="text" value=""/>
+</div>
+<div class="flex items-center gap-3 pl-2 border-l border-outline-variant font-code-sm text-code-sm text-on-surface-variant">
+<!-- Autoscroll Toggle -->
+<label class="flex items-center gap-1.5 cursor-pointer">
+<input checked="" class="w-3.5 h-3.5 bg-surface-container-lowest border-outline-variant rounded text-primary focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<span class="font-mono text-primary font-medium">Autoscroll (ON)</span>
+</label>
+<!-- Group-by-day Toggle -->
+<label class="flex items-center gap-1.5 cursor-pointer">
+<input class="w-3.5 h-3.5 bg-surface-container-lowest border-outline-variant rounded text-primary focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<span class="font-mono text-outline">Group by Day</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 2: MAIN TWO-COLUMN SPACIOUS LAYOUT -->
+<div class="flex-1 flex min-h-0 overflow-hidden">
+<!-- COLUMN A: STREAMING OPERATIONS TABLE (LEFT/CENTER) -->
+<section class="flex-1 flex flex-col min-w-0 border-r border-outline-variant bg-surface-container-lowest overflow-hidden">
+<!-- Table Header -->
+<div class="h-8 px-6 bg-surface-container-low border-b border-outline-variant grid grid-cols-12 items-center font-label-md text-label-md text-outline uppercase tracking-wider shrink-0 select-none">
+<div class="col-span-1">SEQ</div>
+<div class="col-span-1">LEVEL</div>
+<div class="col-span-1">AGENT</div>
+<div class="col-span-2">ACTION</div>
+<div class="col-span-3">DESCRIPTION</div>
+<div class="col-span-2">NODES INVOLVED</div>
+<div class="col-span-1">CHAIN HASH</div>
+<div class="col-span-1 text-right">OCCURRED AT</div>
+</div>
+<!-- Table Body (Scrollable Stream) -->
+<div class="flex-1 overflow-y-auto divide-y divide-outline-variant">
+<!-- Row 1 (Recent: Graph Mutation) -->
+<div class="px-6 py-3.5 grid grid-cols-12 items-center hover:bg-surface-container/60 transition-colors duration-100 group">
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">#10421</div>
+<div class="col-span-1">
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">INFO</span>
+</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-primary font-medium">agent-2</div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-on-surface flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>mutate_graph</span>
+</div>
+<div class="col-span-3 font-body-sm text-body-sm text-on-surface truncate pr-2">
+                Attached directional edge [INFERRED_DEPENDENCY] weight 0.88
+              </div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-secondary hover:underline cursor-pointer truncate">
+                dag:subgraph_tier2
+              </div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">9f2c1ab4</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline text-right">14:41:58.204</div>
+</div>
+<!-- Row 2 (Warning: Lock Contention) -->
+<div class="px-6 py-3.5 grid grid-cols-12 items-center bg-surface-container/30 hover:bg-surface-container transition-colors duration-100 group border-l-2 border-primary">
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">#10420</div>
+<div class="col-span-1">
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-primary bg-primary/10 border border-primary/30">WARN</span>
+</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-secondary font-medium">sub-139</div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-on-surface flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>record_outcome</span>
+</div>
+<div class="col-span-3 font-body-sm text-body-sm text-on-surface truncate pr-2">
+                Lease renewal wait-queue exceeded 120ms threshold on lease lock
+              </div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-secondary hover:underline cursor-pointer truncate">
+                concept_419
+              </div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">8a1d440f</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline text-right">14:41:57.912</div>
+</div>
+<!-- Row 3 (Error: Quorum Lock Timeout) -->
+<div class="px-6 py-3.5 grid grid-cols-12 items-center bg-error-container/10 hover:bg-error-container/20 transition-colors duration-100 group">
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">#10419</div>
+<div class="col-span-1">
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-error bg-error/10 border border-error/30">ERROR</span>
+</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-secondary font-medium">sub-139</div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-error flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span>acquire_lease</span>
+</div>
+<div class="col-span-3 font-body-sm text-body-sm text-on-surface truncate pr-2">
+                Lease acquisition rejected: CONFLICT [NODE_IN_USE] by agent-2
+              </div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-error hover:underline cursor-pointer truncate">
+                kg_entity_4402
+              </div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">77e19cb2</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline text-right">14:41:56.088</div>
+</div>
+<!-- Row 4 (Operator Action) -->
+<div class="px-6 py-3.5 grid grid-cols-12 items-center hover:bg-surface-container/60 transition-colors duration-100 group">
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">#10418</div>
+<div class="col-span-1">
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">INFO</span>
+</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-tertiary font-medium">operator</div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-on-surface flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>log_event</span>
+</div>
+<div class="col-span-3 font-body-sm text-body-sm text-on-surface truncate pr-2">
+                Snapshot sync completed for epoch 8812 (WAL checkpoint flushed)
+              </div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-secondary hover:underline cursor-pointer truncate">
+                vec_store_08
+              </div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">3d81b899</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline text-right">14:41:54.340</div>
+</div>
+<!-- Row 5 (Query Action) -->
+<div class="px-6 py-3.5 grid grid-cols-12 items-center hover:bg-surface-container/60 transition-colors duration-100 group">
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">#10417</div>
+<div class="col-span-1">
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">INFO</span>
+</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-primary font-medium">agent-2</div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-on-surface flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>query</span>
+</div>
+<div class="col-span-3 font-body-sm text-body-sm text-on-surface truncate pr-2">
+                Executed semantic neighborhood lookup: depth=2 limit=50 entities
+              </div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-secondary hover:underline cursor-pointer truncate">
+                edge:rel_ctx_891
+              </div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">55c2f0a1</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline text-right">14:41:53.119</div>
+</div>
+<!-- Row 6 (Record Outcome) -->
+<div class="px-6 py-3.5 grid grid-cols-12 items-center hover:bg-surface-container/60 transition-colors duration-100 group">
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">#10416</div>
+<div class="col-span-1">
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">INFO</span>
+</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-primary font-medium">agent-2</div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-on-surface flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>record_outcome</span>
+</div>
+<div class="col-span-3 font-body-sm text-body-sm text-on-surface truncate pr-2">
+                Synthesized sub-graph embedding state and assigned validation hash
+              </div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-secondary hover:underline cursor-pointer truncate">
+                concept_419
+              </div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">12ba4d03</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline text-right">14:41:51.884</div>
+</div>
+<!-- Row 7 (Warning: Stale Cache) -->
+<div class="px-6 py-3.5 grid grid-cols-12 items-center hover:bg-surface-container/60 transition-colors duration-100 group">
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">#10415</div>
+<div class="col-span-1">
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-primary bg-primary/10 border border-primary/30">WARN</span>
+</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-secondary font-medium">sub-139</div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-on-surface flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>query</span>
+</div>
+<div class="col-span-3 font-body-sm text-body-sm text-on-surface truncate pr-2">
+                Local cache invalidation pending for node partition [shard-3]
+              </div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-secondary hover:underline cursor-pointer truncate">
+                subgraph_tier2
+              </div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">b82ef455</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline text-right">14:41:50.002</div>
+</div>
+<!-- Row 8 (Mutate Graph) -->
+<div class="px-6 py-3.5 grid grid-cols-12 items-center hover:bg-surface-container/60 transition-colors duration-100 group">
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">#10414</div>
+<div class="col-span-1">
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">INFO</span>
+</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-tertiary font-medium">operator</div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-on-surface flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>mutate_graph</span>
+</div>
+<div class="col-span-3 font-body-sm text-body-sm text-on-surface truncate pr-2">
+                Pruned orphaned leaf entities: total 4 nodes released
+              </div>
+<div class="col-span-2 font-code-sm text-code-sm font-mono text-secondary hover:underline cursor-pointer truncate">
+                kg_entity_4402
+              </div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline">4e112d7c</div>
+<div class="col-span-1 font-code-sm text-code-sm font-mono text-outline text-right">14:41:48.510</div>
+</div>
+</div>
+<!-- Stream Footer / Live indicator -->
+<div class="h-7 px-6 bg-surface-container-low border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm text-outline shrink-0">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-ping"></span>
+<span class="font-mono text-[11px] text-tertiary">STREAM ACTIVE — LISTENING ON /ws/telemetry/v1</span>
+</div>
+<div class="font-mono text-[11px]">
+              SHOWING 8 OF 10,421 EVENTS
+            </div>
+</div>
+</section>
+<!-- COLUMN B: RIGHT SIDE PANEL (NODE LEASES & CONTESTED QUEUE) -->
+<section class="w-96 flex flex-col bg-surface-container-low overflow-y-auto divide-y divide-outline-variant shrink-0">
+<!-- PANEL 1: NODE LEASES -->
+<div class="p-5">
+<!-- Header -->
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Node Leases</h2>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider mt-0.5">8 ACTIVE LEASES • QUORUM VERIFIED</div>
+</div>
+<span class="px-2 py-0.5 rounded text-code-sm font-mono bg-tertiary/10 text-tertiary border border-tertiary/20">8 / 8 VALID</span>
+</div>
+<!-- Leases List Cards -->
+<div class="mt-3.5 space-y-2">
+<!-- Card 1: Conflict Highlighted -->
+<div class="p-3 bg-surface-container border border-error/40 rounded">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md font-mono text-error font-semibold">kg_entity_4402</span>
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-error bg-error/10 border border-error/40">
+                    CONFLICT [NODE_IN_USE]
+                  </span>
+</div>
+<div class="mt-2 text-code-sm font-mono text-outline flex items-center justify-between">
+<div>HOLDER: <span class="text-primary font-medium">agent-2</span></div>
+<div>CONTESTED BY: <span class="text-error font-medium">sub-139</span></div>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm font-mono">
+<span class="text-outline">TTL REMAINING:</span>
+<span class="text-error font-semibold animate-pulse">00m 18s</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-3 bg-surface-container border border-outline-variant rounded">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md font-mono text-on-surface font-semibold">concept_419</span>
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">
+                    ACTIVE LEASE
+                  </span>
+</div>
+<div class="mt-2 text-code-sm font-mono text-outline flex items-center justify-between">
+<div>HOLDER: <span class="text-primary font-medium">agent-2</span></div>
+<div>WRITES: <span class="text-on-surface">32 ops</span></div>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm font-mono">
+<span class="text-outline">TTL REMAINING:</span>
+<span class="text-on-surface font-medium">03m 12s</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="p-3 bg-surface-container border border-outline-variant rounded">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md font-mono text-on-surface font-semibold">edge:rel_ctx_891</span>
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">
+                    ACTIVE LEASE
+                  </span>
+</div>
+<div class="mt-2 text-code-sm font-mono text-outline flex items-center justify-between">
+<div>HOLDER: <span class="text-tertiary font-medium">operator</span></div>
+<div>WRITES: <span class="text-on-surface">114 ops</span></div>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm font-mono">
+<span class="text-outline">TTL REMAINING:</span>
+<span class="text-on-surface font-medium">14m 45s</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="p-3 bg-surface-container border border-outline-variant rounded">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md font-mono text-on-surface font-semibold">dag:subgraph_tier2</span>
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">
+                    ACTIVE LEASE
+                  </span>
+</div>
+<div class="mt-2 text-code-sm font-mono text-outline flex items-center justify-between">
+<div>HOLDER: <span class="text-secondary font-medium">sub-139</span></div>
+<div>WRITES: <span class="text-on-surface">6 ops</span></div>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm font-mono">
+<span class="text-outline">TTL REMAINING:</span>
+<span class="text-on-surface font-medium">08m 50s</span>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="p-3 bg-surface-container border border-outline-variant rounded">
+<div class="flex items-center justify-between">
+<span class="font-code-md text-code-md font-mono text-on-surface font-semibold">vec_store_08</span>
+<span class="inline-flex items-center h-[18px] px-1.5 rounded-[2px] font-label-sm text-label-sm uppercase font-mono text-tertiary bg-tertiary/10 border border-tertiary/30">
+                    READ LOCK
+                  </span>
+</div>
+<div class="mt-2 text-code-sm font-mono text-outline flex items-center justify-between">
+<div>HOLDER: <span class="text-tertiary font-medium">operator</span></div>
+<div>PARTITIONS: <span class="text-on-surface">all</span></div>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant flex items-center justify-between font-code-sm font-mono">
+<span class="text-outline">TTL REMAINING:</span>
+<span class="text-on-surface font-medium">21m 04s</span>
+</div>
+</div>
+</div>
+</div>
+<!-- PANEL 2: CONTESTED LOCK QUEUE -->
+<div class="p-5 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Contested Lock Queue</h3>
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider mt-0.5">2 QUEUED • DETERMINISTIC TIEBREAK</div>
+</div>
+<span class="px-2 py-0.5 rounded text-code-sm font-mono bg-primary/10 text-primary border border-primary/20">2 PENDING</span>
+</div>
+<!-- Contested queue details -->
+<div class="mt-3 space-y-2">
+<div class="p-2.5 bg-surface-container border border-outline-variant rounded font-code-sm font-mono">
+<div class="flex justify-between items-center text-outline">
+<span>TARGET: <span class="text-on-surface">kg_entity_4402</span></span>
+<span class="text-error">VIOLATION</span>
+</div>
+<div class="text-[11px] text-outline mt-1">
+                    Actor <span class="text-secondary">sub-139</span> queued at 14:41:56 (weight 1.4). Tiebreak resolution favors current holder until TTL expiry.
+                  </div>
+</div>
+<div class="p-2.5 bg-surface-container border border-outline-variant rounded font-code-sm font-mono">
+<div class="flex justify-between items-center text-outline">
+<span>TARGET: <span class="text-on-surface">dag:subgraph_tier2</span></span>
+<span class="text-primary">AWAIT_READ</span>
+</div>
+<div class="text-[11px] text-outline mt-1">
+                    Actor <span class="text-tertiary">operator</span> snapshot inspection queued behind write lock.
+                  </div>
+</div>
+</div>
+</div>
+<!-- Revoke Button -->
+<div class="pt-4 mt-4 border-t border-outline-variant">
+<button class="w-full h-8 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-error text-error font-medium rounded transition-colors duration-100 flex items-center justify-center gap-1.5 font-code-sm text-code-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-[14px]" data-icon="delete_sweep">delete_sweep</span>
+<span>Revoke Stale Leases</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- ==================== BOTTOM TELEMETRY FOOTER ==================== -->
+<footer class="h-6 w-full pl-56 pr-4 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between font-code-sm text-code-sm font-mono text-outline shrink-0 z-20 select-none">
+<div class="flex items-center gap-3 text-[11px]">
+<span class="text-tertiary font-semibold">RAFT CONSENSUS: OK (LEADER #1)</span>
+<span class="text-outline-variant">|</span>
+<span>WAL OFFSET: <span class="text-on-surface">0x4F09B1</span></span>
+<span class="text-outline-variant">|</span>
+<span>LATENCY: <span class="text-tertiary">0.8ms</span></span>
+<span class="text-outline-variant">|</span>
+<span>MEM RSS: <span class="text-on-surface">46.2 MB</span></span>
+</div>
+<div class="flex items-center gap-3 text-[11px]">
+<span>DUCKDB v0.10.1</span>
+<span class="text-outline-variant">|</span>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="tracking-wide">LIVE CLUSTER FEED ONLINE</span>
+</div>
+</div>
+</footer>
+</body></html>
