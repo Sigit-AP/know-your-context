@@ -56,7 +56,7 @@ VERSIONS_DIR = Path(__file__).resolve().parent.parent / "migrations" / "versions
 MIN_SQLITE_FOR_DROP_COLUMN = (3, 35, 0)
 
 #: Rollback stops at the file-migration era (v1/v2 have no down scripts).
-SUPPORTED_DOWN_TARGETS: frozenset[int] = frozenset({2, 3})
+SUPPORTED_DOWN_TARGETS: frozenset[int] = frozenset({2, 3, 4})
 
 #: Tables the v3 migration owns (dropped by its down script).
 _V3_TABLES: tuple[str, ...] = ("files", "symbols", "graph_edges", "unresolved_refs")
@@ -140,6 +140,14 @@ MIGRATIONS: tuple[Migration, ...] = (
         down_file="0004_down.sql",
         data_guard_sql="SELECT COUNT(*) FROM unresolved_refs WHERE failure_reason IS NOT NULL",
     ),
+    Migration(
+        version=5,
+        name="node_leases",
+        description="node leases: multi-agent write coordination table (W17)",
+        up_file="0005_up.sql",
+        down_file="0005_down.sql",
+        data_guard_sql="SELECT COUNT(*) FROM node_leases",
+    ),
 )
 
 _MIGRATION_BY_VERSION = {migration.version: migration for migration in MIGRATIONS}
@@ -219,6 +227,11 @@ def verify_schema(path: str | Path) -> dict[str, Any]:
             problems.append("schema_versions records v4 but unresolved_refs.failure_reason is missing")
         if _MIN_EXPLICIT_VERSION <= recorded < 4 and has_failure_reason:
             problems.append("unresolved_refs.failure_reason exists without a v4 record")
+        has_node_leases = _table_exists(conn, "node_leases")
+        if recorded >= 5 and not has_node_leases:
+            problems.append("schema_versions records v5 but the node_leases table is missing")
+        if _MIN_EXPLICIT_VERSION <= recorded < 5 and has_node_leases:
+            problems.append("node_leases exists without a v5 schema_versions record")
         return {
             "recorded_version": recorded,
             "versions": versions,

@@ -129,7 +129,7 @@ def test_inspect_v2_store_is_upgradeable_to_in_code_versions(tmp_path: Path, mon
     monkeypatch.undo()
     info = inspect_store_version(path)
     assert info.status == "upgradeable"
-    assert info.pending_versions == (3, 4)
+    assert info.pending_versions == (3, 4, 5)
 
 
 def test_inspect_empty_sqlite_is_upgradeable(tmp_path: Path) -> None:
@@ -267,8 +267,8 @@ def test_migrate_store_applies_pending(tmp_path: Path, monkeypatch: pytest.Monke
     report = migrate_store(path)
     assert report.already_current is False
     assert report.before_version == 2
-    assert report.after_version == 4
-    assert report.applied == (3, 4)
+    assert report.after_version == 5
+    assert report.applied == (3, 4, 5)
     # the migrated store opens as a fully current EventStore
     store = EventStore(path)
     try:
@@ -335,7 +335,7 @@ def test_export_bundle_records_full_version_ladder(tmp_path: Path) -> None:
     store = _store(tmp_path)
     try:
         manifest = export_bundle(store, tmp_path / "bundle", now=EPOCH)
-        assert manifest.applied_migrations == (1, 2, 3, 4)  # file migrations + in-code ledger
+        assert manifest.applied_migrations == (1, 2, 3, 4, 5)  # file migrations + in-code ledger
     finally:
         store.close()
 

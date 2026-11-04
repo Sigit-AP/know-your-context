@@ -32,6 +32,7 @@ __all__ = [
     "MALFORMED_REQUEST",
     "MAX_FRAME_BYTES",
     "METHOD_NOT_FOUND",
+    "NODE_IN_USE",
     "PAYLOAD_TOO_LARGE",
     "PROTOCOL_VERSION",
     "SCOPE_DENIED",
@@ -82,6 +83,9 @@ SHUTTING_DOWN = -32008
 # (for a non-public verb), forged, expired, revoked, actor-mismatched, or
 # outside its verb allowlist/scope.
 CAPABILITY_DENIED = -32009
+# W17 node leases (SUB-138): a mutation touched a node whose unexpired lease
+# is held by another actor; data carries code/holder/node_id/expires_at.
+NODE_IN_USE = -32010
 
 _ENVELOPE_KEYS = frozenset({"jsonrpc", "id", "method", "params"})
 

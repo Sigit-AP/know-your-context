@@ -302,6 +302,10 @@ def _route_group_flag(tail: str) -> str | None:
         return "webview.routes.provenance_enabled"
     if tail.startswith("ledger/") or tail == "audit/verify":
         return "webview.routes.ledger_enabled"
+    if tail == "activity" or tail.startswith("activity/") or tail == "leases":
+        return "webview.routes.activity_enabled"
+    if tail == "setup":
+        return "webview.routes.setup_enabled"
     return None
 
 
@@ -418,6 +422,24 @@ API_ROUTES: tuple[ApiRoute, ...] = (
         "export",
     ),
     ApiRoute("/api/export/node/{id}", "GET", RouteAccess.AUTHENTICATED, "full single-node export bundle", "export"),
+    ApiRoute(
+        "/api/activity",
+        "GET",
+        RouteAccess.AUTHENTICATED,
+        "agent activity feed: agent — action — description — nodes — sha8 per event-log row",
+    ),
+    ApiRoute("/api/activity/tail", "GET", RouteAccess.AUTHENTICATED, "activity entries after a seq, ascending"),
+    ApiRoute("/api/leases", "GET", RouteAccess.AUTHENTICATED, "active node leases (holder + expiry per node)"),
+    ApiRoute("/api/features", "GET", RouteAccess.AUTHENTICATED, "the product feature checklist this UI proves"),
+    ApiRoute("/api/hardware", "GET", RouteAccess.AUTHENTICATED, "the single hardware profile + derived plan"),
+    ApiRoute("/api/relearn", "GET", RouteAccess.AUTHENTICATED, "relearn gate state, pending offer and quarantine"),
+    ApiRoute(
+        "/api/setup",
+        "GET",
+        RouteAccess.AUTHENTICATED,
+        "install progress (sidecar) + persisted webview preference",
+    ),
+    ApiRoute("/api/contracts", "GET", RouteAccess.AUTHENTICATED, "the frozen operation surface + ops surface"),
     ApiRoute("/api/routes", "GET", RouteAccess.AUTHENTICATED, "this route table (discovery)"),
 )
 
@@ -506,6 +528,313 @@ def _valid_token(token: str) -> bool:
 def _like_escape(text: str) -> str:
     """Escape LIKE wildcards so user input matches literally (ESCAPE '\\')."""
     return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+# --------------------------------------------------------------- activity
+
+#: Action codes for the activity feed: short, stable, uppercase tokens.
+_ACTION_BY_EVENT_TYPE: dict[str, str] = {
+    "node.upsert": "UPSERT",
+    "node.retire": "RETIRE",
+    "evidence.append": "EVIDENCE",
+    "relation.add": "RELATION",
+    "admin": "ADMIN",
+    "lease.acquired": "LEASE",
+    "lease.released": "RELEASE",
+    "lease.force_released": "FORCE-RELEASE",
+    "lease.conflict": "CONFLICT",
+    "lease.expired": "EXPIRE",
+}
+
+
+def _describe_lease_event(event_type: str, payload: Mapping[str, Any]) -> tuple[str, str, str]:
+    action = _ACTION_BY_EVENT_TYPE.get(event_type, "LEASE")
+    node_id = sanitize_text(str(payload.get("node_id", "")))
+    if event_type == "lease.conflict":
+        holder = sanitize_text(str(payload.get("holder", "?")))
+        expires = sanitize_text(str(payload.get("expires_at", "")))
+        return action, "warn", f"blocked: node {node_id} held by {holder} until {expires}"
+    if event_type == "lease.acquired":
+        expires = sanitize_text(str(payload.get("expires_at", "")))
+        return action, "info", f"claimed node {node_id} until {expires}"
+    if event_type == "lease.force_released":
+        holder = sanitize_text(str(payload.get("holder", "?")))
+        return action, "warn", f"operator force-released node {node_id} (was held by {holder})"
+    if event_type == "lease.expired":
+        return action, "info", f"lease on node {node_id} expired"
+    return action, "info", f"released node {node_id}"
+
+
+def _describe_event(kind: str, event_type: str, actor: str, payload: Mapping[str, Any]) -> tuple[str, str, str]:
+    """(action, level, description) for one event-log row — derived, never stored.
+
+    Levels: ``error`` for failed invocations, ``warn`` for lease conflicts and
+    forced releases, ``info`` otherwise. Descriptions quote the payload's own
+    fields (operation, duration, node summary, holder) so the line is evidence,
+    not decoration.
+    """
+    if event_type.startswith("lease."):
+        return _describe_lease_event(event_type, payload)
+    if kind == "audit":
+        result_refs = payload.get("result_references")
+        refs_op = result_refs.get("operation") if isinstance(result_refs, Mapping) else None
+        operation = sanitize_text(str(payload.get("operation") or refs_op or event_type))
+        action = operation.rsplit(".", 1)[-1].upper().replace("-", "_")
+        status = str(payload.get("status", ""))
+        if status == "failure":
+            error = sanitize_text(str(payload.get("error", "unknown error")))[:200]
+            return action, "error", f"{operation} failed: {error}"
+        duration_ms = payload.get("duration_ms")
+        state = f" ({status})" if status else ""
+        suffix = f" in {duration_ms}ms" if isinstance(duration_ms, int) else ""
+        return action, "info", f"{operation} completed{state}{suffix}"
+    return _describe_domain_event(event_type, payload)
+
+
+def _describe_domain_event(event_type: str, payload: Mapping[str, Any]) -> tuple[str, str, str]:
+    action = _ACTION_BY_EVENT_TYPE.get(event_type, event_type.upper())
+    if event_type == "node.upsert":
+        node = payload.get("node")
+        summary = ""
+        if isinstance(node, Mapping):
+            summary = sanitize_text(str(node.get("summary", "")))[:120]
+        nested_id = node.get("node_id", "") if isinstance(node, Mapping) else ""
+        node_id = sanitize_text(str(payload.get("node_id", nested_id)))
+        text = f"upserted node {node_id}" + (f": {summary}" if summary else "")
+        return action, "info", text
+    if event_type == "node.retire":
+        return action, "info", f"retired node {sanitize_text(str(payload.get('node_id', '')))}"
+    if event_type == "relation.add":
+        relation = payload.get("relation")
+        if isinstance(relation, Mapping):
+            source = sanitize_text(str(relation.get("source_node_id", "")))
+            target = sanitize_text(str(relation.get("target_node_id", "")))
+            rel = sanitize_text(str(relation.get("kind", "")))
+            return action, "info", f"linked {source} -[{rel}]-> {target}"
+        return action, "info", "linked two nodes"
+    if event_type == "evidence.append":
+        return action, "info", f"appended evidence to {sanitize_text(str(payload.get('node_id', '')))}"
+    return action, "info", sanitize_text(event_type)
+
+
+# --------------------------------------------------------------- features
+
+#: The product feature checklist (W17): every named surface of the product,
+#: the tab that shows it, the API routes that serve it, and the CLI command
+#: that owns it. ``tests/test_webview_coverage.py`` proves every row: routes
+#: exist in API_ROUTES and answer 200 on a seeded server, and the tab exists
+#: in index.html with a matching view section.
+WEBVIEW_FEATURES: tuple[dict[str, Any], ...] = (
+    {
+        "key": "graph",
+        "title": "Graph visualization (pan/zoom, node detail)",
+        "tab": "graph",
+        "routes": ("/api/graph",),
+        "cli": "webview",
+    },
+    {
+        "key": "node-detail",
+        "title": "Node detail: relations, evidence, revisions",
+        "tab": "graph",
+        "routes": ("/api/node/{id}", "/api/node/{id}/edges", "/api/node/{id}/evidence", "/api/node/{id}/revisions"),
+        "cli": "query",
+    },
+    {
+        "key": "provenance",
+        "title": "Five-link provenance verdict",
+        "tab": "graph",
+        "routes": ("/api/provenance/{id}",),
+        "cli": "provenance verify",
+    },
+    {
+        "key": "search",
+        "title": "Symbol search with kind/lang filters",
+        "tab": "search",
+        "routes": ("/api/search", "/api/search/symbols"),
+        "cli": "query",
+    },
+    {"key": "query", "title": "Graph neighborhood query", "tab": "search", "routes": ("/api/query",), "cli": "query"},
+    {
+        "key": "activity",
+        "title": "Agent activity log (grouping, levels, search, autoscroll)",
+        "tab": "activity",
+        "routes": ("/api/activity", "/api/activity/tail"),
+        "cli": "webview",
+    },
+    {
+        "key": "leases",
+        "title": "Node leases: holder + expiry, typed NODE_IN_USE",
+        "tab": "activity",
+        "routes": ("/api/leases",),
+        "cli": "lease list",
+    },
+    {
+        "key": "browse",
+        "title": "Browse nodes, edges, code-graph edges, symbols",
+        "tab": "browse",
+        "routes": ("/api/nodes", "/api/edges", "/api/graph/edges", "/api/symbols", "/api/symbols/{id}"),
+        "cli": "export",
+    },
+    {
+        "key": "refs",
+        "title": "Unresolved references by status",
+        "tab": "browse",
+        "routes": ("/api/refs", "/api/refs/pending", "/api/refs/failed", "/api/refs/resolved"),
+        "cli": "diagnose",
+    },
+    {
+        "key": "hierarchy",
+        "title": "Call hierarchy around a symbol",
+        "tab": "codeintel",
+        "routes": ("/api/hierarchy/{id}",),
+        "cli": "codeintel callers-of",
+    },
+    {
+        "key": "codeintel",
+        "title": "Code intelligence: callers/callees/path/impact/co-change/boundary",
+        "tab": "codeintel",
+        "routes": ("/api/codeintel",),
+        "cli": "codeintel",
+    },
+    {
+        "key": "metrics",
+        "title": "Operational metrics, series and per-operation buckets",
+        "tab": "metrics",
+        "routes": ("/api/metrics", "/api/metrics/series", "/api/metrics/buckets", "/api/metrics/operations"),
+        "cli": "metrics",
+    },
+    {
+        "key": "health",
+        "title": "Diagnostics: findings, checks, detail",
+        "tab": "health",
+        "routes": ("/api/health", "/api/health/detail", "/api/health/findings", "/api/health/checks"),
+        "cli": "diagnose",
+    },
+    {
+        "key": "analytics",
+        "title": "Centrality, communities, bridges",
+        "tab": "analytics",
+        "routes": (
+            "/api/analytics",
+            "/api/analytics/centrality",
+            "/api/analytics/communities",
+            "/api/analytics/bridges",
+        ),
+        "cli": "analytics",
+    },
+    {
+        "key": "audit",
+        "title": "Audit chain: paged, tail, verified end-to-end",
+        "tab": "audit",
+        "routes": ("/api/audit", "/api/audit/tail", "/api/audit/verify"),
+        "cli": "lifecycle verify",
+    },
+    {
+        "key": "proposals",
+        "title": "Review signals and improvement proposals",
+        "tab": "proposals",
+        "routes": ("/api/proposals", "/api/improvements", "/api/improvements/{id}"),
+        "cli": "review",
+    },
+    {
+        "key": "debt",
+        "title": "Knowledge debt queue and burn-down report",
+        "tab": "debt",
+        "routes": ("/api/debt", "/api/debt/report"),
+        "cli": "debt list",
+    },
+    {
+        "key": "extractions",
+        "title": "Extraction review queue (contract v4)",
+        "tab": "extractions",
+        "routes": ("/api/extractions", "/api/extractions/summary", "/api/extractions/{receipt_id}"),
+        "cli": "extraction review",
+    },
+    {
+        "key": "store",
+        "title": "Store introspection: stats, tables, schema versions",
+        "tab": "store",
+        "routes": ("/api/store/stats", "/api/store/tables", "/api/store/tables/{name}", "/api/store/schema"),
+        "cli": "migrate plan",
+    },
+    {
+        "key": "switches",
+        "title": "Operator kill switches, resolved state",
+        "tab": "system",
+        "routes": ("/api/switches", "/api/switches/{name}"),
+        "cli": "config",
+    },
+    {
+        "key": "config",
+        "title": "Configuration knobs with provenance",
+        "tab": "system",
+        "routes": ("/api/config", "/api/config/{name}"),
+        "cli": "config",
+    },
+    {
+        "key": "hardware",
+        "title": "Single hardware profile + derived plan",
+        "tab": "system",
+        "routes": ("/api/hardware",),
+        "cli": "doctor",
+    },
+    {
+        "key": "serve",
+        "title": "Superpower daemon + route discovery",
+        "tab": "system",
+        "routes": ("/api/routes",),
+        "cli": "serve",
+    },
+    {
+        "key": "relearn",
+        "title": "Relearn gate: state, pending offer, quarantine",
+        "tab": "system",
+        "routes": ("/api/relearn",),
+        "cli": "relearn_status",
+    },
+    {
+        "key": "bench",
+        "title": "Per-operation latency bench from the journal",
+        "tab": "bench",
+        "routes": ("/api/bench", "/api/bench/{operation}"),
+        "cli": "bench",
+    },
+    {
+        "key": "ledgers",
+        "title": "Hash-chained health and debt ledgers",
+        "tab": "ledgers",
+        "routes": ("/api/ledger/health", "/api/ledger/debt"),
+        "cli": "lifecycle trend",
+    },
+    {
+        "key": "experience-rerank",
+        "title": "Experience rerank journal + verification",
+        "tab": "ledgers",
+        "routes": ("/api/ledger/experience",),
+        "cli": "evaluate",
+    },
+    {
+        "key": "exports",
+        "title": "In-memory subgraph and node exports",
+        "tab": "exports",
+        "routes": ("/api/export/subgraph", "/api/export/node/{id}"),
+        "cli": "export",
+    },
+    {
+        "key": "contracts",
+        "title": "Frozen operation surface (contract v1/v2 + addenda)",
+        "tab": "contracts",
+        "routes": ("/api/contracts",),
+        "cli": "contracts",
+    },
+    {
+        "key": "setup-lifecycle",
+        "title": "Install progress + webview on/off lifecycle",
+        "tab": "setup",
+        "routes": ("/api/setup",),
+        "cli": "webview status",
+    },
+)
 
 
 # --------------------------------------------------------------- the app
@@ -1061,6 +1390,211 @@ class WebviewApp:
                 }
             )
         return {"schema_version": SCHEMA_VERSION, "since": since, "count": len(events), "events": events}
+
+    # ------------------------------------------------------- W17 activity log
+
+    def _activity_rows(self, *, since: int, limit: int, ascending: bool) -> list[dict[str, Any]]:
+        """Event-log rows (all kinds) shaped as activity entries.
+
+        Every field is derived from the stored row: the agent is the recorded
+        actor, the sha8 is the chain-hash prefix, the description comes from
+        the event's own payload. Nothing is invented; unreadable payloads
+        surface as a warn-level entry, never silently dropped.
+        """
+        with self._store.read() as conn:
+            if ascending:
+                rows = conn.execute(
+                    "SELECT event_seq, kind, event_type, actor, occurred_at, node_id, payload_json, event_hash "
+                    "FROM event_log WHERE event_seq > ? ORDER BY event_seq ASC LIMIT ?",
+                    (since, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT event_seq, kind, event_type, actor, occurred_at, node_id, payload_json, event_hash "
+                    "FROM event_log ORDER BY event_seq DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+        return [self._activity_entry(row) for row in rows]
+
+    @staticmethod
+    def _activity_entry(row: Any) -> dict[str, Any]:
+        event_type = str(row["event_type"])
+        kind = str(row["kind"])
+        actor = sanitize_text(str(row["actor"]))
+        try:
+            payload = json.loads(str(row["payload_json"]))
+            if not isinstance(payload, dict):
+                payload = {}
+        except json.JSONDecodeError:
+            payload = {}
+        nodes: list[str] = []
+        if row["node_id"] is not None:
+            nodes.append(sanitize_text(str(row["node_id"])))
+        for key in ("node_id", "source_node_id", "target_node_id"):
+            value = payload.get(key)
+            if isinstance(value, str) and value and value not in nodes:
+                nodes.append(sanitize_text(value))
+        node_payload = payload.get("node")
+        if isinstance(node_payload, dict):
+            nested = node_payload.get("node_id")
+            if isinstance(nested, str) and nested and nested not in nodes:
+                nodes.append(sanitize_text(nested))
+        action, level, description = _describe_event(kind, event_type, actor, payload)
+        return {
+            "seq": int(row["event_seq"]),
+            "kind": kind,
+            "event_type": event_type,
+            "agent": actor,
+            "action": action,
+            "description": description,
+            "nodes": nodes,
+            "sha8": str(row["event_hash"])[:8],
+            "level": level,
+            "occurred_at": str(row["occurred_at"]),
+        }
+
+    def activity_payload(self, *, limit: int) -> dict[str, Any]:
+        """Latest activity entries, newest first (the tab's initial load)."""
+        activity_max = self._knob_int("webview.activity_limit_max")
+        if not 1 <= limit <= activity_max:
+            raise _BadRequest(f"limit must be in [1, {activity_max}], got {limit}")
+        entries = self._activity_rows(since=0, limit=limit, ascending=False)
+        agents = sorted({entry["agent"] for entry in entries})
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "count": len(entries),
+            "agents": agents,
+            "entries": entries,
+        }
+
+    def activity_tail_payload(self, *, since: int, limit: int) -> dict[str, Any]:
+        """Entries with ``event_seq > since``, ascending — polling tail."""
+        if since < 0:
+            raise _BadRequest(f"since must be >= 0, got {since}")
+        tail_max = self._knob_int("webview.activity_limit_max")
+        if not 1 <= limit <= tail_max:
+            raise _BadRequest(f"limit must be in [1, {tail_max}], got {limit}")
+        entries = self._activity_rows(since=since, limit=limit, ascending=True)
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "since": since,
+            "count": len(entries),
+            "entries": entries,
+        }
+
+    def leases_payload(self) -> dict[str, Any]:
+        """The live lease table: which node is held by which actor until when."""
+        from know_your_context.leases import LeaseRegistry
+
+        leases = LeaseRegistry(self._store).active_leases()
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "count": len(leases),
+            "leases": [redact_value(lease.to_dict()) for lease in leases],
+        }
+
+    def features_payload(self) -> dict[str, Any]:
+        """The product feature checklist this UI proves (see W17 tests)."""
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "count": len(WEBVIEW_FEATURES),
+            "features": [dict(feature) for feature in WEBVIEW_FEATURES],
+        }
+
+    def hardware_payload(self) -> dict[str, Any]:
+        """The single hardware profile + derived plan (W15 hardware pillar).
+
+        A failed probe is reported as data (``available: False`` + the typed
+        error), never as a 500: machine introspection is a non-critical path.
+        """
+        from know_your_context.hardware.probe import ProbeError, probe_hardware
+        from know_your_context.hardware.profile import hardware_plan
+
+        try:
+            profile = probe_hardware()
+            plan = hardware_plan()
+        except ProbeError as error:
+            return {
+                "schema_version": SCHEMA_VERSION,
+                "available": False,
+                "error": {"code": getattr(error, "code", "PROBE_FAILED"), "message": sanitize_text(str(error))},
+            }
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "profile": {
+                "cpu_count": profile.cpu_count,
+                "memory": {
+                    "total_bytes": profile.memory.total_bytes,
+                    "available_bytes": profile.memory.available_bytes,
+                    "note": sanitize_text(profile.memory.note),
+                },
+                "disk": {
+                    "kind": str(profile.disk.kind),
+                    "device": profile.disk.device,
+                    "rotational": profile.disk.rotational,
+                    "note": sanitize_text(profile.disk.note),
+                },
+                "gpu": {
+                    "kind": str(profile.gpu.kind),
+                    "devices": [sanitize_text(device) for device in profile.gpu.devices],
+                    "notes": [sanitize_text(note) for note in profile.gpu.notes],
+                },
+                "notes": [sanitize_text(note) for note in profile.notes],
+            },
+            "plan": {
+                "base_workers": plan.base_workers(),
+                "queue_scale": plan.queue_scale(),
+                "io_buffer_bytes": plan.io_buffer_bytes(),
+                "query_cache_entries": plan.query_cache_entries(),
+            },
+        }
+
+    def relearn_payload(self) -> dict[str, Any]:
+        """The operator-gated relearn lifecycle state (final-flow F-4)."""
+        from know_your_context.relearn import RelearnEngine
+
+        status = RelearnEngine(self._store).status()
+        return redact_value({"schema_version": SCHEMA_VERSION, **status.model_dump(mode="json")})
+
+    def setup_payload(self) -> dict[str, Any]:
+        """Install progress + persisted webview preference (W17 lifecycle).
+
+        Both sidecars are advisory: a corrupt or absent file is reported as
+        data (``idle`` / ``corrupt: …``), never a 500 — the Setup tab must
+        render even mid-install while files are being (re)written.
+        """
+        from know_your_context.ops.webview_control import WebviewPrefsError, read_prefs, read_progress
+
+        try:
+            progress = read_progress(self._store.db_path)
+        except WebviewPrefsError as error:
+            progress = {"state": "corrupt", "steps": [], "error": sanitize_text(str(error))}
+        try:
+            prefs = read_prefs(self._store.db_path)
+        except WebviewPrefsError as error:
+            prefs = {"enabled": None, "port": None, "updated_at": None, "error": sanitize_text(str(error))}
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "progress": progress,
+            "prefs": prefs,
+            "live_refresh_seconds": float(self._knobs.value("webview.live_refresh_seconds")),
+        }
+
+    def contracts_payload(self) -> dict[str, Any]:
+        """The frozen operation surface + the ops surface, with the rules."""
+        from know_your_context.http_api import KNOWLEDGE_OPERATIONS, OPS_OPERATIONS
+
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "knowledge_operations": list(KNOWLEDGE_OPERATIONS),
+            "ops_operations": list(OPS_OPERATIONS),
+            "frozen": True,
+            "notes": [
+                "the fourteen knowledge operations are byte-frozen contract v1/v2",
+                "contract v3/v4 addenda govern ingestion and extraction intake",
+                "new capability lands in new addendum contracts, never in the frozen set",
+            ],
+        }
 
     def _improvement_events(self) -> list[dict[str, Any]]:
         """Domain events carrying improvement markers (proposal/apply/rollback)."""
@@ -2756,6 +3290,19 @@ class WebviewServer:
                         limit=_int_param("limit", _knob_int("webview.audit_tail_limit_default")),
                     ),
                     "audit/verify": app.audit_verify_payload,
+                    "activity": lambda: app.activity_payload(
+                        limit=_int_param("limit", _knob_int("webview.activity_limit_default"))
+                    ),
+                    "activity/tail": lambda: app.activity_tail_payload(
+                        since=_int_param("since", 0),
+                        limit=_int_param("limit", _knob_int("webview.activity_limit_default")),
+                    ),
+                    "leases": app.leases_payload,
+                    "features": app.features_payload,
+                    "hardware": app.hardware_payload,
+                    "relearn": app.relearn_payload,
+                    "setup": app.setup_payload,
+                    "contracts": app.contracts_payload,
                     "proposals": app.proposals_payload,
                     "improvements": app.improvements_payload,
                     "extractions": app.extractions_payload,

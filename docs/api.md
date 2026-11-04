@@ -72,7 +72,9 @@ Contract v3/v4 additions (same three surfaces):
 | `doctor` | | Five probe categories (env, deps, permissions, integrity, performance) with structured suggestions |
 | `migrate` | `plan`, `apply`, `export`, `import`, `verify` | Schema migration ladder and hashed portable bundles |
 | `watchtower` | | Fleet aggregation across stores; probes never write; exit 1 if any store is down/corrupt |
-| `webview` | `--port`, `--no-open` | Loopback-only token-authenticated web viewer |
+| `webview` | `on`, `off`, `status`, `--port`, `--no-open`, `--serve-once` | Loopback-only token-authenticated web viewer (19 live tabs incl. the agent activity log and node leases); `on`/`off` persist the preference next to the store, `status` probes the saved port live |
+| `lease` | `list`, `acquire` NODE `--actor` A `--ttl` S, `release` NODE `--actor` A, `force-release` NODE | Node leases for multi-agent write coordination (schema v5); conflicts raise typed `NODE_IN_USE` and are recorded in the hash-chained event log |
+| `setup` | `--no-webview`, `--port`, `--hold` | First-run install: init store, hardware probe, chain verification, live webview progress at `/api/setup` |
 | `ingest` | `path`, incremental flags | File or directory ingestion (proposal-only) |
 | `extraction` | `review` (`--status`, `--receipt`), `approve`, `reject` | Operator-only contract-v4 review queue |
 | `debt` | `list`, `report` (`--format json\|markdown`, `--record`, `--ledger`), `propose` NODE_ID | Knowledge debt queue: budgeted prioritized list, burn-down metrics over a hash-chained ledger, proposal-gated actions (improve/merge/retire); kill switch `KYS_DEBT_QUEUE` |

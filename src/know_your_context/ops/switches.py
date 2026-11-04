@@ -610,6 +610,11 @@ ENV_WEBVIEW_ROUTES_CONFIG_ENABLED = "KNOW_YOUR_CONTEXT_WEBVIEW_ROUTES_CONFIG_ENA
 ENV_WEBVIEW_ROUTES_DEBT_ENABLED = "KNOW_YOUR_CONTEXT_WEBVIEW_ROUTES_DEBT_ENABLED"
 ENV_WEBVIEW_ROUTES_PROVENANCE_ENABLED = "KNOW_YOUR_CONTEXT_WEBVIEW_ROUTES_PROVENANCE_ENABLED"
 ENV_WEBVIEW_ROUTES_LEDGER_ENABLED = "KNOW_YOUR_CONTEXT_WEBVIEW_ROUTES_LEDGER_ENABLED"
+ENV_WEBVIEW_ROUTES_ACTIVITY_ENABLED = "KNOW_YOUR_CONTEXT_WEBVIEW_ROUTES_ACTIVITY_ENABLED"
+ENV_WEBVIEW_ROUTES_SETUP_ENABLED = "KNOW_YOUR_CONTEXT_WEBVIEW_ROUTES_SETUP_ENABLED"
+ENV_WEBVIEW_ACTIVITY_LIMIT_DEFAULT = "KNOW_YOUR_CONTEXT_WEBVIEW_ACTIVITY_LIMIT_DEFAULT"
+ENV_WEBVIEW_ACTIVITY_LIMIT_MAX = "KNOW_YOUR_CONTEXT_WEBVIEW_ACTIVITY_LIMIT_MAX"
+ENV_WEBVIEW_LIVE_REFRESH_SECONDS = "KNOW_YOUR_CONTEXT_WEBVIEW_LIVE_REFRESH_SECONDS"
 
 #: Hardware-aware storage + governor knobs (W15, SUB-134; GPU-VERDICT plan §5).
 ENV_STORAGE_MMAP_ENABLED = "KNOW_YOUR_CONTEXT_STORAGE_MMAP_ENABLED"
@@ -1004,6 +1009,47 @@ CONFIG_KNOBS: tuple[ConfigKnob, ...] = (
         "serve the /api/export/* route group (false: fail-closed 404)",
     ),
     ConfigKnob(
+        "webview.routes.activity_enabled",
+        ENV_WEBVIEW_ROUTES_ACTIVITY_ENABLED,
+        "bool",
+        True,
+        "serve the /api/activity + /api/leases route group (false: fail-closed 404)",
+    ),
+    ConfigKnob(
+        "webview.activity_limit_default",
+        ENV_WEBVIEW_ACTIVITY_LIMIT_DEFAULT,
+        "int",
+        100,
+        "default limit for /api/activity",
+        minimum=1,
+        maximum=5000,
+    ),
+    ConfigKnob(
+        "webview.activity_limit_max",
+        ENV_WEBVIEW_ACTIVITY_LIMIT_MAX,
+        "int",
+        1000,
+        "maximum limit for /api/activity",
+        minimum=1,
+        maximum=5000,
+    ),
+    ConfigKnob(
+        "webview.routes.setup_enabled",
+        ENV_WEBVIEW_ROUTES_SETUP_ENABLED,
+        "bool",
+        True,
+        "serve the /api/setup install-progress route (false: fail-closed 404)",
+    ),
+    ConfigKnob(
+        "webview.live_refresh_seconds",
+        ENV_WEBVIEW_LIVE_REFRESH_SECONDS,
+        "float",
+        2.0,
+        "live UI poll interval; 0 freezes the UI (kill switch)",
+        minimum=0.0,
+        maximum=60.0,
+    ),
+    ConfigKnob(
         "webview.routes.config_enabled",
         ENV_WEBVIEW_ROUTES_CONFIG_ENABLED,
         "bool",
@@ -1268,6 +1314,11 @@ def load_knobs(env: Mapping[str, str] | None = None) -> KnobBoard:
     _read(_KNOB_BY_NAME["webview.rate.export_per_second"], environ.get(ENV_WEBVIEW_RATE_EXPORT_PER_SECOND))
     _read(_KNOB_BY_NAME["webview.rate.export_burst"], environ.get(ENV_WEBVIEW_RATE_EXPORT_BURST))
     _read(_KNOB_BY_NAME["webview.routes.export_enabled"], environ.get(ENV_WEBVIEW_ROUTES_EXPORT_ENABLED))
+    _read(_KNOB_BY_NAME["webview.routes.activity_enabled"], environ.get(ENV_WEBVIEW_ROUTES_ACTIVITY_ENABLED))
+    _read(_KNOB_BY_NAME["webview.activity_limit_default"], environ.get(ENV_WEBVIEW_ACTIVITY_LIMIT_DEFAULT))
+    _read(_KNOB_BY_NAME["webview.activity_limit_max"], environ.get(ENV_WEBVIEW_ACTIVITY_LIMIT_MAX))
+    for _w17 in ("webview.routes.setup_enabled", "webview.live_refresh_seconds"):
+        _read(_KNOB_BY_NAME[_w17], environ.get("KNOW_YOUR_CONTEXT_" + _w17.upper().replace(".", "_")))
     _read(_KNOB_BY_NAME["webview.routes.config_enabled"], environ.get(ENV_WEBVIEW_ROUTES_CONFIG_ENABLED))
     _read(_KNOB_BY_NAME["webview.routes.debt_enabled"], environ.get(ENV_WEBVIEW_ROUTES_DEBT_ENABLED))
     _read(_KNOB_BY_NAME["webview.routes.provenance_enabled"], environ.get(ENV_WEBVIEW_ROUTES_PROVENANCE_ENABLED))

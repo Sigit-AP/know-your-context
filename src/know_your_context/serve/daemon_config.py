@@ -195,6 +195,13 @@ class DaemonConfig:
     # behavior; "enforce" requires an operator-issued capability token for
     # every non-public verb (see security/capabilities.py).
     capability_mode: str = "off"
+    # W17 node leases (SUB-138): when enabled, the write arbiter claims a
+    # lease on every node a mutation touches and a second actor's write to a
+    # leased node fails typed (NODE_IN_USE, holder + expiry in the error data,
+    # conflict recorded in the hash-chained event log). Default off = exact
+    # pre-W17 behavior; enable for multi-agent crews sharing one store.
+    node_leases_enabled: bool = False
+    node_lease_ttl_seconds: float = 120.0
     # W13 worker watchdog (SUB-124): every daemon worker thread (read lanes,
     # heavy lane, acceptor, reaper) carries a heartbeat supervised with
     # tiered suspect → restart → dead escalation. Kill switch: False keeps
@@ -349,6 +356,8 @@ class DaemonConfig:
             )
         if float(self.session_lease_seconds) <= 0:
             raise ConfigError("session_lease_seconds must be positive")
+        if not 0 < float(self.node_lease_ttl_seconds) <= 86400.0:
+            raise ConfigError(f"node_lease_ttl_seconds must be in (0, 86400], got {self.node_lease_ttl_seconds}")
         if int(self.group_commit_batch) < 1:
             raise ConfigError("group_commit_batch must be >= 1")
         if not 1 <= int(self.listener_backlog) <= HARD_MAX_LISTENER_BACKLOG:

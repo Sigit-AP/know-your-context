@@ -56,6 +56,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--max-token-budget", type=int, default=None, help=argparse.SUPPRESS)
     parser.add_argument("--actor", default=None, help="proxy mode: actor stamped on host requests without _meta.actor")
+    parser.add_argument(
+        "--node-leases",
+        action="store_true",
+        help="guard writes with node leases: a second agent touching a leased node gets typed NODE_IN_USE (W17)",
+    )
+    parser.add_argument("--node-lease-ttl", type=float, default=None, help="node lease lifetime in seconds")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--daemon", action="store_true", help="spawn the detached daemon and exit")
     mode.add_argument("--daemon-foreground", action="store_true", help=argparse.SUPPRESS)
@@ -76,7 +82,10 @@ def _config_from_args(args: argparse.Namespace) -> DaemonConfig:
         "graph_root": args.graph_root,
         "runtime_dir": args.runtime_dir,
         "idle_timeout_seconds": args.idle_timeout,
+        "node_leases_enabled": bool(args.node_leases),
     }
+    if args.node_lease_ttl is not None:
+        kwargs["node_lease_ttl_seconds"] = float(args.node_lease_ttl)
     # None = the operator did not ask; the hardware plan derives it (scale-up
     # only from the historical default).
     if args.max_agents is not None:

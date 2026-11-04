@@ -78,7 +78,7 @@ DEFAULT_MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
 # applied transactionally from Python and recorded in ``schema_versions``
 # (codegraph pattern, RESEARCH-STORAGE.md §1.4) so a failed migration rolls
 # back atomically instead of leaving half-created objects behind.
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 # Only these kinds create a new node revision and bump the node version.
 _VERSION_BUMPING_KINDS: frozenset[EventKind] = frozenset({EventKind.NODE_UPSERT, EventKind.NODE_RETIRE})
@@ -323,6 +323,21 @@ _SCHEMA_V3_STATEMENTS: tuple[str, ...] = (
 # nullable column (NULL = no failure recorded yet / resolved clean).
 _SCHEMA_V4_DESCRIPTION = "unresolved_refs.failure_reason: persisted resolver failure reasons (audit F4)"
 _SCHEMA_V4_STATEMENTS: tuple[str, ...] = ("ALTER TABLE unresolved_refs ADD COLUMN failure_reason TEXT",)
+
+# Schema v5 (W17 SUB-138): node leases for multi-agent write coordination.
+# One additive table; transitions are recorded in the hash-chained event_log
+# (kind="lease") by know_your_context.leases.LeaseRegistry.
+_SCHEMA_V5_DESCRIPTION = "node leases: multi-agent write coordination table (W17)"
+_SCHEMA_V5_TABLES = ("node_leases",)
+_SCHEMA_V5_STATEMENTS: tuple[str, ...] = (
+    "CREATE TABLE node_leases ("
+    "    node_id TEXT PRIMARY KEY,"
+    "    actor TEXT NOT NULL,"
+    "    acquired_at TEXT NOT NULL,"
+    "    expires_at TEXT NOT NULL"
+    ")",
+    "CREATE INDEX node_leases_expiry ON node_leases (expires_at)",
+)
 
 # Adjacency statements are built per (direction, kinds) shape and cached —
 # sqlite3 caches the compiled statement per SQL string, so a bounded string
@@ -690,6 +705,23 @@ class EventStore:
             )
         if SCHEMA_VERSION >= 4 and recorded == 3:
             self._migrate_v4(conn)
+            recorded = 4
+        self._check_v5_objects(conn, recorded)
+        if SCHEMA_VERSION >= 5 and recorded == 4:
+            self._migrate_v5(conn)
+
+    def _check_v5_objects(self, conn: sqlite3.Connection, recorded: int) -> None:
+        """Ledger ↔ object consistency for the v5 node_leases table (fail-closed)."""
+        has_node_leases = self._table_exists(conn, "node_leases")
+        if recorded >= 5 and not has_node_leases:
+            raise SchemaStateError(
+                "schema_versions records v5 but the node_leases table is missing; "
+                "refusing to open an inconsistent store"
+            )
+        if 3 <= recorded < 5 and has_node_leases:
+            raise SchemaStateError(
+                "node_leases exists without a v5 schema_versions record; refusing to guess the schema state"
+            )
 
     def _migrate_v3(self, conn: sqlite3.Connection) -> None:
         try:
@@ -732,6 +764,21 @@ class EventStore:
             raise
         except sqlite3.Error as error:
             raise MigrationError(f"schema migration to v4 failed and was rolled back: {error}") from error
+
+    def _migrate_v5(self, conn: sqlite3.Connection) -> None:
+        """v4 -> v5 (W17 SUB-138): the additive node_leases table, one transaction."""
+        try:
+            with self.transaction() as tx:
+                for statement in _SCHEMA_V5_STATEMENTS:
+                    tx.execute(statement)
+                tx.execute(
+                    "INSERT INTO schema_versions (version, applied_at, description) VALUES (5, ?, ?)",
+                    (_now_iso(), _SCHEMA_V5_DESCRIPTION),
+                )
+        except StoreError:
+            raise
+        except sqlite3.Error as error:
+            raise MigrationError(f"schema migration to v5 failed and was rolled back: {error}") from error
 
     def applied_migrations(self) -> list[int]:
         with self.read() as conn:

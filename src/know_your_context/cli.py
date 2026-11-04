@@ -69,6 +69,78 @@ def _default_store_path() -> str:
     return os.environ.get(STORE_ENV_VAR) or DEFAULT_STORE_PATH
 
 
+def _add_webview_parsers(subparsers: Any) -> None:
+    """The ``webview`` lifecycle + ``setup`` install flow (W7 SUB-101, W17 SUB-138)."""
+    webview_parser = subparsers.add_parser(
+        "webview",
+        help="ops: open the loopback-only token-authenticated web viewer (not a knowledge op)",
+    )
+    webview_parser.add_argument(
+        "webview_action",
+        nargs="?",
+        choices=("on", "off", "status"),
+        default=None,
+        help="lifecycle: on (persist + serve), off (persist off), status (probe); bare opens per saved config",
+    )
+    webview_parser.add_argument(
+        "--port",
+        type=int,
+        default=0,
+        help="loopback port; 0 picks a free one (default)",
+    )
+    webview_parser.add_argument(
+        "--no-open",
+        action="store_true",
+        help="print the URL but do not open a browser",
+    )
+    webview_parser.add_argument(
+        "--serve-once",
+        action="store_true",
+        help="start, print the URL, exit (smoke/CI; used by tests)",
+    )
+
+    setup_parser = subparsers.add_parser(
+        "setup",
+        help="ops: first-run install — init store, probe hardware, verify chain, live webview progress",
+    )
+    setup_parser.add_argument(
+        "--no-webview",
+        dest="serve_webview",
+        action="store_false",
+        help="run the install without the webview (kill switch)",
+    )
+    setup_parser.add_argument("--port", type=int, default=0, help="webview port during install (default: free)")
+    setup_parser.add_argument(
+        "--hold",
+        action="store_true",
+        help="after install, keep serving while the persisted preference enables the webview",
+    )
+
+
+def _add_lease_parser(subparsers: Any) -> None:
+    """The ``lease`` node-lease lifecycle (W17 SUB-138)."""
+    lease_parser = subparsers.add_parser(
+        "lease",
+        help="ops: node leases for multi-agent write coordination (not a knowledge op)",
+    )
+    lease_sub = lease_parser.add_subparsers(dest="lease_action", required=True)
+    lease_sub.add_parser("list", help="list active node leases as canonical JSON")
+    lease_acquire = lease_sub.add_parser("acquire", help="claim a node for an actor")
+    lease_acquire.add_argument("node_id", help="the node to claim")
+    lease_acquire.add_argument("--actor", required=True, help="the claiming agent")
+    lease_acquire.add_argument(
+        "--ttl",
+        type=float,
+        default=None,
+        help="lease lifetime in seconds (default: the engine default)",
+    )
+    lease_release = lease_sub.add_parser("release", help="release a node you hold")
+    lease_release.add_argument("node_id", help="the node to release")
+    lease_release.add_argument("--actor", required=True, help="the holding agent")
+    lease_force = lease_sub.add_parser("force-release", help="operator override: release regardless of holder")
+    lease_force.add_argument("node_id", help="the node to force-release")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="know-your-context",
@@ -187,6 +259,18 @@ def build_parser() -> argparse.ArgumentParser:
         default="off",
         help="superpower: 'off' (default) is legacy behavior; 'enforce' requires operator-issued "
         "capability tokens for every non-public verb (W10)",
+    )
+    serve_parser.add_argument(
+        "--node-leases",
+        action="store_true",
+        help="superpower: guard writes with node leases — a second agent touching a leased node "
+        "gets typed NODE_IN_USE instead of silently overwriting (W17)",
+    )
+    serve_parser.add_argument(
+        "--node-lease-ttl",
+        type=float,
+        default=None,
+        help="superpower: node lease lifetime in seconds (default 120)",
     )
 
     daemon_parser = subparsers.add_parser("daemon", help="superpower: inspect or stop the daemon bound to --store")
@@ -519,23 +603,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="seconds after which an in-progress journal counts as stale (default 300)",
     )
 
-    # W7 SUB-101: loopback-only read-only web viewer. OPS surface only — not
-    # a knowledge operation, never dispatched over MCP/HTTP.
-    webview_parser = subparsers.add_parser(
-        "webview",
-        help="ops: open the loopback-only token-authenticated web viewer (not a knowledge op)",
-    )
-    webview_parser.add_argument(
-        "--port",
-        type=int,
-        default=0,
-        help="loopback port; 0 picks a free one (default)",
-    )
-    webview_parser.add_argument(
-        "--no-open",
-        action="store_true",
-        help="print the URL but do not open a browser",
-    )
+    # W7 SUB-101 + W17 SUB-138: loopback read-only web viewer + lifecycle + install flow (ops surface).
+    _add_webview_parsers(subparsers)
 
     # Wave-2 SUB-89: universal-graph ingestion. OPS surface only — NOT a
     # knowledge operation, never joins KNOWLEDGE_OPERATIONS / OPS_OPERATIONS,
@@ -698,6 +767,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="quiet window in seconds when at most --quick-max-changes files are pending (default 0.3)",
     )
     watch_parser.add_argument("--quick-max-changes", type=int, default=2, help="quick-path quiet threshold (default 2)")
+
+    # W17 (SUB-138): node leases (ops surface; never a knowledge op).
+    _add_lease_parser(subparsers)
     watch_parser.add_argument(
         "--full-scan-ceiling",
         type=int,
@@ -1118,7 +1190,10 @@ def _serve_superpower_command(args: argparse.Namespace) -> int:
             "graph_root": args.output_root,
             "idle_timeout_seconds": args.idle_timeout,
             "capability_mode": args.capability_mode,
+            "node_leases_enabled": bool(args.node_leases),
         }
+        if args.node_lease_ttl is not None:
+            kwargs["node_lease_ttl_seconds"] = float(args.node_lease_ttl)
         # None = the operator did not ask; the hardware plan derives it
         # (scale-up only from the historical default).
         if args.max_agents is not None:
@@ -1321,6 +1396,140 @@ def _provenance_command(args: argparse.Namespace) -> int:
     return 1
 
 
+def _lease_command(args: argparse.Namespace) -> int:
+    """The ``lease`` OPS command (W17 SUB-138): node lease CRUD over --store.
+
+    Never a knowledge operation; every mutation is recorded in the
+    hash-chained event log by the registry itself.
+    """
+    from know_your_context.leases import DEFAULT_LEASE_TTL_SECONDS, LeaseError, LeaseRegistry
+    from know_your_context.store import EventStore
+
+    store_path = Path(str(args.store))
+    if not store_path.is_file():
+        _print_usage_error(f"lease: store not found or not a file: {store_path}")
+        return 2
+    store = EventStore(store_path)
+    try:
+        registry = LeaseRegistry(store)
+        action = str(args.lease_action)
+        if action == "list":
+            leases = registry.active_leases()
+            print(canonical_json({"count": len(leases), "leases": [lease.to_dict() for lease in leases]}))
+            return 0
+        if action == "acquire":
+            ttl = args.ttl if args.ttl is not None else DEFAULT_LEASE_TTL_SECONDS
+            lease = registry.acquire(str(args.node_id), str(args.actor), ttl_seconds=float(ttl))
+            print(canonical_json(lease.to_dict()))
+            return 0
+        if action == "release":
+            released = registry.release(str(args.node_id), str(args.actor))
+            print(canonical_json({"node_id": str(args.node_id), "released": released}))
+            return 0
+        # force-release
+        released = registry.force_release(str(args.node_id), actor=str(args.actor or "operator"))
+        print(canonical_json({"node_id": str(args.node_id), "released": released}))
+        return 0
+    except LeaseError as error:
+        envelope = {
+            "error": {
+                "code": getattr(error, "code", "LEASE_ERROR"),
+                "message": str(error),
+                "retryable": getattr(error, "code", "") == "NODE_IN_USE",
+                "audit_event_id": None,
+            }
+        }
+        print(canonical_json(envelope), file=sys.stderr)
+        return 1
+    finally:
+        store.close()
+
+
+def _webview_serve(store: str, port: int, *, open_browser: bool, serve_once: bool) -> int:
+    """Delegate to the webview server entry point (seam for tests)."""
+    from know_your_context.serve.webview import main as webview_main
+
+    webview_argv = ["--store", store, "--port", str(port)]
+    if open_browser:
+        webview_argv.append("--open")
+    if serve_once:
+        webview_argv.append("--serve-once")
+    return webview_main(webview_argv)
+
+
+def _webview_command(args: argparse.Namespace) -> int:
+    """The ``webview`` OPS command (W17): lifecycle on/off/status + open.
+
+    The preference persists next to the store; ``status`` reconciles the file
+    with a live TCP probe of the saved port (never trusts the file alone).
+    """
+    import socket as _socket
+
+    from know_your_context.ops.webview_control import WebviewPrefsError, read_prefs, write_prefs
+
+    store = str(args.store)
+    action = getattr(args, "webview_action", None)
+    if action in ("status", "on") and not Path(store).is_file():
+        _print_usage_error(f"webview: store not found or not a file: {store}")
+        return 2
+    try:
+        prefs = read_prefs(store)
+    except WebviewPrefsError as error:
+        _print_usage_error(f"webview: {error}")
+        return 2
+
+    if action == "status":
+        running = False
+        port = prefs["port"]
+        if port is not None:
+            try:
+                with _socket.create_connection(("127.0.0.1", int(port)), timeout=0.5):
+                    running = True
+            except OSError:
+                running = False
+        print(
+            canonical_json(
+                {
+                    "enabled": prefs["enabled"],
+                    "port": prefs["port"],
+                    "running": running,
+                    "updated_at": prefs["updated_at"],
+                }
+            )
+        )
+        return 0
+    if action == "off":
+        write_prefs(store, enabled=False)
+        print(canonical_json({"status": "disabled"}))
+        return 0
+    if action == "on":
+        write_prefs(store, enabled=True, port=int(args.port) or None)
+        print(canonical_json({"status": "enabled"}))
+        return _webview_serve(store, int(args.port), open_browser=not args.no_open, serve_once=bool(args.serve_once))
+    # Bare `webview`: follow the persisted preference.
+    if prefs["enabled"] is False:
+        print(canonical_json({"status": "disabled", "hint": "run 'know-your-context webview on' to re-enable"}))
+        return 0
+    port = int(args.port) or (prefs["port"] or 0)
+    return _webview_serve(store, port, open_browser=not args.no_open, serve_once=bool(args.serve_once))
+
+
+def _setup_command(args: argparse.Namespace) -> int:
+    """The ``setup`` OPS command (W17): install flow with a live webview."""
+    from know_your_context.ops.setup_flow import run_setup
+
+    report = run_setup(
+        str(args.store),
+        port=int(args.port),
+        serve_webview=bool(args.serve_webview),
+        hold=bool(args.hold),
+    )
+    if report.get("url"):
+        print(f"webview: {report['url']}", flush=True)
+    print(canonical_json(to_jsonable(report)))
+    return 0 if report["state"] == "done" else 1
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     command = str(args.command).replace("-", "_")
@@ -1361,12 +1570,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if command == "watchtower":
         return _watchtower_command(args)
     if command == "webview":
-        from know_your_context.serve.webview import main as webview_main
-
-        webview_argv = ["--store", args.store, "--port", str(args.port)]
-        if not args.no_open:
-            webview_argv.append("--open")
-        return webview_main(webview_argv)
+        return _webview_command(args)
+    if command == "setup":
+        return _setup_command(args)
     if command == "ingest":
         from know_your_context.ops.ingest_cli import run_ingest_command
 
@@ -1383,6 +1589,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         from know_your_context.ops.watch_cli import run_watch_command
 
         return run_watch_command(args)
+    if command == "lease":
+        return _lease_command(args)
 
     payload_text: str = args.payload if args.payload is not None else "{}"
     if payload_text == "-":

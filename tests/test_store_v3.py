@@ -133,7 +133,7 @@ def test_v3_migration_creates_the_new_tables(store: EventStore) -> None:
 def test_v3_migration_records_schema_versions(store: EventStore) -> None:
     with store.read() as conn:
         rows = conn.execute("SELECT version, description FROM schema_versions ORDER BY version").fetchall()
-    assert [int(row["version"]) for row in rows] == [1, 2, 3, 4]
+    assert [int(row["version"]) for row in rows] == [1, 2, 3, 4, 5]
     assert all(str(row["description"]) for row in rows)
     # The file-based ledger is untouched and still the authority for v1/v2.
     assert store.applied_migrations() == [1, 2]
@@ -156,7 +156,7 @@ def test_v3_migration_is_idempotent_across_reopens(tmp_path: Path) -> None:
     try:
         with second.read() as conn:
             versions = [int(r["version"]) for r in conn.execute("SELECT version FROM schema_versions")]
-            assert sorted(versions) == [1, 2, 3, 4]
+            assert sorted(versions) == [1, 2, 3, 4, 5]
             assert conn.execute("SELECT COUNT(*) AS n FROM files").fetchone()["n"] == 1
         assert second.get_file("src/a.py") is not None
     finally:
@@ -601,7 +601,7 @@ def test_v4_migration_is_idempotent_across_reopens(tmp_path: Path) -> None:
     try:
         with second.read() as conn:
             versions = sorted(int(r["version"]) for r in conn.execute("SELECT version FROM schema_versions"))
-            assert versions == [1, 2, 3, 4]
+            assert versions == [1, 2, 3, 4, 5]
         ref = second.unresolved_ref(ref_id)
         assert ref is not None and ref.failure_reason == "no_resolution"
     finally:
@@ -636,7 +636,7 @@ def test_v3_store_migrates_to_v4_without_losing_a_row(tmp_path: Path, monkeypatc
                 assert [row[:-1] for row in after[name]] == [tuple(row) for row in rows]
                 assert all(row[-1] is None for row in after[name])
             elif name == "schema_versions":
-                assert [tuple(row) for row in rows] == [r for r in after[name] if r[0] != 4]
+                assert [tuple(row) for row in rows] == [r for r in after[name] if r[0] not in (4, 5)]
             else:
                 assert after[name] == rows, name
         assert migrated.verify_chain().ok

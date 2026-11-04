@@ -56,6 +56,7 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 from know_your_context.audit import AuditLog
+from know_your_context.leases import LeaseRegistry, NodeLeaseConflict
 from know_your_context.mcp_server import (
     DEFAULT_RESOURCE_MAX_BYTES,
     EXPECTED_TOOLS,
@@ -253,6 +254,56 @@ class CapabilityDenied(ServeError):
     or outside its scope/verb allowlist. Every denial is audit-chained."""
 
     rpc_code = rpc.CAPABILITY_DENIED
+
+
+class NodeInUse(ServeError):
+    """W17 (SUB-138): the mutation touches a node whose unexpired lease is
+    held by another actor. ``data`` names the holder and the expiry so the
+    caller can back off deterministically; the conflict is recorded in the
+    hash-chained event log by the lease registry (``lease.conflict``)."""
+
+    rpc_code = rpc.NODE_IN_USE
+
+    def __init__(self, conflict: NodeLeaseConflict) -> None:
+        super().__init__(
+            str(conflict),
+            data={
+                "code": "NODE_IN_USE",
+                "node_id": conflict.node_id,
+                "holder": conflict.holder,
+                "expires_at": conflict.expires_at,
+                "retryable": True,
+            },
+        )
+        self.conflict = conflict
+
+
+_LEASE_ARGUMENT_KEYS = ("node_id", "source_node_id", "target_node_id", "parent_id")
+
+
+def _lease_targets(arguments: Mapping[str, Any]) -> tuple[str, ...]:
+    """Node ids a mutation touches, order-stable and deduplicated.
+
+    Extraction is shape-based, never verb-based: the frozen 14 stay untouched
+    and future verbs carrying these fields are guarded automatically.
+    """
+    ids: list[str] = []
+    node = arguments.get("node")
+    if isinstance(node, Mapping):
+        nested = node.get("node_id")
+        if isinstance(nested, str) and nested.strip():
+            ids.append(nested.strip())
+    for key in _LEASE_ARGUMENT_KEYS:
+        value = arguments.get(key)
+        if isinstance(value, str) and value.strip():
+            ids.append(value.strip())
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for node_id in ids:
+        if node_id not in seen:
+            seen.add(node_id)
+            ordered.append(node_id)
+    return tuple(ordered)
 
 
 def classify_tool(name: str) -> str:
@@ -776,6 +827,10 @@ class _WriteArbiter:
         # Static bound: queued deduped writes (≤ write_queue_size) plus the
         # executing batch (≤ group_commit_batch); asserted on submit.
         self._in_flight_bound = int(config.write_queue_size) + int(config.group_commit_batch)
+        # W17 (SUB-138): node leases. None = legacy behavior (the guard is a
+        # DaemonConfig knob; the storm/concurrency gates keep it off because
+        # they deliberately rewrite a shared node pool across 50 actors).
+        self._leases = LeaseRegistry(store) if config.node_leases_enabled else None
         self._publish = threading.Condition()
         self._publish_requested = False
         self._dirty = False
@@ -1015,7 +1070,22 @@ class _WriteArbiter:
                 raise DeadlineExceeded("the request expired in the write queue")
             if item.session is not None and not item.session.alive:
                 raise ShuttingDown("the owning session is gone")
+            if self._leases is not None:
+                targets = _lease_targets(item.arguments)
+                assert len(set(targets)) == len(targets), (
+                    f"_lease_targets must return deduplicated node ids, got {targets!r}"
+                )
+                if targets:
+                    try:
+                        self._leases.check_many(targets, item.actor)
+                    except NodeLeaseConflict as conflict:
+                        raise NodeInUse(conflict) from conflict
+            else:
+                targets = ()
             item.outcome = _call_tool(self._adapter_factory(item.actor), item.tool_name, item.arguments)
+            if self._leases is not None and targets:
+                # A successful write claims the touched nodes for this actor.
+                self._leases.acquire_many(targets, item.actor, ttl_seconds=self._config.node_lease_ttl_seconds)
         except BaseException as error:  # noqa: BLE001 - captured, delivered post-commit
             item.error = error
         if self._config.mutation_delay_seconds > 0:
@@ -2303,6 +2373,7 @@ class SuperpowerDaemon:
                 "published_watermark": self._arbiter.published_watermark if self._arbiter else 0,
                 "group_commit": self._arbiter._group_commit_enabled if self._arbiter else False,  # noqa: SLF001
                 "worker_watchdog": self._worker_watchdog_stats(),
+                "node_leases": self._node_lease_stats(),
                 "fairness": {
                     "per_actor_write_cap": self._config.per_actor_write_cap,
                     "per_actor_read_cap": self._config.per_actor_read_cap,
@@ -2316,6 +2387,26 @@ class SuperpowerDaemon:
                 "db_path": str(self._config.db_path),
                 "socket_path": str(self._paths.socket),
             }
+
+    def _node_lease_stats(self) -> dict[str, Any]:
+        """The W17 lease guard: enabled flag, TTL, and the active lease count.
+
+        The count reaps expired rows (bounded table discipline); a store
+        error reports -1 rather than hiding the failure behind a 0.
+        """
+        arbiter = self._arbiter
+        registry = arbiter._leases if arbiter is not None else None  # noqa: SLF001 - same module ownership
+        active = 0
+        if registry is not None:
+            try:
+                active = len(registry.active_leases())
+            except StoreError:
+                active = -1
+        return {
+            "enabled": registry is not None,
+            "active": active,
+            "ttl_seconds": float(self._config.node_lease_ttl_seconds),
+        }
 
     def _worker_watchdog_stats(self) -> dict[str, Any]:
         """The W13 per-worker supervision section of ``stats()``."""
