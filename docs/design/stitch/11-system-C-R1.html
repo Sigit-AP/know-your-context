@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900">
+  <title>Know Your Context - System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#0B0D11',
+            card: '#12151C',
+            hairline: '#2A313E',
+            accent: '#3B82F6',
+            'accent-muted': 'rgba(59, 130, 246, 0.12)',
+            'success-text': '#34D399',
+            'success-bg': 'rgba(52, 211, 153, 0.10)',
+            'chip-bg': '#181C26',
+            'muted-text': '#8B949E',
+            'dim-text': '#4B5563'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0B0D11;
+      color: #E6EDF3;
+      font-family: 'Inter', sans-serif;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="flex flex-row w-[1440px] h-[900px]">
+
+  <!-- SIDEBAR (240px wide) -->
+  <aside class="w-[240px] h-[900px] bg-base border-r border-hairline flex flex-col justify-between shrink-0">
+    <!-- Brand + 12 Nav Items -->
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-[56px] px-4 flex items-center gap-2.5 border-b border-hairline">
+        <span class="w-2.5 h-2.5 rounded-full bg-accent ring-4 ring-accent-muted"></span>
+        <div class="flex flex-col">
+          <span class="text-[13px] font-semibold tracking-tight text-white leading-tight">Know Your Context</span>
+          <span class="font-mono text-[10px] text-muted-text tracking-normal leading-none mt-0.5">OPS CONSOLE v2.4</span>
+        </div>
+      </div>
+
+      <!-- Navigation List -->
+      <nav class="px-2 py-3 flex flex-col gap-0.5">
+        <!-- 1. Overview -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">dashboard</span>
+          <span>Overview</span>
+        </a>
+        <!-- 2. Activity -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">timeline</span>
+          <span>Activity</span>
+        </a>
+        <!-- 3. Graph -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">hub</span>
+          <span>Graph</span>
+        </a>
+        <!-- 4. Search -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">search</span>
+          <span>Search</span>
+        </a>
+        <!-- 5. Metrics -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">monitoring</span>
+          <span>Metrics</span>
+        </a>
+        <!-- 6. Health -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">vital_signs</span>
+          <span>Health</span>
+        </a>
+        <!-- 7. Analytics -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">analytics</span>
+          <span>Analytics</span>
+        </a>
+        <!-- 8. Audit -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">verified_user</span>
+          <span>Audit</span>
+        </a>
+        <!-- 9. Proposals -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">rule</span>
+          <span>Proposals</span>
+        </a>
+        <!-- 10. Debt -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">balance</span>
+          <span>Debt</span>
+        </a>
+        <!-- 11. System (ACTIVE) -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded bg-accent-muted border border-accent/30 text-[12px] font-medium text-accent">
+          <span class="material-symbols-outlined text-accent">tune</span>
+          <span class="text-white font-medium">System</span>
+        </a>
+        <!-- 12. Setup -->
+        <a href="#" class="h-[30px] px-2.5 flex items-center gap-2.5 rounded text-[12px] text-muted-text hover:text-white hover:bg-card/60 transition-colors">
+          <span class="material-symbols-outlined text-dim-text">settings</span>
+          <span>Setup</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- User Card (Bottom) -->
+    <div class="p-3 border-t border-hairline">
+      <div class="flex items-center gap-2.5 px-2 py-1.5 rounded bg-card/60 border border-hairline">
+        <div class="w-6 h-6 rounded bg-[#1A202C] border border-hairline flex items-center justify-center font-mono text-[10px] text-accent font-semibold">
+          OP
+        </div>
+        <div class="flex flex-col min-w-0">
+          <span class="font-mono text-[11px] text-white truncate leading-tight">operator-1</span>
+          <span class="font-mono text-[9px] text-dim-text truncate leading-none mt-0.5">local-daemon</span>
+        </div>
+        <div class="ml-auto w-1.5 h-1.5 rounded-full bg-success-text"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA (1200px wide, 900px high) -->
+  <main class="w-[1200px] h-[900px] flex flex-col bg-base">
+    
+    <!-- Topbar (ONE single line, 56px) -->
+    <header class="h-[56px] px-6 flex items-center justify-between border-b border-hairline shrink-0">
+      <div class="flex items-center gap-3">
+        <h1 class="text-[15px] font-semibold text-white tracking-tight">System</h1>
+        <span class="h-3 w-px bg-hairline"></span>
+        <span class="font-mono text-[11px] text-muted-text">NODE-01 // 127.0.0.1:9042</span>
+      </div>
+      <div>
+        <button class="h-[28px] px-3 rounded border border-hairline bg-card/40 hover:bg-card text-muted-text hover:text-white text-[11px] font-medium transition-colors flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[14px]">refresh</span>
+          <span>Recheck</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Grid: 2 rows x 3 cards, 16px gutters, 24px page margins, each card ~340px tall -->
+    <div class="p-6 h-[844px] grid grid-cols-3 grid-rows-2 gap-4">
+
+      <!-- CARD 1: Store -->
+      <section class="h-[396px] bg-card border border-hairline rounded-md p-4 flex flex-col justify-between">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-hairline">
+          <span class="text-[12px] font-semibold tracking-wide text-white uppercase">Store</span>
+          <span class="font-mono text-[10px] text-muted-text">SQLite / WAL</span>
+        </div>
+
+        <!-- 5 Table Rows -->
+        <div class="flex flex-col divide-y divide-hairline">
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">event_log</span>
+            <span class="font-mono text-[12px] text-muted-text">1,521</span>
+          </div>
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">node_revision</span>
+            <span class="font-mono text-[12px] text-muted-text">1,284</span>
+          </div>
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">node_relation</span>
+            <span class="font-mono text-[12px] text-muted-text">3,917</span>
+          </div>
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">evidence</span>
+            <span class="font-mono text-[12px] text-muted-text">860</span>
+          </div>
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">symbols</span>
+            <span class="font-mono text-[12px] text-muted-text">2,204</span>
+          </div>
+        </div>
+
+        <!-- Footer Mono Line -->
+        <div class="pt-3 border-t border-hairline">
+          <span class="font-mono text-[11px] text-muted-text tracking-tight">WAL · schema v5 · 46.2 MB · page 4096 B</span>
+        </div>
+      </section>
+
+      <!-- CARD 2: Kill Switches -->
+      <section class="h-[396px] bg-card border border-hairline rounded-md p-4 flex flex-col justify-between">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-hairline">
+          <span class="text-[12px] font-semibold tracking-wide text-white uppercase">Kill Switches</span>
+          <span class="font-mono text-[10px] text-success-text">3 ARMED</span>
+        </div>
+
+        <!-- 3 Rows -->
+        <div class="flex flex-col divide-y divide-hairline my-auto">
+          <!-- Row 1 -->
+          <div class="py-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[12px] text-white">KYS_DEBT_QUEUE</span>
+              <span class="px-2 py-0.5 rounded font-mono text-[10px] font-medium bg-success-bg text-success-text border border-success-text/20">ON</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[12px] text-muted-text">debt queue</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[10px] text-muted-text bg-chip-bg border border-hairline">FAIL_OPEN</span>
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="py-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[12px] text-white">KYS_WEBVIEW_EXPORT</span>
+              <span class="px-2 py-0.5 rounded font-mono text-[10px] font-medium bg-success-bg text-success-text border border-success-text/20">ON</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[12px] text-muted-text">export pipeline</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[10px] text-muted-text bg-chip-bg border border-hairline">FAIL_CLOSED</span>
+            </div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="py-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[12px] text-white">KYS_INGEST</span>
+              <span class="px-2 py-0.5 rounded font-mono text-[10px] font-medium bg-success-bg text-success-text border border-success-text/20">ON</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[12px] text-muted-text">ingest writer</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[10px] text-muted-text bg-chip-bg border border-hairline">FAIL_PAUSE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Status -->
+        <div class="pt-3 border-t border-hairline flex items-center justify-between">
+          <span class="font-mono text-[11px] text-muted-text">policy: non-destructive fail-safe</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-success-text"></span>
+        </div>
+      </section>
+
+      <!-- CARD 3: Config -->
+      <section class="h-[396px] bg-card border border-hairline rounded-md p-4 flex flex-col justify-between">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-hairline">
+          <span class="text-[12px] font-semibold tracking-wide text-white uppercase">Config</span>
+          <span class="font-mono text-[10px] text-muted-text">PROVENANCE</span>
+        </div>
+
+        <!-- 4 Rows -->
+        <div class="flex flex-col divide-y divide-hairline my-auto">
+          <!-- Row 1 -->
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">webview.port</span>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[12px] text-accent">8741</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[10px] text-muted-text bg-chip-bg border border-hairline">env</span>
+            </div>
+          </div>
+          <!-- Row 2 -->
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">storage.cache_mb</span>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[12px] text-accent">256</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[10px] text-muted-text bg-chip-bg border border-hairline">file</span>
+            </div>
+          </div>
+          <!-- Row 3 -->
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">relearn.cooldown_s</span>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[12px] text-accent">300</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[10px] text-muted-text bg-chip-bg border border-hairline">file</span>
+            </div>
+          </div>
+          <!-- Row 4 -->
+          <div class="py-3 flex items-center justify-between">
+            <span class="font-mono text-[12px] text-white">fts.page_cache</span>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[12px] text-accent">4096</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[10px] text-muted-text bg-chip-bg border border-hairline">default</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Mono Line -->
+        <div class="pt-3 border-t border-hairline">
+          <span class="font-mono text-[11px] text-muted-text tracking-tight">source: /etc/kyc/config.toml</span>
+        </div>
+      </section>
+
+      <!-- CARD 4: Hardware -->
+      <section class="h-[396px] bg-card border border-hairline rounded-md p-4 flex flex-col justify-between">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-hairline">
+          <span class="text-[12px] font-semibold tracking-wide text-white uppercase">Hardware</span>
+          <span class="font-mono text-[10px] text-muted-text">x86_64</span>
+        </div>
+
+        <!-- 2x2 Mini Tiles -->
+        <div class="grid grid-cols-2 grid-rows-2 gap-2.5 my-auto">
+          <div class="p-3 rounded bg-base border border-hairline flex flex-col justify-center">
+            <span class="font-mono text-[10px] text-dim-text uppercase">CPU Core Count</span>
+            <span class="font-mono text-[13px] font-medium text-white mt-1">16 vCPU</span>
+          </div>
+          <div class="p-3 rounded bg-base border border-hairline flex flex-col justify-center">
+            <span class="font-mono text-[10px] text-dim-text uppercase">Memory Allocation</span>
+            <span class="font-mono text-[12px] font-medium text-white mt-1">64 GB RAM · 41 free</span>
+          </div>
+          <div class="p-3 rounded bg-base border border-hairline flex flex-col justify-center">
+            <span class="font-mono text-[10px] text-dim-text uppercase">Storage Tier</span>
+            <span class="font-mono text-[12px] font-medium text-white mt-1">NVMe SSD non-rotational</span>
+          </div>
+          <div class="p-3 rounded bg-base border border-hairline flex flex-col justify-center">
+            <span class="font-mono text-[10px] text-dim-text uppercase">Hardware Accel</span>
+            <span class="font-mono text-[12px] font-medium text-white mt-1">GPU none → AVX-512</span>
+          </div>
+        </div>
+
+        <!-- Footer Mono Line -->
+        <div class="pt-3 border-t border-hairline">
+          <span class="font-mono text-[11px] text-muted-text tracking-tight">plan: 8 workers · 2x queue · 1 MiB io · 512 cache</span>
+        </div>
+      </section>
+
+      <!-- CARD 5: Relearn -->
+      <section class="h-[396px] bg-card border border-hairline rounded-md p-4 flex flex-col justify-between">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-hairline">
+          <span class="text-[12px] font-semibold tracking-wide text-white uppercase">Relearn</span>
+          <span class="font-mono text-[10px] text-accent">CONTINUOUS</span>
+        </div>
+
+        <!-- State Chips Sequence & Status -->
+        <div class="flex flex-col gap-5 my-auto">
+          <!-- 4 State Chips in a row -->
+          <div class="flex items-center justify-between gap-1 p-2 rounded bg-base border border-hairline">
+            <!-- IDLE (active, accent-tinted) -->
+            <div class="flex-1 text-center py-2 rounded bg-accent-muted border border-accent/40 font-mono text-[11px] font-semibold text-accent">
+              IDLE
+            </div>
+            <span class="text-dim-text text-[11px]">→</span>
+            <!-- SCAN -->
+            <div class="flex-1 text-center py-2 rounded bg-chip-bg border border-hairline font-mono text-[11px] text-muted-text">
+              SCAN
+            </div>
+            <span class="text-dim-text text-[11px]">→</span>
+            <!-- DIFF -->
+            <div class="flex-1 text-center py-2 rounded bg-chip-bg border border-hairline font-mono text-[11px] text-muted-text">
+              DIFF
+            </div>
+            <span class="text-dim-text text-[11px]">→</span>
+            <!-- SYNC -->
+            <div class="flex-1 text-center py-2 rounded bg-chip-bg border border-hairline font-mono text-[11px] text-muted-text">
+              SYNC
+            </div>
+          </div>
+
+          <!-- Description / Telemetry -->
+          <div class="p-3 rounded bg-base border border-hairline flex flex-col gap-1">
+            <span class="text-[11px] text-dim-text font-mono">AUTOMATED PIPELINE</span>
+            <span class="text-[12px] text-muted-text">Autonomous AST heuristic reconciliation loop</span>
+          </div>
+        </div>
+
+        <!-- Footer Mono Line -->
+        <div class="pt-3 border-t border-hairline">
+          <span class="font-mono text-[11px] text-muted-text tracking-tight">last run 42m ago · next in 18m · 0 errors</span>
+        </div>
+      </section>
+
+      <!-- CARD 6: Routes -->
+      <section class="h-[396px] bg-card border border-hairline rounded-md p-4 flex flex-col justify-between">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-hairline">
+          <span class="text-[12px] font-semibold tracking-wide text-white uppercase">Routes</span>
+          <span class="font-mono text-[10px] text-muted-text">DISPATCHER</span>
+        </div>
+
+        <!-- Compact Table 5 Rows -->
+        <div class="flex flex-col divide-y divide-hairline">
+          <!-- Row 1 -->
+          <div class="py-2.5 flex items-center justify-between">
+            <span class="font-mono text-[11px] text-white">/v1/graph/traverse</span>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] font-semibold text-accent bg-accent-muted border border-accent/20">GET</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] text-muted-text bg-chip-bg border border-hairline">read</span>
+            </div>
+          </div>
+          <!-- Row 2 -->
+          <div class="py-2.5 flex items-center justify-between">
+            <span class="font-mono text-[11px] text-white">/v1/symbols/search</span>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] font-semibold text-accent bg-accent-muted border border-accent/20">GET</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] text-muted-text bg-chip-bg border border-hairline">read</span>
+            </div>
+          </div>
+          <!-- Row 3 -->
+          <div class="py-2.5 flex items-center justify-between">
+            <span class="font-mono text-[11px] text-white">/v1/ops/health</span>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] font-semibold text-accent bg-accent-muted border border-accent/20">GET</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] text-muted-text bg-chip-bg border border-hairline">read</span>
+            </div>
+          </div>
+          <!-- Row 4 -->
+          <div class="py-2.5 flex items-center justify-between">
+            <span class="font-mono text-[11px] text-white">/v1/export/manifest</span>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] font-semibold text-accent bg-accent-muted border border-accent/20">GET</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] text-muted-text bg-chip-bg border border-hairline">export</span>
+            </div>
+          </div>
+          <!-- Row 5 -->
+          <div class="py-2.5 flex items-center justify-between">
+            <span class="font-mono text-[11px] text-white">/v1/knowledge/query</span>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] font-semibold text-white bg-[#374151] border border-hairline">POST</span>
+              <span class="px-1.5 py-0.5 rounded font-mono text-[9px] text-muted-text bg-chip-bg border border-hairline">heavy</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Line -->
+        <div class="pt-3 border-t border-hairline flex items-center justify-between">
+          <span class="font-mono text-[11px] text-muted-text tracking-tight">45 routes registered</span>
+          <span class="font-mono text-[10px] text-dim-text">IPC / UNIX</span>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Context - Setup Lifecycle</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#0B0D11',
+            surface: '#12151C',
+            'surface-hover': '#171B24',
+            hairline: '#2A313E',
+            'hairline-light': '#1D232D',
+            accent: '#3B82F6',
+            'accent-soft': '#1E293B',
+            'accent-tint': 'rgba(59, 130, 246, 0.12)',
+            'success-green': '#10B981',
+            'success-soft': 'rgba(16, 185, 129, 0.12)',
+            muted: '#6B7280',
+            subtle: '#9CA3AF',
+            fg: '#E5E7EB',
+            'fg-bright': '#F9FAFB'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D11;
+      color: #E5E7EB;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-custom {
+      animation: spin 1s linear infinite;
+    }
+  </style>
+</head>
+<body class="flex bg-base select-none">
+
+  <!-- LEFT SIDEBAR: 240px -->
+  <aside class="w-[240px] h-[900px] flex-shrink-0 flex flex-col justify-between border-r border-hairline bg-base px-3 py-3.5">
+    <div>
+      <!-- Brand / Logo Header -->
+      <div class="px-2.5 py-1 mb-4 flex items-center gap-2.5">
+        <div class="w-6 h-6 rounded flex items-center justify-center bg-[#171C26] border border-hairline text-accent">
+          <span class="material-symbols-outlined text-[16px]">hub</span>
+        </div>
+        <div>
+          <div class="font-sans font-semibold text-[13px] tracking-tight text-fg-bright leading-tight">Know Your Context</div>
+          <div class="font-mono text-[10px] text-muted leading-tight mt-0.5 tracking-tight">cluster-local // v2.4</div>
+        </div>
+      </div>
+
+      <!-- 12 Navigation Items -->
+      <nav class="space-y-0.5">
+        <!-- 1. Overview -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">grid_view</span>
+          <span>Overview</span>
+        </a>
+        <!-- 2. Activity -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">monitoring</span>
+          <span>Activity</span>
+        </a>
+        <!-- 3. Graph -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">account_tree</span>
+          <span>Graph</span>
+        </a>
+        <!-- 4. Search -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">search</span>
+          <span>Search</span>
+        </a>
+        <!-- 5. Metrics -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">query_stats</span>
+          <span>Metrics</span>
+        </a>
+        <!-- 6. Health -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">vital_signs</span>
+          <span>Health</span>
+        </a>
+        <!-- 7. Analytics -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">insights</span>
+          <span>Analytics</span>
+        </a>
+        <!-- 8. Audit -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">history</span>
+          <span>Audit</span>
+        </a>
+        <!-- 9. Proposals -->
+        <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[17px] text-muted">rule</span>
+            <span>Proposals</span>
+          </div>
+          <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface border border-hairline text-muted">3</span>
+        </a>
+        <!-- 10. Debt -->
+        <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[17px] text-muted">hourglass_top</span>
+            <span>Debt</span>
+          </div>
+          <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface border border-hairline text-muted">12</span>
+        </a>
+        <!-- 11. System -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-subtle hover:text-fg-bright hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-muted">tune</span>
+          <span>System</span>
+        </a>
+        <!-- 12. Setup [ACTIVE] -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] font-medium text-accent bg-surface border-l-2 border-accent">
+          <span class="material-symbols-outlined text-[17px] text-accent">settings</span>
+          <span class="text-fg-bright font-semibold">Setup</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- User / Operator Card at Bottom -->
+    <div class="pt-3 border-t border-hairline px-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded bg-[#161B24] border border-hairline flex items-center justify-center font-mono text-[11px] font-medium text-fg-bright">
+          OP
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="font-mono text-[11px] font-medium text-fg leading-none truncate">operator-1</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-success-green inline-block"></span>
+          </div>
+          <div class="font-mono text-[10px] text-muted leading-tight mt-0.5">local-daemon:9042</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA: 1200px x 900px -->
+  <main class="w-[1200px] h-[900px] flex-shrink-0 flex flex-col bg-base overflow-hidden">
+    
+    <!-- TOPBAR: ONE SINGLE LINE, EXACT 56px -->
+    <header class="h-[56px] min-h-[56px] max-h-[56px] px-8 flex items-center justify-between border-b border-hairline bg-base">
+      <!-- Left: Title + One-line Subtitle -->
+      <div class="flex items-baseline gap-3">
+        <h1 class="font-sans font-semibold text-[15px] text-fg-bright tracking-tight">Setup Lifecycle</h1>
+        <span class="text-hairline">|</span>
+        <p class="font-sans text-[12px] text-muted font-normal tracking-tight">install progress, webview preferences, frozen contracts, export manifest</p>
+      </div>
+
+      <!-- Right: Ghost button -->
+      <button class="h-8 px-3 rounded border border-hairline bg-transparent hover:bg-surface hover:text-fg-bright text-subtle font-sans text-[11px] font-medium transition-colors flex items-center gap-1.5 cursor-pointer">
+        <span class="material-symbols-outlined text-[15px] text-muted">refresh</span>
+        <span>Re-run diagnostics</span>
+      </button>
+    </header>
+
+    <!-- CONTENT: TWO COLUMNS, EXACTLY FITTING REMAINDER (844px) -->
+    <div class="p-8 flex gap-6 h-[844px] box-border">
+
+      <!-- LEFT COLUMN (~55%, w-[608px]): Install Pipeline Card -->
+      <section class="w-[608px] h-full flex flex-col rounded-lg bg-surface border border-hairline p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-5 border-b border-hairline">
+          <div>
+            <h2 class="font-sans font-semibold text-[14px] text-fg-bright tracking-tight">Install pipeline</h2>
+            <p class="font-sans text-[12px] text-muted mt-0.5">Deterministic staged sequence for local memory structures and disk tables</p>
+          </div>
+          <!-- Header chip: STEP 5 OF 5 · RUNNING -->
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded font-mono text-[10px] font-medium bg-accent-tint border border-accent/30 text-accent">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+            <span>STEP 5 OF 5 · RUNNING</span>
+          </div>
+        </div>
+
+        <!-- Vertical Stepper (5 steps) -->
+        <div class="flex-1 flex flex-col justify-between py-5">
+          
+          <!-- STEP 1: INIT_STORE (Completed) -->
+          <div class="flex items-start gap-4 relative">
+            <!-- Connecting line down to Step 2 -->
+            <div class="absolute left-[13px] top-[28px] bottom-[-28px] w-[1px] bg-hairline"></div>
+            <!-- Circle indicator (filled green check) -->
+            <div class="w-7 h-7 rounded-full bg-success-soft border border-success-green/40 flex items-center justify-center flex-shrink-0 z-10">
+              <span class="material-symbols-outlined text-[15px] text-success-green font-semibold">check</span>
+            </div>
+            <!-- Step Details -->
+            <div class="flex-1 pt-0.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[12px] font-semibold text-fg-bright">INIT_STORE</span>
+                  <span class="font-mono text-[10px] text-muted">#01</span>
+                </div>
+                <span class="font-mono text-[12px] text-subtle font-medium">1.2s</span>
+              </div>
+              <p class="font-sans text-[12px] text-muted mt-1 leading-snug">SQLite WAL initialized at /var/run/kyc.db, page size 4096B</p>
+            </div>
+          </div>
+
+          <!-- STEP 2: HARDWARE_PROBE (Completed) -->
+          <div class="flex items-start gap-4 relative">
+            <!-- Connecting line down to Step 3 -->
+            <div class="absolute left-[13px] top-[28px] bottom-[-28px] w-[1px] bg-hairline"></div>
+            <!-- Circle indicator -->
+            <div class="w-7 h-7 rounded-full bg-success-soft border border-success-green/40 flex items-center justify-center flex-shrink-0 z-10">
+              <span class="material-symbols-outlined text-[15px] text-success-green font-semibold">check</span>
+            </div>
+            <!-- Step Details -->
+            <div class="flex-1 pt-0.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[12px] font-semibold text-fg-bright">HARDWARE_PROBE</span>
+                  <span class="font-mono text-[10px] text-muted">#02</span>
+                </div>
+                <span class="font-mono text-[12px] text-subtle font-medium">0.8s</span>
+              </div>
+              <p class="font-sans text-[12px] text-muted mt-1 leading-snug">AVX-512 detected, 16 vCPU AMD EPYC, 64 GB RAM allocated</p>
+            </div>
+          </div>
+
+          <!-- STEP 3: CHAIN_VERIFICATION (Completed) -->
+          <div class="flex items-start gap-4 relative">
+            <!-- Connecting line down to Step 4 -->
+            <div class="absolute left-[13px] top-[28px] bottom-[-28px] w-[1px] bg-hairline"></div>
+            <!-- Circle indicator -->
+            <div class="w-7 h-7 rounded-full bg-success-soft border border-success-green/40 flex items-center justify-center flex-shrink-0 z-10">
+              <span class="material-symbols-outlined text-[15px] text-success-green font-semibold">check</span>
+            </div>
+            <!-- Step Details -->
+            <div class="flex-1 pt-0.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[12px] font-semibold text-fg-bright">CHAIN_VERIFICATION</span>
+                  <span class="font-mono text-[10px] text-muted">#03</span>
+                </div>
+                <span class="font-mono text-[12px] text-subtle font-medium">2.1s</span>
+              </div>
+              <p class="font-sans text-[12px] text-muted mt-1 leading-snug">SHA-256 HMAC 1,521 events validated, Merkle root monotonic verified</p>
+            </div>
+          </div>
+
+          <!-- STEP 4: PROJECTION_BUILD (Completed) -->
+          <div class="flex items-start gap-4 relative">
+            <!-- Connecting line down to Step 5 -->
+            <div class="absolute left-[13px] top-[28px] bottom-[-28px] w-[1px] bg-hairline"></div>
+            <!-- Circle indicator -->
+            <div class="w-7 h-7 rounded-full bg-success-soft border border-success-green/40 flex items-center justify-center flex-shrink-0 z-10">
+              <span class="material-symbols-outlined text-[15px] text-success-green font-semibold">check</span>
+            </div>
+            <!-- Step Details -->
+            <div class="flex-1 pt-0.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[12px] font-semibold text-fg-bright">PROJECTION_BUILD</span>
+                  <span class="font-mono text-[10px] text-muted">#04</span>
+                </div>
+                <span class="font-mono text-[12px] text-subtle font-medium">4.7s</span>
+              </div>
+              <p class="font-sans text-[12px] text-muted mt-1 leading-snug">1,284 nodes &amp; 3,917 directed edges compiled into DuckDB AST index</p>
+            </div>
+          </div>
+
+          <!-- STEP 5: WEBVIEW_START (Running - Accent) -->
+          <div class="flex items-start gap-4 relative">
+            <!-- Circle indicator (accent spinner) -->
+            <div class="w-7 h-7 rounded-full bg-accent-tint border border-accent/40 flex items-center justify-center flex-shrink-0 z-10">
+              <div class="w-3.5 h-3.5 border-2 border-accent border-t-transparent rounded-full animate-spin-custom"></div>
+            </div>
+            <!-- Step Details -->
+            <div class="flex-1 pt-0.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[12px] font-semibold text-accent">WEBVIEW_START</span>
+                  <span class="font-mono text-[10px] text-accent/70">#05</span>
+                </div>
+                <span class="font-mono text-[12px] text-accent font-medium">running 1.4s</span>
+              </div>
+              <p class="font-sans text-[12px] text-muted mt-1 leading-snug">Spawning local websocket daemon on port 8741, binding loopback IPC listener</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer Metric / Summary Line -->
+        <div class="pt-4 border-t border-hairline flex items-center justify-between font-mono text-[11px] text-muted">
+          <div class="flex items-center gap-2">
+            <span>PIPELINE_STATUS:</span>
+            <span class="text-accent font-medium">PROVISIONING (4/5 PASS)</span>
+          </div>
+          <div class="text-subtle font-mono">
+            TOTAL_ELAPSED: <span class="text-fg-bright">10.2s</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN (45%, w-[504px]): Three Stacked Cards -->
+      <div class="w-[504px] h-full flex flex-col justify-between">
+
+        <!-- CARD 1: Webview Preferences -->
+        <section class="h-[216px] rounded-lg bg-surface border border-hairline p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-2.5 border-b border-hairline">
+            <h3 class="font-sans font-semibold text-[13px] text-fg-bright tracking-tight">Webview preferences</h3>
+            <span class="font-mono text-[10px] text-muted">IPC_SOCKET: LOOPBACK</span>
+          </div>
+
+          <!-- Rows -->
+          <div class="space-y-2 py-1">
+            <!-- Row: enabled -->
+            <div class="flex items-center justify-between">
+              <span class="font-sans text-[12px] text-subtle">enabled</span>
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-mono text-[10px] font-medium bg-success-soft text-success-green border border-success-green/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-success-green"></span>
+                ON
+              </span>
+            </div>
+            <!-- Row: port -->
+            <div class="flex items-center justify-between">
+              <span class="font-sans text-[12px] text-subtle">port</span>
+              <span class="font-mono text-[12px] text-fg-bright font-medium">8741</span>
+            </div>
+            <!-- Row: updated_at -->
+            <div class="flex items-center justify-between">
+              <span class="font-sans text-[12px] text-subtle">updated_at</span>
+              <span class="font-mono text-[11px] text-muted">2026-11-04 13:58Z</span>
+            </div>
+            <!-- Row: live_refresh_seconds -->
+            <div class="flex items-center justify-between">
+              <span class="font-sans text-[12px] text-subtle">live_refresh_seconds</span>
+              <span class="font-mono text-[12px] text-fg-bright font-medium">2.0</span>
+            </div>
+          </div>
+
+          <!-- Footer with ghost button -->
+          <div class="pt-2 border-t border-hairline flex items-center justify-between">
+            <span class="font-mono text-[10px] text-muted">HTTP 200 OK · LISTENER_BOUND</span>
+            <button class="h-6 px-2.5 rounded border border-hairline bg-transparent hover:bg-surface-hover text-subtle hover:text-fg-bright font-sans text-[11px] font-medium transition-colors cursor-pointer">
+              Turn off
+            </button>
+          </div>
+        </section>
+
+        <!-- CARD 2: Frozen Contracts -->
+        <section class="h-[256px] rounded-lg bg-surface border border-hairline p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-2.5 border-b border-hairline">
+            <div class="flex items-center gap-2">
+              <h3 class="font-sans font-semibold text-[13px] text-fg-bright tracking-tight">Frozen contracts</h3>
+              <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-base border border-hairline text-muted">14 OPS</span>
+            </div>
+            <span class="font-mono text-[10px] text-muted">IMMUTABLE_ROOT</span>
+          </div>
+
+          <!-- 14 Knowledge Ops Wrap Chips -->
+          <div class="flex flex-wrap gap-1.5 py-2 overflow-hidden">
+            <!-- 1. query -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">query</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+            <!-- 2. log_event -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">log_event</span>
+              <span class="font-mono text-[9px] text-muted">v2</span>
+            </div>
+            <!-- 3. record_outcome -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">record_outcome</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+            <!-- 4. evaluate -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">evaluate</span>
+              <span class="font-mono text-[9px] text-muted">v2</span>
+            </div>
+            <!-- 5. review -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">review</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+            <!-- 6. propose -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">propose</span>
+              <span class="font-mono text-[9px] text-muted">v2</span>
+            </div>
+            <!-- 7. apply -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">apply</span>
+              <span class="font-mono text-[9px] text-muted">v2</span>
+            </div>
+            <!-- 8. rollback -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">rollback</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+            <!-- 9. get_node -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">get_node</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+            <!-- 10. get_subtree -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">get_subtree</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+            <!-- 11. path -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">path</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+            <!-- 12. explain -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">explain</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+            <!-- 13. affected -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">affected</span>
+              <span class="font-mono text-[9px] text-muted">v2</span>
+            </div>
+            <!-- 14. god_nodes -->
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-hairline">
+              <span class="font-mono text-[11px] text-fg">god_nodes</span>
+              <span class="font-mono text-[9px] text-muted">v1</span>
+            </div>
+          </div>
+
+          <!-- Caption line -->
+          <div class="pt-2 border-t border-hairline">
+            <p class="font-sans text-[11px] text-muted italic leading-relaxed">
+              new capabilities land in new addendum contracts, never in the frozen set
+            </p>
+          </div>
+        </section>
+
+        <!-- CARD 3: Export Manifest -->
+        <section class="h-[276px] rounded-lg bg-surface border border-hairline p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-2.5 border-b border-hairline">
+            <div class="flex items-center gap-2">
+              <h3 class="font-sans font-semibold text-[13px] text-fg-bright tracking-tight">Export manifest</h3>
+              <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-base border border-hairline text-muted">4 ARTIFACTS</span>
+            </div>
+            <span class="font-mono text-[10px] text-success-green">DIGESTS VERIFIED</span>
+          </div>
+
+          <!-- 4 Manifest Rows Table/List -->
+          <div class="space-y-1.5 py-1">
+            <!-- Row 1: graph.json -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-base border border-hairline-light text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[14px] text-muted">data_object</span>
+                <span class="font-mono font-medium text-fg-bright">graph.json</span>
+              </div>
+              <div class="flex items-center gap-4">
+                <span class="font-mono text-muted text-[10px]">9f2c1ab4…</span>
+                <span class="font-mono text-subtle text-[11px] w-12 text-right">4.8 MB</span>
+                <span class="font-mono text-muted text-[10px] w-10 text-right">v2.4.0</span>
+              </div>
+            </div>
+
+            <!-- Row 2: nodes.parquet -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-base border border-hairline-light text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[14px] text-muted">table_rows</span>
+                <span class="font-mono font-medium text-fg-bright">nodes.parquet</span>
+              </div>
+              <div class="flex items-center gap-4">
+                <span class="font-mono text-muted text-[10px]">3e1189ac…</span>
+                <span class="font-mono text-subtle text-[11px] w-12 text-right">184 KB</span>
+                <span class="font-mono text-muted text-[10px] w-10 text-right">v2.1.0</span>
+              </div>
+            </div>
+
+            <!-- Row 3: manifest.json -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-base border border-hairline-light text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[14px] text-muted">description</span>
+                <span class="font-mono font-medium text-fg-bright">manifest.json</span>
+              </div>
+              <div class="flex items-center gap-4">
+                <span class="font-mono text-muted text-[10px]">b3d810aa…</span>
+                <span class="font-mono text-subtle text-[11px] w-12 text-right">46.2 MB</span>
+                <span class="font-mono text-muted text-[10px] w-10 text-right">v5.0.2</span>
+              </div>
+            </div>
+
+            <!-- Row 4: checksums.txt -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-base border border-hairline-light text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[14px] text-muted">verified</span>
+                <span class="font-mono font-medium text-fg-bright">checksums.txt</span>
+              </div>
+              <div class="flex items-center gap-4">
+                <span class="font-mono text-muted text-[10px]">c18e409f…</span>
+                <span class="font-mono text-subtle text-[11px] w-12 text-right">14.8 MB</span>
+                <span class="font-mono text-muted text-[10px] w-10 text-right">v1.0.0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manifest Footer -->
+          <div class="pt-2 border-t border-hairline flex items-center justify-between font-mono text-[10px] text-muted">
+            <span>ALGORITHM: ED25519 / BLAKE3</span>
+            <span class="text-subtle">PROVENANCE: OK (4/4)</span>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

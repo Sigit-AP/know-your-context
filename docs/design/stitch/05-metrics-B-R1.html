@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900">
+  <title>Know Your Context - Metrics & Telemetry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#0B0D11',
+            surface: '#12151C',
+            surfaceHover: '#181C25',
+            hairline: '#2A313E',
+            hairlineSubtle: '#1C222C',
+            accent: '#3B82F6',
+            accentMuted: '#1E3A8A',
+            danger: '#EF4444',
+            textMain: '#F1F5F9',
+            textMuted: '#94A3B8',
+            textDim: '#64748B',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D11;
+      color: #F1F5F9;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-feature-settings: 'tnum' on, 'zero' on;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #2A313E;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden select-none bg-base">
+
+  <!-- LEFT SIDEBAR: 240px -->
+  <aside class="w-[240px] h-[900px] flex-shrink-0 bg-base border-r border-hairline flex flex-col justify-between p-4 z-20">
+    <div class="flex flex-col">
+      <!-- App Brand Title -->
+      <div class="flex items-center gap-2.5 px-2 py-1 mb-5">
+        <div class="w-6 h-6 rounded bg-accent/15 border border-accent/40 flex items-center justify-center text-accent">
+          <span class="material-symbols-outlined text-[16px]">hub</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[13px] font-semibold tracking-tight text-textMain leading-tight">Know Your Context</span>
+          <span class="text-[10px] font-mono text-textDim tracking-wider">LOCAL CLUSTER v2.4</span>
+        </div>
+      </div>
+
+      <!-- 12 Navigation Items -->
+      <nav class="flex flex-col space-y-0.5">
+        <!-- 1. Overview -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">dashboard</span>
+          <span>Overview</span>
+        </a>
+        <!-- 2. Activity -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">dynamic_feed</span>
+          <span>Activity</span>
+        </a>
+        <!-- 3. Graph -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">account_tree</span>
+          <span>Graph</span>
+        </a>
+        <!-- 4. Search -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">search</span>
+          <span>Search</span>
+        </a>
+        <!-- 5. Metrics (Active) -->
+        <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[13px] font-medium text-accent bg-surface border-l-2 border-accent transition-colors">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[17px] text-accent">query_stats</span>
+            <span>Metrics</span>
+          </div>
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </a>
+        <!-- 6. Health -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">monitor_heart</span>
+          <span>Health</span>
+        </a>
+        <!-- 7. Analytics -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">insights</span>
+          <span>Analytics</span>
+        </a>
+        <!-- 8. Audit -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">verified_user</span>
+          <span>Audit</span>
+        </a>
+        <!-- 9. Proposals -->
+        <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[17px] text-textDim">rule</span>
+            <span>Proposals</span>
+          </div>
+          <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-hairline text-textDim">3</span>
+        </a>
+        <!-- 10. Debt -->
+        <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[17px] text-textDim">hourglass_empty</span>
+            <span>Debt</span>
+          </div>
+          <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-hairline text-textDim">12</span>
+        </a>
+        <!-- 11. System -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">memory</span>
+          <span>System</span>
+        </a>
+        <!-- 12. Setup -->
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] text-textMuted hover:text-textMain hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[17px] text-textDim">tune</span>
+          <span>Setup</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Bottom: User & Runtime Card -->
+    <div class="pt-3 border-t border-hairline flex flex-col gap-2.5">
+      <div class="flex items-center justify-between px-2 py-1.5 rounded bg-surface border border-hairline/60">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded bg-hairline flex items-center justify-center font-mono text-[10px] font-bold text-textMuted">
+            OP
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[12px] font-medium text-textMain leading-tight">operator-1</span>
+            <span class="text-[10px] font-mono text-textDim leading-tight">local-daemon</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-[10px] font-mono text-textDim">IPC</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-[11px] text-textDim px-1">
+        <span>Docs (v2.4.1)</span>
+        <span class="font-mono">port:8741</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT: 1200px x 900px -->
+  <main class="w-[1200px] h-[900px] flex flex-col overflow-hidden bg-base">
+    
+    <!-- TOPBAR: ONE SINGLE LINE, 56px -->
+    <header class="h-[56px] px-8 flex items-center justify-between border-b border-hairline flex-shrink-0 bg-base">
+      <!-- Left: Title + subtitle -->
+      <div class="flex items-baseline gap-3">
+        <h1 class="text-[20px] font-semibold text-textMain tracking-tight leading-none">Metrics</h1>
+        <span class="text-[13px] text-textDim font-normal">ops telemetry, series, and per-operation latency bench</span>
+      </div>
+      
+      <!-- Right: Range pill + Ghost export -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center bg-surface border border-hairline rounded px-2.5 py-1">
+          <span class="material-symbols-outlined text-[14px] text-textDim mr-1.5">calendar_today</span>
+          <span class="text-[12px] font-mono font-medium text-accent">14d</span>
+        </div>
+        <button class="flex items-center gap-1.5 px-3 py-1 rounded text-[12px] font-medium text-textMuted hover:text-textMain border border-hairline hover:bg-surface transition-colors">
+          <span class="material-symbols-outlined text-[15px] text-textDim">download</span>
+          <span>Export CSV</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY: 3 ROWS (Height budgeted exactly: 900 - 56 = 844px) -->
+    <!-- Padding: py-5 px-8 (gap-4 between rows) -->
+    <div class="h-[844px] px-8 py-5 flex flex-col justify-between box-border">
+
+      <!-- ROW 1: KPI STRIP, 4 CARDS (Height ~116px) -->
+      <section class="grid grid-cols-4 gap-4 h-[116px] flex-shrink-0">
+        <!-- Card 1: Ops total -->
+        <div class="bg-surface border border-hairline rounded-md p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-textDim">Ops Total</span>
+            <span class="text-[11px] font-mono text-accent bg-accent/10 px-1.5 py-0.5 rounded">+18.4% 24h</span>
+          </div>
+          <div class="text-[26px] font-bold text-textMain mono-num leading-tight">1,521</div>
+          <div class="text-[12px] text-textDim">Peak 24.8k ops/s at 14:02:11</div>
+        </div>
+
+        <!-- Card 2: Errors -->
+        <div class="bg-surface border border-hairline rounded-md p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-textDim">Errors</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          </div>
+          <div class="text-[26px] font-bold text-textMain mono-num leading-tight">0</div>
+          <div class="text-[12px] text-textDim">0.00% error rate · 42 invariant checks pass</div>
+        </div>
+
+        <!-- Card 3: Malformed outcomes -->
+        <div class="bg-surface border border-hairline rounded-md p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-textDim">Malformed Outcomes</span>
+            <span class="text-[11px] font-mono text-textDim">JSON-LD 1.1</span>
+          </div>
+          <div class="text-[26px] font-bold text-textMain mono-num leading-tight">0</div>
+          <div class="text-[12px] text-textDim">0 deviations recorded · schema v3 validated</div>
+        </div>
+
+        <!-- Card 4: Busiest actor -->
+        <div class="bg-surface border border-hairline rounded-md p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-textDim">Busiest Actor</span>
+            <span class="text-[11px] font-mono text-textDim">44.9% share</span>
+          </div>
+          <div class="text-[26px] font-bold text-accent mono-num leading-tight truncate">agent-2</div>
+          <div class="text-[12px] text-textDim font-mono">684 ops · active lease holding</div>
+        </div>
+      </section>
+
+      <!-- ROW 2: TWO CHARTS SIDE BY SIDE (Height ~240px) -->
+      <section class="grid grid-cols-2 gap-4 h-[240px] flex-shrink-0">
+        
+        <!-- Left: Events per day · 14 days (Bar Chart) -->
+        <div class="bg-surface border border-hairline rounded-md p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-[12px] font-semibold uppercase tracking-wider text-textMuted">Events per day</span>
+              <span class="text-[11px] text-textDim">· 14 days</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-[12px] font-mono text-textDim">Total: 15,482 ops</span>
+              <span class="text-[12px] font-mono text-accent">Today: 214 ops</span>
+            </div>
+          </div>
+
+          <!-- Bar Chart Visual (SVG) -->
+          <div class="w-full h-[165px] flex flex-col justify-end pt-2">
+            <!-- 14 Bars with heights scaled 120 -> 214 -->
+            <div class="w-full h-[140px] flex items-end justify-between px-2 gap-2 border-b border-hairline pb-1">
+              <!-- D-13 (120) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/40 hover:bg-accent rounded-t-sm transition-all" style="height: 56%;"></div>
+              </div>
+              <!-- D-12 (128) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/40 hover:bg-accent rounded-t-sm transition-all" style="height: 60%;"></div>
+              </div>
+              <!-- D-11 (135) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/40 hover:bg-accent rounded-t-sm transition-all" style="height: 63%;"></div>
+              </div>
+              <!-- D-10 (142) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/45 hover:bg-accent rounded-t-sm transition-all" style="height: 66%;"></div>
+              </div>
+              <!-- D-9 (150) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/45 hover:bg-accent rounded-t-sm transition-all" style="height: 70%;"></div>
+              </div>
+              <!-- D-8 (158) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/50 hover:bg-accent rounded-t-sm transition-all" style="height: 74%;"></div>
+              </div>
+              <!-- D-7 (164) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/50 hover:bg-accent rounded-t-sm transition-all" style="height: 76%;"></div>
+              </div>
+              <!-- D-6 (172) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/55 hover:bg-accent rounded-t-sm transition-all" style="height: 80%;"></div>
+              </div>
+              <!-- D-5 (180) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/60 hover:bg-accent rounded-t-sm transition-all" style="height: 84%;"></div>
+              </div>
+              <!-- D-4 (189) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/65 hover:bg-accent rounded-t-sm transition-all" style="height: 88%;"></div>
+              </div>
+              <!-- D-3 (195) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/70 hover:bg-accent rounded-t-sm transition-all" style="height: 91%;"></div>
+              </div>
+              <!-- D-2 (202) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/75 hover:bg-accent rounded-t-sm transition-all" style="height: 94%;"></div>
+              </div>
+              <!-- D-1 (208) -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent/85 hover:bg-accent rounded-t-sm transition-all" style="height: 97%;"></div>
+              </div>
+              <!-- Today (214) Highlighted -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <div class="w-full bg-accent rounded-t-sm shadow-sm" style="height: 100%;"></div>
+              </div>
+            </div>
+            <!-- Axis Labels -->
+            <div class="w-full flex justify-between px-2 pt-1.5 text-[10px] font-mono text-textDim">
+              <span>D-13</span>
+              <span>D-10</span>
+              <span>D-7</span>
+              <span>D-4</span>
+              <span>D-1</span>
+              <span class="text-accent font-semibold">Today (214)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Health score vs max (Line Chart) -->
+        <div class="bg-surface border border-hairline rounded-md p-4 flex flex-col justify-between relative">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-[12px] font-semibold uppercase tracking-wider text-textMuted">Health score vs max</span>
+              <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">STABLE SLA</span>
+            </div>
+            <div class="flex items-center gap-3 text-[12px] font-mono">
+              <span class="text-textDim">Floor: 99.0%</span>
+              <span class="text-textMain font-semibold">Current: 99.8%</span>
+            </div>
+          </div>
+
+          <!-- Line Chart SVG container -->
+          <div class="w-full h-[165px] relative flex flex-col justify-end pt-1">
+            <svg class="w-full h-[140px] overflow-visible" viewBox="0 0 540 140" fill="none" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.18" />
+                  <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+
+              <!-- Grid reference lines -->
+              <line x1="0" y1="20" x2="540" y2="20" stroke="#1C222C" stroke-width="1" />
+              <line x1="0" y1="60" x2="540" y2="60" stroke="#1C222C" stroke-width="1" />
+              <line x1="0" y1="100" x2="540" y2="100" stroke="#1C222C" stroke-width="1" />
+
+              <!-- Dashed Gray SLA Line at 99.0 (y=90) -->
+              <line x1="0" y1="90" x2="540" y2="90" stroke="#64748B" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.8" />
+              <text x="535" y="85" text-anchor="end" fill="#64748B" font-size="9" font-family="JetBrains Mono">SLA 99.0%</text>
+
+              <!-- Gradient Area under curve -->
+              <!-- Points mapping: D-13..D-8: ~99.8 (y=24), D-7 dip to 98.4 (y=122), D-6..today back to 99.8 (y=24) -->
+              <path d="M 15 24 
+                       L 55 24 
+                       L 95 24 
+                       L 135 24 
+                       L 175 25 
+                       L 215 24 
+                       L 255 122 
+                       L 295 26 
+                       L 335 24 
+                       L 375 24 
+                       L 415 25 
+                       L 455 24 
+                       L 495 24 
+                       L 525 24 
+                       L 525 140 
+                       L 15 140 Z" fill="url(#chartGradient)" />
+
+              <!-- Accent Line -->
+              <path d="M 15 24 
+                       L 55 24 
+                       L 95 24 
+                       L 135 24 
+                       L 175 25 
+                       L 215 24 
+                       L 255 122 
+                       L 295 26 
+                       L 335 24 
+                       L 375 24 
+                       L 415 25 
+                       L 455 24 
+                       L 495 24 
+                       L 525 24" 
+                    stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+              <!-- Points -->
+              <circle cx="15" cy="24" r="2.5" fill="#3B82F6" />
+              <circle cx="95" cy="24" r="2.5" fill="#3B82F6" />
+              <circle cx="175" cy="25" r="2.5" fill="#3B82F6" />
+              <circle cx="215" cy="24" r="2.5" fill="#3B82F6" />
+              
+              <!-- Red dot at D-7 dip (98.4%) -->
+              <circle cx="255" cy="122" r="4.5" fill="#EF4444" stroke="#12151C" stroke-width="2" />
+              <text x="255" y="136" text-anchor="middle" fill="#EF4444" font-size="9" font-family="JetBrains Mono" font-weight="600">D-7 (98.4%)</text>
+
+              <circle cx="295" cy="26" r="2.5" fill="#3B82F6" />
+              <circle cx="375" cy="24" r="2.5" fill="#3B82F6" />
+              <circle cx="455" cy="24" r="2.5" fill="#3B82F6" />
+              <circle cx="525" cy="24" r="3.5" fill="#3B82F6" stroke="#12151C" stroke-width="1.5" />
+            </svg>
+            
+            <!-- Axis Labels -->
+            <div class="w-full flex justify-between px-2 pt-1 border-t border-hairline text-[10px] font-mono text-textDim">
+              <span>D-13 (99.8%)</span>
+              <span>D-9</span>
+              <span class="text-danger font-medium">D-7 Anomaly</span>
+              <span>D-5</span>
+              <span>D-2</span>
+              <span class="text-textMain font-semibold">Current (99.8%)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ROW 3: BENCH PER OPERATION & BUCKETS PANEL (Height ~410px) -->
+      <section class="grid grid-cols-12 gap-4 h-[410px] flex-shrink-0">
+        
+        <!-- Left Table: 8 Cols (approx 745px wide) -->
+        <div class="col-span-8 bg-surface border border-hairline rounded-md p-4 flex flex-col justify-between">
+          <div>
+            <!-- Section Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-hairline">
+              <div class="flex items-center gap-2">
+                <span class="text-[12px] font-semibold uppercase tracking-wider text-textMuted">Bench per operation</span>
+                <span class="text-[11px] font-mono text-textDim">· 6 tracked primitives</span>
+              </div>
+              <span class="text-[11px] font-mono text-textDim">Window: 14d rolling · sample size 15,482</span>
+            </div>
+
+            <!-- Table Header -->
+            <div class="grid grid-cols-12 py-2.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-textDim border-b border-hairline">
+              <div class="col-span-4">Operation</div>
+              <div class="col-span-1 text-right">Count</div>
+              <div class="col-span-1 text-right">Min ms</div>
+              <div class="col-span-2 text-right">Mean ms</div>
+              <div class="col-span-1 text-right text-textMuted">P50 ms</div>
+              <div class="col-span-1 text-right text-accent">P95 ms</div>
+              <div class="col-span-2 text-right">Max ms</div>
+            </div>
+
+            <!-- 6 Rows (1px hairline row separators, mono tabular values) -->
+            <div class="divide-y divide-hairline text-[12px]">
+              
+              <!-- Row 1: knowledge.query (Values explicitly requested: p50 6.43, p95 7.43) -->
+              <div class="grid grid-cols-12 py-2.5 px-3 items-center hover:bg-surfaceHover/50 transition-colors">
+                <div class="col-span-4 font-mono font-medium text-textMain flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  <span>knowledge.query</span>
+                </div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMuted">730</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textDim">0.42</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textMuted">4.18</div>
+                <div class="col-span-1 text-right font-mono mono-num font-semibold text-textMain">6.43</div>
+                <div class="col-span-1 text-right font-mono mono-num font-semibold text-accent">7.43</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textDim">14.80</div>
+              </div>
+
+              <!-- Row 2: knowledge.log_event -->
+              <div class="grid grid-cols-12 py-2.5 px-3 items-center hover:bg-surfaceHover/50 transition-colors">
+                <div class="col-span-4 font-mono font-medium text-textMain flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent/70"></span>
+                  <span>knowledge.log_event</span>
+                </div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMuted">395</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textDim">1.10</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textMuted">6.85</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMain">6.43</div>
+                <div class="col-span-1 text-right font-mono mono-num text-accent">7.43</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textDim">11.02</div>
+              </div>
+
+              <!-- Row 3: knowledge.evaluate -->
+              <div class="grid grid-cols-12 py-2.5 px-3 items-center hover:bg-surfaceHover/50 transition-colors">
+                <div class="col-span-4 font-mono font-medium text-textMain flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent/50"></span>
+                  <span>knowledge.evaluate</span>
+                </div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMuted">213</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textDim">2.40</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textMuted">8.90</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMain">8.12</div>
+                <div class="col-span-1 text-right font-mono mono-num text-accent">12.45</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textDim">19.20</div>
+              </div>
+
+              <!-- Row 4: graph.mutation -->
+              <div class="grid grid-cols-12 py-2.5 px-3 items-center hover:bg-surfaceHover/50 transition-colors">
+                <div class="col-span-4 font-mono font-medium text-textMain flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent/40"></span>
+                  <span>graph.mutation</span>
+                </div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMuted">122</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textDim">3.20</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textMuted">12.40</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMain">11.80</div>
+                <div class="col-span-1 text-right font-mono mono-num text-accent">16.30</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textDim">24.50</div>
+              </div>
+
+              <!-- Row 5: export.manifest -->
+              <div class="grid grid-cols-12 py-2.5 px-3 items-center hover:bg-surfaceHover/50 transition-colors">
+                <div class="col-span-4 font-mono font-medium text-textMain flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent/30"></span>
+                  <span>export.manifest</span>
+                </div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMuted">38</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textDim">0.18</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textMuted">1.84</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMain">1.45</div>
+                <div class="col-span-1 text-right font-mono mono-num text-accent">3.20</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textDim">8.40</div>
+              </div>
+
+              <!-- Row 6: projection.rebuild -->
+              <div class="grid grid-cols-12 py-2.5 px-3 items-center hover:bg-surfaceHover/50 transition-colors">
+                <div class="col-span-4 font-mono font-medium text-textMain flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent/20"></span>
+                  <span>projection.rebuild</span>
+                </div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMuted">23</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textDim">1.80</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textMuted">7.15</div>
+                <div class="col-span-1 text-right font-mono mono-num text-textMain">6.70</div>
+                <div class="col-span-1 text-right font-mono mono-num text-accent">10.12</div>
+                <div class="col-span-2 text-right font-mono mono-num text-textDim">14.10</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Bottom micro footer for table -->
+          <div class="pt-2 border-t border-hairline flex items-center justify-between text-[11px] font-mono text-textDim">
+            <span>Aggregated over deterministic DuckDB WAL trace buffer</span>
+            <span>p99 Jitter: &lt; 0.002ms</span>
+          </div>
+        </div>
+
+        <!-- Right Panel: Narrow "Buckets" Panel (4 Cols, approx 390px wide) -->
+        <div class="col-span-4 bg-surface border border-hairline rounded-md p-4 flex flex-col justify-between">
+          <div class="flex flex-col gap-4">
+            <!-- Header & Toggle Chips: day / kind / actor -->
+            <div class="flex items-center justify-between pb-3 border-b border-hairline">
+              <span class="text-[12px] font-semibold uppercase tracking-wider text-textMuted">Buckets</span>
+              <div class="flex items-center bg-base border border-hairline rounded p-0.5">
+                <button class="px-2 py-0.5 text-[11px] font-mono text-textDim hover:text-textMain rounded transition-colors">day</button>
+                <button class="px-2 py-0.5 text-[11px] font-mono font-medium text-accent bg-surface rounded shadow-sm border border-hairline/80">kind</button>
+                <button class="px-2 py-0.5 text-[11px] font-mono text-textDim hover:text-textMain rounded transition-colors">actor</button>
+              </div>
+            </div>
+
+            <div class="text-[11px] text-textDim leading-relaxed">
+              Relative throughput partitioned by active invocation kind across local engine lifecycle:
+            </div>
+
+            <!-- 4 Horizontal Bars -->
+            <div class="flex flex-col gap-4 pt-1">
+              
+              <!-- 1. query: 730 -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between text-[12px]">
+                  <span class="font-mono text-textMain">query</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono mono-num text-textMain font-semibold">730</span>
+                    <span class="font-mono text-textDim text-[11px]">(48.0%)</span>
+                  </div>
+                </div>
+                <div class="w-full h-2 bg-base rounded-full overflow-hidden border border-hairline/50">
+                  <div class="h-full bg-accent rounded-full" style="width: 48%;"></div>
+                </div>
+              </div>
+
+              <!-- 2. log_event: 395 -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between text-[12px]">
+                  <span class="font-mono text-textMain">log_event</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono mono-num text-textMain font-semibold">395</span>
+                    <span class="font-mono text-textDim text-[11px]">(26.0%)</span>
+                  </div>
+                </div>
+                <div class="w-full h-2 bg-base rounded-full overflow-hidden border border-hairline/50">
+                  <div class="h-full bg-accent/75 rounded-full" style="width: 26%;"></div>
+                </div>
+              </div>
+
+              <!-- 3. evaluate: 213 -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between text-[12px]">
+                  <span class="font-mono text-textMain">evaluate</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono mono-num text-textMain font-semibold">213</span>
+                    <span class="font-mono text-textDim text-[11px]">(14.0%)</span>
+                  </div>
+                </div>
+                <div class="w-full h-2 bg-base rounded-full overflow-hidden border border-hairline/50">
+                  <div class="h-full bg-accent/50 rounded-full" style="width: 14%;"></div>
+                </div>
+              </div>
+
+              <!-- 4. mutation: 122 -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between text-[12px]">
+                  <span class="font-mono text-textMain">mutation</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono mono-num text-textMain font-semibold">122</span>
+                    <span class="font-mono text-textDim text-[11px]">(8.0%)</span>
+                  </div>
+                </div>
+                <div class="w-full h-2 bg-base rounded-full overflow-hidden border border-hairline/50">
+                  <div class="h-full bg-accent/35 rounded-full" style="width: 8%;"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Bottom Micro info -->
+          <div class="pt-3 border-t border-hairline flex items-center justify-between text-[10px] font-mono text-textDim">
+            <span>MUTATION RATIO</span>
+            <span class="text-textMuted">8.0% W / 92.0% R</span>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+</body>
+</html>

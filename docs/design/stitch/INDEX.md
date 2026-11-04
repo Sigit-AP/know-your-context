@@ -74,6 +74,28 @@ Secara lokal: buka file `.html` per baris di browser, atau lihat `.png`.
 - Transport: 4 kegagalan sementara (SSE/connection reset) berhasil di-retry;
   0 layar hilang permanen. 36/36 screen punya HTML + PNG.
 
+## Revisi R1 (SUB-140, 2026-11-04) — pola dari PATTERNS.md
+
+Empat varian lemah di-regenerate dengan prompt yang direvisi memakai pola referensi
+(lihat [../PATTERNS.md](../PATTERNS.md); 55 referensi Dribbble terverifikasi).
+Asli TIDAK dihapus; revisi disimpan sebagai `*-R1.png/html`. Audit baru via vision
+terhadap daftar cacat lama:
+
+| Layar | Varian | Screen id | HTML | PNG | Audit R1 |
+|---|---|---|---|---|---|
+| 02 Agent Activity Log | A dense-technical | 136f1246ff7a4259b8e485314ff4f736 | 02-activity-A-R1.html | 02-activity-A-R1.png | **PASS** (6/6 cacat lama FIXED: kolom SHA8+OCCURRED_AT mono hadir, 0 wrap mid-token, 0 clipping, 0 dead space, sidebar 12 item + Activity aktif, panel leases kanan) |
+| 11 System | C dashboard-cards | 142b5d4fafed4d32be3d5df85d63b45a | 11-system-C-R1.html | 11-system-C-R1.png | **PASS** (5/5 FIXED: 6 kartu utuh dalam viewport, affects satu baris penuh tanpa ellipsis, header satu baris, sidebar 12 item + System aktif) |
+| 05 Metrics | B clean-spacious | ecfd64f2cff3448b95949f49e4e6983c | 05-metrics-B-R1.html | 05-metrics-B-R1.png | **PASS** (6/6: tabel bench per-operasi + footer terlihat penuh, panel buckets terlihat, 0 clipping, header satu baris, 4 KPI + 2 chart hadir, sidebar benar) |
+| 12 Setup Lifecycle | B clean-spacious | bcac8f7fa8ea4e58a4ca57e995fc4741 | 12-setup-B-R1.html | 12-setup-B-R1.png | **PASS** (5/5: stepper 5 langkah + durasi utuh, 3 kartu kanan (webview prefs, 14 chip kontrak, export manifest) terlihat penuh, header satu baris, sidebar benar) |
+
+Pola yang diterapkan pada prompt R1: disiplin header satu baris (anti chip-soup),
+viewport-fit eksplisit (semua panel terlihat, tanpa fixed footer yang menutupi konten),
+larangan wrap mid-token, mono untuk data mesin (sha8/timestamp/durasi), tabel rambut-
+hairline dengan header micro-label uppercase, satu aksen + semantik dicadangkan.
+Semua transport berhasil pertama kali (4/4, 0 retry). Layar lain (32 varian PASS)
+dinilai ulang terhadap standar referensi dan tetap layak; hanya 4 di atas yang
+di-refine.
+
 ## Ringkasan
 
 | | A dense | B spacious | C cards |
@@ -83,4 +105,6 @@ Secara lokal: buka file `.html` per baris di browser, atau lihat `.png`.
 | FAIL (dicatat jujur, iterasi habis) | 1 (02-A) | 0 | 1 (11-C minor) |
 
 Total: 36/36 screen terunduh (HTML + PNG); 34 PASS/PASS*; 2 FAIL tercatat
-jujur tanpa disembunyikan.
+jujur tanpa disembunyikan. Setelah revisi R1 (SUB-140): kedua FAIL (02-A, 11-C)
+tertutup sebagai `*-R1` PASS, dan dua PASS* (05-B, 12-B) juga punya R1 yang
+menampilkan semua panel di atas fold. Asli tetap tersimpan apa adanya.
