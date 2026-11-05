@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Activity Masonry</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;650;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#FAFAF8',
+            card: '#FFFFFF',
+            hairline: '#E4E4E0',
+            primary: '#111111',
+            secondary: '#6B6B66',
+            accent: '#E03131',
+            statusOk: '#2F9E6E',
+            statusWarn: '#B8860B',
+            statusDanger: '#C92A2A',
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #FAFAF8;
+      color: #111111;
+      width: 1440px;
+      height: 900px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .headline-display {
+      font-size: 48px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .structural-rule {
+      height: 2px;
+      background-color: #111111;
+    }
+    .numeral-display {
+      font-size: 44px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body class="bg-base text-primary select-none flex flex-col justify-between p-[28px] box-border">
+
+  <!-- TOP HEADER ARCHITECTURE -->
+  <header class="w-full mb-4">
+    <div class="flex items-baseline justify-between mb-2">
+      <div class="flex items-baseline gap-3">
+        <h1 class="headline-display uppercase text-primary">02 — ACTIVITY</h1>
+        <span class="font-mono text-[11px] tracking-wider text-secondary uppercase">[LOCAL-FIRST GRAPH OPS · STREAM LIVE]</span>
+      </div>
+      <div class="font-mono text-[12px] font-medium tracking-tight text-primary flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-statusOk"></span>
+        <span>KYC · v5 · 11:58Z</span>
+      </div>
+    </div>
+    <div class="structural-rule w-full"></div>
+  </header>
+
+  <!-- THREE-COLUMN MASONRY CARD BOARD -->
+  <!-- Ragged bottom edges achieved cleanly across equal-width columns -->
+  <main class="w-full grid grid-cols-3 gap-[16px] items-start flex-1 mb-3">
+
+    <!-- COLUMN 1: Short cards stack (Filters + Level Mix + Stream Status) -->
+    <div class="flex flex-col gap-[16px]">
+      
+      <!-- Card 01.1: FILTERS -->
+      <section class="bg-card border border-hairline rounded-[4px] p-[16px]">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-hairline">
+          <span class="font-mono text-[11px] font-bold text-accent tracking-wider uppercase">01.1 FILTERS</span>
+          <span class="font-mono text-[10px] text-secondary tracking-widest uppercase">ACTIVE STREAM</span>
+        </div>
+        
+        <div class="mb-3">
+          <div class="font-mono text-[10px] text-secondary uppercase tracking-wider mb-1.5">LOG LEVEL</div>
+          <div class="flex items-center gap-1.5 font-mono text-[11px]">
+            <span class="px-2.5 py-1 bg-primary text-white font-semibold rounded-[2px]">ALL</span>
+            <span class="px-2 py-1 border border-hairline bg-base text-primary flex items-center gap-1.5 rounded-[2px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>INFO
+            </span>
+            <span class="px-2 py-1 border border-hairline bg-base text-primary flex items-center gap-1.5 rounded-[2px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusWarn"></span>WARN
+            </span>
+            <span class="px-2 py-1 border border-hairline bg-base text-primary flex items-center gap-1.5 rounded-[2px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusDanger"></span>ERROR
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <div class="font-mono text-[10px] text-secondary uppercase tracking-wider mb-1.5">AGENT FLEET</div>
+          <div class="flex items-center gap-1.5 font-mono text-[11px]">
+            <span class="px-2.5 py-1 border border-hairline bg-base text-primary rounded-[2px]">agent-2</span>
+            <span class="px-2.5 py-1 border border-hairline bg-base text-primary rounded-[2px]">sub-144</span>
+            <span class="px-2.5 py-1 border border-hairline bg-base text-primary rounded-[2px]">operator</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card 01.2: LEVEL MIX -->
+      <section class="bg-card border border-hairline rounded-[4px] p-[16px]">
+        <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-hairline">
+          <span class="font-mono text-[11px] font-bold text-accent tracking-wider uppercase">01.2 LEVEL MIX</span>
+          <span class="font-mono text-[10px] text-secondary tracking-widest uppercase">TOTAL 18 OPS</span>
+        </div>
+
+        <div class="space-y-2 font-mono text-[11px]">
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-1.5 text-primary">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>INFO
+            </span>
+            <span class="font-bold text-primary">15 <span class="text-secondary font-normal text-[10px]">(83.3%)</span></span>
+          </div>
+          <!-- Level bar INFO -->
+          <div class="w-full h-[6px] bg-[#EFEFEA] rounded-[1px] overflow-hidden">
+            <div class="h-full bg-primary" style="width: 83.3%;"></div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <span class="flex items-center gap-1.5 text-primary">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusWarn"></span>WARN
+            </span>
+            <span class="font-bold text-primary">2 <span class="text-secondary font-normal text-[10px]">(11.1%)</span></span>
+          </div>
+          <!-- Level bar WARN -->
+          <div class="w-full h-[6px] bg-[#EFEFEA] rounded-[1px] overflow-hidden">
+            <div class="h-full bg-statusWarn" style="width: 11.1%;"></div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <span class="flex items-center gap-1.5 text-primary">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusDanger"></span>ERROR
+            </span>
+            <span class="font-bold text-primary">1 <span class="text-secondary font-normal text-[10px]">(5.6%)</span></span>
+          </div>
+          <!-- Level bar ERROR -->
+          <div class="w-full h-[6px] bg-[#EFEFEA] rounded-[1px] overflow-hidden">
+            <div class="h-full bg-statusDanger" style="width: 5.6%;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card 01.3: STREAM STATUS -->
+      <section class="bg-card border border-hairline rounded-[4px] p-[16px]">
+        <div class="flex items-center justify-between pb-2 mb-3 border-b border-hairline">
+          <span class="font-mono text-[11px] font-bold text-accent tracking-wider uppercase">01.3 STREAM STATUS</span>
+          <span class="font-mono text-[10px] text-statusOk font-semibold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>SYNCED
+          </span>
+        </div>
+        
+        <div class="numeral-display text-primary tracking-tight font-mono uppercase mb-2">
+          TAIL ON
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-hairline font-mono text-[11px]">
+          <div>
+            <div class="text-[9px] uppercase tracking-wider text-secondary">HEAD SEQ</div>
+            <div class="font-bold text-primary text-[13px]">10421</div>
+          </div>
+          <div>
+            <div class="text-[9px] uppercase tracking-wider text-secondary">REPLAY LATENCY</div>
+            <div class="font-bold text-primary text-[13px]">0.14ms</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- COLUMN 2: ONE TALL CARD (Log Table with EXACTLY 12 rows) -->
+    <div class="flex flex-col">
+      <section class="bg-card border border-hairline rounded-[4px] p-[16px]">
+        <div class="flex items-center justify-between pb-3 mb-2.5 border-b border-hairline">
+          <span class="font-mono text-[11px] font-bold text-accent tracking-wider uppercase">02.1 EVENT AUDIT LEDGER</span>
+          <span class="font-mono text-[10px] text-secondary tracking-tight">WINDOW: 10,421 OPS · SHOWING: 12 FRAMES</span>
+        </div>
+
+        <!-- TABLE HEADER -->
+        <div class="grid grid-cols-12 gap-2 font-mono text-[10px] font-bold uppercase tracking-wider text-secondary pb-2 border-b border-hairline">
+          <div class="col-span-2">TIME</div>
+          <div class="col-span-2">LEVEL</div>
+          <div class="col-span-2">AGENT</div>
+          <div class="col-span-4">ACTION</div>
+          <div class="col-span-2 text-right">SHA8</div>
+        </div>
+
+        <!-- EXACTLY 12 ROWS LIST -->
+        <div class="divide-y divide-hairline font-mono text-[11px]">
+          
+          <!-- Row 1 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:58:02Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">agent-2</div>
+            <div class="col-span-4 text-primary font-medium truncate">mutate_graph</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">9f2c1ab4</div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:57:48Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">sub-139</div>
+            <div class="col-span-4 text-primary font-medium truncate">record_outcome</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">8a1d440f</div>
+          </div>
+
+          <!-- Row 3 (WARN row: unreadable payload) -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center bg-amber-50/70 -mx-2 px-2 border-l-2 border-statusWarn">
+            <div class="col-span-2 text-statusWarn font-bold text-[10.5px]">11:57:15Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusWarn/15 text-statusWarn border border-statusWarn/30 text-[9.5px] font-bold">WARN</span>
+            </div>
+            <div class="col-span-2 text-primary font-medium text-[11px]">operator</div>
+            <div class="col-span-4 text-statusWarn font-bold truncate">unreadable payload</div>
+            <div class="col-span-2 text-right text-statusWarn font-bold text-[10.5px]">77e19cb2</div>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:56:59Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">operator</div>
+            <div class="col-span-4 text-primary font-medium truncate">evaluate</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">3d81b899</div>
+          </div>
+
+          <!-- Row 5 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:56:32Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">agent-2</div>
+            <div class="col-span-4 text-primary font-medium truncate">query</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">55c2f0a1</div>
+          </div>
+
+          <!-- Row 6 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:56:04Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">sub-139</div>
+            <div class="col-span-4 text-primary font-medium truncate">record_outcome</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">a012e841</div>
+          </div>
+
+          <!-- Row 7 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:55:40Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">operator</div>
+            <div class="col-span-4 text-primary font-medium truncate">log_event</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">c190bb42</div>
+          </div>
+
+          <!-- Row 8 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:55:18Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">agent-2</div>
+            <div class="col-span-4 text-primary font-medium truncate">mutate_graph</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">e4479901</div>
+          </div>
+
+          <!-- Row 9 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:54:52Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">operator</div>
+            <div class="col-span-4 text-primary font-medium truncate">acquire_lease</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">43dcb102</div>
+          </div>
+
+          <!-- Row 10 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:54:21Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">agent-2</div>
+            <div class="col-span-4 text-primary font-medium truncate">record_state</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">78fe23a9</div>
+          </div>
+
+          <!-- Row 11 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:53:49Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">sub-139</div>
+            <div class="col-span-4 text-primary font-medium truncate">mutate_graph</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">69bca711</div>
+          </div>
+
+          <!-- Row 12 -->
+          <div class="grid grid-cols-12 gap-2 py-[7px] items-center hover:bg-base/60 transition-colors">
+            <div class="col-span-2 text-primary font-medium text-[10.5px]">11:53:12Z</div>
+            <div class="col-span-2">
+              <span class="px-1.5 py-0.5 rounded-[2px] bg-statusOk/10 text-statusOk border border-statusOk/20 text-[9.5px] font-bold">INFO</span>
+            </div>
+            <div class="col-span-2 text-secondary text-[11px]">agent-2</div>
+            <div class="col-span-4 text-primary font-medium truncate">acquire_lease</div>
+            <div class="col-span-2 text-right text-primary font-semibold text-[10.5px]">12e094fa</div>
+          </div>
+
+        </div>
+
+        <div class="mt-3 pt-2.5 border-t border-hairline flex items-center justify-between font-mono text-[10px] text-secondary">
+          <span>CONSENSUS: RAFT 3/3 SYNCED</span>
+          <span>ENTROPY: 0.742 MEAN · SHA-256 HMAC VERIFIED</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- COLUMN 3: Medium Card (NODE LEASES) + Short Card (CHAIN) -->
+    <div class="flex flex-col gap-[16px]">
+      
+      <!-- Card 03.1: NODE LEASES (4 rows) -->
+      <section class="bg-card border border-hairline rounded-[4px] p-[16px]">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-hairline">
+          <span class="font-mono text-[11px] font-bold text-accent tracking-wider uppercase">03.1 NODE LEASES</span>
+          <span class="font-mono text-[10px] text-secondary tracking-widest uppercase">4 ACTIVE</span>
+        </div>
+
+        <div class="space-y-3 font-mono">
+          
+          <!-- Lease 1 (with badge NODE_IN_USE) -->
+          <div class="p-2.5 bg-base border border-hairline rounded-[3px]">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-primary text-[11px]">kg_entity_4402</span>
+              <span class="px-1.5 py-0.5 text-[9px] font-bold tracking-wider rounded-[2px] bg-amber-50 text-statusWarn border border-statusWarn/40">NODE_IN_USE</span>
+            </div>
+            <div class="flex items-center justify-between text-[10.5px] text-secondary">
+              <span>HOLDER: <strong class="text-primary font-medium">agent-2</strong></span>
+              <span>TTL <strong class="text-statusWarn">03m 12s</strong></span>
+            </div>
+          </div>
+
+          <!-- Lease 2 -->
+          <div class="p-2.5 bg-base border border-hairline rounded-[3px]">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-primary text-[11px]">concept_419</span>
+              <span class="px-1.5 py-0.5 text-[9px] font-medium tracking-wider rounded-[2px] bg-card text-secondary border border-hairline">LOCKED</span>
+            </div>
+            <div class="flex items-center justify-between text-[10.5px] text-secondary">
+              <span>HOLDER: <strong class="text-primary font-medium">sub-144</strong></span>
+              <span>TTL <strong class="text-primary font-medium">03m 12s</strong></span>
+            </div>
+          </div>
+
+          <!-- Lease 3 -->
+          <div class="p-2.5 bg-base border border-hairline rounded-[3px]">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-primary text-[11px]">edge:rel_ctx_891</span>
+              <span class="px-1.5 py-0.5 text-[9px] font-medium tracking-wider rounded-[2px] bg-card text-secondary border border-hairline">LOCKED</span>
+            </div>
+            <div class="flex items-center justify-between text-[10.5px] text-secondary">
+              <span>HOLDER: <strong class="text-primary font-medium">operator</strong></span>
+              <span>TTL <strong class="text-primary font-medium">03m 12s</strong></span>
+            </div>
+          </div>
+
+          <!-- Lease 4 -->
+          <div class="p-2.5 bg-base border border-hairline rounded-[3px]">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-primary text-[11px]">dag:subgraph_tier2</span>
+              <span class="px-1.5 py-0.5 text-[9px] font-medium tracking-wider rounded-[2px] bg-card text-secondary border border-hairline">LOCKED</span>
+            </div>
+            <div class="flex items-center justify-between text-[10.5px] text-secondary">
+              <span>HOLDER: <strong class="text-primary font-medium">agent-2</strong></span>
+              <span>TTL <strong class="text-primary font-medium">03m 12s</strong></span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Card 03.2: CHAIN -->
+      <section class="bg-card border border-hairline rounded-[4px] p-[16px]">
+        <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-hairline">
+          <span class="font-mono text-[11px] font-bold text-accent tracking-wider uppercase">03.2 CRYPTOGRAPHIC CHAIN</span>
+          <span class="font-mono text-[10px] text-statusOk font-semibold">OK</span>
+        </div>
+
+        <div class="font-mono text-[11px] space-y-2">
+          <div class="flex items-center justify-between text-secondary text-[10px] uppercase">
+            <span>PREV HASH</span>
+            <span>ENTRY HASH</span>
+          </div>
+          
+          <div class="flex items-center justify-between p-2.5 bg-base border border-hairline rounded-[3px]">
+            <span class="font-bold text-primary text-[12px]">7a1c9e02</span>
+            <span class="text-secondary font-bold">→</span>
+            <span class="font-bold text-primary text-[12px]">9f2c1ab4</span>
+          </div>
+
+          <div class="pt-2 flex items-center justify-between text-[10px] text-secondary border-t border-hairline">
+            <span>MUTATION</span>
+            <span class="text-primary font-semibold">DETERMINISTIC PASS</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- BOTTOM FOOTER ARCHITECTURE -->
+  <footer class="w-full pt-2 border-t border-hairline flex items-center justify-between font-mono text-[10px] text-secondary">
+    <div class="flex items-center gap-4">
+      <span class="font-bold uppercase tracking-wider text-primary">KNOW YOUR CONTEXT</span>
+      <span>·</span>
+      <span>DETERMINISTIC AST REPLAY</span>
+      <span>·</span>
+      <span>MERKLE ANCHOR: <strong class="text-primary">9f2c1ab4</strong></span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span>VIEWPORT: 1440x900</span>
+      <span>·</span>
+      <span>COLUMNS: 3-ASYMMETRIC MASONRY</span>
+      <span>·</span>
+      <span class="font-bold text-accent">SWISS PRINT SYSTEM</span>
+    </div>
+  </footer>
+
+</body>
+</html>

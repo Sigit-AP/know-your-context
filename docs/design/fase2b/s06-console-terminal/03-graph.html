@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Context - Graph Console (Phosphor Terminal)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'JetBrains Mono', monospace !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    body, html {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #000000;
+      color: #C9F7D4;
+    }
+
+    /* Terminal border fieldsets */
+    fieldset.term-fieldset {
+      border: 1px solid #1A2E1A;
+      border-radius: 0px;
+      padding: 10px 14px 12px 14px;
+      position: relative;
+    }
+    legend.term-legend {
+      padding: 0 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #33FF66;
+      text-transform: uppercase;
+      background-color: #000000;
+    }
+
+    /* Blinking phosphor block cursor */
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .cursor-block {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background-color: #33FF66;
+      vertical-align: text-bottom;
+      animation: blink 1s infinite;
+    }
+    .cursor-block-static {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background-color: #33FF66;
+      vertical-align: text-bottom;
+    }
+
+    .hairline-b { border-bottom: 1px solid #1A2E1A; }
+    .hairline-t { border-top: 1px solid #1A2E1A; }
+    .hairline-r { border-right: 1px solid #1A2E1A; }
+    .hairline-l { border-left: 1px solid #1A2E1A; }
+    .hairline-all { border: 1px solid #1A2E1A; }
+
+    /* ASCII Graph highlight rules */
+    .node-highlight {
+      background-color: #0d2612;
+      color: #33FF66;
+      padding: 1px 6px;
+      border: 1px solid #33FF66;
+      font-weight: 700;
+    }
+    .node-box {
+      border: 1px solid #1A2E1A;
+      padding: 1px 6px;
+      background-color: #030803;
+      color: #C9F7D4;
+    }
+    .edge-label {
+      color: #5F8F68;
+    }
+    .tree-glyph {
+      color: #33FF66;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-col justify-between bg-black text-[#C9F7D4] selection:bg-[#1A2E1A] selection:text-[#33FF66]">
+
+  <!-- TOP CHROME: 40px prompt-line bar -->
+  <header class="h-[40px] min-h-[40px] px-4 flex items-center justify-between hairline-b bg-black text-xs leading-none select-none">
+    <div class="flex items-center gap-2">
+      <span class="text-[#5F8F68] uppercase font-bold tracking-wider">CONSOLE ::</span>
+      <span class="text-[#33FF66] font-semibold tracking-wide">kyc://graph --focus heuristics-catalog --live</span>
+      <span class="cursor-block-static"></span>
+    </div>
+    <div class="flex items-center gap-6 text-[11px] text-[#5F8F68]">
+      <span>SHARD: <span class="text-[#C9F7D4]">0x3a</span></span>
+      <span>EPOCH: <span class="text-[#C9F7D4]">0x8F4E</span></span>
+      <span>RAFT: <span class="text-[#33FF66]">3/3 SYNCED</span></span>
+      <span>BUFFER: <span class="text-[#C9F7D4]">20/10421</span></span>
+      <span class="text-[#5F8F68]">1440x900 FIXED</span>
+    </div>
+  </header>
+
+  <!-- MIDDLE ~680px: TERMINAL SCROLLBACK -->
+  <main class="flex-1 w-full p-4 flex flex-col justify-between overflow-hidden bg-black text-[12px] leading-relaxed">
+    
+    <!-- Top System Diagnostic Log Trace -->
+    <div class="space-y-1 mb-2">
+      <div class="text-[#5F8F68] text-[11px] leading-tight">
+        [2026-11-04T11:45:00Z] kyc-core daemon initialized // local-first knowledge-graph runtime v14.2 // sha256:9f2c1ab4
+      </div>
+      <div class="flex items-center gap-2 text-[12px]">
+        <span class="text-[#33FF66] font-bold">$</span>
+        <span class="text-[#33FF66] font-semibold">kyc graph --focus heuristics-catalog</span>
+      </div>
+      <div class="text-[#5F8F68] text-[11px]">
+        &gt; resolved focus target [heuristics-catalog] in partition P2 (retrieval-heuristics) · 128 directed arcs scanned · depth=2
+      </div>
+    </div>
+
+    <!-- Main Terminal Output Panels -->
+    <div class="grid grid-cols-12 gap-3 flex-1 items-stretch my-1">
+      
+      <!-- NEIGHBORHOOD FIELDSET: 8 columns (ASCII graph + scores & evidence) -->
+      <fieldset class="term-fieldset col-span-8 flex flex-col justify-between bg-black">
+        <legend class="term-legend">&gt; NEIGHBORHOOD_TOPOLOGY [heuristics-catalog]</legend>
+        
+        <!-- Sub-header bar inside fieldset -->
+        <div class="flex items-center justify-between text-[11px] text-[#5F8F68] pb-1.5 hairline-b mb-2">
+          <span>GRAPH ENGINE: AST_DIRECTED_DAG</span>
+          <span>ROOT ANCHOR: 9f2c1ab4</span>
+          <span>TRAVERSAL LATENCY: 0.14ms</span>
+          <span class="text-[#33FF66]">STATUS: DETERMINISTIC MATCH</span>
+        </div>
+
+        <!-- ASCII-art Tree in Mono with Box-drawing characters -->
+        <div class="p-2.5 hairline-all bg-[#020502] text-[12px] leading-[1.65] font-mono select-none">
+          <div class="text-[#5F8F68] text-[11px] mb-1">// DIRECTED NEIGHBORHOOD ARCS (6-8 TREE LINES)</div>
+          <div><span class="tree-glyph">┌──</span> <span class="node-highlight">[heuristics-catalog]</span> <span class="text-[#5F8F68] text-[10px]">(P2/INGEST · LEAF v3 · CONF:0.912)</span></div>
+          <div><span class="tree-glyph">│</span>   <span class="tree-glyph">├───</span><span class="edge-label">--depends_on--&gt;</span> <span class="node-box">retrieval-core</span> <span class="text-[#5F8F68] text-[10px]">[P1·DEG:6]</span></div>
+          <div><span class="tree-glyph">│</span>   <span class="tree-glyph">├───</span><span class="edge-label">+--supersedes--&gt;</span> <span class="node-box">heuristics-v1</span> <span class="text-[#FFD23F] text-[10px]">[DEPRECATED·v1.2]</span></div>
+          <div><span class="tree-glyph">│</span>   <span class="tree-glyph">├───</span><span class="edge-label">+--depends_on--&gt;</span> <span class="node-box">store-mutex</span> <span class="text-[#FF4D4D] text-[10px]">[MUTEX_LOCKED·TTL:03m12s]</span></div>
+          <div><span class="tree-glyph">│</span>   <span class="tree-glyph">├───</span><span class="edge-label">+--parent_of---&gt;</span> <span class="node-box">symbols</span> <span class="text-[#5F8F68] text-[10px]">[DUCKDB_AST·12_INDEXES]</span></div>
+          <div><span class="tree-glyph">│</span>   <span class="tree-glyph">├───</span><span class="edge-label">+--indexes_by--&gt;</span> <span class="node-box">vector-indexer-p3</span> <span class="text-[#5F8F68] text-[10px]">[HNSW_COSINE]</span></div>
+          <div><span class="tree-glyph">│</span>   <span class="tree-glyph">├───</span><span class="edge-label">+--governs-----&gt;</span> <span class="node-box">schema-contract-04</span> <span class="text-[#FFD23F] text-[10px]">[SHACL_ASSERT·CONTRADICTS]</span></div>
+          <div><span class="tree-glyph">│</span>   <span class="tree-glyph">└───</span><span class="edge-label">+--evaluates---&gt;</span> <span class="node-box">eval-loop-async</span> <span class="text-[#5F8F68] text-[10px]">[P7·PRECISION:0.941]</span></div>
+        </div>
+
+        <!-- Telemetry Data lines exactly matching user requirements -->
+        <div class="mt-2 space-y-1.5 pt-2 hairline-t text-[11px]">
+          <div class="flex items-center gap-2">
+            <span class="text-[#33FF66] font-bold">&gt;</span>
+            <span class="text-[#5F8F68]">scores</span>
+            <span class="text-[#C9F7D4] font-medium">P=0.828 M=0.341 E=0.898 unc=0.050 conf=0.912</span>
+            <span class="text-[#5F8F68] ml-auto">[EIGEN_CONVERGENCE PASS]</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[#33FF66] font-bold">&gt;</span>
+            <span class="text-[#5F8F68]">evidence</span>
+            <span class="text-[#C9F7D4]">ev-0081 ev-0082</span>
+            <span class="text-[#5F8F68]">·</span>
+            <span class="text-[#5F8F68]">provenance</span>
+            <span class="text-[#33FF66] font-bold">VERIFIED 5/5</span>
+            <span class="text-[#5F8F68] ml-auto">HMAC-SHA256: 9f2c1ab4e7d3</span>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] text-[#5F8F68]">
+            <span class="text-[#33FF66]">&gt;</span>
+            <span>MUTATION_SAFETY: FAIL-CLOSED</span>
+            <span>·</span>
+            <span>RAFT_CONSENSUS: 2/3 QUORUM VERIFIED</span>
+            <span>·</span>
+            <span>REPLAY_SLA: 0.14ms</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- RIGHT COLUMN: LEGEND + PARTITION MAP + MUTEX LEASES (4 columns) -->
+      <div class="col-span-4 flex flex-col justify-between gap-3">
+        
+        <!-- FIELDSET: LEGEND -->
+        <fieldset class="term-fieldset bg-black flex-1 flex flex-col justify-between">
+          <legend class="term-legend">&gt; LEGEND [PARTITION_TOPOLOGY]</legend>
+          <div class="space-y-1.5 text-[11px] pt-1">
+            <div class="flex justify-between items-center py-1 px-2 bg-[#050805] hairline-all">
+              <span class="text-[#C9F7D4] font-semibold">P1 core</span>
+              <span class="text-[#33FF66] font-mono font-bold">412 nodes</span>
+            </div>
+            <div class="flex justify-between items-center py-1 px-2 bg-[#050805] hairline-all">
+              <span class="text-[#C9F7D4] font-semibold">P2 retrieval</span>
+              <span class="text-[#33FF66] font-mono font-bold">388</span>
+            </div>
+            <div class="flex justify-between items-center py-1 px-2 bg-[#050805] hairline-all">
+              <span class="text-[#C9F7D4] font-semibold">P3 ingest</span>
+              <span class="text-[#33FF66] font-mono font-bold">204</span>
+            </div>
+            <div class="flex justify-between items-center py-1 px-2 bg-[#050805] hairline-all">
+              <span class="text-[#C9F7D4] font-semibold">P4 ops</span>
+              <span class="text-[#33FF66] font-mono font-bold">161</span>
+            </div>
+            <div class="flex justify-between items-center py-1 px-2 bg-[#050805] hairline-all">
+              <span class="text-[#C9F7D4] font-semibold">P5 aux</span>
+              <span class="text-[#33FF66] font-mono font-bold">119</span>
+            </div>
+          </div>
+          <div class="pt-2 mt-2 hairline-t text-[10px] text-[#5F8F68] flex justify-between">
+            <span>TOTAL CLUSTER NODES:</span>
+            <span class="text-[#C9F7D4] font-bold">1,284 NODES</span>
+          </div>
+        </fieldset>
+
+        <!-- FIELDSET: NODE MUTEX & ACTIVE LEASES -->
+        <fieldset class="term-fieldset bg-black flex-1 flex flex-col justify-between">
+          <legend class="term-legend">&gt; ACTIVE_LEASES [RAFT_LOCKS]</legend>
+          <div class="space-y-1 text-[11px] pt-1">
+            <div class="flex justify-between text-[11px]">
+              <span class="text-[#C9F7D4]">kg_entity_4402</span>
+              <span class="text-[#FFD23F] font-bold">NODE_IN_USE</span>
+            </div>
+            <div class="text-[10px] text-[#5F8F68] flex justify-between">
+              <span>HOLDER: agent-2</span>
+              <span>TTL: 03m 12s</span>
+            </div>
+            <div class="hairline-t pt-1 flex justify-between text-[11px]">
+              <span class="text-[#C9F7D4]">concept_419</span>
+              <span class="text-[#5F8F68]">LOCKED</span>
+            </div>
+            <div class="text-[10px] text-[#5F8F68] flex justify-between">
+              <span>HOLDER: sub-144</span>
+              <span>TTL: 03m 12s</span>
+            </div>
+          </div>
+          <div class="pt-1.5 hairline-t text-[10px] flex justify-between text-[#5F8F68]">
+            <span>QUORUM TOLERANCE:</span>
+            <span class="text-[#33FF66]">ZERO DRIFT</span>
+          </div>
+        </fieldset>
+
+      </div>
+    </div>
+
+    <!-- Quick Terminal Short Command Output Strip -->
+    <div class="mt-1 pt-1.5 hairline-t text-[11px] flex items-center justify-between text-[#5F8F68]">
+      <div>
+        <span class="text-[#33FF66]">&gt;</span> SHORTCUTS: 
+        <span class="text-[#C9F7D4]">[Enter]</span> EXEC · 
+        <span class="text-[#C9F7D4]">[Ctrl+L]</span> CLEAR · 
+        <span class="text-[#C9F7D4]">[Tab]</span> AUTOCOMPLETE · 
+        <span class="text-[#C9F7D4]">[↑/↓]</span> HISTORY
+      </div>
+      <div>
+        AVAILABLE COMMANDS: 
+        <span class="text-[#33FF66]">status</span> · 
+        <span class="text-[#33FF66]">graph</span> · 
+        <span class="text-[#33FF66]">activity</span> · 
+        <span class="text-[#33FF66]">proposals</span> · 
+        <span class="text-[#33FF66]">relearn</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM PANEL ~180px: Input prompt row 'kyc> _' and status strip -->
+  <footer class="h-[180px] min-h-[180px] bg-[#050805] hairline-t p-3 flex flex-col justify-between text-xs select-none">
+    
+    <!-- Top info row inside bottom panel: active session socket & enforcement -->
+    <div class="flex items-center justify-between text-[11px] text-[#5F8F68] pb-1.5 hairline-b">
+      <div>
+        SESSION: <span class="text-[#C9F7D4]">op@kyc.local (interactive_console)</span>
+        <span class="mx-2">·</span>
+        SOCKET: <span class="text-[#C9F7D4]">/dev/tty0 [IPC: UNIX DOMAIN]</span>
+      </div>
+      <div>
+        ENFORCEMENT: <span class="text-[#33FF66]">FAIL-CLOSED</span>
+        <span class="mx-2">·</span>
+        ATTENTION QUEUE: <span class="text-[#FFD23F] font-bold">2 WARN</span> · <span class="text-[#FF4D4D] font-bold">1 ERROR</span>
+      </div>
+    </div>
+
+    <!-- Multi-line interactive Command Buffer -->
+    <div class="flex-1 py-2 flex flex-col justify-center space-y-1 font-mono">
+      <div class="text-[11px] text-[#5F8F68]">
+        // Type 'help' or command with options. Use --focus &lt;node_id&gt; to re-anchor DAG.
+      </div>
+      <div class="flex items-center gap-2 text-[14px]">
+        <span class="text-[#33FF66] font-bold">kyc&gt;</span>
+        <span class="text-[#C9F7D4] font-medium tracking-wide">graph --focus heuristics-catalog --depth 2 --inspect</span>
+        <span class="cursor-block"></span>
+      </div>
+    </div>
+
+    <!-- Status Strip: 'SEQ 10421 · CHAIN 9f2c1ab4 · AGENTS 3 · TAIL ON' -->
+    <div class="h-[30px] min-h-[30px] px-3 bg-black hairline-all flex items-center justify-between text-[11px] font-mono">
+      <div class="flex items-center gap-3">
+        <span class="text-[#33FF66] font-bold">SEQ 10421</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">CHAIN 9f2c1ab4</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">AGENTS 3</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#33FF66] font-bold">TAIL ON</span>
+      </div>
+      <div class="flex items-center gap-4 text-[#5F8F68]">
+        <span>TIME: <span class="text-[#C9F7D4]">2026-11-04T11:58:02Z</span></span>
+        <span>CLUSTER: <span class="text-[#C9F7D4]">node-01.local</span></span>
+        <span class="flex items-center gap-1.5 text-[#33FF66] font-bold">
+          <span class="w-2 h-2 rounded-none bg-[#33FF66] inline-block"></span>
+          LIVE DETERMINISTIC
+        </span>
+      </div>
+    </div>
+
+  </footer>
+
+</body>
+</html>

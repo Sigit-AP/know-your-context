@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>Know Your Context - Graph Masonry (Swiss Light Print)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        base: '#FAFAF8',
+        card: '#FFFFFF',
+        hairline: '#E4E4E0',
+        ink: '#111111',
+        secondary: '#6B6B66',
+        swissRed: '#E03131',
+        statusOk: '#2F9E6E',
+        statusWarn: '#B8860B',
+        statusDanger: '#C92A2A',
+      },
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: #FAFAF8;
+    color: #111111;
+    font-family: 'Inter', -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+  }
+  .display-title {
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+  .num-display {
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .dot-grid {
+    background-image: radial-gradient(#D5D5D0 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+</style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-col justify-between p-7 select-none">
+
+  <!-- TOP HEADER (NO APP TOPBAR, NO SIDEBAR) -->
+  <header class="w-full flex-shrink-0">
+    <div class="flex items-baseline justify-between mb-2">
+      <div class="flex items-baseline gap-4">
+        <h1 class="text-[44px] display-title text-ink leading-none">03 — GRAPH</h1>
+        <span class="font-mono text-xs uppercase tracking-wider text-secondary">[LOCAL-FIRST TOPOLOGY · DIRECTED GRAPH]</span>
+      </div>
+      <div class="flex items-center gap-3 font-mono text-xs text-secondary">
+        <span class="inline-block w-2 h-2 rounded-full bg-statusOk"></span>
+        <span class="text-ink font-medium">KYC</span>
+        <span>·</span>
+        <span>v5</span>
+        <span>·</span>
+        <span>11:58Z</span>
+      </div>
+    </div>
+    <!-- 2px Black Structural Rule -->
+    <div class="w-full h-[2px] bg-ink"></div>
+  </header>
+
+  <!-- THREE-COLUMN MASONRY BOARD (16px gutters, ragged bottom edge) -->
+  <main class="grid grid-cols-3 gap-4 flex-grow my-4 items-start">
+
+    <!-- ==================== COLUMN 1 (3 SHORT CARDS) ==================== -->
+    <div class="flex flex-col gap-4">
+
+      <!-- CARD 01.1: LEGEND -->
+      <section class="bg-card border border-hairline rounded-[3px] p-4 flex flex-col">
+        <div class="flex items-center justify-between pb-2 border-b border-hairline mb-3">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs font-semibold text-swissRed">01.1</span>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-ink">LEGEND</h2>
+          </div>
+          <span class="font-mono text-[11px] text-secondary">7 PARTITIONS</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <!-- P1 -->
+          <div class="flex items-center justify-between px-2.5 py-1.5 border border-hairline rounded-[2px] bg-base">
+            <div class="flex items-center gap-1.5 font-mono text-xs">
+              <span class="font-bold text-ink">P1</span>
+              <span class="text-secondary text-[11px]">Core</span>
+            </div>
+            <span class="font-mono text-xs font-medium text-ink">342</span>
+          </div>
+          <!-- P2 (Selected domain highlighted cleanly) -->
+          <div class="flex items-center justify-between px-2.5 py-1.5 border border-swissRed rounded-[2px] bg-white">
+            <div class="flex items-center gap-1.5 font-mono text-xs">
+              <span class="font-bold text-swissRed">P2</span>
+              <span class="text-ink font-medium text-[11px]">Ingest</span>
+            </div>
+            <span class="font-mono text-xs font-bold text-swissRed">218</span>
+          </div>
+          <!-- P3 -->
+          <div class="flex items-center justify-between px-2.5 py-1.5 border border-hairline rounded-[2px] bg-base">
+            <div class="flex items-center gap-1.5 font-mono text-xs">
+              <span class="font-bold text-ink">P3</span>
+              <span class="text-secondary text-[11px]">Vector</span>
+            </div>
+            <span class="font-mono text-xs font-medium text-ink">189</span>
+          </div>
+          <!-- P4 -->
+          <div class="flex items-center justify-between px-2.5 py-1.5 border border-hairline rounded-[2px] bg-base">
+            <div class="flex items-center gap-1.5 font-mono text-xs">
+              <span class="font-bold text-ink">P4</span>
+              <span class="text-secondary text-[11px]">Schema</span>
+            </div>
+            <span class="font-mono text-xs font-medium text-ink">156</span>
+          </div>
+          <!-- P5 -->
+          <div class="flex items-center justify-between px-2.5 py-1.5 border border-hairline rounded-[2px] bg-base">
+            <div class="flex items-center gap-1.5 font-mono text-xs">
+              <span class="font-bold text-ink">P5</span>
+              <span class="text-secondary text-[11px]">Consensus</span>
+            </div>
+            <span class="font-mono text-xs font-medium text-ink">112</span>
+          </div>
+          <!-- P6 -->
+          <div class="flex items-center justify-between px-2.5 py-1.5 border border-hairline rounded-[2px] bg-base">
+            <div class="flex items-center gap-1.5 font-mono text-xs">
+              <span class="font-bold text-ink">P6</span>
+              <span class="text-secondary text-[11px]">Inference</span>
+            </div>
+            <span class="font-mono text-xs font-medium text-ink">145</span>
+          </div>
+        </div>
+
+        <!-- P7 Full Width -->
+        <div class="mt-2 flex items-center justify-between px-2.5 py-1.5 border border-hairline rounded-[2px] bg-base">
+          <div class="flex items-center gap-2 font-mono text-xs">
+            <span class="font-bold text-ink">P7</span>
+            <span class="text-secondary text-[11px]">Feedback & Eval</span>
+          </div>
+          <span class="font-mono text-xs font-medium text-ink">122</span>
+        </div>
+      </section>
+
+      <!-- CARD 01.2: SELECTED NODE -->
+      <section class="bg-card border border-hairline rounded-[3px] p-4 flex flex-col">
+        <div class="flex items-center justify-between pb-2 border-b border-hairline mb-3">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs font-semibold text-swissRed">01.2</span>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-ink">SELECTED NODE</h2>
+          </div>
+          <span class="font-mono text-[11px] text-swissRed font-medium">FOCUS: P2</span>
+        </div>
+
+        <div class="mb-3">
+          <div class="font-mono text-sm font-bold text-ink tracking-tight mb-1">heuristics-catalog</div>
+          <p class="text-xs text-secondary leading-snug">AST pattern evaluator & mutation arbiter across subgraphs</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-hairline">
+          <div>
+            <div class="text-[10px] uppercase font-mono tracking-wider text-secondary mb-1">CONVERGENCE (P)</div>
+            <div class="font-mono text-[36px] num-display text-ink">0.828</div>
+          </div>
+          <div>
+            <div class="text-[10px] uppercase font-mono tracking-wider text-secondary mb-1">CONFIDENCE</div>
+            <div class="font-mono text-[36px] num-display text-ink">0.912</div>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-2.5 border-t border-hairline flex items-center justify-between font-mono text-xs text-secondary">
+          <span>ENTROPY: 0.341</span>
+          <span>DEGREE: 4 ARCS</span>
+        </div>
+      </section>
+
+      <!-- CARD 01.3: CLUSTER SPEC -->
+      <section class="bg-card border border-hairline rounded-[3px] p-4 flex flex-col">
+        <div class="flex items-center justify-between pb-2 border-b border-hairline mb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs font-semibold text-swissRed">01.3</span>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-ink">TOPOLOGY SPEC</h2>
+          </div>
+          <span class="font-mono text-[11px] text-statusOk">● DETERMINISTIC</span>
+        </div>
+        <div class="space-y-1.5 font-mono text-xs">
+          <div class="flex justify-between py-1 border-b border-hairline">
+            <span class="text-secondary">TOTAL NODES</span>
+            <span class="font-semibold text-ink">1,284</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-hairline">
+            <span class="text-secondary">DIRECTED EDGES</span>
+            <span class="font-semibold text-ink">3,917</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-secondary">STORAGE ENGINE</span>
+            <span class="font-semibold text-ink">DUCKDB + SQLITE</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==================== COLUMN 2 (ONE TALL GRAPH CANVAS CARD) ==================== -->
+    <div class="flex flex-col">
+
+      <section class="bg-card border border-hairline rounded-[3px] p-4 h-[710px] flex flex-col relative">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between pb-2 border-b border-hairline flex-shrink-0 mb-2">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs font-semibold text-swissRed">02.1</span>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-ink">KNOWLEDGE GRAPH CANVAS</h2>
+          </div>
+          <div class="flex items-center gap-3 font-mono text-xs text-secondary">
+            <span>LAYOUT: FORCE-DIRECTED</span>
+            <span>·</span>
+            <span class="text-ink font-medium">30 NODES ACTIVE</span>
+          </div>
+        </div>
+
+        <!-- GRAPH CANVAS (Faint dot grid, ~30 node cards, directed SVG edges, RED accent on selected node) -->
+        <div class="relative flex-grow w-full border border-hairline rounded-[2px] bg-[#FCFCFA] dot-grid overflow-hidden">
+
+          <!-- Directed Edges SVG Overlay -->
+          <svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow-neutral" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="#888884" />
+              </marker>
+              <marker id="arrow-selected" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="#E03131" />
+              </marker>
+            </defs>
+
+            <!-- Selected Node Connectors (Swiss Red) -->
+            <!-- heuristics-catalog -> retrieval-core -->
+            <line x1="210" y1="315" x2="135" y2="240" stroke="#E03131" stroke-width="1.8" marker-end="url(#arrow-selected)" />
+            <!-- heuristics-catalog -> store-mutex -->
+            <line x1="260" y1="340" x2="260" y2="400" stroke="#E03131" stroke-width="1.8" marker-end="url(#arrow-selected)" />
+            <!-- heuristics-catalog -> scoring-engine -->
+            <line x1="320" y1="315" x2="365" y2="270" stroke="#E03131" stroke-width="1.8" marker-end="url(#arrow-selected)" />
+            <!-- heuristics-catalog -> schema-contract-04 -->
+            <line x1="210" y1="340" x2="140" y2="400" stroke="#E03131" stroke-width="1.8" stroke-dasharray="3 3" marker-end="url(#arrow-selected)" />
+
+            <!-- Network Edges (Neutral dark/gray lines) -->
+            <line x1="120" y1="85" x2="190" y2="85" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="240" y1="95" x2="260" y2="150" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="240" y1="165" x2="160" y2="225" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="60" y1="175" x2="105" y2="225" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="330" y1="85" x2="350" y2="140" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="345" y1="155" x2="290" y2="165" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="375" y1="170" x2="375" y2="250" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="260" y1="435" x2="260" y2="475" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="140" y1="435" x2="180" y2="480" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="290" y1="490" x2="340" y2="490" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="260" y1="510" x2="260" y2="550" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="110" y1="500" x2="80" y2="560" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="360" y1="365" x2="360" y2="415" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="360" y1="285" x2="360" y2="335" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="60" y1="330" x2="110" y2="345" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="60" y1="420" x2="60" y2="475" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="130" y1="240" x2="60" y2="300" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+            <line x1="110" y1="495" x2="180" y2="495" stroke="#BBBBB6" stroke-width="1.2" marker-end="url(#arrow-neutral)" />
+          </svg>
+
+          <!-- 30 Node Cards Distributed Across Canvas -->
+
+          <!-- TOP TIER (Tier 1 / Ingest / AST) -->
+          <div class="absolute left-4 top-4 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P1</span> query-planner
+          </div>
+          <div class="absolute left-36 top-16 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P1</span> ast-parser-stream
+          </div>
+          <div class="absolute left-64 top-4 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P1</span> root-orchestrator
+          </div>
+          <div class="absolute right-6 top-5 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P3</span> vec-store-08
+          </div>
+          <div class="absolute right-14 top-24 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P3</span> vector-cache-evict
+          </div>
+          <div class="absolute left-2 top-28 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P2</span> token-dict-v2
+          </div>
+          <div class="absolute left-48 top-32 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P1</span> duckdb-ast-index
+          </div>
+
+          <!-- UPPER MIDDLE TIER -->
+          <div class="absolute left-16 top-48 bg-white border border-hairline px-2.5 py-1.5 rounded-[2px] font-mono text-[11px] font-medium text-ink">
+            <span class="text-secondary">P1</span> retrieval-core
+          </div>
+          <div class="absolute right-4 top-44 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P7</span> eval-loop-async
+          </div>
+          <div class="absolute left-3 top-56 bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P2</span> heuristics-v1 <span class="text-[9px] text-secondary">(depr)</span>
+          </div>
+          <div class="absolute right-12 top-60 bg-white border border-hairline px-2.5 py-1.5 rounded-[2px] font-mono text-[11px] text-ink">
+            <span class="text-secondary">P2</span> scoring-engine
+          </div>
+
+          <!-- ================= CENTERPIECE: SELECTED NODE ================= -->
+          <!-- EXACTLY ONE ACCENT COLOR: SWISS RED -->
+          <div class="absolute left-[138px] top-[292px] bg-white border-2 border-swissRed px-3 py-2 rounded-[3px] shadow-none z-20">
+            <div class="flex items-center justify-between gap-3 mb-0.5">
+              <span class="font-mono text-[10px] font-bold text-swissRed uppercase">P2 INGEST · ACTIVE</span>
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-swissRed"></span>
+            </div>
+            <div class="font-mono text-xs font-bold text-ink tracking-tight">heuristics-catalog</div>
+            <div class="font-mono text-[10px] text-secondary mt-1 flex justify-between gap-4">
+              <span>deg: 4</span>
+              <span>conf: 0.912</span>
+            </div>
+          </div>
+
+          <!-- LOWER MIDDLE TIER -->
+          <div class="absolute left-6 top-[390px] bg-white border border-hairline px-2.5 py-1.5 rounded-[2px] font-mono text-[11px] text-ink">
+            <span class="text-secondary">P4</span> schema-contract-04
+          </div>
+          <div class="absolute left-[200px] top-[395px] bg-white border border-hairline px-2.5 py-1.5 rounded-[2px] font-mono text-[11px] text-ink">
+            <span class="text-secondary">P1</span> store-mutex
+          </div>
+          <div class="absolute right-12 top-[345px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P6</span> inference-runtime-p6
+          </div>
+          <div class="absolute right-4 top-[410px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P7</span> telemetry-sink-bus
+          </div>
+          <div class="absolute left-2 top-[470px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P4</span> shacl-invariant-04
+          </div>
+
+          <!-- LOWER TIER -->
+          <div class="absolute left-[165px] top-[475px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P5</span> lease-arbiter-core
+          </div>
+          <div class="absolute right-16 top-[480px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P5</span> blake3-merkle-root
+          </div>
+          <div class="absolute left-20 top-[530px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P4</span> strict-jsonld-v5
+          </div>
+          <div class="absolute left-[195px] top-[550px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P5</span> wal-checkpoint
+          </div>
+          <div class="absolute right-4 top-[545px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P7</span> metric-probe-01
+          </div>
+
+          <!-- PERIPHERY NODES (TOTAL ~30 NODES) -->
+          <div class="absolute left-4 top-[595px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P4</span> compat-uncommitted
+          </div>
+          <div class="absolute left-40 top-[605px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P5</span> raft-heartbeat
+          </div>
+          <div class="absolute right-28 top-[600px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P6</span> taxo-closure
+          </div>
+          <div class="absolute right-4 top-[615px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[10px] text-ink">
+            <span class="text-secondary">P3</span> hnsw-subspace
+          </div>
+          <div class="absolute left-10 top-[640px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[9px] text-secondary">
+            <span>P1</span> catalog-root
+          </div>
+          <div class="absolute left-[180px] top-[640px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[9px] text-secondary">
+            <span>P2</span> edge-rel-ctx-891
+          </div>
+          <div class="absolute right-20 top-[640px] bg-white border border-hairline px-2 py-1 rounded-[2px] font-mono text-[9px] text-secondary">
+            <span>P6</span> proj-rebuilder
+          </div>
+
+        </div>
+
+        <!-- Canvas Controls Footer -->
+        <div class="flex items-center justify-between pt-2.5 mt-2 border-t border-hairline font-mono text-xs text-secondary flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <span>ZOOM: 100%</span>
+            <span>·</span>
+            <span>FIT: OK</span>
+          </div>
+          <div class="flex items-center gap-2 text-ink">
+            <span class="w-2 h-2 rounded-full bg-statusOk"></span>
+            <span>PHYSICS STABLE</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==================== COLUMN 3 (1 MEDIUM + 1 SHORT CARD) ==================== -->
+    <div class="flex flex-col gap-4">
+
+      <!-- CARD 03.1: RELATIONS (MEDIUM CARD) -->
+      <section class="bg-card border border-hairline rounded-[3px] p-4 flex flex-col">
+        <div class="flex items-center justify-between pb-2 border-b border-hairline mb-3">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs font-semibold text-swissRed">03.1</span>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-ink">RELATIONS</h2>
+          </div>
+          <span class="font-mono text-[11px] text-secondary">4 DIRECTED ARCS</span>
+        </div>
+
+        <!-- RELATIONS LIST -->
+        <div class="space-y-2 mb-3">
+          <!-- Item 1: depends_on -->
+          <div class="p-2 border border-hairline rounded-[2px] bg-base flex flex-col gap-1">
+            <div class="flex items-center justify-between font-mono text-xs">
+              <span class="font-semibold text-ink">depends_on</span>
+              <span class="text-secondary text-[11px]">wt: 0.94</span>
+            </div>
+            <div class="flex items-center gap-1.5 font-mono text-xs text-secondary">
+              <span>→</span>
+              <span class="text-ink font-medium">retrieval-core</span>
+              <span class="text-[10px] text-secondary">(P1)</span>
+            </div>
+          </div>
+
+          <!-- Item 2: supersedes -->
+          <div class="p-2 border border-hairline rounded-[2px] bg-base flex flex-col gap-1">
+            <div class="flex items-center justify-between font-mono text-xs">
+              <span class="font-semibold text-ink">supersedes</span>
+              <span class="text-secondary text-[11px]">v1.2</span>
+            </div>
+            <div class="flex items-center gap-1.5 font-mono text-xs text-secondary">
+              <span>→</span>
+              <span class="text-ink font-medium">heuristics-v1</span>
+              <span class="text-[10px] text-secondary">(P2)</span>
+            </div>
+          </div>
+
+          <!-- Item 3: contradicts (Semantic Warn status) -->
+          <div class="p-2 border border-hairline rounded-[2px] bg-base flex flex-col gap-1">
+            <div class="flex items-center justify-between font-mono text-xs">
+              <span class="font-semibold text-statusWarn">contradicts</span>
+              <span class="font-mono text-[10px] text-statusWarn font-medium px-1 bg-[#FFF9E6] border border-[#F3E2B3] rounded-[2px]">RULE CHECK</span>
+            </div>
+            <div class="flex items-center gap-1.5 font-mono text-xs text-secondary">
+              <span>→</span>
+              <span class="text-ink font-medium">schema-contract-04</span>
+              <span class="text-[10px] text-secondary">(P4)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVIDENCE SUB-SECTION -->
+        <div class="pt-2.5 border-t border-hairline">
+          <div class="text-[10px] font-mono uppercase tracking-wider text-secondary mb-2">VERIFIED EVIDENCE</div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between p-1.5 border border-hairline rounded-[2px] font-mono text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+                <span class="font-medium text-ink">ev-0081</span>
+              </div>
+              <span class="text-secondary">score 0.94</span>
+            </div>
+            <div class="flex items-center justify-between p-1.5 border border-hairline rounded-[2px] font-mono text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+                <span class="font-medium text-ink">ev-0082</span>
+              </div>
+              <span class="text-secondary">score 0.91</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 03.2: PROVENANCE (SHORT CARD) -->
+      <section class="bg-card border border-hairline rounded-[3px] p-4 flex flex-col">
+        <div class="flex items-center justify-between pb-2 border-b border-hairline mb-3">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs font-semibold text-swissRed">03.2</span>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-ink">PROVENANCE</h2>
+          </div>
+          <span class="font-mono text-xs font-semibold text-statusOk">● OK</span>
+        </div>
+
+        <div class="space-y-2 font-mono text-xs">
+          <div class="flex items-center justify-between py-1 border-b border-hairline">
+            <span class="text-secondary">MERKLE ANCHOR</span>
+            <span class="font-semibold text-ink">9f2c1ab4</span>
+          </div>
+          <div class="flex items-center justify-between py-1 border-b border-hairline">
+            <span class="text-secondary">MUTATION PROOF</span>
+            <span class="font-medium text-statusOk">DETERMINISTIC PASS</span>
+          </div>
+          <div class="flex items-center justify-between py-1 border-b border-hairline">
+            <span class="text-secondary">RAFT CONSENSUS</span>
+            <span class="font-semibold text-ink">3/3 SYNCED</span>
+          </div>
+          <div class="flex items-center justify-between py-1">
+            <span class="text-secondary">CHAIN AUDIT</span>
+            <span class="font-bold text-ink">VERIFIED 5/5</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- BOTTOM METADATA BAR (NO FIXED OVERLAY, INTEGRAL FLOW) -->
+  <footer class="w-full flex-shrink-0 pt-2 border-t border-hairline flex items-center justify-between font-mono text-[11px] text-secondary">
+    <div class="flex items-center gap-4">
+      <span class="text-ink font-semibold">KNOW YOUR CONTEXT</span>
+      <span>DETERMINISTIC AST REPLAY</span>
+      <span>MERKLE ANCHOR: <span class="text-ink">9f2c1ab4</span></span>
+    </div>
+    <div class="flex items-center gap-5">
+      <span>VIEWPORT: 1440x900</span>
+      <span>COLUMNS: 3-ASYMMETRIC MASONRY</span>
+      <span class="font-bold text-swissRed">SWISS PRINT SYSTEM</span>
+    </div>
+  </footer>
+
+</body>
+</html>

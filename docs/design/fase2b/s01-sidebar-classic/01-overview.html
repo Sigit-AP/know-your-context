@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=1440, height=900, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context - Console Overview</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            base: "#0B0D11",
+            surface: "#0E1116",
+            card: "#12161D",
+            raised: "#161B24",
+            primary: "#E6E9EF",
+            secondary: "#9AA3B2",
+            accent: "#6366F1",
+            ok: "#34D399",
+            warn: "#FBBF24",
+            danger: "#F87171"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #0B0D11;
+      color: #E6E9EF;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      user-select: none;
+    }
+    .hairline-border {
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .hairline-b {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .hairline-r {
+      border-right: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .hairline-t {
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .hairline-l {
+      border-left: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .material-symbols-outlined {
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-base text-primary antialiased flex w-[1440px] h-[900px] max-w-[1440px] max-h-[900px]">
+<!-- FIXED LEFT SIDEBAR (240px wide x 900px high) -->
+<aside class="w-[240px] h-[900px] bg-surface hairline-r flex flex-col justify-between shrink-0 select-none">
+<!-- Top Group: Product Header & Nav Groups -->
+<div class="flex flex-col">
+<!-- Product Header -->
+<div class="h-14 px-4 flex items-center gap-2.5 hairline-b">
+<div class="w-6 h-6 rounded bg-indigo-500/10 flex items-center justify-center text-accent">
+<span class="material-symbols-outlined" style="font-size: 16px;">hub</span>
+</div>
+<span class="font-headline text-sm font-semibold text-neutral-100 tracking-tight">Know Your Context</span>
+</div>
+<!-- Navigation Hierarchy -->
+<div class="p-3 space-y-6">
+<!-- CONSOLE Section -->
+<div>
+<div class="px-3 pb-2 text-[10px] font-mono uppercase tracking-wider text-secondary">CONSOLE</div>
+<nav class="space-y-0.5">
+<!-- Active: Overview -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-400 font-medium text-sm transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- Activity -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-white/5 text-sm font-medium transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined">switch_account</span>
+<span>Activity</span>
+</a>
+<!-- Graph -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-white/5 text-sm font-medium transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span>Graph</span>
+</a>
+</nav>
+</div>
+<!-- SYSTEM Section -->
+<div>
+<div class="px-3 pb-2 text-[10px] font-mono uppercase tracking-wider text-secondary">SYSTEM</div>
+<nav class="space-y-0.5">
+<!-- Search -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-white/5 text-sm font-medium transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined">search</span>
+<span>Search</span>
+</a>
+<!-- Metrics -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-white/5 text-sm font-medium transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Metrics</span>
+</a>
+<!-- Health -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-white/5 text-sm font-medium transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span>Health</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+<!-- Pinned User Card at Bottom -->
+<div class="p-3 hairline-t">
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-raised hairline-border">
+<div class="w-7 h-7 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center text-neutral-300 font-mono text-xs font-semibold shrink-0">
+          OP
+        </div>
+<div class="flex flex-col min-w-0">
+<div class="text-[13px] font-semibold text-primary leading-tight">operator</div>
+<div class="text-[11px] font-mono text-secondary truncate leading-tight mt-0.5">op@kyc.local</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- WORKSPACE WRAPPER (1200px wide x 900px high) -->
+<div class="w-[1200px] h-[900px] flex flex-col shrink-0 overflow-hidden bg-base">
+<!-- TOPBAR (56px high) -->
+<header class="h-14 hairline-b px-7 flex items-center justify-between bg-surface shrink-0">
+<!-- Left: Breadcrumbs & Cluster Pill -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-xs text-secondary font-mono">
+<span>kyc</span>
+<span class="text-neutral-600">/</span>
+<span>console</span>
+<span class="text-neutral-600">/</span>
+<span class="text-primary font-medium">overview</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-raised hairline-border text-[10px] font-mono text-ok font-medium tracking-tight">
+<span class="w-1.5 h-1.5 rounded-full bg-ok animate-pulse"></span>
+<span>RAFT SYNCED · QUORUM 3/3</span>
+</div>
+</div>
+<!-- Center: Search Input with Shortcut -->
+<div class="w-96 flex items-center justify-between px-3 py-1.5 bg-raised hairline-border rounded-lg text-secondary">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-neutral-400" style="font-size: 16px;">search</span>
+<input class="bg-transparent border-0 p-0 text-xs text-primary placeholder-secondary focus:ring-0 focus:outline-none w-64 font-body" placeholder="Search nodes, edges, queries" type="text"/>
+</div>
+<kbd class="font-mono text-[10px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-neutral-400">⌘K</kbd>
+</div>
+<!-- Right: Connection Pill, Bell, Avatar -->
+<div class="flex items-center gap-3">
+<div class="px-2.5 py-1 rounded bg-raised hairline-border font-mono text-xs text-secondary flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+<span>node-01.local : 9241</span>
+</div>
+<button class="w-8 h-8 rounded-lg bg-raised hairline-border flex items-center justify-center text-secondary hover:text-primary transition-colors duration-150 relative cursor-pointer" title="Notifications">
+<span class="material-symbols-outlined" style="font-size: 18px;">notifications</span>
+<span class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-accent"></span>
+</button>
+<div class="w-8 h-8 rounded-lg bg-indigo-500/10 hairline-border border-indigo-500/20 flex items-center justify-center text-accent text-xs font-mono font-semibold" title="Operator Profile">
+          KY
+        </div>
+</div>
+</header>
+<!-- MAIN CONTENT VIEWPORT (844px high) -->
+<main class="p-7 flex flex-col justify-between h-[844px] box-border">
+<!-- TOP: Page Heading Strip -->
+<div class="flex items-baseline justify-between shrink-0 mb-4">
+<div>
+<h1 class="text-base font-semibold text-primary font-headline">Overview</h1>
+<p class="text-xs text-secondary mt-0.5">Real-time partition status, queue state, and local engine telemetry</p>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono text-secondary">
+<span>TXID <span class="text-primary">#904,112</span></span>
+<span class="text-neutral-700">|</span>
+<span>CYCLE <span class="text-primary">12.4ms</span></span>
+<span class="text-neutral-700">|</span>
+<span>UPDATED <span class="text-primary">11:58:02Z</span></span>
+</div>
+</div>
+<!-- KPI STRIP (4 Columns) -->
+<div class="grid grid-cols-4 gap-4 shrink-0 mb-4">
+<!-- KPI 1: Nodes -->
+<div class="bg-card hairline-border rounded-xl p-4 flex flex-col justify-between h-[104px]">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-mono uppercase tracking-wider text-secondary">NODES</span>
+<span class="text-[11px] font-mono text-ok">+14 today</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<span class="text-2xl font-bold font-mono text-primary tracking-tight">1,284</span>
+<svg class="w-20 h-6 overflow-visible" fill="none" viewbox="0 0 80 24">
+<path d="M0 18 L16 16 L32 19 L48 10 L64 12 L80 4" stroke="#6366F1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<!-- KPI 2: Edges -->
+<div class="bg-card hairline-border rounded-xl p-4 flex flex-col justify-between h-[104px]">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-mono uppercase tracking-wider text-secondary">EDGES</span>
+<span class="text-[11px] font-mono text-secondary">avg deg 3.05</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<span class="text-2xl font-bold font-mono text-primary tracking-tight">3,917</span>
+<svg class="w-20 h-6 overflow-visible" fill="none" viewbox="0 0 80 24">
+<path d="M0 20 L16 17 L32 14 L48 15 L64 7 L80 3" stroke="#6366F1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<!-- KPI 3: Store -->
+<div class="bg-card hairline-border rounded-xl p-4 flex flex-col justify-between h-[104px]">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-mono uppercase tracking-wider text-secondary">STORE</span>
+<span class="text-[11px] font-mono text-ok">WAL 0 lag</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<span class="text-2xl font-bold font-mono text-primary tracking-tight">46.2 MB</span>
+<svg class="w-20 h-6 overflow-visible" fill="none" viewbox="0 0 80 24">
+<path d="M0 16 L16 15 L32 16 L48 13 L64 11 L80 8" stroke="#6366F1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<!-- KPI 4: Events Today -->
+<div class="bg-card hairline-border rounded-xl p-4 flex flex-col justify-between h-[104px]">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-mono uppercase tracking-wider text-secondary">EVENTS TODAY</span>
+<span class="text-[11px] font-mono text-secondary">42/hr peak</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<span class="text-2xl font-bold font-mono text-primary tracking-tight">214</span>
+<svg class="w-20 h-6 overflow-visible" fill="none" viewbox="0 0 80 24">
+<path d="M0 19 L16 12 L32 17 L48 9 L64 14 L80 5" stroke="#6366F1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- MIDDLE CONTENT: Two Balanced Panels -->
+<div class="grid grid-cols-2 gap-4 flex-1 min-h-[460px] max-h-[490px]">
+<!-- LEFT PANEL: Attention / Triage Queue -->
+<div class="bg-card hairline-border rounded-xl flex flex-col justify-between overflow-hidden">
+<!-- Panel Header -->
+<div class="px-5 py-3.5 hairline-b flex items-center justify-between shrink-0 bg-surface">
+<div class="flex items-center gap-2.5">
+<span class="text-sm font-semibold text-primary font-headline">Triage Queue</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-400/10 text-warn border border-amber-400/20">3 ITEMS</span>
+</div>
+<span class="text-xs font-mono text-secondary">AUTOMATED AUDIT</span>
+</div>
+<!-- Structured Rows (52px each) -->
+<div class="divide-y divide-white/[0.07] flex-1">
+<!-- Row 1 -->
+<div class="h-[74px] px-5 flex items-center justify-between hover:bg-raised transition-colors duration-150">
+<div class="flex items-start gap-3">
+<span class="w-2 h-2 rounded-full bg-warn mt-1.5 shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-primary">3 proposals pending review</span>
+<span class="text-[11px] text-secondary mt-0.5">Automated schema mutations awaiting operator sign-off</span>
+</div>
+</div>
+<a class="text-xs font-mono text-accent hover:text-indigo-300 transition-colors shrink-0" href="#">Open →</a>
+</div>
+<!-- Row 2 -->
+<div class="h-[74px] px-5 flex items-center justify-between hover:bg-raised transition-colors duration-150">
+<div class="flex items-start gap-3">
+<span class="w-2 h-2 rounded-full bg-warn mt-1.5 shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-primary">12 knowledge-debt items</span>
+<span class="text-[11px] text-secondary mt-0.5">Stale citations, unindexed AST nodes, and vacuum flags</span>
+</div>
+</div>
+<a class="text-xs font-mono text-accent hover:text-indigo-300 transition-colors shrink-0" href="#">Open →</a>
+</div>
+<!-- Row 3 -->
+<div class="h-[74px] px-5 flex items-center justify-between hover:bg-raised transition-colors duration-150">
+<div class="flex items-start gap-3">
+<span class="w-2 h-2 rounded-full bg-danger mt-1.5 shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-primary">2 unresolved references</span>
+<span class="text-[11px] text-secondary mt-0.5">Dangling edge pointers detected in domain partition P4</span>
+</div>
+</div>
+<a class="text-xs font-mono text-accent hover:text-indigo-300 transition-colors shrink-0" href="#">Open →</a>
+</div>
+</div>
+<!-- Panel Footer -->
+<div class="px-5 py-3 hairline-t bg-surface flex items-center justify-between text-xs font-mono text-secondary shrink-0">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+<span>Cron verification active · next cycle in 08m 42s</span>
+</div>
+<span class="text-neutral-500">POLICY strict-l2</span>
+</div>
+</div>
+<!-- RIGHT PANEL: Agents / Fleet Telemetry -->
+<div class="bg-card hairline-border rounded-xl flex flex-col justify-between overflow-hidden">
+<!-- Panel Header -->
+<div class="px-5 py-3.5 hairline-b flex items-center justify-between shrink-0 bg-surface">
+<div class="flex items-center gap-2.5">
+<span class="text-sm font-semibold text-primary font-headline">Fleet Telemetry</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-400/10 text-ok border border-emerald-400/20">3 ACTIVE</span>
+</div>
+<span class="text-xs font-mono text-secondary">IPC PROTOCOL v4</span>
+</div>
+<!-- Structured Rows (52px each) -->
+<div class="divide-y divide-white/[0.07] flex-1">
+<!-- Agent 1 -->
+<div class="h-[74px] px-5 flex items-center justify-between hover:bg-raised transition-colors duration-150">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-ok shrink-0"></span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="text-xs font-mono font-semibold text-primary">agent-2</span>
+<span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-white/5 border border-white/10 text-neutral-400 uppercase">EXTRACTOR</span>
+</div>
+<span class="text-[11px] font-mono text-secondary mt-0.5">684 events (44.9%)</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono">
+<span class="text-secondary">TTL 03m 12s</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-400/10 text-ok border border-emerald-400/20">RUNNING</span>
+</div>
+</div>
+<!-- Agent 2 -->
+<div class="h-[74px] px-5 flex items-center justify-between hover:bg-raised transition-colors duration-150">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-ok shrink-0"></span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="text-xs font-mono font-semibold text-primary">sub-144</span>
+<span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-white/5 border border-white/10 text-neutral-400 uppercase">EMBEDDER</span>
+</div>
+<span class="text-[11px] font-mono text-secondary mt-0.5">325 events (21.4%)</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono">
+<span class="text-secondary">TTL 03m 12s</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-400/10 text-ok border border-emerald-400/20">ACTIVE</span>
+</div>
+</div>
+<!-- Agent 3 -->
+<div class="h-[74px] px-5 flex items-center justify-between hover:bg-raised transition-colors duration-150">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-ok shrink-0"></span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="text-xs font-mono font-semibold text-primary">operator</span>
+<span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-white/5 border border-white/10 text-neutral-400 uppercase">INTERACTIVE</span>
+</div>
+<span class="text-[11px] font-mono text-secondary mt-0.5">512 events (33.7%)</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono">
+<span class="text-secondary">TTL 03m 12s</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">PERSISTENT</span>
+</div>
+</div>
+</div>
+<!-- Panel Footer -->
+<div class="px-5 py-3 hairline-t bg-surface flex items-center justify-between text-xs font-mono text-secondary shrink-0">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+<span>Router socket /tmp/kyc.sock connected</span>
+</div>
+<span class="text-neutral-500">MAX_WORKERS 8</span>
+</div>
+</div>
+</div>
+<!-- BOTTOM BAR: Fixed One-Line System Status -->
+<footer class="h-9 px-4 rounded-lg bg-surface hairline-border flex items-center justify-between text-xs font-mono shrink-0 text-secondary mt-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-ok"></span>
+<span class="text-primary font-medium">11/11 CHECKS PASSED</span>
+<span class="text-neutral-700">·</span>
+<span>SCHEMA v5</span>
+<span class="text-neutral-700">·</span>
+<span>WAL</span>
+<span class="text-neutral-700">·</span>
+<span>LAST EVENT 2026-11-04T11:58:02Z</span>
+</div>
+<div class="flex items-center gap-2 text-neutral-500">
+<span>VIEWPORT 1440x900</span>
+<span>·</span>
+<span>DETERMINISTIC V14.2</span>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

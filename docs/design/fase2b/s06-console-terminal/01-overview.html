@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Know Your Context - Overview Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      font-family: 'JetBrains Mono', monospace !important;
+      letter-spacing: -0.01em;
+      box-sizing: border-box;
+    }
+    /* Blinking phosphor terminal cursor */
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .term-cursor {
+      display: inline-block;
+      width: 9px;
+      height: 16px;
+      background-color: #33FF66;
+      vertical-align: text-bottom;
+      animation: blink 1s infinite;
+    }
+    .term-cursor-top {
+      display: inline-block;
+      width: 9px;
+      height: 15px;
+      background-color: #33FF66;
+      vertical-align: text-bottom;
+      animation: blink 1s infinite;
+    }
+    /* Custom fieldset style for terminal */
+    fieldset.term-box {
+      border: 1px solid #1A2E1A;
+      border-radius: 2px;
+      padding: 10px 14px 12px 14px;
+      margin: 6px 0 10px 0;
+      background: transparent;
+    }
+    legend.term-legend {
+      padding: 0 8px;
+      color: #33FF66;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    /* Scrollbar style if ever scrolled */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000000;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1A2E1A;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #33FF66;
+    }
+  </style>
+</head>
+<body class="h-screen w-[1440px] max-w-[1440px] max-h-[900px] bg-black text-[#C9F7D4] text-[13px] leading-[22px] flex flex-col justify-between overflow-hidden select-none m-0 p-0 border-x border-[#1A2E1A]">
+
+  <!-- TOP CHROME: 40px prompt-line bar -->
+  <header class="h-[40px] min-h-[40px] max-h-[40px] bg-black border-b border-[#1A2E1A] px-4 flex items-center justify-between text-[12px] text-[#5F8F68] select-none">
+    <div class="flex items-center gap-2">
+      <span class="text-[#5F8F68] font-bold">CONSOLE</span>
+      <span class="text-[#1A2E1A]">::</span>
+      <span class="text-[#33FF66] font-medium">kyc://overview --live</span>
+      <span class="term-cursor-top ml-0.5"></span>
+    </div>
+    <div class="flex items-center gap-4 text-[11px] tracking-wider text-[#5F8F68]">
+      <span>SHARD: <span class="text-[#C9F7D4]">0x3a</span></span>
+      <span class="text-[#1A2E1A]">|</span>
+      <span>EPOCH: <span class="text-[#C9F7D4]">0x8F4E</span></span>
+      <span class="text-[#1A2E1A]">|</span>
+      <span>RAFT: <span class="text-[#33FF66] font-semibold">3/3 SYNCED</span></span>
+      <span class="text-[#1A2E1A]">|</span>
+      <span>BUFFER: <span class="text-[#C9F7D4]">20/10421</span></span>
+      <span class="text-[#1A2E1A]">|</span>
+      <span>1440x900 FIXED</span>
+    </div>
+  </header>
+
+  <!-- MIDDLE: Terminal Scrollback (~680px) -->
+  <main class="flex-1 bg-black px-6 py-4 flex flex-col justify-start overflow-hidden">
+    <!-- Boot and init telemetry comment -->
+    <div class="text-[#5F8F68] text-[12px] mb-2 leading-[20px] whitespace-nowrap">
+      [2026-11-04T11:57:48Z] kyc-core daemon initialized // local-first knowledge-graph runtime v14.2
+    </div>
+
+    <!-- Active Command Executed -->
+    <div class="text-[13px] mb-2.5 flex items-center gap-2 whitespace-nowrap">
+      <span class="text-[#33FF66] font-bold">$</span>
+      <span class="text-[#33FF66] font-bold">kyc status</span>
+    </div>
+
+    <!-- Terminal Status Output Lines -->
+    <div class="space-y-1 text-[13px] mb-2.5">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <span class="text-[#5F8F68] font-bold">&gt;</span>
+        <span class="text-[#33FF66] font-bold">HEALTHY</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">11/11 checks</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">exit 0</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#5F8F68]">worst</span>
+        <span class="text-[#C9F7D4]">INFO</span>
+      </div>
+
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <span class="text-[#5F8F68] font-bold">&gt;</span>
+        <span class="text-[#5F8F68]">nodes</span>
+        <span class="text-[#C9F7D4] font-bold">1284</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#5F8F68]">edges</span>
+        <span class="text-[#C9F7D4] font-bold">3917</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#5F8F68]">store</span>
+        <span class="text-[#C9F7D4] font-bold">46.2MB</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#5F8F68]">schema</span>
+        <span class="text-[#C9F7D4]">v5</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">wal</span>
+      </div>
+
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <span class="text-[#5F8F68] font-bold">&gt;</span>
+        <span class="text-[#5F8F68]">events today</span>
+        <span class="text-[#C9F7D4] font-bold">214</span>
+        <span class="text-[#5F8F68]">(14d rising 120 -&gt; 214)</span>
+      </div>
+    </div>
+
+    <!-- FIELDSET BOX 1: ATTENTION -->
+    <fieldset class="term-box">
+      <legend class="term-legend">ATTENTION</legend>
+      <div class="space-y-1.5 text-[12px] leading-[22px]">
+        <div class="flex items-center justify-between whitespace-nowrap px-1">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[#FFD23F] font-bold">!</span>
+            <span class="text-[#C9F7D4] font-medium">3 proposals pending</span>
+          </div>
+          <div class="flex items-center gap-4 text-[11px] text-[#5F8F68]">
+            <span>MUTATION_SLA: <span class="text-[#FFD23F]">4h 12m</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>QUORUM: <span class="text-[#C9F7D4]">2/3 REQUIRED</span></span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between whitespace-nowrap px-1">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[#FFD23F] font-bold">!</span>
+            <span class="text-[#C9F7D4] font-medium">12 debt items</span>
+          </div>
+          <div class="flex items-center gap-4 text-[11px] text-[#5F8F68]">
+            <span>MEAN_ENTROPY: <span class="text-[#C9F7D4]">0.742</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>TOKEN_IMPACT: <span class="text-[#C9F7D4]">14.2k</span></span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between whitespace-nowrap px-1">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[#FF4D4D] font-bold">X</span>
+            <span class="text-[#FF4D4D] font-medium">2 unresolved references</span>
+          </div>
+          <div class="flex items-center gap-4 text-[11px] text-[#5F8F68]">
+            <span>BARRIER: <span class="text-[#FF4D4D] font-bold">FAIL-CLOSED</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>TARGET: <span class="text-[#C9F7D4]">partition_04_sub</span></span>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- FIELDSET BOX 2: AGENTS -->
+    <fieldset class="term-box">
+      <legend class="term-legend">AGENTS</legend>
+      <div class="space-y-1.5 text-[12px] leading-[22px]">
+        <div class="flex items-center justify-between whitespace-nowrap px-1">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[#33FF66] font-bold">#</span>
+            <span class="text-[#C9F7D4] font-medium">agent-2 12ev ttl 03m12s</span>
+          </div>
+          <div class="flex items-center gap-4 text-[11px] text-[#5F8F68]">
+            <span>STATUS: <span class="text-[#33FF66]">RUNNING</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>ROLE: <span class="text-[#C9F7D4]">autonomous_indexer</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>LEASE: <span class="text-[#C9F7D4]">kg_entity_4402</span></span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between whitespace-nowrap px-1">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[#33FF66] font-bold">#</span>
+            <span class="text-[#C9F7D4] font-medium">sub-144 7ev ttl 01m04s</span>
+          </div>
+          <div class="flex items-center gap-4 text-[11px] text-[#5F8F68]">
+            <span>STATUS: <span class="text-[#33FF66]">RUNNING</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>ROLE: <span class="text-[#C9F7D4]">vector_embedder</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>LEASE: <span class="text-[#C9F7D4]">concept_419</span></span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between whitespace-nowrap px-1">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[#33FF66] font-bold">#</span>
+            <span class="text-[#C9F7D4] font-medium">operator 3ev</span>
+          </div>
+          <div class="flex items-center gap-4 text-[11px] text-[#5F8F68]">
+            <span>STATUS: <span class="text-[#33FF66]">PERSISTENT</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>ROLE: <span class="text-[#C9F7D4]">interactive_console</span></span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>SOCKET: <span class="text-[#C9F7D4]">/dev/tty0</span></span>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Additional output lines meeting requirements & providing comprehensive context -->
+    <div class="space-y-1 text-[13px] mt-1">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <span class="text-[#5F8F68] font-bold">&gt;</span>
+        <span class="text-[#5F8F68]">relearn:</span>
+        <span class="text-[#C9F7D4]">IDLE -&gt; SCAN -&gt; DIFF -&gt; SYNC</span>
+        <span class="text-[#33FF66] font-bold">(now: IDLE)</span>
+      </div>
+
+      <div class="flex items-center gap-3 text-[12px] text-[#5F8F68] whitespace-nowrap pl-4">
+        <span>.. invariants: <span class="text-[#C9F7D4]">11 verified</span></span>
+        <span>·</span>
+        <span>merkle root: <span class="text-[#C9F7D4]">0x9f8a2c3b</span></span>
+        <span>·</span>
+        <span>wal zero lag</span>
+        <span>·</span>
+        <span>duckdb ast index pass</span>
+      </div>
+
+      <div class="flex items-center gap-3 text-[12px] text-[#5F8F68] whitespace-nowrap pl-4">
+        <span>.. tail latency: <span class="text-[#C9F7D4]">p50 0.14ms</span></span>
+        <span>·</span>
+        <span><span class="text-[#C9F7D4]">p95 1.42ms</span></span>
+        <span>·</span>
+        <span><span class="text-[#C9F7D4]">p99 2.10ms</span></span>
+        <span>·</span>
+        <span>barrier <span class="text-[#33FF66]">safe</span></span>
+      </div>
+
+      <div class="flex items-center gap-3 text-[12px] text-[#5F8F68] whitespace-nowrap pl-4">
+        <span>.. ledger frame: <span class="text-[#C9F7D4]">#10421 committed</span></span>
+        <span>·</span>
+        <span>hash: <span class="text-[#C9F7D4]">9f2c1ab4</span></span>
+        <span>·</span>
+        <span>signature: <span class="text-[#C9F7D4]">sha256_hmac_verified</span></span>
+      </div>
+    </div>
+  </main>
+
+  <!-- BOTTOM PANEL (~180px) with 1px top border -->
+  <footer class="h-[180px] min-h-[180px] max-h-[180px] bg-[#050805] border-t border-[#1A2E1A] flex flex-col justify-between p-4">
+    <!-- Top helper / shortcuts row -->
+    <div class="flex items-center justify-between text-[11px] text-[#5F8F68] border-b border-[#1A2E1A] pb-2">
+      <div class="flex items-center gap-3">
+        <span class="text-[#5F8F68]">SHORTCUTS:</span>
+        <span><span class="text-[#C9F7D4]">[Enter]</span> EXEC</span>
+        <span><span class="text-[#C9F7D4]">[Ctrl+L]</span> CLEAR</span>
+        <span><span class="text-[#C9F7D4]">[Tab]</span> AUTOCOMPLETE</span>
+        <span><span class="text-[#C9F7D4]">[↑/↓]</span> HISTORY</span>
+      </div>
+      <div class="flex items-center gap-3 text-[11px]">
+        <span class="text-[#5F8F68]">AVAILABLE COMMANDS:</span>
+        <span class="text-[#33FF66]">status</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">activity</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">graph</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">proposals</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">relearn</span>
+      </div>
+    </div>
+
+    <!-- Interactive Command Input Prompt Row -->
+    <div class="my-auto py-2">
+      <div class="flex items-center gap-2.5 text-[14px]">
+        <span class="text-[#33FF66] font-bold">kyc&gt;</span>
+        <span class="text-[#C9F7D4]">tail --follow --filter=&quot;level:error,warn&quot;</span>
+        <span class="term-cursor"></span>
+      </div>
+      <div class="text-[11px] text-[#5F8F68] mt-1.5 flex items-center justify-between">
+        <div>
+          <span>SESSION: <span class="text-[#C9F7D4]">op@kyc.local (interactive_console)</span></span>
+          <span class="mx-2 text-[#1A2E1A]">|</span>
+          <span>SOCKET: <span class="text-[#C9F7D4]">/dev/tty0 [IPC: UNIX DOMAIN]</span></span>
+          <span class="mx-2 text-[#1A2E1A]">|</span>
+          <span>ENFORCEMENT: <span class="text-[#33FF66]">FAIL-CLOSED</span></span>
+        </div>
+        <div>
+          <span class="text-[#5F8F68]">ATTENTION QUEUE: </span>
+          <span class="text-[#FFD23F] font-bold">2 WARN</span>
+          <span class="mx-1 text-[#5F8F68]">·</span>
+          <span class="text-[#FF4D4D] font-bold">1 ERROR</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Status Strip (one-line mono status strip) -->
+    <div class="h-[28px] border-t border-[#1A2E1A] pt-2 flex items-center justify-between text-[11px] font-medium tracking-wider text-[#5F8F68]">
+      <div class="flex items-center gap-2 text-[#33FF66]">
+        <span class="font-bold">SEQ 10421</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">CHAIN 9f2c1ab4</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4]">AGENTS 3</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#33FF66] font-bold">TAIL ON</span>
+      </div>
+
+      <div class="flex items-center gap-4 text-[11px]">
+        <span>TIME: <span class="text-[#C9F7D4]">2026-11-04T11:58:02Z</span></span>
+        <span class="text-[#1A2E1A]">|</span>
+        <span>CLUSTER: <span class="text-[#C9F7D4]">node-01.local</span></span>
+        <span class="text-[#1A2E1A]">|</span>
+        <span class="text-[#33FF66] font-semibold flex items-center gap-1.5">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+          LIVE DETERMINISTIC
+        </span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

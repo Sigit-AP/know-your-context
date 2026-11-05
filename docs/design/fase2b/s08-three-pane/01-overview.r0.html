@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Overview (Dark Glass Navy)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            base: '#070B16',
+            tint: 'rgba(148, 178, 255, 0.05)',
+            'tint-raised': 'rgba(148, 178, 255, 0.09)',
+            'tint-active': 'rgba(34, 211, 238, 0.10)',
+            hairline: 'rgba(148, 178, 255, 0.14)',
+            'txt-primary': '#E3EBFF',
+            'txt-secondary': '#8FA3CC',
+            cyan: {
+              accent: '#22D3EE',
+            },
+            status: {
+              ok: '#34D399',
+              warn: '#FBBF24',
+              danger: '#FB7185',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    html, body {
+      width: 1440px;
+      height: 900px;
+      min-width: 1440px;
+      max-width: 1440px;
+      min-height: 900px;
+      max-height: 900px;
+      overflow: hidden;
+      background-color: #070B16;
+      color: #E3EBFF;
+      font-family: 'Inter', sans-serif;
+    }
+    .tracking-label {
+      letter-spacing: 0.12em;
+    }
+    .material-symbols-outlined {
+      font-size: 22px;
+      line-height: 1;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-base text-txt-primary flex flex-col h-[900px] w-[1440px] select-none">
+
+  <!-- TOP CONSOLE STATUS TICKER (36px high, flat border) -->
+  <header class="h-9 w-full bg-base border-b border-hairline flex items-center justify-between px-4 flex-shrink-0 z-20">
+    <div class="flex items-center gap-3 text-xs font-mono">
+      <span class="text-cyan-accent font-semibold tracking-wider flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-accent inline-block"></span>
+        KYC // KNOWLEDGE-GRAPH CONSOLE
+      </span>
+      <span class="text-hairline">|</span>
+      <span class="text-txt-secondary">CLUSTER: node-01.local</span>
+      <span class="text-hairline">|</span>
+      <span class="text-txt-secondary flex items-center gap-1">
+        RAFT: <span class="text-status-ok font-medium">QUORUM 3/3 SYNCED</span>
+      </span>
+      <span class="text-hairline">|</span>
+      <span class="text-txt-secondary">EPOCH: 0x8F4E</span>
+    </div>
+
+    <div class="flex items-center gap-4 text-xs font-mono">
+      <span class="text-txt-secondary">LOCAL TIME: <span class="text-txt-primary">2026-11-04T11:58:02Z</span></span>
+      <span class="text-hairline">|</span>
+      <span class="text-txt-secondary flex items-center gap-1.5">
+        MUTATION BARRIER: <span class="text-status-ok">LOCKED</span>
+      </span>
+      <div class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-tint border border-hairline text-[11px] text-txt-secondary">
+        <span class="text-cyan-accent">OP:</span> sigit a.
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN THREE-PANE CONTAINER (occupies exactly 864px remainder) -->
+  <div class="flex flex-1 w-full h-[864px] overflow-hidden">
+
+    <!-- ======================================================== -->
+    <!-- PANE 1: 56px ICON RAIL (Full height, flat border-r)     -->
+    <!-- ======================================================== -->
+    <aside class="w-[56px] min-w-[56px] max-w-[56px] h-full bg-base border-r border-hairline flex flex-col items-center justify-between py-3 flex-shrink-0 z-10">
+      <!-- Top Section: Logo Glyph + 4 Navigation Icons -->
+      <div class="flex flex-col items-center gap-3 w-full">
+        <!-- Logo Glyph -->
+        <div class="w-10 h-10 flex items-center justify-center bg-tint-raised border border-cyan-accent rounded text-cyan-accent mb-2">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+
+        <!-- Divider hairline -->
+        <div class="w-7 h-[1px] bg-hairline mb-1"></div>
+
+        <!-- 1. Overview (Active Icon inside cyan-tinted tile) -->
+        <div class="relative group cursor-pointer" title="Overview">
+          <div class="w-10 h-10 flex items-center justify-center rounded bg-tint-active border border-cyan-accent text-cyan-accent">
+            <span class="material-symbols-outlined">dashboard</span>
+          </div>
+          <!-- Left cyan micro-indicator -->
+          <div class="absolute -left-2 top-2 bottom-2 w-0.5 bg-cyan-accent rounded-r"></div>
+        </div>
+
+        <!-- 2. Activity -->
+        <div class="w-10 h-10 flex items-center justify-center rounded bg-transparent hover:bg-tint text-txt-secondary hover:text-txt-primary border border-transparent transition-colors cursor-pointer" title="Activity">
+          <span class="material-symbols-outlined">list_alt</span>
+        </div>
+
+        <!-- 3. Graph -->
+        <div class="w-10 h-10 flex items-center justify-center rounded bg-transparent hover:bg-tint text-txt-secondary hover:text-txt-primary border border-transparent transition-colors cursor-pointer" title="Graph">
+          <span class="material-symbols-outlined">hub</span>
+        </div>
+
+        <!-- 4. Settings -->
+        <div class="w-10 h-10 flex items-center justify-center rounded bg-transparent hover:bg-tint text-txt-secondary hover:text-txt-primary border border-transparent transition-colors cursor-pointer" title="Settings">
+          <span class="material-symbols-outlined">settings</span>
+        </div>
+      </div>
+
+      <!-- Bottom Icon Controls: Terminal + Diagnostics Status -->
+      <div class="flex flex-col items-center gap-3 w-full">
+        <div class="w-10 h-10 flex items-center justify-center rounded bg-tint border border-hairline text-txt-secondary hover:text-cyan-accent transition-colors cursor-pointer" title="Console / Terminal">
+          <span class="material-symbols-outlined">terminal</span>
+        </div>
+        <div class="w-2.5 h-2.5 rounded-full bg-status-ok border border-hairline" title="All engines nominal"></div>
+      </div>
+    </aside>
+
+    <!-- ======================================================== -->
+    <!-- PANE 2: 300px LIST COLUMN (Full height, flat border-r)   -->
+    <!-- ======================================================== -->
+    <section class="w-[300px] min-w-[300px] max-w-[300px] h-full bg-base border-r border-hairline flex flex-col flex-shrink-0">
+      <!-- Mini Search Field at Top (52px total container) -->
+      <div class="h-[52px] border-b border-hairline px-3 flex items-center flex-shrink-0 bg-tint">
+        <div class="w-full h-8 flex items-center bg-base border border-hairline rounded px-2 gap-2 text-txt-secondary">
+          <span class="material-symbols-outlined text-[17px] text-txt-secondary">search</span>
+          <input type="text" value="" placeholder="Filter sections..." readonly class="bg-transparent border-none outline-none text-xs font-mono text-txt-primary placeholder-txt-secondary w-full cursor-default" />
+          <span class="text-[10px] font-mono px-1 rounded bg-tint border border-hairline text-txt-secondary">/</span>
+        </div>
+      </div>
+
+      <!-- Section Title Label Strip -->
+      <div class="px-4 py-2 text-[10px] font-semibold text-txt-secondary uppercase tracking-label border-b border-hairline bg-base flex items-center justify-between">
+        <span>INSPECTOR DOMAINS</span>
+        <span class="font-mono text-cyan-accent">5 TOTAL</span>
+      </div>
+
+      <!-- 5 Selectable Rows (52px each, with label + mono secondary line) -->
+      <div class="flex flex-col flex-1 divide-y divide-hairline bg-base">
+        <!-- Row 1: Health (SELECTED: cyan tint 10% + 2px cyan left bar) -->
+        <div class="h-[52px] min-h-[52px] max-h-[52px] px-3.5 bg-tint-active relative flex items-center justify-between border-l-2 border-l-cyan-accent cursor-pointer">
+          <div class="flex flex-col justify-center">
+            <span class="text-sm font-semibold text-txt-primary flex items-center gap-2">
+              Health
+              <span class="w-1.5 h-1.5 rounded-full bg-status-ok inline-block"></span>
+            </span>
+            <span class="text-[11px] font-mono text-cyan-accent">11 checks · exit 0 · nominal</span>
+          </div>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-tint border border-cyan-accent text-cyan-accent font-medium">ACTIVE</span>
+        </div>
+
+        <!-- Row 2: Size -->
+        <div class="h-[52px] min-h-[52px] max-h-[52px] px-3.5 bg-transparent hover:bg-tint flex items-center justify-between cursor-pointer transition-colors">
+          <div class="flex flex-col justify-center">
+            <span class="text-sm font-medium text-txt-primary">Size</span>
+            <span class="text-[11px] font-mono text-txt-secondary">46.2 MB · 1,284 nodes</span>
+          </div>
+          <span class="text-[11px] font-mono text-txt-secondary">v5 WAL</span>
+        </div>
+
+        <!-- Row 3: Attention -->
+        <div class="h-[52px] min-h-[52px] max-h-[52px] px-3.5 bg-transparent hover:bg-tint flex items-center justify-between cursor-pointer transition-colors">
+          <div class="flex flex-col justify-center">
+            <span class="text-sm font-medium text-txt-primary flex items-center gap-1.5">
+              Attention
+              <span class="w-1.5 h-1.5 rounded-full bg-status-warn inline-block"></span>
+            </span>
+            <span class="text-[11px] font-mono text-txt-secondary">2 warnings triaged</span>
+          </div>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-tint border border-status-warn/40 text-status-warn">2 WARN</span>
+        </div>
+
+        <!-- Row 4: Agents -->
+        <div class="h-[52px] min-h-[52px] max-h-[52px] px-3.5 bg-transparent hover:bg-tint flex items-center justify-between cursor-pointer transition-colors">
+          <div class="flex flex-col justify-center">
+            <span class="text-sm font-medium text-txt-primary">Agents</span>
+            <span class="text-[11px] font-mono text-txt-secondary">3 active sessions leased</span>
+          </div>
+          <span class="text-[11px] font-mono text-status-ok">3 LIVE</span>
+        </div>
+
+        <!-- Row 5: Relearn -->
+        <div class="h-[52px] min-h-[52px] max-h-[52px] px-3.5 bg-transparent hover:bg-tint flex items-center justify-between cursor-pointer transition-colors">
+          <div class="flex flex-col justify-center">
+            <span class="text-sm font-medium text-txt-primary">Relearn</span>
+            <span class="text-[11px] font-mono text-txt-secondary">AST state machine idle</span>
+          </div>
+          <span class="text-[11px] font-mono text-txt-secondary">18m REM</span>
+        </div>
+      </div>
+
+      <!-- Lower summary panel in list column to cleanly anchor the column -->
+      <div class="p-3 border-t border-hairline bg-tint flex flex-col gap-2">
+        <div class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">NODE STATUS</div>
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="text-txt-secondary">Shard:</span>
+          <span class="text-txt-primary font-semibold">0x3a</span>
+        </div>
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="text-txt-secondary">Replay:</span>
+          <span class="text-status-ok">1.4ms DETERMINISTIC</span>
+        </div>
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="text-txt-secondary">Merkle Anchor:</span>
+          <span class="text-txt-primary">9f2c1ab4</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- PANE 3: DETAIL PANE (~1084px wide, remaining viewport)   -->
+    <!-- ======================================================== -->
+    <main class="flex-1 h-full bg-base flex flex-col overflow-hidden">
+      <!-- Detail Pane Header: Title + KPI Mini-Strip (Exact 68px) -->
+      <div class="h-[68px] min-h-[68px] max-h-[68px] border-b border-hairline px-6 flex items-center justify-between bg-tint-raised flex-shrink-0">
+        <div>
+          <div class="text-[10px] font-mono uppercase text-cyan-accent tracking-label font-semibold">DOMAIN INSPECTOR // DIAGNOSTIC VIEW</div>
+          <h1 class="text-2xl font-bold text-txt-primary tracking-tight">Health</h1>
+        </div>
+
+        <!-- KPI Mini-Strip: (11/11 checks · exit 0 · 0 errors · 2 warnings) -->
+        <div class="flex items-center gap-3">
+          <!-- 11/11 Checks -->
+          <div class="px-3.5 py-1.5 rounded bg-tint border border-hairline flex flex-col items-center">
+            <span class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">ASSERTIONS</span>
+            <span class="text-sm font-mono font-semibold text-status-ok">11/11 checks</span>
+          </div>
+
+          <!-- exit 0 -->
+          <div class="px-3.5 py-1.5 rounded bg-tint border border-hairline flex flex-col items-center">
+            <span class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">EXIT CODE</span>
+            <span class="text-sm font-mono font-semibold text-txt-primary">exit 0</span>
+          </div>
+
+          <!-- 0 errors -->
+          <div class="px-3.5 py-1.5 rounded bg-tint border border-hairline flex flex-col items-center">
+            <span class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">FAULTS</span>
+            <span class="text-sm font-mono font-semibold text-status-ok">0 errors</span>
+          </div>
+
+          <!-- 2 warnings -->
+          <div class="px-3.5 py-1.5 rounded bg-tint border border-status-warn/30 flex flex-col items-center">
+            <span class="text-[10px] font-mono uppercase text-status-warn tracking-label">ADVISORIES</span>
+            <span class="text-sm font-mono font-semibold text-status-warn">2 warnings</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Pane Content Body (Scroll-free, fits perfectly into viewport) -->
+      <div class="flex-1 p-6 flex flex-col gap-5 overflow-hidden justify-between">
+
+        <!-- SUB-PANEL: CHECKS (6 rows with PASS ok chips) -->
+        <div class="w-full bg-tint border border-hairline rounded flex flex-col flex-1 overflow-hidden">
+          <!-- Sub-panel header -->
+          <div class="h-10 px-4 border-b border-hairline flex items-center justify-between bg-tint-raised flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-txt-primary uppercase tracking-label">CHECKS</span>
+              <span class="text-hairline">/</span>
+              <span class="text-xs font-mono text-txt-secondary">Sub-system Invariants</span>
+            </div>
+            <span class="text-xs font-mono text-status-ok font-medium">6 OF 6 VERIFIED PASS</span>
+          </div>
+
+          <!-- Table Header Strip -->
+          <div class="h-8 px-4 border-b border-hairline bg-base flex items-center text-[10px] font-mono uppercase text-txt-secondary tracking-label flex-shrink-0">
+            <span class="w-8">#</span>
+            <span class="w-[220px]">INVARIANT IDENTIFIER</span>
+            <span class="flex-1">DESCRIPTION / SPECIFICATION TARGET</span>
+            <span class="w-[100px] text-right pr-4">LATENCY</span>
+            <span class="w-[80px] text-right">VERDICT</span>
+          </div>
+
+          <!-- 6 Checks Rows (50px each to fit proportionally) -->
+          <div class="flex-1 flex flex-col divide-y divide-hairline justify-between bg-base">
+            <!-- 1. store_readable -->
+            <div class="flex-1 px-4 flex items-center text-xs font-mono hover:bg-tint transition-colors">
+              <span class="w-8 text-txt-secondary">01</span>
+              <span class="w-[220px] font-semibold text-cyan-accent">store_readable</span>
+              <span class="flex-1 text-txt-secondary">SQLite WAL file descriptor readable and write lock unheld</span>
+              <span class="w-[100px] text-right pr-4 text-txt-secondary">0.4ms</span>
+              <div class="w-[80px] flex justify-end">
+                <span class="px-2 py-0.5 rounded bg-tint-raised border border-status-ok/30 text-status-ok font-semibold text-[11px]">PASS</span>
+              </div>
+            </div>
+
+            <!-- 2. chain_integrity -->
+            <div class="flex-1 px-4 flex items-center text-xs font-mono hover:bg-tint transition-colors">
+              <span class="w-8 text-txt-secondary">02</span>
+              <span class="w-[220px] font-semibold text-cyan-accent">chain_integrity</span>
+              <span class="flex-1 text-txt-secondary">SHA-256 Merkle root monotonic chain continuity verified</span>
+              <span class="w-[100px] text-right pr-4 text-txt-secondary">1.8ms</span>
+              <div class="w-[80px] flex justify-end">
+                <span class="px-2 py-0.5 rounded bg-tint-raised border border-status-ok/30 text-status-ok font-semibold text-[11px]">PASS</span>
+              </div>
+            </div>
+
+            <!-- 3. projection_fresh -->
+            <div class="flex-1 px-4 flex items-center text-xs font-mono hover:bg-tint transition-colors">
+              <span class="w-8 text-txt-secondary">03</span>
+              <span class="w-[220px] font-semibold text-cyan-accent">projection_fresh</span>
+              <span class="flex-1 text-txt-secondary">DuckDB AST columnar index projection lag within 0.14ms SLA</span>
+              <span class="w-[100px] text-right pr-4 text-txt-secondary">0.9ms</span>
+              <div class="w-[80px] flex justify-end">
+                <span class="px-2 py-0.5 rounded bg-tint-raised border border-status-ok/30 text-status-ok font-semibold text-[11px]">PASS</span>
+              </div>
+            </div>
+
+            <!-- 4. leases_consistent -->
+            <div class="flex-1 px-4 flex items-center text-xs font-mono hover:bg-tint transition-colors">
+              <span class="w-8 text-txt-secondary">04</span>
+              <span class="w-[220px] font-semibold text-cyan-accent">leases_consistent</span>
+              <span class="flex-1 text-txt-secondary">Raft consensus quorum fence tokens validated across partitions</span>
+              <span class="w-[100px] text-right pr-4 text-txt-secondary">0.5ms</span>
+              <div class="w-[80px] flex justify-end">
+                <span class="px-2 py-0.5 rounded bg-tint-raised border border-status-ok/30 text-status-ok font-semibold text-[11px]">PASS</span>
+              </div>
+            </div>
+
+            <!-- 5. schema_version -->
+            <div class="flex-1 px-4 flex items-center text-xs font-mono hover:bg-tint transition-colors">
+              <span class="w-8 text-txt-secondary">05</span>
+              <span class="w-[220px] font-semibold text-cyan-accent">schema_version</span>
+              <span class="flex-1 text-txt-secondary">Clean migration status confirmed on v5 immutable ontology contracts</span>
+              <span class="w-[100px] text-right pr-4 text-txt-secondary">0.2ms</span>
+              <div class="w-[80px] flex justify-end">
+                <span class="px-2 py-0.5 rounded bg-tint-raised border border-status-ok/30 text-status-ok font-semibold text-[11px]">PASS</span>
+              </div>
+            </div>
+
+            <!-- 6. journal_mode -->
+            <div class="flex-1 px-4 flex items-center text-xs font-mono hover:bg-tint transition-colors">
+              <span class="w-8 text-txt-secondary">06</span>
+              <span class="w-[220px] font-semibold text-cyan-accent">journal_mode</span>
+              <span class="flex-1 text-txt-secondary">WAL journal mode with 0 pending frame lag and zero lock contention</span>
+              <span class="w-[100px] text-right pr-4 text-txt-secondary">0.1ms</span>
+              <div class="w-[80px] flex justify-end">
+                <span class="px-2 py-0.5 rounded bg-tint-raised border border-status-ok/30 text-status-ok font-semibold text-[11px]">PASS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-PANEL: STORE (Mono stats: 46.2 MB · schema v5 · WAL · nodes 1,284 · edges 3,917) -->
+        <div class="w-full bg-tint border border-hairline rounded flex flex-col flex-shrink-0 h-[176px]">
+          <!-- Sub-panel Header -->
+          <div class="h-9 px-4 border-b border-hairline flex items-center justify-between bg-tint-raised flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-txt-primary uppercase tracking-label">STORE</span>
+              <span class="text-hairline">/</span>
+              <span class="text-xs font-mono text-txt-secondary">Local Database & Topology Specifications</span>
+            </div>
+            <span class="text-[11px] font-mono text-cyan-accent">ENGINE: SQLITE + DUCKDB AST</span>
+          </div>
+
+          <!-- 5 Stats Cards Grid -->
+          <div class="flex-1 p-3 grid grid-cols-5 gap-3 bg-base">
+            <!-- 1. Store Size: 46.2 MB -->
+            <div class="bg-tint border border-hairline rounded p-3 flex flex-col justify-between">
+              <span class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">STORE SIZE</span>
+              <div class="text-2xl font-mono font-bold text-txt-primary">46.2 MB</div>
+              <span class="text-[10px] font-mono text-txt-secondary">4,096 byte page size</span>
+            </div>
+
+            <!-- 2. Schema: schema v5 -->
+            <div class="bg-tint border border-hairline rounded p-3 flex flex-col justify-between">
+              <span class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">SCHEMA</span>
+              <div class="text-2xl font-mono font-bold text-cyan-accent">schema v5</div>
+              <span class="text-[10px] font-mono text-status-ok">clean sync forward</span>
+            </div>
+
+            <!-- 3. Journal Mode: WAL -->
+            <div class="bg-tint border border-hairline rounded p-3 flex flex-col justify-between">
+              <span class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">JOURNAL MODE</span>
+              <div class="text-2xl font-mono font-bold text-txt-primary">WAL</div>
+              <span class="text-[10px] font-mono text-status-ok">zero checkpoint lag</span>
+            </div>
+
+            <!-- 4. Nodes: 1,284 -->
+            <div class="bg-tint border border-hairline rounded p-3 flex flex-col justify-between">
+              <span class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">TOTAL NODES</span>
+              <div class="text-2xl font-mono font-bold text-txt-primary">1,284</div>
+              <span class="text-[10px] font-mono text-cyan-accent">+14 ingested today</span>
+            </div>
+
+            <!-- 5. Edges: 3,917 -->
+            <div class="bg-tint border border-hairline rounded p-3 flex flex-col justify-between">
+              <span class="text-[10px] font-mono uppercase text-txt-secondary tracking-label">DIRECTED EDGES</span>
+              <div class="text-2xl font-mono font-bold text-txt-primary">3,917</div>
+              <span class="text-[10px] font-mono text-txt-secondary">avg degree 3.05</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Micro status footer bar inside Detail Pane (28px) -->
+        <div class="h-7 px-3 bg-tint-raised border border-hairline rounded flex items-center justify-between text-[11px] font-mono text-txt-secondary flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <span class="text-cyan-accent">DAEMON: kyc-daemon-v2</span>
+            <span>MERKLE: 9f2c1ab4</span>
+            <span>REPLAY: 1.4ms DETERMINISTIC</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span>SHARD: 0x3a</span>
+            <span class="text-hairline">|</span>
+            <span>VIEWPORT: 1440x900 FIXED</span>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Activity Board (Kanban)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#0F141E',
+            col: '#151C2A',
+            card: '#1B2434',
+            hairline: 'rgba(255,255,255,0.06)',
+            textPri: '#E7ECF5',
+            textSec: '#93A0B8',
+            accent: '#2DD4BF',
+            statusOk: '#4ADE80',
+            statusWarn: '#FCD34D',
+            statusDanger: '#F87171',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          borderRadius: {
+            'custom': '16px',
+            'custom-lg': '18px',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    html, body {
+      width: 1440px;
+      height: 900px;
+      max-width: 1440px;
+      max-height: 900px;
+      overflow: hidden;
+      background-color: #0F141E;
+      color: #E7ECF5;
+      font-family: 'Inter', sans-serif;
+    }
+    .hairline-border {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .hairline-b {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-col bg-[#0F141E] text-[#E7ECF5]">
+
+  <!-- SLIM 48PX TOPBAR -->
+  <header class="h-[48px] min-h-[48px] max-h-[48px] px-4 flex items-center justify-between bg-[#151C2A] hairline-b select-none z-10">
+    <!-- Left: Brand / Title -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#2DD4BF]"></span>
+        <span class="font-medium text-sm tracking-tight text-[#E7ECF5]">Know Your Context</span>
+      </div>
+      <span class="text-xs text-[#93A0B8] font-mono">v14.2</span>
+      <span class="text-xs text-[#93A0B8]/60 font-mono">/</span>
+      <span class="text-xs text-[#93A0B8] font-mono">cluster-01</span>
+    </div>
+
+    <!-- Center: Segmented Control (Overview | Activity | Graph) -->
+    <div class="flex items-center bg-[#0F141E] p-1 rounded-xl hairline-border">
+      <button class="px-3.5 py-1 text-xs font-medium rounded-lg text-[#93A0B8] hover:text-[#E7ECF5] transition-colors">
+        Overview
+      </button>
+      <button class="px-3.5 py-1 text-xs font-medium rounded-lg bg-[#2DD4BF]/15 text-[#2DD4BF] border border-[#2DD4BF]/30 transition-colors">
+        Activity
+      </button>
+      <button class="px-3.5 py-1 text-xs font-medium rounded-lg text-[#93A0B8] hover:text-[#E7ECF5] transition-colors">
+        Graph
+      </button>
+    </div>
+
+    <!-- Right: Filter Chips + Search -->
+    <div class="flex items-center gap-2.5">
+      <div class="flex items-center gap-1.5 bg-[#0F141E] px-2.5 py-1 rounded-lg hairline-border text-xs text-[#93A0B8]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+        <span class="font-mono text-[11px] text-[#E7ECF5]">RAFT 3/3 SYNCED</span>
+      </div>
+      <div class="flex items-center gap-1.5 bg-[#0F141E] px-2.5 py-1 rounded-lg hairline-border text-xs text-[#93A0B8]">
+        <span class="text-[11px] font-mono">all-streams</span>
+      </div>
+      <div class="flex items-center gap-2 bg-[#0F141E] px-2.5 py-1 rounded-lg hairline-border text-xs text-[#93A0B8] w-48">
+        <svg class="w-3.5 h-3.5 text-[#93A0B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <span class="text-xs text-[#93A0B8]/70 font-mono text-[11px]">filter actions, hash...</span>
+        <span class="ml-auto text-[10px] font-mono text-[#93A0B8]/40 border border-white/10 px-1 rounded">⌘K</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- FOUR EQUAL COLUMNS KANBAN BOARD (fills remaining 852px) -->
+  <main class="flex-1 p-4 grid grid-cols-4 gap-4 h-[852px] max-h-[852px] overflow-hidden">
+
+    <!-- COLUMN 1: INFO (5 cards) -->
+    <section class="bg-[#151C2A] rounded-custom-lg p-3 hairline-border flex flex-col h-full overflow-hidden">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between pb-2.5 mb-2 hairline-b shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#4ADE80]"></span>
+          <h2 class="text-[11px] font-semibold tracking-wider uppercase text-[#E7ECF5]">INFO STREAM</h2>
+        </div>
+        <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-[#0F141E] text-[#4ADE80] hairline-border">5</span>
+      </div>
+
+      <!-- Card Stack (5 cards evenly spaced) -->
+      <div class="flex-1 flex flex-col justify-between gap-2 overflow-hidden">
+        
+        <!-- Info Card 1 -->
+        <div class="bg-[#1B2434] rounded-custom p-3 hairline-border flex flex-col justify-between flex-1">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-semibold text-[#E7ECF5]">log_event</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/20">COMMITTED</span>
+          </div>
+          <div class="space-y-0.5 text-[11px] font-mono text-[#93A0B8]">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">node</span>
+              <span class="text-[#E7ECF5]">heuristics-catalog</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">sha8</span>
+              <span class="text-[#E7ECF5]">9f2c1ab4</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">time</span>
+              <span class="text-[#93A0B8]">11:58:02Z</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-white/5">
+            <span class="text-[10px] text-[#93A0B8]">origin</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#0F141E] text-[#2DD4BF] hairline-border">agent-2</span>
+          </div>
+        </div>
+
+        <!-- Info Card 2 -->
+        <div class="bg-[#1B2434] rounded-custom p-3 hairline-border flex flex-col justify-between flex-1">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-semibold text-[#E7ECF5]">mutate_graph</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/20">APPLIED</span>
+          </div>
+          <div class="space-y-0.5 text-[11px] font-mono text-[#93A0B8]">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">node</span>
+              <span class="text-[#E7ECF5]">schema-contract-04</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">sha8</span>
+              <span class="text-[#E7ECF5]">8a1d440f</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">time</span>
+              <span class="text-[#93A0B8]">11:57:48Z</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-white/5">
+            <span class="text-[10px] text-[#93A0B8]">origin</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#0F141E] text-[#2DD4BF] hairline-border">sub-144</span>
+          </div>
+        </div>
+
+        <!-- Info Card 3 -->
+        <div class="bg-[#1B2434] rounded-custom p-3 hairline-border flex flex-col justify-between flex-1">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-semibold text-[#E7ECF5]">evaluate</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/20">VERIFIED</span>
+          </div>
+          <div class="space-y-0.5 text-[11px] font-mono text-[#93A0B8]">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">node</span>
+              <span class="text-[#E7ECF5]">duckdb-memory-ast</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">sha8</span>
+              <span class="text-[#E7ECF5]">3d81b899</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">time</span>
+              <span class="text-[#93A0B8]">11:56:59Z</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-white/5">
+            <span class="text-[10px] text-[#93A0B8]">origin</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#0F141E] text-[#2DD4BF] hairline-border">operator</span>
+          </div>
+        </div>
+
+        <!-- Info Card 4 -->
+        <div class="bg-[#1B2434] rounded-custom p-3 hairline-border flex flex-col justify-between flex-1">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-semibold text-[#E7ECF5]">query</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/20">RESOLVED</span>
+          </div>
+          <div class="space-y-0.5 text-[11px] font-mono text-[#93A0B8]">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">node</span>
+              <span class="text-[#E7ECF5]">subgraph-partition-2</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">sha8</span>
+              <span class="text-[#E7ECF5]">55c2f0a1</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">time</span>
+              <span class="text-[#93A0B8]">11:56:32Z</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-white/5">
+            <span class="text-[10px] text-[#93A0B8]">origin</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#0F141E] text-[#2DD4BF] hairline-border">agent-2</span>
+          </div>
+        </div>
+
+        <!-- Info Card 5 -->
+        <div class="bg-[#1B2434] rounded-custom p-3 hairline-border flex flex-col justify-between flex-1">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-semibold text-[#E7ECF5]">record_outcome</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/20">SYNCED</span>
+          </div>
+          <div class="space-y-0.5 text-[11px] font-mono text-[#93A0B8]">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">node</span>
+              <span class="text-[#E7ECF5]">knn-embedding-space</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">sha8</span>
+              <span class="text-[#E7ECF5]">a012e841</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">time</span>
+              <span class="text-[#93A0B8]">11:56:04Z</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-white/5">
+            <span class="text-[10px] text-[#93A0B8]">origin</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#0F141E] text-[#2DD4BF] hairline-border">sub-139</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- COLUMN 2: WARN (2 cards) -->
+    <section class="bg-[#151C2A] rounded-custom-lg p-3 hairline-border flex flex-col h-full overflow-hidden">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between pb-2.5 mb-2 hairline-b shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#FCD34D]"></span>
+          <h2 class="text-[11px] font-semibold tracking-wider uppercase text-[#E7ECF5]">WARN STREAM</h2>
+        </div>
+        <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-[#0F141E] text-[#FCD34D] hairline-border">2</span>
+      </div>
+
+      <!-- Card Stack (2 cards filling the column) -->
+      <div class="flex-1 flex flex-col justify-between gap-3 overflow-hidden">
+        
+        <!-- Warn Card 1: unreadable payload -->
+        <div class="bg-[#1B2434] rounded-custom p-4 hairline-border flex flex-col justify-between flex-1 border-l-2 border-l-[#FCD34D]">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-sm font-semibold text-[#FCD34D]">unreadable payload</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FCD34D]/10 text-[#FCD34D] border border-[#FCD34D]/20">WARN</span>
+            </div>
+            <p class="text-xs text-[#93A0B8] mb-3">Schema validation bypass encountered in AST token ingestion payload.</p>
+          </div>
+          
+          <div class="space-y-1.5 text-xs font-mono text-[#93A0B8] bg-[#0F141E]/60 p-2.5 rounded-xl hairline-border">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">action</span>
+              <span class="text-[#E7ECF5]">record_outcome</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">target</span>
+              <span class="text-[#E7ECF5]">dag:schema_v1</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">sha8</span>
+              <span class="text-[#E7ECF5]">3d81b899</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">time</span>
+              <span class="text-[#93A0B8]">11:51:24Z</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-white/5 mt-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-[#93A0B8]">agent</span>
+              <span class="text-xs font-mono px-2 py-0.5 rounded bg-[#0F141E] text-[#2DD4BF] hairline-border">sub-144</span>
+            </div>
+            <span class="text-[10px] font-mono text-[#FCD34D]">SCHEMA FALLBACK</span>
+          </div>
+        </div>
+
+        <!-- Warn Card 2: lease expiring soon -->
+        <div class="bg-[#1B2434] rounded-custom p-4 hairline-border flex flex-col justify-between flex-1 border-l-2 border-l-[#FCD34D]">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-sm font-semibold text-[#FCD34D]">lease expiring soon</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FCD34D]/10 text-[#FCD34D] border border-[#FCD34D]/20">WARN</span>
+            </div>
+            <p class="text-xs text-[#93A0B8] mb-3">Distributed Raft lease lock threshold approaching TTL timeout window.</p>
+          </div>
+
+          <div class="space-y-1.5 text-xs font-mono text-[#93A0B8] bg-[#0F141E]/60 p-2.5 rounded-xl hairline-border">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">action</span>
+              <span class="text-[#E7ECF5]">acquire_lease</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">target</span>
+              <span class="text-[#E7ECF5]">kg_entity_4402</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">sha8</span>
+              <span class="text-[#E7ECF5]">77e19cb2</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">ttl</span>
+              <span class="text-[#FCD34D]">00m 18s</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-white/5 mt-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-[#93A0B8]">agent</span>
+              <span class="text-xs font-mono px-2 py-0.5 rounded bg-[#0F141E] text-[#2DD4BF] hairline-border">agent-2</span>
+            </div>
+            <span class="text-[10px] font-mono text-[#93A0B8]">TIME 11:49:10Z</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- COLUMN 3: ERROR (1 card) -->
+    <section class="bg-[#151C2A] rounded-custom-lg p-3 hairline-border flex flex-col h-full overflow-hidden">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between pb-2.5 mb-2 hairline-b shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#F87171]"></span>
+          <h2 class="text-[11px] font-semibold tracking-wider uppercase text-[#E7ECF5]">ERROR STREAM</h2>
+        </div>
+        <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-[#0F141E] text-[#F87171] hairline-border">1</span>
+      </div>
+
+      <!-- Card Stack (1 full-height card) -->
+      <div class="flex-1 flex flex-col justify-between overflow-hidden">
+        
+        <!-- Error Card: unresolved reference -->
+        <div class="bg-[#1B2434] rounded-custom p-4 hairline-border flex flex-col justify-between h-full border-l-2 border-l-[#F87171]">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#F87171]"></span>
+                <span class="font-mono text-sm font-semibold text-[#F87171]">unresolved reference</span>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F87171]/10 text-[#F87171] border border-[#F87171]/20">DANGER</span>
+            </div>
+
+            <div class="p-3 bg-[#0F141E]/80 rounded-xl hairline-border mb-4">
+              <span class="text-[11px] font-mono text-[#F87171] block mb-1 font-semibold">ISOLATION BARRIER: FAIL-CLOSED</span>
+              <p class="text-xs text-[#93A0B8] leading-relaxed">
+                Dangling graph pointer detected in vector cache partition tier 4. Traversal queries through this subgraph are quarantined until reconciliation.
+              </p>
+            </div>
+
+            <div class="space-y-2 text-xs font-mono text-[#93A0B8] bg-[#0F141E]/40 p-3 rounded-xl hairline-border mb-4">
+              <div class="flex items-center justify-between">
+                <span class="text-[#93A0B8]/60">pointer</span>
+                <span class="text-[#E7ECF5]">partition_04_sub</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[#93A0B8]/60">sha8</span>
+                <span class="text-[#E7ECF5]">e4479901</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[#93A0B8]/60">time</span>
+                <span class="text-[#93A0B8]">11:43:08Z</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[#93A0B8]/60">fault</span>
+                <span class="text-[#F87171]">critical_edge_ptr</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[#93A0B8]/60">invariant</span>
+                <span class="text-[#E7ECF5]">SHACL_CORE_04</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[#93A0B8]/60">containment</span>
+                <span class="text-[#4ADE80]">LOCKED 0% DRIFT</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Area -->
+          <div class="pt-3 border-t border-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-[#93A0B8]">privilege</span>
+              <span class="text-xs font-mono text-[#E7ECF5]">operator-only</span>
+            </div>
+            <!-- Ghost Action: Open -->
+            <button class="px-4 py-1.5 text-xs font-medium font-mono text-[#E7ECF5] bg-transparent hover:bg-white/5 active:bg-white/10 rounded-lg hairline-border transition-colors">
+              Open →
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- COLUMN 4: REVIEW (3 cards) -->
+    <section class="bg-[#151C2A] rounded-custom-lg p-3 hairline-border flex flex-col h-full overflow-hidden">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between pb-2.5 mb-2 hairline-b shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#2DD4BF]"></span>
+          <h2 class="text-[11px] font-semibold tracking-wider uppercase text-[#E7ECF5]">REVIEW STREAM</h2>
+        </div>
+        <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-[#0F141E] text-[#2DD4BF] hairline-border">3</span>
+      </div>
+
+      <!-- Card Stack (3 proposal cards) -->
+      <div class="flex-1 flex flex-col justify-between gap-2.5 overflow-hidden">
+        
+        <!-- Proposal Card 1: prop-9f2c1a (High impact) -->
+        <div class="bg-[#1B2434] rounded-custom p-3.5 hairline-border flex flex-col justify-between flex-1">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-mono text-xs font-semibold text-[#2DD4BF]">prop-9f2c1a</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F87171]/10 text-[#F87171] border border-[#F87171]/20 font-medium">high</span>
+            </div>
+            <h3 class="text-xs font-medium text-[#E7ECF5] mb-2 leading-snug">Promote node retrieval-core to L2</h3>
+          </div>
+
+          <div class="space-y-1 text-[11px] font-mono text-[#93A0B8] bg-[#0F141E]/40 p-2 rounded-xl hairline-border">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">target</span>
+              <span class="text-[#E7ECF5]">heuristics-catalog</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">proposer</span>
+              <span class="text-[#E7ECF5]">agent-2</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">quorum</span>
+              <span class="text-[#4ADE80]">2/3 votes</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-white/5 mt-1.5">
+            <span class="text-[10px] font-mono text-[#93A0B8]">11:32:04Z</span>
+            <button class="px-2.5 py-1 text-[11px] font-medium font-mono text-[#2DD4BF] bg-[#2DD4BF]/10 hover:bg-[#2DD4BF]/20 rounded-md border border-[#2DD4BF]/20 transition-colors">
+              Review
+            </button>
+          </div>
+        </div>
+
+        <!-- Proposal Card 2: prop-8a1d44 (Medium impact) -->
+        <div class="bg-[#1B2434] rounded-custom p-3.5 hairline-border flex flex-col justify-between flex-1">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-mono text-xs font-semibold text-[#2DD4BF]">prop-8a1d44</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FCD34D]/10 text-[#FCD34D] border border-[#FCD34D]/20 font-medium">medium</span>
+            </div>
+            <h3 class="text-xs font-medium text-[#E7ECF5] mb-2 leading-snug">Re-index vector partition P4 with BLAKE3</h3>
+          </div>
+
+          <div class="space-y-1 text-[11px] font-mono text-[#93A0B8] bg-[#0F141E]/40 p-2 rounded-xl hairline-border">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">target</span>
+              <span class="text-[#E7ECF5]">vector-indexer-p3</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">proposer</span>
+              <span class="text-[#E7ECF5]">sub-144</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">quorum</span>
+              <span class="text-[#FCD34D]">1/3 votes</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-white/5 mt-1.5">
+            <span class="text-[10px] font-mono text-[#93A0B8]">11:18:22Z</span>
+            <button class="px-2.5 py-1 text-[11px] font-medium font-mono text-[#2DD4BF] bg-[#2DD4BF]/10 hover:bg-[#2DD4BF]/20 rounded-md border border-[#2DD4BF]/20 transition-colors">
+              Review
+            </button>
+          </div>
+        </div>
+
+        <!-- Proposal Card 3: prop-77e19c (Low impact) -->
+        <div class="bg-[#1B2434] rounded-custom p-3.5 hairline-border flex flex-col justify-between flex-1">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-mono text-xs font-semibold text-[#2DD4BF]">prop-77e19c</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/20 font-medium">low</span>
+            </div>
+            <h3 class="text-xs font-medium text-[#E7ECF5] mb-2 leading-snug">Compact DuckDB WAL journal segment</h3>
+          </div>
+
+          <div class="space-y-1 text-[11px] font-mono text-[#93A0B8] bg-[#0F141E]/40 p-2 rounded-xl hairline-border">
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">target</span>
+              <span class="text-[#E7ECF5]">store.acquire_mutation</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">proposer</span>
+              <span class="text-[#E7ECF5]">operator</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#93A0B8]/60">quorum</span>
+              <span class="text-[#4ADE80]">2/3 votes</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-white/5 mt-1.5">
+            <span class="text-[10px] font-mono text-[#93A0B8]">10:54:12Z</span>
+            <button class="px-2.5 py-1 text-[11px] font-medium font-mono text-[#2DD4BF] bg-[#2DD4BF]/10 hover:bg-[#2DD4BF]/20 rounded-md border border-[#2DD4BF]/20 transition-colors">
+              Review
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

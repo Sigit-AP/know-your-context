@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Overview (Health)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #070B16;
+      color: #E3EBFF;
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8FA3CC;
+    }
+    .pane-border-r {
+      border-right: 1px solid rgba(148, 178, 255, 0.14);
+    }
+    .pane-border-b {
+      border-bottom: 1px solid rgba(148, 178, 255, 0.14);
+    }
+    .pane-border-t {
+      border-top: 1px solid rgba(148, 178, 255, 0.14);
+    }
+    .pane-border {
+      border: 1px solid rgba(148, 178, 255, 0.14);
+    }
+    .surface-flat {
+      background-color: rgba(148, 178, 255, 0.05);
+    }
+    .surface-raised {
+      background-color: rgba(148, 178, 255, 0.09);
+    }
+    .row-h {
+      height: 52px;
+    }
+  </style>
+</head>
+<body class="flex flex-row w-[1440px] h-[900px]">
+
+  <!-- PANE 1: 56px ICON RAIL (Full height 900px) -->
+  <aside class="w-[56px] h-full flex flex-col justify-between items-center py-4 bg-[#070B16] pane-border-r flex-shrink-0 z-20">
+    <!-- Top Icons Stack -->
+    <div class="flex flex-col items-center gap-3 w-full">
+      <!-- Active Overview Icon Tile -->
+      <button class="w-10 h-10 flex items-center justify-center rounded bg-[#22D3EE]/15 border border-[#22D3EE]/30 text-[#22D3EE] transition-none" title="Overview">
+        <span class="material-symbols-outlined text-[22px]">dashboard</span>
+      </button>
+
+      <!-- Activity Icon Tile -->
+      <button class="w-10 h-10 flex items-center justify-center rounded text-[#8FA3CC] hover:text-[#E3EBFF] hover:bg-[rgba(148,178,255,0.05)] transition-none" title="Activity">
+        <span class="material-symbols-outlined text-[22px]">pulse</span>
+      </button>
+
+      <!-- Graph Icon Tile -->
+      <button class="w-10 h-10 flex items-center justify-center rounded text-[#8FA3CC] hover:text-[#E3EBFF] hover:bg-[rgba(148,178,255,0.05)] transition-none" title="Graph">
+        <span class="material-symbols-outlined text-[22px]">hub</span>
+      </button>
+
+      <!-- Settings Icon Tile -->
+      <button class="w-10 h-10 flex items-center justify-center rounded text-[#8FA3CC] hover:text-[#E3EBFF] hover:bg-[rgba(148,178,255,0.05)] transition-none" title="Settings">
+        <span class="material-symbols-outlined text-[22px]">settings</span>
+      </button>
+    </div>
+
+    <!-- Bottom System Status Pill / Icon -->
+    <div class="flex flex-col items-center gap-3 w-full">
+      <div class="w-8 h-8 rounded flex items-center justify-center surface-flat pane-border text-[#8FA3CC]" title="Terminal Mode">
+        <span class="material-symbols-outlined text-[18px]">terminal</span>
+      </div>
+      <div class="w-2.5 h-2.5 rounded-full bg-[#34D399]" title="Cluster Synced (OK)"></div>
+    </div>
+  </aside>
+
+  <!-- PANE 2: 300px LIST COLUMN (Full height 900px) -->
+  <aside class="w-[300px] h-full flex flex-col bg-[#070B16] pane-border-r flex-shrink-0 z-10">
+    <!-- Header / Search input (56px aligned) -->
+    <div class="h-[56px] px-3.5 flex items-center pane-border-b flex-shrink-0">
+      <div class="w-full h-[36px] flex items-center px-3 surface-flat pane-border rounded text-xs gap-2">
+        <span class="material-symbols-outlined text-[#8FA3CC] text-[18px]">search</span>
+        <input 
+          type="text" 
+          placeholder="Filter sections..." 
+          value="" 
+          class="w-full bg-transparent border-none outline-none text-[#E3EBFF] placeholder-[#8FA3CC]/60 font-mono text-[11px]"
+          readonly
+        />
+        <span class="font-mono text-[10px] text-[#8FA3CC]/70 bg-[rgba(148,178,255,0.08)] px-1.5 py-0.5 rounded border border-[rgba(148,178,255,0.12)]">/</span>
+      </div>
+    </div>
+
+    <!-- 5 Section Rows (52px each) + Status Subtext -->
+    <div class="flex flex-col flex-1 divide-y divide-[rgba(148,178,255,0.08)] overflow-hidden">
+      
+      <!-- Row 1: Health (SELECTED) -->
+      <div class="row-h flex items-center px-4 relative bg-[#22D3EE]/10 cursor-pointer select-none">
+        <div class="absolute left-0 top-0 bottom-0 w-[2px] bg-[#22D3EE]"></div>
+        <div class="w-full flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold text-[#E3EBFF] tracking-wide">Health</span>
+            <span class="font-mono text-[10px] text-[#22D3EE] tracking-tight">11 checks · exit 0 · nominal</span>
+          </div>
+          <span class="inline-flex items-center gap-1 font-mono text-[10px] text-[#34D399] font-medium bg-[#34D399]/10 px-1.5 py-0.5 rounded border border-[#34D399]/25">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span> OK
+          </span>
+        </div>
+      </div>
+
+      <!-- Row 2: Size -->
+      <div class="row-h flex items-center px-4 hover:bg-[rgba(148,178,255,0.04)] cursor-pointer select-none">
+        <div class="w-full flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#E3EBFF] tracking-wide">Size</span>
+            <span class="font-mono text-[10px] text-[#8FA3CC] tracking-tight">46.2 MB · 1,284 nodes</span>
+          </div>
+          <span class="font-mono text-[10px] text-[#8FA3CC] bg-[rgba(148,178,255,0.06)] px-1.5 py-0.5 rounded">v5 WAL</span>
+        </div>
+      </div>
+
+      <!-- Row 3: Attention -->
+      <div class="row-h flex items-center px-4 hover:bg-[rgba(148,178,255,0.04)] cursor-pointer select-none">
+        <div class="w-full flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#E3EBFF] tracking-wide">Attention</span>
+            <span class="font-mono text-[10px] text-[#8FA3CC] tracking-tight">2 warnings triaged</span>
+          </div>
+          <span class="inline-flex items-center gap-1 font-mono text-[10px] text-[#FBBF24] font-medium bg-[#FBBF24]/10 px-1.5 py-0.5 rounded border border-[#FBBF24]/25">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#FBBF24]"></span> 2 WARN
+          </span>
+        </div>
+      </div>
+
+      <!-- Row 4: Agents -->
+      <div class="row-h flex items-center px-4 hover:bg-[rgba(148,178,255,0.04)] cursor-pointer select-none">
+        <div class="w-full flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#E3EBFF] tracking-wide">Agents</span>
+            <span class="font-mono text-[10px] text-[#8FA3CC] tracking-tight">3 active sessions leased</span>
+          </div>
+          <span class="font-mono text-[10px] text-[#34D399] bg-[#34D399]/10 px-1.5 py-0.5 rounded border border-[#34D399]/20">3 LIVE</span>
+        </div>
+      </div>
+
+      <!-- Row 5: Relearn -->
+      <div class="row-h flex items-center px-4 hover:bg-[rgba(148,178,255,0.04)] cursor-pointer select-none">
+        <div class="w-full flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#E3EBFF] tracking-wide">Relearn</span>
+            <span class="font-mono text-[10px] text-[#8FA3CC] tracking-tight">AST state machine idle</span>
+          </div>
+          <span class="font-mono text-[10px] text-[#8FA3CC] bg-[rgba(148,178,255,0.06)] px-1.5 py-0.5 rounded">18m REM</span>
+        </div>
+      </div>
+
+      <!-- Additional contextual rows to fill standard list density cleanly -->
+      <div class="row-h flex items-center px-4 hover:bg-[rgba(148,178,255,0.04)] cursor-pointer select-none opacity-80">
+        <div class="w-full flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#E3EBFF] tracking-wide">Partition Topology</span>
+            <span class="font-mono text-[10px] text-[#8FA3CC] tracking-tight">7 domains active (P1..P7)</span>
+          </div>
+          <span class="font-mono text-[10px] text-[#8FA3CC]">0x3a</span>
+        </div>
+      </div>
+
+      <div class="row-h flex items-center px-4 hover:bg-[rgba(148,178,255,0.04)] cursor-pointer select-none opacity-80">
+        <div class="w-full flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#E3EBFF] tracking-wide">Raft Consensus</span>
+            <span class="font-mono text-[10px] text-[#8FA3CC] tracking-tight">3/3 quorum fence locked</span>
+          </div>
+          <span class="font-mono text-[10px] text-[#34D399] text-[11px] font-semibold">SYNC</span>
+        </div>
+      </div>
+
+      <div class="row-h flex items-center px-4 hover:bg-[rgba(148,178,255,0.04)] cursor-pointer select-none opacity-80">
+        <div class="w-full flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#E3EBFF] tracking-wide">Storage Shard</span>
+            <span class="font-mono text-[10px] text-[#8FA3CC] tracking-tight">SQLite WAL + DuckDB AST</span>
+          </div>
+          <span class="font-mono text-[10px] text-[#8FA3CC]">0x8F4E</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom list footer metadata (52px) -->
+    <div class="h-[52px] px-4 flex items-center justify-between pane-border-t bg-[#070B16] text-[#8FA3CC] flex-shrink-0">
+      <span class="font-mono text-[11px] tracking-tight">SHARD: 0x3a (SYNCED)</span>
+      <span class="font-mono text-[11px] text-[#34D399] flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span> 100% OK
+      </span>
+    </div>
+  </aside>
+
+  <!-- PANE 3: REMAINING ~1084px DETAIL PANE (Full height 900px) -->
+  <main class="flex-1 h-full flex flex-col bg-[#070B16] overflow-hidden">
+    
+    <!-- Detail Pane Header: Title + KPI Mini-Strip (Height: 56px aligned) -->
+    <header class="h-[56px] px-6 flex items-center justify-between pane-border-b flex-shrink-0 bg-[#070B16]">
+      <div class="flex items-center gap-3">
+        <span class="section-label text-[#8FA3CC]">DOMAIN INSPECTOR // DIAGNOSTIC VIEW</span>
+        <span class="text-[rgba(148,178,255,0.2)]">/</span>
+        <h1 class="text-base font-semibold text-[#E3EBFF] tracking-tight m-0">Health</h1>
+      </div>
+
+      <!-- KPI Mini-Strip: 11/11 checks · exit 0 · 0 errors · 2 warnings -->
+      <div class="flex items-center gap-2">
+        <!-- 11/11 checks -->
+        <div class="surface-flat pane-border rounded px-3 py-1 flex items-center gap-2">
+          <span class="section-label text-[10px] text-[#8FA3CC]">ASSERTIONS</span>
+          <span class="font-mono text-xs font-semibold text-[#34D399]">11/11 checks</span>
+        </div>
+
+        <!-- exit 0 -->
+        <div class="surface-flat pane-border rounded px-3 py-1 flex items-center gap-2">
+          <span class="section-label text-[10px] text-[#8FA3CC]">EXIT CODE</span>
+          <span class="font-mono text-xs font-semibold text-[#E3EBFF]">exit 0</span>
+        </div>
+
+        <!-- 0 errors -->
+        <div class="surface-flat pane-border rounded px-3 py-1 flex items-center gap-2">
+          <span class="section-label text-[10px] text-[#8FA3CC]">FAULTS</span>
+          <span class="font-mono text-xs font-semibold text-[#34D399]">0 errors</span>
+        </div>
+
+        <!-- 2 warnings -->
+        <div class="surface-flat pane-border rounded px-3 py-1 flex items-center gap-2 border-[#FBBF24]/30 bg-[#FBBF24]/5">
+          <span class="section-label text-[10px] text-[#FBBF24]">ADVISORIES</span>
+          <span class="font-mono text-xs font-semibold text-[#FBBF24]">2 warnings</span>
+        </div>
+
+        <!-- Quick Action Trigger -->
+        <button class="ml-2 h-7 px-3 rounded surface-flat pane-border text-[#22D3EE] font-mono text-[11px] font-medium flex items-center gap-1.5 hover:bg-[#22D3EE]/10 transition-none">
+          <span class="material-symbols-outlined text-[15px]">refresh</span>
+          <span>Re-probe</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Detail Pane Content Body (Scrollable / Fixed inside remaining 844px) -->
+    <div class="flex-1 p-6 flex flex-col gap-5 overflow-hidden justify-between">
+      
+      <!-- SUB-PANEL 1: CHECKS (6 rows with PASS ok chips) -->
+      <section class="flex flex-col flex-1 surface-flat pane-border rounded-lg overflow-hidden">
+        <!-- Sub-panel Header -->
+        <div class="h-10 px-4 surface-raised pane-border-b flex items-center justify-between flex-shrink-0">
+          <div class="flex items-center gap-2.5">
+            <span class="section-label text-[#22D3EE]">CHECKS</span>
+            <span class="text-xs text-[#8FA3CC]">Sub-system Invariants & Gate Integrity</span>
+          </div>
+          <span class="font-mono text-[11px] text-[#34D399]">6 OF 6 VERIFIED PASS</span>
+        </div>
+
+        <!-- 6 Rows Table -->
+        <div class="flex flex-col divide-y divide-[rgba(148,178,255,0.08)] flex-1 overflow-hidden">
+          
+          <!-- Row 1: store_readable -->
+          <div class="flex items-center justify-between px-4 py-2.5 flex-1 hover:bg-[rgba(148,178,255,0.03)]">
+            <div class="flex items-center gap-4">
+              <span class="font-mono text-[11px] text-[#8FA3CC] w-6">01</span>
+              <span class="font-mono text-xs font-semibold text-[#22D3EE] w-48">store_readable</span>
+              <span class="text-xs text-[#8FA3CC]">SQLite WAL file descriptor readable and write lock unheld</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="font-mono text-[11px] text-[#8FA3CC]">0.4ms</span>
+              <span class="font-mono text-[11px] font-medium text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/25 px-2.5 py-0.5 rounded tracking-wider">PASS</span>
+            </div>
+          </div>
+
+          <!-- Row 2: chain_integrity -->
+          <div class="flex items-center justify-between px-4 py-2.5 flex-1 hover:bg-[rgba(148,178,255,0.03)]">
+            <div class="flex items-center gap-4">
+              <span class="font-mono text-[11px] text-[#8FA3CC] w-6">02</span>
+              <span class="font-mono text-xs font-semibold text-[#22D3EE] w-48">chain_integrity</span>
+              <span class="text-xs text-[#8FA3CC]">SHA-256 Merkle root monotonic chain continuity verified</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="font-mono text-[11px] text-[#8FA3CC]">1.8ms</span>
+              <span class="font-mono text-[11px] font-medium text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/25 px-2.5 py-0.5 rounded tracking-wider">PASS</span>
+            </div>
+          </div>
+
+          <!-- Row 3: projection_fresh -->
+          <div class="flex items-center justify-between px-4 py-2.5 flex-1 hover:bg-[rgba(148,178,255,0.03)]">
+            <div class="flex items-center gap-4">
+              <span class="font-mono text-[11px] text-[#8FA3CC] w-6">03</span>
+              <span class="font-mono text-xs font-semibold text-[#22D3EE] w-48">projection_fresh</span>
+              <span class="text-xs text-[#8FA3CC]">DuckDB AST columnar index projection lag within 0.14ms SLA</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="font-mono text-[11px] text-[#8FA3CC]">0.9ms</span>
+              <span class="font-mono text-[11px] font-medium text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/25 px-2.5 py-0.5 rounded tracking-wider">PASS</span>
+            </div>
+          </div>
+
+          <!-- Row 4: leases_consistent -->
+          <div class="flex items-center justify-between px-4 py-2.5 flex-1 hover:bg-[rgba(148,178,255,0.03)]">
+            <div class="flex items-center gap-4">
+              <span class="font-mono text-[11px] text-[#8FA3CC] w-6">04</span>
+              <span class="font-mono text-xs font-semibold text-[#22D3EE] w-48">leases_consistent</span>
+              <span class="text-xs text-[#8FA3CC]">Raft consensus quorum fence tokens validated across partitions</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="font-mono text-[11px] text-[#8FA3CC]">0.5ms</span>
+              <span class="font-mono text-[11px] font-medium text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/25 px-2.5 py-0.5 rounded tracking-wider">PASS</span>
+            </div>
+          </div>
+
+          <!-- Row 5: schema_version -->
+          <div class="flex items-center justify-between px-4 py-2.5 flex-1 hover:bg-[rgba(148,178,255,0.03)]">
+            <div class="flex items-center gap-4">
+              <span class="font-mono text-[11px] text-[#8FA3CC] w-6">05</span>
+              <span class="font-mono text-xs font-semibold text-[#22D3EE] w-48">schema_version</span>
+              <span class="text-xs text-[#8FA3CC]">Clean migration status confirmed on v5 immutable ontology contracts</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="font-mono text-[11px] text-[#8FA3CC]">0.2ms</span>
+              <span class="font-mono text-[11px] font-medium text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/25 px-2.5 py-0.5 rounded tracking-wider">PASS</span>
+            </div>
+          </div>
+
+          <!-- Row 6: journal_mode -->
+          <div class="flex items-center justify-between px-4 py-2.5 flex-1 hover:bg-[rgba(148,178,255,0.03)]">
+            <div class="flex items-center gap-4">
+              <span class="font-mono text-[11px] text-[#8FA3CC] w-6">06</span>
+              <span class="font-mono text-xs font-semibold text-[#22D3EE] w-48">journal_mode</span>
+              <span class="text-xs text-[#8FA3CC]">WAL journal mode with 0 pending frame lag and zero lock contention</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="font-mono text-[11px] text-[#8FA3CC]">0.1ms</span>
+              <span class="font-mono text-[11px] font-medium text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/25 px-2.5 py-0.5 rounded tracking-wider">PASS</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SUB-PANEL 2: STORE (mono stats: 46.2 MB · schema v5 · WAL · nodes 1,284 · edges 3,917) -->
+      <section class="flex flex-col surface-flat pane-border rounded-lg overflow-hidden flex-shrink-0">
+        <!-- Sub-panel Header -->
+        <div class="h-10 px-4 surface-raised pane-border-b flex items-center justify-between flex-shrink-0">
+          <div class="flex items-center gap-2.5">
+            <span class="section-label text-[#22D3EE]">STORE</span>
+            <span class="text-xs text-[#8FA3CC]">Local Database & Topology Specifications</span>
+          </div>
+          <span class="font-mono text-[11px] text-[#8FA3CC]">ENGINE: SQLITE + DUCKDB AST</span>
+        </div>
+
+        <!-- 5 Metric Tiles Grid -->
+        <div class="grid grid-cols-5 divide-x divide-[rgba(148,178,255,0.14)] p-4">
+          
+          <!-- Stat 1: 46.2 MB -->
+          <div class="flex flex-col px-3 first:pl-0">
+            <span class="section-label text-[10px] text-[#8FA3CC]">STORE SIZE</span>
+            <span class="font-mono text-2xl font-bold text-[#E3EBFF] mt-1 tracking-tight">46.2 MB</span>
+            <span class="font-mono text-[11px] text-[#8FA3CC] mt-1.5">4,096 byte page size</span>
+          </div>
+
+          <!-- Stat 2: schema v5 -->
+          <div class="flex flex-col px-4">
+            <span class="section-label text-[10px] text-[#8FA3CC]">SCHEMA</span>
+            <span class="font-mono text-2xl font-bold text-[#22D3EE] mt-1 tracking-tight">schema v5</span>
+            <span class="font-mono text-[11px] text-[#34D399] mt-1.5 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span> clean sync forward
+            </span>
+          </div>
+
+          <!-- Stat 3: WAL -->
+          <div class="flex flex-col px-4">
+            <span class="section-label text-[10px] text-[#8FA3CC]">JOURNAL MODE</span>
+            <span class="font-mono text-2xl font-bold text-[#E3EBFF] mt-1 tracking-tight">WAL</span>
+            <span class="font-mono text-[11px] text-[#8FA3CC] mt-1.5">zero checkpoint lag</span>
+          </div>
+
+          <!-- Stat 4: nodes 1,284 -->
+          <div class="flex flex-col px-4">
+            <span class="section-label text-[10px] text-[#8FA3CC]">TOTAL NODES</span>
+            <span class="font-mono text-2xl font-bold text-[#E3EBFF] mt-1 tracking-tight">1,284</span>
+            <span class="font-mono text-[11px] text-[#34D399] mt-1.5">+14 ingested today</span>
+          </div>
+
+          <!-- Stat 5: edges 3,917 -->
+          <div class="flex flex-col px-4 last:pr-0">
+            <span class="section-label text-[10px] text-[#8FA3CC]">DIRECTED EDGES</span>
+            <span class="font-mono text-2xl font-bold text-[#E3EBFF] mt-1 tracking-tight">3,917</span>
+            <span class="font-mono text-[11px] text-[#8FA3CC] mt-1.5">avg degree 3.05</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Sub-panel Footer Status Strip (Pinned within detail pane bounds) -->
+      <div class="h-8 px-4 surface-raised pane-border rounded flex items-center justify-between font-mono text-[11px] text-[#8FA3CC] flex-shrink-0">
+        <div class="flex items-center gap-5">
+          <span>DAEMON: kyc-daemon-v2</span>
+          <span>MERKLE: 9f2c1ab4</span>
+          <span>REPLAY: 1.4ms DETERMINISTIC</span>
+        </div>
+        <div class="flex items-center gap-5">
+          <span>SHARD: 0x3a</span>
+          <span>VIEWPORT: 1440x900 FIXED</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

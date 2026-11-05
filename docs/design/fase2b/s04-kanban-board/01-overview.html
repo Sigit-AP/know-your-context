@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, height=900">
+<title>Know Your Context - Overview Board (Kanban)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        base: '#0F141E',
+        column: '#151C2A',
+        card: '#1B2434',
+        accent: '#2DD4BF',
+        ok: '#4ADE80',
+        warn: '#FCD34D',
+        danger: '#F87171',
+        primaryText: '#E7ECF5',
+        secondaryText: '#93A0B8',
+        hairline: 'rgba(255, 255, 255, 0.06)',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      borderRadius: {
+        'card': '16px',
+      }
+    }
+  }
+}
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: #0F141E;
+    color: #E7ECF5;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    user-select: none;
+  }
+  .hairline-border {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .hairline-b {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .hairline-t {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .card-hover {
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .card-hover:hover {
+    border-color: rgba(45, 212, 191, 0.3);
+    background-color: #1E283A;
+  }
+</style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-col bg-base text-primaryText">
+
+  <!-- Slim 48px Topbar -->
+  <header class="h-[48px] min-h-[48px] w-full px-5 flex items-center justify-between hairline-b bg-base z-20">
+    <!-- Left: Brand / Title & Version -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-accent"></span>
+        <h1 class="text-sm font-semibold tracking-tight text-primaryText">Know Your Context</h1>
+      </div>
+      <span class="text-xs font-mono text-secondaryText px-1.5 py-0.5 rounded bg-column hairline-border">v14.2</span>
+      <span class="text-xs font-mono text-secondaryText">cluster-01</span>
+    </div>
+
+    <!-- Center: Segmented Navigation Control -->
+    <div class="flex items-center bg-column p-0.5 rounded-lg hairline-border text-xs font-medium">
+      <button class="px-3 py-1 rounded-md text-accent bg-[#2DD4BF]/15 font-medium transition-colors">Overview</button>
+      <button class="px-3 py-1 rounded-md text-secondaryText hover:text-primaryText transition-colors">Activity</button>
+      <button class="px-3 py-1 rounded-md text-secondaryText hover:text-primaryText transition-colors">Graph</button>
+    </div>
+
+    <!-- Right: Filter Chips, Search, & Status indicator -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-column hairline-border text-xs text-secondaryText">
+        <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+        <span class="font-mono text-[11px] text-primaryText">RAFT 3/3 SYNCED</span>
+      </div>
+
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-column hairline-border text-xs text-secondaryText">
+        <span class="material-symbols-outlined text-[14px]">search</span>
+        <span class="font-mono text-[11px]">partition:active</span>
+      </div>
+
+      <div class="flex items-center gap-2 pl-1 text-secondaryText">
+        <span class="text-xs font-mono">11:58:02Z</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Kanban Board: 4 Vertical Columns across remaining 852px -->
+  <main class="flex-1 w-full p-4 grid grid-cols-4 gap-4 overflow-hidden">
+
+    <!-- COLUMN 1: HEALTHY 3 -->
+    <section class="flex flex-col bg-column rounded-[18px] p-3 hairline-border h-full">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between pb-3 px-1 hairline-b mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-ok"></span>
+          <h2 class="text-[11px] font-semibold tracking-wider uppercase text-primaryText">Healthy</h2>
+        </div>
+        <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-card text-secondaryText hairline-border">3</span>
+      </div>
+
+      <!-- Column Cards Stack -->
+      <div class="flex-1 flex flex-col gap-3 justify-between">
+        <!-- Card 1.1: 11/11 checks passed -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold text-primaryText leading-snug">11/11 checks passed</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-ok/15 text-ok whitespace-nowrap">OK</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              Deterministic invariant test suite verified across local cluster partitions.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>SUITE EXEC</span>
+              <span class="text-primaryText">sha256_merkle_verify</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>SWEEP LATENCY</span>
+              <span class="text-primaryText">0.42ms deterministic</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>PROOF ROOT</span>
+              <span class="text-primaryText">9f2c1ab4</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 1.2: Schema v5 -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold font-mono text-primaryText leading-snug">Schema v5</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-ok/15 text-ok whitespace-nowrap">ACTIVE</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              JSON-LD schema ontology locked in immutable local registry.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>MIGRATION</span>
+              <span class="text-primaryText">clean_pass_v1_to_v5</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>COMPATIBILITY</span>
+              <span class="text-primaryText">backward_compatible</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>REVISION HASH</span>
+              <span class="text-primaryText">3d81b899</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 1.3: Journal WAL -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold font-mono text-primaryText leading-snug">Journal WAL</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-ok/15 text-ok whitespace-nowrap">SYNCED</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              SQLite write-ahead log operating in zero contention mode.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>PENDING LAG</span>
+              <span class="text-primaryText">0 bytes pending</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>SYNC CADENCE</span>
+              <span class="text-primaryText">1000ms flush</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>FRAME CHECKSUM</span>
+              <span class="text-primaryText">c190bb42</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- COLUMN 2: ATTENTION 3 -->
+    <section class="flex flex-col bg-column rounded-[18px] p-3 hairline-border h-full">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between pb-3 px-1 hairline-b mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-warn"></span>
+          <h2 class="text-[11px] font-semibold tracking-wider uppercase text-primaryText">Attention</h2>
+        </div>
+        <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-card text-secondaryText hairline-border">3</span>
+      </div>
+
+      <!-- Column Cards Stack -->
+      <div class="flex-1 flex flex-col gap-3 justify-between">
+        <!-- Card 2.1: 3 proposals pending -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold text-primaryText leading-snug">3 proposals pending</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-warn/15 text-warn whitespace-nowrap">WARN</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              Autonomous schema mutation and cache promotion candidates awaiting review.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>QUORUM GATE</span>
+              <span class="text-primaryText">2 of 3 votes required</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>AUTO-MERGE SLA</span>
+              <span class="text-warn">4h 12m remaining</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>HEAD PROPOSAL</span>
+              <span class="text-primaryText">78fe23a9</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 2.2: 12 debt items -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold text-primaryText leading-snug">12 debt items</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-warn/15 text-warn whitespace-nowrap">WARN</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              Unindexed semantic tag flags and uncompacted DuckDB WAL journal frames.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>ENTROPY SCORE</span>
+              <span class="text-primaryText">0.742 priority mean</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>TOKEN IMPACT</span>
+              <span class="text-primaryText">14.2k overhead</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>BURNDOWN TARGET</span>
+              <span class="text-primaryText">a012e841</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 2.3: 2 unresolved references -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold text-primaryText leading-snug">2 unresolved references</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-danger/15 text-danger whitespace-nowrap">DANGER</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              Dangling graph pointers detected in vector cache partition tier 4.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>FAULT SEVERITY</span>
+              <span class="text-danger">critical_edge_pointer</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>TARGET PARTITION</span>
+              <span class="text-primaryText">partition_04_sub</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>ANOMALY ANCHOR</span>
+              <span class="text-primaryText">e4479901</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- COLUMN 3: AGENTS 3 -->
+    <section class="flex flex-col bg-column rounded-[18px] p-3 hairline-border h-full">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between pb-3 px-1 hairline-b mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-accent"></span>
+          <h2 class="text-[11px] font-semibold tracking-wider uppercase text-primaryText">Agents</h2>
+        </div>
+        <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-card text-secondaryText hairline-border">3</span>
+      </div>
+
+      <!-- Column Cards Stack -->
+      <div class="flex-1 flex flex-col gap-3 justify-between">
+        <!-- Card 3.1: agent-2 -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold font-mono text-primaryText leading-snug">agent-2</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-ok/15 text-ok whitespace-nowrap">RUNNING</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              Traversing node heuristics and computing AST hierarchical edge weights.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>EVENT COUNT</span>
+              <span class="text-primaryText">684 ops (44.9%)</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>LEASE TTL</span>
+              <span class="text-accent font-semibold">03m 12s</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>SESSION ROOT</span>
+              <span class="text-primaryText">55c2f0a1</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 3.2: sub-144 -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold font-mono text-primaryText leading-snug">sub-144</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-ok/15 text-ok whitespace-nowrap">RUNNING</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              Generating HNSW vector projections and synchronizing DuckDB embeddings.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>EVENT COUNT</span>
+              <span class="text-primaryText">395 ops (26.0%)</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>LEASE TTL</span>
+              <span class="text-accent font-semibold">03m 12s</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>SESSION ROOT</span>
+              <span class="text-primaryText">8a1d440f</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 3.3: operator -->
+        <article class="bg-card rounded-card p-3.5 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="text-xs font-semibold font-mono text-primaryText leading-snug">operator</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-ok/15 text-ok whitespace-nowrap">RUNNING</span>
+            </div>
+            <p class="text-[11px] text-secondaryText leading-relaxed mb-3">
+              Direct daemon supervision socket with root lease arbitration privileges.
+            </p>
+          </div>
+          <div class="space-y-1.5 pt-2 hairline-t text-[11px] font-mono text-secondaryText">
+            <div class="flex justify-between items-center">
+              <span>EVENT COUNT</span>
+              <span class="text-primaryText">442 ops (29.1%)</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>LEASE TTL</span>
+              <span class="text-accent font-semibold">03m 12s</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>SESSION ROOT</span>
+              <span class="text-primaryText">43dcb102</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- COLUMN 4: SYSTEM 4 -->
+    <section class="flex flex-col bg-column rounded-[18px] p-3 hairline-border h-full">
+      <!-- Column Header -->
+      <div class="flex items-center justify-between pb-3 px-1 hairline-b mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-secondaryText"></span>
+          <h2 class="text-[11px] font-semibold tracking-wider uppercase text-primaryText">System</h2>
+        </div>
+        <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-card text-secondaryText hairline-border">4</span>
+      </div>
+
+      <!-- Column Cards Stack (4 cards) -->
+      <div class="flex-1 flex flex-col gap-2.5 justify-between">
+        <!-- Card 4.1: Store 46.2 MB -->
+        <article class="bg-card rounded-card p-3 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] uppercase font-mono tracking-wider text-secondaryText block">Persistence</span>
+              <h3 class="text-xs font-semibold text-primaryText font-mono leading-tight">Store 46.2 MB</h3>
+            </div>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-ok/15 text-ok">OPTIMAL</span>
+          </div>
+          <div class="space-y-1 pt-1.5 hairline-t text-[10.5px] font-mono text-secondaryText">
+            <div class="flex justify-between">
+              <span>DATABASE</span>
+              <span class="text-primaryText">sqlite3/wal2 v5</span>
+            </div>
+            <div class="flex justify-between">
+              <span>CACHE HIT</span>
+              <span class="text-primaryText">99.4% DuckDB</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 4.2: Nodes 1,284 / Edges 3,917 -->
+        <article class="bg-card rounded-card p-3 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] uppercase font-mono tracking-wider text-secondaryText block">Topology</span>
+              <h3 class="text-xs font-semibold text-primaryText font-mono leading-tight">Nodes 1,284 / Edges 3,917</h3>
+            </div>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-ok/15 text-ok">DAG OK</span>
+          </div>
+          <div class="space-y-1 pt-1.5 hairline-t text-[10.5px] font-mono text-secondaryText">
+            <div class="flex justify-between">
+              <span>ACTIVE DOMAINS</span>
+              <span class="text-primaryText">7 partitions active</span>
+            </div>
+            <div class="flex justify-between">
+              <span>AVERAGE DEGREE</span>
+              <span class="text-primaryText">3.05 directed</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 4.3: Events today 214 -->
+        <article class="bg-card rounded-card p-3 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] uppercase font-mono tracking-wider text-secondaryText block">Ingestion</span>
+              <h3 class="text-xs font-semibold text-primaryText font-mono leading-tight">Events today 214</h3>
+            </div>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-accent/15 text-accent">STREAM</span>
+          </div>
+          <div class="space-y-1 pt-1.5 hairline-t text-[10.5px] font-mono text-secondaryText">
+            <div class="flex justify-between">
+              <span>PEAK CADENCE</span>
+              <span class="text-primaryText">42 ops / hr</span>
+            </div>
+            <div class="flex justify-between">
+              <span>TOTAL LEDGER</span>
+              <span class="text-primaryText">1,521 events</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 4.4: Relearn IDLE -->
+        <article class="bg-card rounded-card p-3 hairline-border card-hover flex-1 flex flex-col justify-between">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] uppercase font-mono tracking-wider text-secondaryText block">State Machine</span>
+              <h3 class="text-xs font-semibold text-primaryText font-mono leading-tight">Relearn IDLE</h3>
+            </div>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-secondaryText/15 text-secondaryText">STANDBY</span>
+          </div>
+          <div class="space-y-1 pt-1.5 hairline-t text-[10.5px] font-mono text-secondaryText">
+            <div class="flex justify-between">
+              <span>NEXT SCHEDULED</span>
+              <span class="text-primaryText">18m remaining</span>
+            </div>
+            <div class="flex justify-between">
+              <span>LAST DURATION</span>
+              <span class="text-primaryText">1,420ms AST scan</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

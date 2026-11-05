@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Activity Log</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#0B0D11',
+            sidebar: '#0E1116',
+            card: '#12161D',
+            raised: '#161B24',
+            hairline: 'rgba(255, 255, 255, 0.07)',
+            primaryText: '#E6E9EF',
+            secondaryText: '#9AA3B2',
+            accent: '#6366F1',
+            statusOk: '#34D399',
+            statusWarn: '#FBBF24',
+            statusDanger: '#F87171',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D11;
+      color: #E6E9EF;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+    }
+    .table-row-h {
+      height: 40px;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-base text-primaryText select-none">
+
+  <!-- LEFT SIDEBAR (240px wide fixed) -->
+  <aside class="w-[240px] h-[900px] flex-shrink-0 bg-sidebar border-r border-hairline flex flex-col justify-between p-4 box-border">
+    <div>
+      <!-- Brand Header -->
+      <div class="flex items-center gap-2.5 px-2 py-1 mb-6">
+        <div class="w-6 h-6 rounded bg-accent/20 border border-accent/40 flex items-center justify-center text-accent">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="font-semibold text-sm tracking-tight text-primaryText">Know Your Context</span>
+      </div>
+
+      <!-- Nav Section: CONSOLE -->
+      <div class="mb-6">
+        <div class="text-[10px] uppercase tracking-wider font-semibold text-secondaryText/60 px-2 mb-2">Console</div>
+        <nav class="space-y-1">
+          <!-- Overview -->
+          <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-secondaryText hover:text-primaryText hover:bg-hairline transition-colors">
+            <svg class="w-4 h-4 text-secondaryText" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span>Overview</span>
+          </a>
+          <!-- Activity (Active) -->
+          <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-accent/10 text-accent border border-accent/20">
+            <svg class="w-4 h-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <span>Activity</span>
+          </a>
+          <!-- Graph -->
+          <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-secondaryText hover:text-primaryText hover:bg-hairline transition-colors">
+            <svg class="w-4 h-4 text-secondaryText" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span>Graph</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Nav Section: SYSTEM -->
+      <div>
+        <div class="text-[10px] uppercase tracking-wider font-semibold text-secondaryText/60 px-2 mb-2">System</div>
+        <nav class="space-y-1">
+          <!-- Search -->
+          <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-secondaryText hover:text-primaryText hover:bg-hairline transition-colors">
+            <svg class="w-4 h-4 text-secondaryText" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <span>Search</span>
+          </a>
+          <!-- Metrics -->
+          <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-secondaryText hover:text-primaryText hover:bg-hairline transition-colors">
+            <svg class="w-4 h-4 text-secondaryText" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 20V10"/>
+              <path d="M12 20V4"/>
+              <path d="M6 20v-6"/>
+            </svg>
+            <span>Metrics</span>
+          </a>
+          <!-- Health -->
+          <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-secondaryText hover:text-primaryText hover:bg-hairline transition-colors">
+            <svg class="w-4 h-4 text-secondaryText" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            <span>Health</span>
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Pinned User Card at Bottom -->
+    <div class="pt-3 border-t border-hairline flex items-center gap-2.5 px-1.5">
+      <div class="w-7 h-7 rounded-full bg-raised border border-hairline flex items-center justify-center font-mono text-xs text-primaryText font-medium">
+        OP
+      </div>
+      <div class="flex flex-col min-w-0">
+        <span class="text-xs font-medium text-primaryText leading-tight">operator</span>
+        <span class="text-[11px] font-mono text-secondaryText leading-tight">op@kyc.local</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <div class="flex-1 h-[900px] flex flex-col min-w-0 bg-base">
+
+    <!-- TOPBAR (56px) -->
+    <header class="h-14 border-b border-hairline px-7 flex items-center justify-between flex-shrink-0 bg-base">
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-xs font-medium">
+        <span class="text-secondaryText font-mono">kyc</span>
+        <span class="text-secondaryText/40 font-mono">/</span>
+        <span class="text-secondaryText font-mono">console</span>
+        <span class="text-secondaryText/40 font-mono">/</span>
+        <span class="text-primaryText font-medium">activity-log</span>
+        <div class="ml-3 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-statusOk/10 text-statusOk border border-statusOk/20 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>RAFT SYNCED · QUORUM 3/3</span>
+        </div>
+      </div>
+
+      <!-- Centered Search Field -->
+      <div class="relative w-[340px]">
+        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-secondaryText">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <input type="text" placeholder="Search ledger events, hashes, actors..." class="w-full h-8 pl-8 pr-9 bg-card border border-hairline rounded-md text-xs text-primaryText placeholder-secondaryText/60 focus:outline-none focus:border-accent">
+        <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-raised border border-hairline text-secondaryText">⌘K</span>
+        </div>
+      </div>
+
+      <!-- Right Actions -->
+      <div class="flex items-center gap-3">
+        <div class="px-2 py-0.5 rounded text-[11px] font-mono text-secondaryText bg-card border border-hairline flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>node-01.local : 9241</span>
+        </div>
+        <button class="relative w-8 h-8 rounded-md bg-card border border-hairline flex items-center justify-center text-secondaryText hover:text-primaryText">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </button>
+        <div class="w-8 h-8 rounded-md bg-raised border border-hairline flex items-center justify-center text-xs font-mono font-medium text-primaryText">
+          KY
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA (Page padding 28px, gap 16px) -->
+    <main class="flex-1 p-7 flex flex-col gap-4 overflow-hidden box-border">
+
+      <!-- FILTER BAR -->
+      <div class="h-10 bg-card border border-hairline rounded-lg px-3 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <!-- Level Chips -->
+          <div class="flex items-center gap-1 bg-raised px-1.5 py-1 rounded-md border border-hairline">
+            <span class="text-[10px] font-mono uppercase text-secondaryText px-1 mr-0.5">LEVEL:</span>
+            <button class="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-accent/20 text-accent border border-accent/30">ALL</button>
+            <button class="px-2 py-0.5 rounded text-[11px] font-mono text-secondaryText hover:text-primaryText hover:bg-hairline flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>INFO
+            </button>
+            <button class="px-2 py-0.5 rounded text-[11px] font-mono text-secondaryText hover:text-primaryText hover:bg-hairline flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusWarn"></span>WARN
+            </button>
+            <button class="px-2 py-0.5 rounded text-[11px] font-mono text-secondaryText hover:text-primaryText hover:bg-hairline flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusDanger"></span>ERROR
+            </button>
+          </div>
+
+          <div class="h-4 w-px bg-hairline"></div>
+
+          <!-- Agent Chips -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-mono uppercase text-secondaryText">AGENT:</span>
+            <button class="px-2 py-0.5 rounded-md text-[11px] font-mono bg-raised border border-hairline text-primaryText hover:border-accent">agent-2</button>
+            <button class="px-2 py-0.5 rounded-md text-[11px] font-mono bg-raised border border-hairline text-primaryText hover:border-accent">sub-144</button>
+            <button class="px-2 py-0.5 rounded-md text-[11px] font-mono bg-raised border border-hairline text-primaryText hover:border-accent">operator</button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Ghost search field -->
+          <div class="relative w-56">
+            <input type="text" placeholder="Filter action, node, hash..." class="w-full h-7 pl-6 pr-2 bg-transparent border border-hairline/80 rounded text-xs text-primaryText placeholder-secondaryText/50 focus:outline-none focus:border-accent font-mono">
+            <svg class="w-3 h-3 text-secondaryText/60 absolute left-2 top-2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+
+          <!-- Autoscroll Toggle ON -->
+          <div class="flex items-center gap-2 pl-2 border-l border-hairline">
+            <span class="text-[11px] font-mono text-secondaryText">AUTOSCROLL</span>
+            <div class="w-8 h-4 rounded-full bg-accent/30 border border-accent/50 p-0.5 flex items-center justify-end cursor-pointer">
+              <div class="w-3 h-3 rounded-full bg-accent"></div>
+            </div>
+            <span class="text-[10px] font-mono font-semibold text-accent">ON</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN SPLIT: TABLE (LEFT) + NODE LEASES PANEL (RIGHT) -->
+      <div class="flex-1 flex gap-4 min-h-0 overflow-hidden">
+
+        <!-- ACTIVITY TABLE CARD (EXACTLY 14 VISIBLE ROWS) -->
+        <div class="flex-1 bg-card border border-hairline rounded-xl flex flex-col overflow-hidden">
+          <!-- Table Header -->
+          <div class="h-9 bg-raised/80 border-b border-hairline px-3 grid grid-cols-12 items-center text-[10px] font-mono font-medium text-secondaryText uppercase tracking-wider flex-shrink-0">
+            <div class="col-span-1">SEQ</div>
+            <div class="col-span-1">LEVEL</div>
+            <div class="col-span-1">AGENT</div>
+            <div class="col-span-2">ACTION</div>
+            <div class="col-span-4">DESCRIPTION</div>
+            <div class="col-span-1">NODE</div>
+            <div class="col-span-1 text-center">SHA8</div>
+            <div class="col-span-1 text-right">TIME</div>
+          </div>
+
+          <!-- Table Rows Container: Exactly 14 rows, each precisely 40px -->
+          <div class="flex-1 flex flex-col justify-between overflow-hidden">
+
+            <!-- ROW 1 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10421</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">agent-2</div>
+              <div class="col-span-2 font-mono text-[11px] text-accent">apply_improvement</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Applied edge weight reduction to retrieval cluster</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">9f2c1ab4</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:58:02Z</div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10420</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">sub-144</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">query</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Nearest-neighbor cosine probe across partition tier 2</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">8a1d440f</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:57:44Z</div>
+            </div>
+
+            <!-- ROW 3 (WARN ROW: UNREADABLE PAYLOAD WITH AMBER ROW WASH) -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-statusWarn/25 bg-statusWarn/10 text-xs font-sans">
+              <div class="col-span-1 font-mono text-[11px] text-statusWarn font-semibold">10419</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusWarn/20 text-statusWarn border border-statusWarn/40 font-semibold">WARN</span></div>
+              <div class="col-span-1 text-statusWarn font-medium text-xs">operator</div>
+              <div class="col-span-2 font-mono text-[11px] text-statusWarn font-medium">log_event</div>
+              <div class="col-span-4 text-statusWarn font-medium text-xs truncate">unreadable payload</div>
+              <div class="col-span-1 text-statusWarn text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-statusWarn text-center font-semibold">77e19cb2</div>
+              <div class="col-span-1 font-mono text-[11px] text-statusWarn text-right">2026-11-04T11:56:59Z</div>
+            </div>
+
+            <!-- ROW 4 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10418</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">agent-2</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">record_outcome</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Persisted AST token cache validation checksums</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">3d81b899</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:55:12Z</div>
+            </div>
+
+            <!-- ROW 5 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10417</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">sub-144</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">query</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Traversed hierarchical taxonomy subgraphs</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">55c2f0a1</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:54:30Z</div>
+            </div>
+
+            <!-- ROW 6 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10416</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">operator</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">log_event</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Raft log delta compaction completed safely</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">a012e841</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:53:18Z</div>
+            </div>
+
+            <!-- ROW 7 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10415</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">agent-2</div>
+              <div class="col-span-2 font-mono text-[11px] text-accent">apply_improvement</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Promoted vector cache boundaries to L2 storage tier</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">e4479901</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:52:05Z</div>
+            </div>
+
+            <!-- ROW 8 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10414</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">sub-144</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">query</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Calculated topological convergence eigenvalues</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">43dcb102</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:51:19Z</div>
+            </div>
+
+            <!-- ROW 9 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10413</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">operator</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">record_outcome</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Logged deterministic snapshot receipt to disk</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">78fe23a9</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:50:02Z</div>
+            </div>
+
+            <!-- ROW 10 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10412</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">agent-2</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">query</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Evaluated SHACL ontology invariant rules</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">69bca711</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:49:15Z</div>
+            </div>
+
+            <!-- ROW 11 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10411</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">sub-144</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">log_event</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Synchronized IPC broadcast socket to loopback port</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">12e094fa</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:48:40Z</div>
+            </div>
+
+            <!-- ROW 12 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10410</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">operator</div>
+              <div class="col-span-2 font-mono text-[11px] text-accent">apply_improvement</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Compacted DuckDB vector table segments</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">b82ef455</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:47:11Z</div>
+            </div>
+
+            <!-- ROW 13 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center border-b border-hairline text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10409</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">agent-2</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">query</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">Verified zero cycle violations across knowledge DAG</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">4e112d7c</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:46:25Z</div>
+            </div>
+
+            <!-- ROW 14 -->
+            <div class="table-row-h px-3 grid grid-cols-12 items-center text-xs font-sans hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText">10408</div>
+              <div class="col-span-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusOk/15 text-statusOk border border-statusOk/30">INFO</span></div>
+              <div class="col-span-1 text-primaryText font-medium text-xs">sub-144</div>
+              <div class="col-span-2 font-mono text-[11px] text-secondaryText">record_outcome</div>
+              <div class="col-span-4 text-primaryText text-xs truncate">DuckDB append vector table partitioned and committed</div>
+              <div class="col-span-1 text-secondaryText text-xs font-mono">heuristics-catalog</div>
+              <div class="col-span-1 font-mono text-[11px] text-primaryText text-center">33190ab7</div>
+              <div class="col-span-1 font-mono text-[11px] text-secondaryText text-right">2026-11-04T11:41:52Z</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT SIDE PANEL: NODE LEASES (4 ROWS) -->
+        <div class="w-[300px] flex-shrink-0 bg-card border border-hairline rounded-xl p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-hairline mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-primaryText">Node Leases</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-raised border border-hairline text-secondaryText">4 active</span>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-statusOk"></span>
+            </div>
+
+            <div class="text-[10px] font-mono text-secondaryText uppercase tracking-wider mb-2">MUTEX ARBITRATION</div>
+
+            <!-- 4 LEASE ROWS -->
+            <div class="space-y-2">
+
+              <!-- LEASE 1 (BADGE: NODE_IN_USE) -->
+              <div class="p-2.5 rounded-lg bg-raised border border-hairline">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-mono text-xs text-primaryText font-medium">kg_entity_4402</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-statusWarn/20 text-statusWarn border border-statusWarn/40">NODE_IN_USE</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-secondaryText">
+                  <span>holder: <strong class="text-primaryText font-medium">agent-2</strong></span>
+                  <span class="font-mono text-[11px] text-secondaryText">ttl 03m 12s</span>
+                </div>
+                <div class="w-full bg-base h-1 rounded-full mt-2 overflow-hidden">
+                  <div class="bg-statusWarn h-full w-2/3"></div>
+                </div>
+              </div>
+
+              <!-- LEASE 2 -->
+              <div class="p-2.5 rounded-lg bg-raised border border-hairline">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-mono text-xs text-primaryText font-medium">concept_419</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-base border border-hairline text-secondaryText">LOCKED</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-secondaryText">
+                  <span>holder: <strong class="text-primaryText font-medium">sub-144</strong></span>
+                  <span class="font-mono text-[11px] text-secondaryText">ttl 03m 12s</span>
+                </div>
+                <div class="w-full bg-base h-1 rounded-full mt-2 overflow-hidden">
+                  <div class="bg-accent h-full w-1/3"></div>
+                </div>
+              </div>
+
+              <!-- LEASE 3 -->
+              <div class="p-2.5 rounded-lg bg-raised border border-hairline">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-mono text-xs text-primaryText font-medium">edge:rel_ctx_891</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-base border border-hairline text-secondaryText">LOCKED</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-secondaryText">
+                  <span>holder: <strong class="text-primaryText font-medium">operator</strong></span>
+                  <span class="font-mono text-[11px] text-secondaryText">ttl 03m 12s</span>
+                </div>
+                <div class="w-full bg-base h-1 rounded-full mt-2 overflow-hidden">
+                  <div class="bg-accent h-full w-1/2"></div>
+                </div>
+              </div>
+
+              <!-- LEASE 4 -->
+              <div class="p-2.5 rounded-lg bg-raised border border-hairline">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-mono text-xs text-primaryText font-medium">dag:subgraph_tier2</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-base border border-hairline text-secondaryText">LOCKED</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-secondaryText">
+                  <span>holder: <strong class="text-primaryText font-medium">agent-2</strong></span>
+                  <span class="font-mono text-[11px] text-secondaryText">ttl 03m 12s</span>
+                </div>
+                <div class="w-full bg-base h-1 rounded-full mt-2 overflow-hidden">
+                  <div class="bg-accent h-full w-4/5"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Mini Telemetry footer inside right panel -->
+          <div class="pt-3 border-t border-hairline">
+            <div class="flex items-center justify-between text-[10px] font-mono text-secondaryText mb-1">
+              <span>CONTENDED QUEUE</span>
+              <span class="text-statusOk">0 BLOCKED</span>
+            </div>
+            <p class="text-[11px] text-secondaryText/80 leading-snug">
+              Deterministic Raft clock sync active. Zero lease starvation detected.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER STATUS BAR -->
+      <footer class="h-6 flex items-center justify-between px-1 text-[11px] font-mono text-secondaryText flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1.5 text-primaryText font-medium">
+            <span class="w-2 h-2 rounded-full bg-statusOk"></span>
+            11/11 CHECKS PASSED
+          </span>
+          <span class="text-secondaryText/40">·</span>
+          <span>SCHEMA v5</span>
+          <span class="text-secondaryText/40">·</span>
+          <span>WAL 0 lag</span>
+          <span class="text-secondaryText/40">·</span>
+          <span>LAST EVENT 2026-11-04T11:58:02Z</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span>VIEWPORT 1440x900</span>
+          <span class="text-secondaryText/40">·</span>
+          <span class="text-statusOk">DETERMINISTIC V14.2</span>
+        </div>
+      </footer>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

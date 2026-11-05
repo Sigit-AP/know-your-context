@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Context - Overview (Swiss Light Print Masonry)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FAFAF8;
+      color: #111111;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono-data {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .display-numeral {
+      font-feature-settings: "tnum" 1;
+      letter-spacing: -0.02em;
+    }
+    .nowrap-token {
+      white-space: nowrap;
+      word-break: keep-all;
+    }
+  </style>
+</head>
+<body class="flex flex-col justify-between p-8 select-none">
+
+  <!-- TOP HEADER / BANNER -->
+  <header class="w-full mb-6">
+    <div class="flex items-baseline justify-between mb-3">
+      <div class="flex items-baseline gap-4">
+        <h1 class="text-[48px] font-[650] tracking-[-0.02em] leading-none text-[#111111]">
+          01 — OVERVIEW
+        </h1>
+        <span class="font-mono-data text-[12px] uppercase tracking-wider text-[#6B6B66] font-medium">
+          [LOCAL-FIRST GRAPH ENGINE]
+        </span>
+      </div>
+      <div class="flex items-center gap-3 font-mono-data text-[12px] text-[#6B6B66] font-medium">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#2F9E6E]"></span>
+        <span>KYC</span>
+        <span>·</span>
+        <span>v5</span>
+        <span>·</span>
+        <span class="text-[#111111] font-semibold">11:58Z</span>
+      </div>
+    </div>
+    <!-- 2px Black Structural Rule -->
+    <div class="w-full h-[2px] bg-[#111111]"></div>
+  </header>
+
+  <!-- MASONRY THREE-COLUMN BOARD -->
+  <!-- Ragged masonry columns: equal width (grid-cols-3), cards stacked with 16px gutters, deliberately different column heights -->
+  <main class="grid grid-cols-3 gap-4 flex-1 items-start">
+
+    <!-- ================= COLUMN 1: THREE SHORT KPI CARDS ================= -->
+    <div class="flex flex-col gap-4">
+      <!-- Card 01.1: Nodes -->
+      <section class="bg-white border border-[#E4E4E0] rounded-[4px] p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono-data text-[11px] font-semibold tracking-wider text-[#E03131]">01.1 GRAPH TOPOLOGY</span>
+          <span class="font-mono-data text-[10px] uppercase tracking-wider text-[#6B6B66]">PRIMARY ENTITIES</span>
+        </div>
+        <div class="text-[11px] font-medium text-[#6B6B66] uppercase tracking-wider mb-1">NODES</div>
+        <div class="text-[44px] font-[650] leading-none text-[#111111] display-numeral mb-3">
+          1,284
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-[#E4E4E0] font-mono-data text-[11px]">
+          <span class="text-[#6B6B66]">24H DELTA</span>
+          <span class="text-[#2F9E6E] font-medium font-mono-data">+14 TODAY</span>
+        </div>
+      </section>
+
+      <!-- Card 01.2: Edges -->
+      <section class="bg-white border border-[#E4E4E0] rounded-[4px] p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono-data text-[11px] font-semibold tracking-wider text-[#E03131]">01.2 GRAPH TOPOLOGY</span>
+          <span class="font-mono-data text-[10px] uppercase tracking-wider text-[#6B6B66]">DIRECTED ARCS</span>
+        </div>
+        <div class="text-[11px] font-medium text-[#6B6B66] uppercase tracking-wider mb-1">EDGES</div>
+        <div class="text-[44px] font-[650] leading-none text-[#111111] display-numeral mb-3">
+          3,917
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-[#E4E4E0] font-mono-data text-[11px]">
+          <span class="text-[#6B6B66]">MEAN DEGREE</span>
+          <span class="text-[#111111] font-medium font-mono-data">3.05 DEG / NODE</span>
+        </div>
+      </section>
+
+      <!-- Card 01.3: Store -->
+      <section class="bg-white border border-[#E4E4E0] rounded-[4px] p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono-data text-[11px] font-semibold tracking-wider text-[#E03131]">01.3 PERSISTENCE TIER</span>
+          <span class="font-mono-data text-[10px] uppercase tracking-wider text-[#6B6B66]">DUCKDB + SQLITE</span>
+        </div>
+        <div class="text-[11px] font-medium text-[#6B6B66] uppercase tracking-wider mb-1">STORE</div>
+        <div class="flex items-baseline gap-2 mb-3">
+          <span class="text-[44px] font-[650] leading-none text-[#111111] display-numeral">46.2</span>
+          <span class="text-[20px] font-bold text-[#111111] font-mono-data">MB</span>
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-[#E4E4E0] font-mono-data text-[11px]">
+          <span class="text-[#6B6B66]">PAGE SIZE</span>
+          <span class="text-[#111111] font-mono-data">4,096 B · ZERO DRIFT</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= COLUMN 2: TALL BAR CHART + SHORT RUNTIME SPEC ================= -->
+    <div class="flex flex-col gap-4">
+      <!-- Card 02.1: TALL card EVENTS PER DAY -->
+      <section class="bg-white border border-[#E4E4E0] rounded-[4px] p-5 flex flex-col justify-between h-[456px]">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-mono-data text-[11px] font-semibold tracking-wider text-[#E03131]">02.1 INGESTION METRICS</span>
+            <span class="font-mono-data text-[10px] uppercase tracking-wider text-[#6B6B66]">14-DAY WINDOW</span>
+          </div>
+          <div class="flex items-baseline justify-between mb-4">
+            <h2 class="text-[14px] font-bold tracking-tight text-[#111111] uppercase">EVENTS PER DAY</h2>
+            <span class="font-mono-data text-[11px] text-[#6B6B66]">TOTAL 2,342 OPS</span>
+          </div>
+
+          <!-- Threshold and Scale Indicator -->
+          <div class="flex items-center justify-between font-mono-data text-[10px] text-[#6B6B66] mb-1">
+            <span>220</span>
+            <span class="border-b border-dashed border-[#E4E4E0] flex-1 mx-2"></span>
+            <span class="text-[#E03131] font-medium">TARGET THRESHOLD</span>
+          </div>
+        </div>
+
+        <!-- 14 Swiss Red Bars rising from 120 to 214 -->
+        <div class="h-[250px] flex items-end gap-2 px-1 pb-2 border-b border-[#E4E4E0] relative">
+          <!-- Horizontal reference baseline at 214 target -->
+          <div class="absolute w-full border-t border-dotted border-[#E4E4E0] top-3 left-0 pointer-events-none"></div>
+
+          <!-- Bar 1: 120 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 56.0%;"></div>
+          </div>
+          <!-- Bar 2: 128 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 59.8%;"></div>
+          </div>
+          <!-- Bar 3: 135 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 63.0%;"></div>
+          </div>
+          <!-- Bar 4: 142 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 66.3%;"></div>
+          </div>
+          <!-- Bar 5: 150 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 70.0%;"></div>
+          </div>
+          <!-- Bar 6: 158 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 73.8%;"></div>
+          </div>
+          <!-- Bar 7: 164 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 76.6%;"></div>
+          </div>
+          <!-- Bar 8: 172 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 80.3%;"></div>
+          </div>
+          <!-- Bar 9: 180 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 84.1%;"></div>
+          </div>
+          <!-- Bar 10: 189 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 88.3%;"></div>
+          </div>
+          <!-- Bar 11: 195 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 91.1%;"></div>
+          </div>
+          <!-- Bar 12: 202 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 94.3%;"></div>
+          </div>
+          <!-- Bar 13: 208 -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end">
+            <div class="w-full bg-[#E03131]" style="height: 97.1%;"></div>
+          </div>
+          <!-- Bar 14: 214 (Peak / Today) -->
+          <div class="flex-1 flex flex-col items-center h-full justify-end relative">
+            <span class="font-mono-data text-[9px] font-bold text-[#E03131] mb-1">214</span>
+            <div class="w-full bg-[#111111]" style="height: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- Axis Labels -->
+        <div class="flex justify-between font-mono-data text-[9px] text-[#6B6B66] pt-1">
+          <span>D-13</span>
+          <span>D-10</span>
+          <span>D-07</span>
+          <span>D-04</span>
+          <span>D-01</span>
+          <span class="text-[#111111] font-semibold">TODAY (214)</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-[#E4E4E0] font-mono-data text-[11px]">
+          <span class="text-[#6B6B66]">PEAK CADENCE</span>
+          <span class="text-[#111111] font-medium">42 OPS / HR (DETERMINISTIC)</span>
+        </div>
+      </section>
+
+      <!-- Card 02.2: Short Card Schema v5 · WAL · 11/11 checks ● OK -->
+      <section class="bg-white border border-[#E4E4E0] rounded-[4px] p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono-data text-[11px] font-semibold tracking-wider text-[#E03131]">02.2 RUNTIME SPEC</span>
+          <span class="font-mono-data text-[10px] uppercase tracking-wider text-[#2F9E6E] font-medium flex items-center gap-1.5">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#2F9E6E]"></span>OK
+          </span>
+        </div>
+        <div class="text-[17px] font-bold text-[#111111] tracking-tight mb-1">
+          Schema v5 · WAL · 11/11 checks <span class="text-[#2F9E6E]">● OK</span>
+        </div>
+        <div class="font-mono-data text-[11px] text-[#6B6B66] mb-3">
+          SHACL INVARIANTS PASS · RAFT 3/3 SYNCED
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-[#E4E4E0] font-mono-data text-[10px]">
+          <span class="text-[#6B6B66]">JOURNAL: SQLite/WAL</span>
+          <span class="text-[#111111] uppercase font-medium">REVISION: CLEAN PASS</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= COLUMN 3: MEDIUM ATTENTION + SHORT AGENTS ================= -->
+    <div class="flex flex-col gap-4">
+      <!-- Card 03.1: Medium ATTENTION card -->
+      <section class="bg-white border border-[#E4E4E0] rounded-[4px] p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono-data text-[11px] font-semibold tracking-wider text-[#E03131]">03.1 TRIAGE QUEUE</span>
+          <span class="font-mono-data text-[10px] uppercase tracking-wider text-[#6B6B66]">3 ENTRIES REQUIRING ATTENTION</span>
+        </div>
+        <div class="flex items-baseline justify-between mb-3">
+          <h2 class="text-[14px] font-bold tracking-tight text-[#111111] uppercase">ATTENTION</h2>
+          <span class="font-mono-data text-[11px] text-[#B8860B] font-medium">SLA 4.2h</span>
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <!-- Item 1: 3 proposals pending (warn) -->
+          <div class="flex items-center justify-between p-3 rounded-[3px] bg-[#FAFAF8] border border-[#E4E4E0]">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-[#B8860B] flex-shrink-0"></span>
+              <div>
+                <div class="text-[12px] font-semibold text-[#111111] leading-snug">3 proposals pending</div>
+                <div class="font-mono-data text-[10px] text-[#6B6B66] uppercase">AUTONOMOUS SCHEMA MUTATIONS</div>
+              </div>
+            </div>
+            <span class="font-mono-data text-[10px] font-semibold px-1.5 py-0.5 border border-[#B8860B] text-[#B8860B] rounded-[2px]">WARN</span>
+          </div>
+
+          <!-- Item 2: 12 debt items (warn) -->
+          <div class="flex items-center justify-between p-3 rounded-[3px] bg-[#FAFAF8] border border-[#E4E4E0]">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-[#B8860B] flex-shrink-0"></span>
+              <div>
+                <div class="text-[12px] font-semibold text-[#111111] leading-snug">12 debt items</div>
+                <div class="font-mono-data text-[10px] text-[#6B6B66] uppercase">UNINDEXED SEMANTIC TAG FLAGS</div>
+              </div>
+            </div>
+            <span class="font-mono-data text-[10px] font-semibold px-1.5 py-0.5 border border-[#B8860B] text-[#B8860B] rounded-[2px]">WARN</span>
+          </div>
+
+          <!-- Item 3: 2 unresolved references (danger) -->
+          <div class="flex items-center justify-between p-3 rounded-[3px] bg-[#FAFAF8] border border-[#E4E4E0]">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-[#C92A2A] flex-shrink-0"></span>
+              <div>
+                <div class="text-[12px] font-semibold text-[#111111] leading-snug">2 unresolved references</div>
+                <div class="font-mono-data text-[10px] text-[#6B6B66] uppercase">DANGLING GRAPH POINTERS</div>
+              </div>
+            </div>
+            <span class="font-mono-data text-[10px] font-semibold px-1.5 py-0.5 border border-[#C92A2A] text-[#C92A2A] rounded-[2px]">DANGER</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 mt-3 border-t border-[#E4E4E0] font-mono-data text-[10px]">
+          <span class="text-[#6B6B66]">RECONCILIATION</span>
+          <span class="text-[#111111] uppercase font-medium">FAIL-CLOSED ENFORCED</span>
+        </div>
+      </section>
+
+      <!-- Card 03.2: Short AGENTS card -->
+      <section class="bg-white border border-[#E4E4E0] rounded-[4px] p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono-data text-[11px] font-semibold tracking-wider text-[#E03131]">03.2 ACTIVE FLEET</span>
+          <span class="font-mono-data text-[10px] uppercase tracking-wider text-[#2F9E6E] font-medium flex items-center gap-1.5">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#2F9E6E]"></span>3 ONLINE
+          </span>
+        </div>
+        <div class="text-[14px] font-bold tracking-tight text-[#111111] uppercase mb-3">
+          AGENTS
+        </div>
+
+        <div class="divide-y divide-[#E4E4E0]">
+          <!-- agent-2 12ev -->
+          <div class="py-2 flex items-center justify-between font-mono-data text-[12px]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#2F9E6E]"></span>
+              <span class="text-[#111111] font-medium">agent-2</span>
+            </div>
+            <span class="text-[#111111] font-semibold">12ev <span class="text-[#6B6B66] font-normal text-[10px]">(INDEXER)</span></span>
+          </div>
+
+          <!-- sub-144 7ev -->
+          <div class="py-2 flex items-center justify-between font-mono-data text-[12px]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#2F9E6E]"></span>
+              <span class="text-[#111111] font-medium">sub-144</span>
+            </div>
+            <span class="text-[#111111] font-semibold">7ev <span class="text-[#6B6B66] font-normal text-[10px]">(EMBEDDER)</span></span>
+          </div>
+
+          <!-- operator 3ev -->
+          <div class="py-2 flex items-center justify-between font-mono-data text-[12px]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#2F9E6E]"></span>
+              <span class="text-[#111111] font-medium">operator</span>
+            </div>
+            <span class="text-[#111111] font-semibold">3ev <span class="text-[#6B6B66] font-normal text-[10px]">(INTERACTIVE)</span></span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 mt-1 border-t border-[#E4E4E0] font-mono-data text-[10px]">
+          <span class="text-[#6B6B66]">ARBITRATION: RAFT LOCK</span>
+          <span class="text-[#111111] font-mono-data">TTL: 03M 12S</span>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM STATUS FOOTER LINE (NO FIXED OVERLAY) -->
+  <footer class="w-full pt-4 mt-2 border-t border-[#E4E4E0] flex items-center justify-between font-mono-data text-[10px] text-[#6B6B66]">
+    <div class="flex items-center gap-4">
+      <span class="text-[#111111] font-semibold tracking-wider">KNOW YOUR CONTEXT</span>
+      <span>·</span>
+      <span>DETERMINISTIC AST REPLAY</span>
+      <span>·</span>
+      <span>MERKLE ANCHOR: <span class="text-[#111111]">9f2c1ab4</span></span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span>VIEWPORT: 1440x900</span>
+      <span>·</span>
+      <span>COLUMNS: 3-ASYMMETRIC MASONRY</span>
+      <span>·</span>
+      <span class="text-[#E03131] font-semibold">SWISS PRINT SYSTEM</span>
+    </div>
+  </footer>
+
+</body>
+</html>

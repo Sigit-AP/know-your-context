@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Activity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --base: #141110;
+      --panel: #1A1713;
+      --raised: #211D17;
+      --hairline: rgba(217, 164, 65, 0.10);
+      --hairline-solid: #26211A;
+      --primary-text: #EDE4D3;
+      --secondary-text: #A3947D;
+      --accent-gold: #D9A441;
+      --gold-tint: rgba(217, 164, 65, 0.08);
+      --status-ok: #7FB069;
+      --status-warn: #E0A458;
+      --status-danger: #D16666;
+      --font-serif: 'Fraunces', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: var(--base);
+      color: var(--primary-text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 52px Header */
+    header.top-bar {
+      height: 52px;
+      min-height: 52px;
+      max-height: 52px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-title {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--primary-text);
+    }
+
+    .brand-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--secondary-text);
+      background: var(--raised);
+      border: 1px solid var(--hairline);
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--secondary-text);
+      text-decoration: none;
+      position: relative;
+      padding: 16px 0;
+      transition: color 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-text);
+    }
+
+    .nav-link.active {
+      color: var(--primary-text);
+    }
+
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--accent-gold);
+    }
+
+    .ghost-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ghost-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--secondary-text);
+      background: transparent;
+      border: 1px solid var(--hairline);
+      border-radius: 4px;
+      padding: 5px 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .ghost-btn:hover {
+      border-color: rgba(217, 164, 65, 0.25);
+      color: var(--primary-text);
+    }
+
+    .status-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--status-ok);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Main Two-Pane Split Layout (848px total height) */
+    main.split-view {
+      display: flex;
+      height: 848px;
+      width: 1440px;
+    }
+
+    /* Left Master Pane: 40% (576px) */
+    section.master-pane {
+      width: 576px;
+      min-width: 576px;
+      max-width: 576px;
+      height: 100%;
+      background: var(--base);
+      border-right: 1px solid var(--hairline);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .master-header {
+      height: 48px;
+      min-height: 48px;
+      border-bottom: 1px solid var(--hairline);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--panel);
+    }
+
+    .master-header-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--secondary-text);
+    }
+
+    .master-header-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--secondary-text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .master-header-meta .alert-stat {
+      color: var(--status-warn);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .log-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      height: calc(848px - 48px);
+    }
+
+    .log-row {
+      height: 56px;
+      min-height: 56px;
+      max-height: 56px;
+      border-bottom: 1px solid var(--hairline);
+      padding: 0 24px 0 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      cursor: pointer;
+      background: var(--base);
+      transition: background 0.1s ease;
+    }
+
+    .log-row:hover:not(.selected) {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .log-row.selected {
+      background: var(--gold-tint);
+    }
+
+    .log-row.selected::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--accent-gold);
+    }
+
+    .row-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      white-space: nowrap;
+    }
+
+    .row-marker {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .row-marker.ok {
+      background: var(--status-ok);
+    }
+
+    .row-marker.warn {
+      background: var(--status-warn);
+    }
+
+    .row-time {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--secondary-text);
+      width: 66px;
+      flex-shrink: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .row-action {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--primary-text);
+      white-space: nowrap;
+    }
+
+    .row-action.warn-text {
+      color: var(--status-warn);
+    }
+
+    .row-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      white-space: nowrap;
+    }
+
+    .row-agent {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--secondary-text);
+      background: var(--raised);
+      border: 1px solid var(--hairline);
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .row-hash {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--secondary-text);
+      width: 62px;
+      text-align: right;
+      letter-spacing: -0.02em;
+    }
+
+    .log-row.selected .row-hash {
+      color: var(--accent-gold);
+    }
+
+    /* Right Detail Pane: 60% (864px) */
+    section.detail-pane {
+      width: 864px;
+      min-width: 864px;
+      max-width: 864px;
+      height: 100%;
+      background: var(--panel);
+      padding: 36px 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Detail Title & Double Rule */
+    .detail-heading-block {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .detail-title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .detail-title {
+      font-family: var(--font-serif);
+      font-size: 38px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--primary-text);
+      line-height: 1.1;
+    }
+
+    .detail-subtitle-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--secondary-text);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .double-rule {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .double-rule-line {
+      height: 1px;
+      width: 100%;
+      background-color: var(--hairline);
+    }
+
+    .double-rule-line.primary-rule {
+      background-color: rgba(217, 164, 65, 0.22);
+    }
+
+    /* Metadata Grid */
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: 140px 180px 220px 1fr;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--raised);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .meta-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--secondary-text);
+    }
+
+    .meta-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--primary-text);
+      white-space: nowrap;
+    }
+
+    .chip-warn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      background: rgba(224, 164, 88, 0.12);
+      border: 1px solid rgba(224, 164, 88, 0.35);
+      border-radius: 4px;
+      color: var(--status-warn);
+      font-weight: 500;
+      width: fit-content;
+    }
+
+    /* Content Card: Payload Block */
+    .content-block {
+      background: var(--base);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .block-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--secondary-text);
+    }
+
+    .block-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--secondary-text);
+    }
+
+    .mono-payload-box {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--primary-text);
+      background: var(--raised);
+      border: 1px solid var(--hairline);
+      border-radius: 4px;
+      padding: 10px 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
+    }
+
+    .mono-payload-box .key {
+      color: var(--secondary-text);
+    }
+
+    .mono-payload-box .val-warn {
+      color: var(--status-warn);
+    }
+
+    .mono-payload-box .val-str {
+      color: var(--accent-gold);
+    }
+
+    /* Hash Chain Block */
+    .hash-chain-block {
+      background: var(--base);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .hash-flow {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .hash-card {
+      flex: 1;
+      background: var(--raised);
+      border: 1px solid var(--hairline);
+      border-radius: 4px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hash-card-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--secondary-text);
+    }
+
+    .hash-card-val {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary-text);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .hash-card.entry .hash-card-val {
+      color: var(--accent-gold);
+    }
+
+    .hash-arrow {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: var(--secondary-text);
+      padding: 0 4px;
+    }
+
+    .hash-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--status-ok);
+    }
+
+    /* Related Invariants Mini Table */
+    .mini-table-card {
+      background: var(--base);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .mini-table th {
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--secondary-text);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--hairline);
+      font-weight: 500;
+    }
+
+    .mini-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(217, 164, 65, 0.05);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--primary-text);
+      white-space: nowrap;
+    }
+
+    .mini-table tr:last-child td {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .mini-table .status-cell {
+      text-align: right;
+    }
+
+    .pass-badge {
+      color: var(--status-ok);
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Provenance Footnote */
+    .provenance-note {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 13px;
+      color: var(--secondary-text);
+      margin-top: auto;
+      padding-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--hairline);
+    }
+
+    .provenance-note-right {
+      font-family: var(--font-mono);
+      font-style: normal;
+      font-size: 11px;
+      color: var(--secondary-text);
+    }
+  </style>
+</head>
+<body>
+  <!-- 52px Thin Header -->
+  <header class="top-bar">
+    <div class="brand-group">
+      <h1 class="brand-title">Know Your Context</h1>
+      <span class="brand-badge">OPS CONSOLE v2.4.1</span>
+    </div>
+
+    <div class="nav-actions">
+      <ul class="nav-links">
+        <li><a href="#overview" class="nav-link">Overview</a></li>
+        <li><a href="#activity" class="nav-link active">Activity</a></li>
+        <li><a href="#graph" class="nav-link">Graph</a></li>
+      </ul>
+
+      <div class="ghost-actions">
+        <span class="status-pill">
+          <span class="status-dot"></span>
+          <span>RAFT 3/3 SYNCED</span>
+        </span>
+        <button class="ghost-btn" type="button">
+          <span>epoch: 0x8F4E</span>
+        </button>
+        <button class="ghost-btn" type="button">
+          <span>Live Tail</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Split Pane (40% Master / 60% Detail) -->
+  <main class="split-view">
+    <!-- Left Master Pane (40% = 576px) -->
+    <section class="master-pane">
+      <div class="master-header">
+        <span class="master-header-title">Journal Ledger</span>
+        <div class="master-header-meta">
+          <span class="alert-stat">
+            <span class="status-dot" style="background: var(--status-warn);"></span>
+            <span>1 warn</span>
+          </span>
+          <span>9 verified</span>
+          <span>10 entries</span>
+        </div>
+      </div>
+
+      <!-- Exactly 10 compact log rows -->
+      <ul class="log-list">
+        <!-- Row 1: SELECTED (WARN) -->
+        <li class="log-row selected">
+          <div class="row-left">
+            <span class="row-marker warn"></span>
+            <span class="row-time">11:58:02Z</span>
+            <span class="row-action warn-text">record_outcome — unreadable payload</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">sub-144</span>
+            <span class="row-hash">9f2c1ab4</span>
+          </div>
+        </li>
+
+        <!-- Row 2 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:57:48Z</span>
+            <span class="row-action">mutate_graph — heuristics-catalog</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">agent-2</span>
+            <span class="row-hash">8a1d440f</span>
+          </div>
+        </li>
+
+        <!-- Row 3 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:56:59Z</span>
+            <span class="row-action">evaluate — duckdb-memory-ast</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">operator</span>
+            <span class="row-hash">3d81b899</span>
+          </div>
+        </li>
+
+        <!-- Row 4 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:56:32Z</span>
+            <span class="row-action">query — subgraph-partition-2</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">agent-2</span>
+            <span class="row-hash">55c2f0a1</span>
+          </div>
+        </li>
+
+        <!-- Row 5 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:56:04Z</span>
+            <span class="row-action">record_outcome — knn-embedding-space</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">sub-139</span>
+            <span class="row-hash">a012e841</span>
+          </div>
+        </li>
+
+        <!-- Row 6 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:55:40Z</span>
+            <span class="row-action">log_event — raft-delta-compaction</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">operator</span>
+            <span class="row-hash">c190bb42</span>
+          </div>
+        </li>
+
+        <!-- Row 7 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:55:18Z</span>
+            <span class="row-action">mutate_graph — concept-419-edge</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">agent-2</span>
+            <span class="row-hash">e4479901</span>
+          </div>
+        </li>
+
+        <!-- Row 8 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:54:52Z</span>
+            <span class="row-action">acquire_lease — catalog-root-lease</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">operator</span>
+            <span class="row-hash">43dcb102</span>
+          </div>
+        </li>
+
+        <!-- Row 9 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:54:21Z</span>
+            <span class="row-action">record_state — hypothesis-weight-sync</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">agent-2</span>
+            <span class="row-hash">78fe23a9</span>
+          </div>
+        </li>
+
+        <!-- Row 10 -->
+        <li class="log-row">
+          <div class="row-left">
+            <span class="row-marker ok"></span>
+            <span class="row-time">11:53:49Z</span>
+            <span class="row-action">mutate_graph — dag-subgraph-tier2</span>
+          </div>
+          <div class="row-right">
+            <span class="row-agent">sub-139</span>
+            <span class="row-hash">69bca711</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Right Detail Pane (60% = 864px) -->
+    <section class="detail-pane">
+      <!-- Title & Double Rule -->
+      <div class="detail-heading-block">
+        <div class="detail-title-row">
+          <h2 class="detail-title">Event #10421</h2>
+          <span class="detail-subtitle-tag">[SEQ #10421 &middot; SHA256 PROVENANCE]</span>
+        </div>
+        <div class="double-rule">
+          <div class="double-rule-line primary-rule"></div>
+          <div class="double-rule-line"></div>
+        </div>
+      </div>
+
+      <!-- Metadata Grid: level WARN chip, agent sub-144, node heuristics-catalog, occurred full mono -->
+      <div class="metadata-grid">
+        <div class="meta-item">
+          <span class="meta-label">Level</span>
+          <div class="chip-warn">
+            <span class="status-dot"></span>
+            <span>WARN</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Originating Agent</span>
+          <span class="meta-value">sub-144</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Target Node</span>
+          <span class="meta-value">heuristics-catalog</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Occurred Timestamp</span>
+          <span class="meta-value">2026-11-04T11:58:02Z</span>
+        </div>
+      </div>
+
+      <!-- Content Block: Payload one mono line -->
+      <div class="content-block">
+        <div class="block-header">
+          <span class="block-title">Mutation Payload</span>
+          <span class="block-badge">JSON-LD Raw Capture</span>
+        </div>
+        <div class="mono-payload-box">
+          <span class="key">{"action":</span> <span class="val-str">"record_outcome"</span>, <span class="key">"target":</span> <span class="val-str">"heuristics-catalog"</span>, <span class="key">"error":</span> <span class="val-warn">"unreadable payload schema validation skip"</span><span class="key">}</span>
+        </div>
+      </div>
+
+      <!-- Hash Chain Block: prev 7a1c9e02 -> entry 9f2c1ab4 (full 8-hex mono) -->
+      <div class="hash-chain-block">
+        <div class="block-header">
+          <span class="block-title">Hash Chain Integrity</span>
+          <span class="hash-status-badge">
+            <span class="status-dot"></span>
+            <span>MERKLE CONTINUITY VERIFIED</span>
+          </span>
+        </div>
+        <div class="hash-flow">
+          <div class="hash-card">
+            <span class="hash-card-label">Previous Hash</span>
+            <span class="hash-card-val">7a1c9e02</span>
+          </div>
+          <span class="hash-arrow">&rarr;</span>
+          <div class="hash-card entry">
+            <span class="hash-card-label">Committed Entry Hash</span>
+            <span class="hash-card-val">9f2c1ab4</span>
+          </div>
+          <div class="hash-card">
+            <span class="hash-card-label">Verification Mode</span>
+            <span class="hash-card-val" style="font-size: 12px; color: var(--secondary-text);">SHA-256 HMAC</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mini-table: Invariant assertions -->
+      <div class="mini-table-card">
+        <div class="block-header">
+          <span class="block-title">Invariant Assertions & Subgraph State</span>
+          <span class="block-badge">4 of 4 assertions validated</span>
+        </div>
+        <table class="mini-table">
+          <thead>
+            <tr>
+              <th style="width: 80px;">Check ID</th>
+              <th>Invariant Assertion</th>
+              <th>Evaluation Metric</th>
+              <th class="status-cell">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>chk_01</td>
+              <td>store_readable</td>
+              <td>SQLite WAL file descriptor readable</td>
+              <td class="status-cell"><span class="pass-badge">&check; PASS</span></td>
+            </tr>
+            <tr>
+              <td>chk_02</td>
+              <td>chain_integrity</td>
+              <td>SHA-256 Merkle root monotonic proof</td>
+              <td class="status-cell"><span class="pass-badge">&check; PASS</span></td>
+            </tr>
+            <tr>
+              <td>chk_03</td>
+              <td>projection_fresh</td>
+              <td>DuckDB AST index lag within 0.14ms</td>
+              <td class="status-cell"><span class="pass-badge">&check; PASS</span></td>
+            </tr>
+            <tr>
+              <td>chk_04</td>
+              <td>leases_consistent</td>
+              <td>Raft quorum fence tokens verified</td>
+              <td class="status-cell"><span class="pass-badge">&check; PASS</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Italic Serif Provenance Note -->
+      <div class="provenance-note">
+        <span>verified against ledger snapshot 11:55Z</span>
+        <span class="provenance-note-right">shard: 0x3a &middot; partition: p2_heuristics &middot; deterministic pass</span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

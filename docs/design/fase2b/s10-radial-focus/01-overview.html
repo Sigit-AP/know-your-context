@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+<title>Know Your Context - Overview Radial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  body, html {
+    width: 1440px;
+    height: 900px;
+    min-width: 1440px;
+    max-width: 1440px;
+    min-height: 900px;
+    max-height: 900px;
+    overflow: hidden;
+    background-color: #FFFFFF;
+    color: #0A0A0A;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Micro Header: Exactly 36px high */
+  header.micro-header {
+    height: 36px;
+    width: 1440px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #0A0A0A;
+    background: #FFFFFF;
+    position: relative;
+    z-index: 10;
+  }
+  .brand-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: +0.14em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border: 1px solid #0A0A0A;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: +0.08em;
+    background: #FFFFFF;
+  }
+  .header-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: +0.08em;
+    color: #525252;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .header-meta span strong {
+    color: #0A0A0A;
+    font-weight: 600;
+  }
+
+  /* Main Radial Constellation Canvas */
+  main.constellation-stage {
+    position: relative;
+    width: 1440px;
+    height: 836px; /* 900 - 36 header - 28 footer = 836px */
+    background: #FFFFFF;
+  }
+
+  /* SVG Orbit & Connection Lines Layer */
+  svg.connection-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1440px;
+    height: 836px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Satellite Panels */
+  .satellite-panel {
+    position: absolute;
+    background: #FAFAFA;
+    border: 1px solid #0A0A0A;
+    padding: 22px 24px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+  }
+
+  .panel-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: +0.14em;
+    text-transform: uppercase;
+    color: #0A0A0A;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #D4D4D4;
+    margin-bottom: 14px;
+  }
+  .panel-subtag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    color: #525252;
+  }
+
+  /* Top-Left: SIZE */
+  .panel-top-left {
+    top: 50px;
+    left: 64px;
+  }
+
+  /* Top-Right: EVENTS */
+  .panel-top-right {
+    top: 50px;
+    right: 64px;
+  }
+
+  /* Bottom-Left: ATTENTION */
+  .panel-bottom-left {
+    bottom: 50px;
+    left: 64px;
+  }
+
+  /* Bottom-Right: AGENTS */
+  .panel-bottom-right {
+    bottom: 50px;
+    right: 64px;
+  }
+
+  /* Metric Rows inside Satellites */
+  .metric-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid #EBEBEB;
+  }
+  .metric-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .metric-label {
+    font-size: 11px;
+    color: #525252;
+    text-transform: uppercase;
+    letter-spacing: +0.08em;
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0A0A0A;
+    white-space: nowrap;
+  }
+
+  /* Central Focus Element */
+  .central-focus-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    background: #FFFFFF;
+    border: 2px solid #0A0A0A;
+    padding: 36px 32px 30px;
+    text-align: center;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .focus-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: +0.16em;
+    text-transform: uppercase;
+    color: #525252;
+    margin-bottom: 10px;
+  }
+
+  .focus-numeral {
+    font-family: 'Inter', sans-serif;
+    font-size: 68px;
+    line-height: 1;
+    font-weight: 700;
+    color: #0A0A0A;
+    letter-spacing: -0.04em;
+    margin-bottom: 16px;
+    user-select: none;
+  }
+
+  /* Status Pill - Zero Chroma: SOLID BLACK fill with white text */
+  .status-badge-active {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #0A0A0A;
+    color: #FFFFFF;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: +0.14em;
+    text-transform: uppercase;
+  }
+
+  .status-badge-active .glyph-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #FFFFFF;
+  }
+
+  .focus-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid #D4D4D4;
+    text-align: left;
+    gap: 12px;
+  }
+  .focus-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .focus-meta-key {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: +0.12em;
+    text-transform: uppercase;
+    color: #525252;
+  }
+  .focus-meta-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: #0A0A0A;
+  }
+
+  /* Status tag variants (Strict Monochrome) */
+  .status-tag-warn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #0A0A0A;
+    padding: 2px 7px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: #0A0A0A;
+    background: #FAFAFA;
+  }
+  .glyph-half-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid #0A0A0A;
+    background: linear-gradient(to right, #0A0A0A 50%, transparent 50%);
+  }
+  .status-tag-ok {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: #0A0A0A;
+  }
+  .glyph-black-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #0A0A0A;
+  }
+
+  /* Micro Data Strip: Exactly 28px high at the bottom */
+  footer.micro-strip {
+    height: 28px;
+    width: 1440px;
+    border-top: 1px solid #0A0A0A;
+    background: #FAFAFA;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: +0.14em;
+    text-transform: uppercase;
+    color: #0A0A0A;
+    position: relative;
+    z-index: 10;
+  }
+  .strip-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .strip-left span.sep {
+    color: #A0A0A0;
+    font-weight: normal;
+  }
+  .strip-right {
+    color: #525252;
+    font-size: 9px;
+  }
+
+  /* Small Stepped Chart / Sparkline inside EVENTS Satellite */
+  .events-sparkline-wrap {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #EBEBEB;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .sparkline-caption {
+    font-size: 9px;
+    color: #525252;
+    letter-spacing: +0.08em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
+  .sparkline-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 36px;
+    padding-top: 4px;
+  }
+  .spark-bar {
+    flex: 1;
+    background: #0A0A0A;
+    min-height: 4px;
+  }
+  .spark-bar.muted {
+    background: #D4D4D4;
+  }
+
+  /* Center Compass / Radial Crosshair Indicators */
+  .radial-coord {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #8C8C8C;
+    letter-spacing: +0.1em;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .coord-top {
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .coord-bottom {
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .coord-left {
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .coord-right {
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+</style>
+</head>
+<body>
+
+  <!-- 36px Micro Header -->
+  <header class="micro-header">
+    <div class="brand-title">
+      <span>Know Your Context</span>
+      <span class="brand-badge">KG-OPS v2.4</span>
+    </div>
+    <div class="header-meta">
+      <span>SHARD: <strong>0x3a</strong></span>
+      <span>EPOCH: <strong>0x8F4E</strong></span>
+      <span>RAFT: <strong>3/3 SYNCED</strong></span>
+      <span>CLUSTER: <strong>NODE-01.LOCAL</strong></span>
+    </div>
+  </header>
+
+  <!-- Constellation Radial Canvas (836px height) -->
+  <main class="constellation-stage">
+
+    <!-- Directional Coordinates -->
+    <div class="radial-coord coord-top">RADIAL AXIS N // 000°</div>
+    <div class="radial-coord coord-bottom">RADIAL AXIS S // 180°</div>
+    <div class="radial-coord coord-left">ORBIT W // 270°</div>
+    <div class="radial-coord coord-right">ORBIT E // 090°</div>
+
+    <!-- SVG Layer: Geometric Orbits and 1px Black Connection Lines to Center Focus -->
+    <svg class="connection-layer" viewBox="0 0 1440 836">
+      <defs>
+        <!-- Marker black dots at line junctions -->
+        <circle id="node-point" r="2.5" fill="#0A0A0A" />
+      </defs>
+
+      <!-- Concentric orbital guides (subtle 1px hairlines) -->
+      <circle cx="720" cy="418" r="160" fill="none" stroke="#D4D4D4" stroke-width="1" stroke-dasharray="2 4" />
+      <circle cx="720" cy="418" r="300" fill="none" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="3 6" />
+      <circle cx="720" cy="418" r="460" fill="none" stroke="#F0F0F0" stroke-width="1" />
+
+      <!-- Crosshair axes through center -->
+      <line x1="720" y1="40" x2="720" y2="796" stroke="#EBEBEB" stroke-width="1" />
+      <line x1="120" y1="418" x2="1320" y2="418" stroke="#EBEBEB" stroke-width="1" />
+
+      <!-- Satellite 1: TOP-LEFT 'SIZE' (Card center approx ~ 224, 150; bottom-right corner ~ 384, 250) -->
+      <!-- Clean 1px solid black ray connecting Top-Left Satellite to Central Focus (Card Left Edge: 530, 418 / Card Corner: 530, 310) -->
+      <line x1="384" y1="180" x2="530" y2="330" stroke="#0A0A0A" stroke-width="1" />
+      <circle cx="384" cy="180" r="3" fill="#0A0A0A" />
+      <circle cx="530" cy="330" r="3" fill="#0A0A0A" />
+
+      <!-- Satellite 2: TOP-RIGHT 'EVENTS' (Card Left Edge: 1056, 180 -> Central Focus Card Corner: 910, 330) -->
+      <line x1="1056" y1="180" x2="910" y2="330" stroke="#0A0A0A" stroke-width="1" />
+      <circle cx="1056" cy="180" r="3" fill="#0A0A0A" />
+      <circle cx="910" cy="330" r="3" fill="#0A0A0A" />
+
+      <!-- Satellite 3: BOTTOM-LEFT 'ATTENTION' (Card Right Edge: 384, 650 -> Central Focus Card Corner: 530, 506) -->
+      <line x1="384" y1="650" x2="530" y2="506" stroke="#0A0A0A" stroke-width="1" />
+      <circle cx="384" cy="650" r="3" fill="#0A0A0A" />
+      <circle cx="530" cy="506" r="3" fill="#0A0A0A" />
+
+      <!-- Satellite 4: BOTTOM-RIGHT 'AGENTS' (Card Left Edge: 1056, 650 -> Central Focus Card Corner: 910, 506) -->
+      <line x1="1056" y1="650" x2="910" y2="506" stroke="#0A0A0A" stroke-width="1" />
+      <circle cx="1056" cy="650" r="3" fill="#0A0A0A" />
+      <circle cx="910" cy="506" r="3" fill="#0A0A0A" />
+    </svg>
+
+    <!-- TOP-LEFT SATELLITE: SIZE -->
+    <section class="satellite-panel panel-top-left" aria-label="Satellite SIZE">
+      <div class="panel-tag">
+        <span>01 // SIZE</span>
+        <span class="panel-subtag">TOPOLOGY</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Nodes</span>
+        <span class="metric-value">1,284</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Edges</span>
+        <span class="metric-value">3,917</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Store</span>
+        <span class="metric-value">46.2 MB</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Page Size</span>
+        <span class="metric-value">4,096 B</span>
+      </div>
+    </section>
+
+    <!-- TOP-RIGHT SATELLITE: EVENTS -->
+    <section class="satellite-panel panel-top-right" aria-label="Satellite EVENTS">
+      <div class="panel-tag">
+        <span>02 // EVENTS</span>
+        <span class="panel-subtag">INGESTION</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Events Today</span>
+        <span class="metric-value">214</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">14D Window</span>
+        <span class="metric-value">120 &rarr; 214</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Peak Cadence</span>
+        <span class="metric-value">42 ops / hr</span>
+      </div>
+      
+      <!-- Rising 14-day Ingestion Trend Bars (Pure Black & Hairline) -->
+      <div class="events-sparkline-wrap">
+        <div class="sparkline-caption">
+          <span>14d rising trajectory</span>
+          <span>+78.3%</span>
+        </div>
+        <div class="sparkline-bars">
+          <div class="spark-bar muted" style="height: 12px;"></div>
+          <div class="spark-bar muted" style="height: 14px;"></div>
+          <div class="spark-bar muted" style="height: 16px;"></div>
+          <div class="spark-bar muted" style="height: 17px;"></div>
+          <div class="spark-bar muted" style="height: 19px;"></div>
+          <div class="spark-bar muted" style="height: 20px;"></div>
+          <div class="spark-bar muted" style="height: 22px;"></div>
+          <div class="spark-bar muted" style="height: 24px;"></div>
+          <div class="spark-bar muted" style="height: 26px;"></div>
+          <div class="spark-bar muted" style="height: 27px;"></div>
+          <div class="spark-bar muted" style="height: 29px;"></div>
+          <div class="spark-bar" style="height: 31px;"></div>
+          <div class="spark-bar" style="height: 33px;"></div>
+          <div class="spark-bar" style="height: 36px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ONE DOMINANT FOCUS ELEMENT AT EXACT CENTER -->
+    <article class="central-focus-card" aria-label="Central Focus Invariant Verification">
+      <div class="focus-eyebrow">SUB-SYSTEM INVARIANTS</div>
+      <div class="focus-numeral">11/11</div>
+      
+      <!-- Solid Black Fill with White Text (Active) -->
+      <div class="status-badge-active">
+        <span class="glyph-dot"></span>
+        <span>CHECKS PASSED ● OK</span>
+      </div>
+
+      <div class="focus-meta-grid">
+        <div class="focus-meta-item">
+          <span class="focus-meta-key">Engine Drift</span>
+          <span class="focus-meta-val">0.000 ms</span>
+        </div>
+        <div class="focus-meta-item">
+          <span class="focus-meta-key">Merkle Root</span>
+          <span class="focus-meta-val">9f2c1ab4</span>
+        </div>
+        <div class="focus-meta-item">
+          <span class="focus-meta-key">Replay SLA</span>
+          <span class="focus-meta-val">0.14 ms</span>
+        </div>
+        <div class="focus-meta-item">
+          <span class="focus-meta-key">Deterministic</span>
+          <span class="focus-meta-val">PASS</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- BOTTOM-LEFT SATELLITE: ATTENTION -->
+    <section class="satellite-panel panel-bottom-left" aria-label="Satellite ATTENTION">
+      <div class="panel-tag">
+        <span>03 // ATTENTION</span>
+        <span class="status-tag-warn">
+          <span class="glyph-half-dot"></span>
+          <span>◐ WARN</span>
+        </span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Proposals Pending</span>
+        <span class="metric-value">3</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Debt Items</span>
+        <span class="metric-value">12</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Unresolved References</span>
+        <span class="metric-value">2</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Triage SLA</span>
+        <span class="metric-value">4.2h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Enforcement</span>
+        <span class="metric-value">FAIL-CLOSED</span>
+      </div>
+    </section>
+
+    <!-- BOTTOM-RIGHT SATELLITE: AGENTS -->
+    <section class="satellite-panel panel-bottom-right" aria-label="Satellite AGENTS">
+      <div class="panel-tag">
+        <span>04 // AGENTS</span>
+        <span class="status-tag-ok">
+          <span class="glyph-black-dot"></span>
+          <span>ACTIVE (3)</span>
+        </span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">agent-2 (indexer)</span>
+        <span class="metric-value">12 ev</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">sub-144 (embedder)</span>
+        <span class="metric-value">7 ev</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">operator (interactive)</span>
+        <span class="metric-value">3 ev</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Raft Mutex Lease</span>
+        <span class="metric-value">TTL 03m 12s</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Contention</span>
+        <span class="metric-value">0 BLOCKED</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Micro Data Strip: Exactly 28px high at the bottom -->
+  <footer class="micro-strip">
+    <div class="strip-left">
+      <span>SCHEMA v5</span>
+      <span class="sep">·</span>
+      <span>WAL</span>
+      <span class="sep">·</span>
+      <span>RELEARN IDLE</span>
+      <span class="sep">·</span>
+      <span>LAST EVENT 2026-11-04T11:58:02Z</span>
+    </div>
+    <div class="strip-right">
+      <span>VIEWPORT: 1440x900 FIXED · RADIAL CONSTELLATION · MONOCHROME INK</span>
+    </div>
+  </footer>
+
+</body>
+</html>

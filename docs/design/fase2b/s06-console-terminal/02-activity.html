@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Activity Console (Phosphor Terminal)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', monospace !important;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+    }
+    html, body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #000000;
+      color: #C9F7D4;
+      margin: 0;
+      padding: 0;
+    }
+    .text-phosphor { color: #33FF66; }
+    .text-primary-term { color: #C9F7D4; }
+    .text-secondary-term { color: #5F8F68; }
+    .text-warn-term { color: #FFD23F; }
+    .text-danger-term { color: #FF4D4D; }
+    .border-terminal { border-color: #1A2E1A; }
+    .bg-panel-bottom { background-color: #050805; }
+    
+    /* Custom fieldset border styling for pure terminal look */
+    fieldset.terminal-fieldset {
+      border: 1px solid #1A2E1A;
+      border-radius: 0px;
+      padding: 6px 12px 10px 12px;
+      margin: 0;
+    }
+    legend.terminal-legend {
+      padding: 0 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #33FF66;
+      text-transform: uppercase;
+    }
+    .cursor-block {
+      display: inline-block;
+      width: 7px;
+      height: 14px;
+      background-color: #33FF66;
+      vertical-align: middle;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    .row-hover:hover {
+      background-color: rgba(26, 46, 26, 0.45);
+    }
+  </style>
+</head>
+<body class="flex flex-col justify-between select-none">
+
+  <!-- TOP CHROME: 40px Prompt-Line Bar -->
+  <header class="h-[40px] w-full border-b border-terminal bg-[#000000] px-4 flex items-center justify-between text-xs shrink-0">
+    <div class="flex items-center gap-2">
+      <span class="text-secondary-term font-medium">CONSOLE ::</span>
+      <span class="text-phosphor font-medium">kyc://activity --live</span>
+      <span class="cursor-block ml-0.5"></span>
+    </div>
+    <div class="flex items-center gap-6 text-[11px] text-secondary-term">
+      <div>SHARD: <span class="text-primary-term">0x3a</span></div>
+      <div>EPOCH: <span class="text-primary-term">0x8F4E</span></div>
+      <div>RAFT: <span class="text-phosphor">3/3 SYNCED</span></div>
+      <div>BUFFER: <span class="text-primary-term">20/10421</span></div>
+      <div>1440x900 FIXED</div>
+    </div>
+  </header>
+
+  <!-- MIDDLE TERMINAL SCROLLBACK (~680px) -->
+  <main class="flex-1 w-full bg-[#000000] px-4 py-2.5 flex flex-col gap-2 overflow-hidden justify-start">
+    
+    <!-- System Initialization and Command Echo -->
+    <div class="text-[11px] leading-tight text-secondary-term">
+      [2026-11-04T11:45:00Z] kyc-core daemon initialized // local-first knowledge-graph runtime v14.2 // sha256:9f2c1ab4
+    </div>
+    
+    <div class="text-xs flex items-center gap-2 leading-none">
+      <span class="text-phosphor font-semibold">$</span>
+      <span class="text-primary-term font-medium">kyc stream activity --level=all --agent=all --tail=20 --columns=timestamp,level,agent,action,node,hash</span>
+    </div>
+
+    <!-- Grouping Box / Fieldset -->
+    <fieldset class="terminal-fieldset flex-1 flex flex-col justify-between">
+      <legend class="terminal-legend">FILTERS: level=all agent=all tail=on</legend>
+      
+      <!-- Table Header -->
+      <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-[11px] uppercase text-secondary-term border-b border-terminal pb-1 pt-0.5 font-semibold tracking-wider">
+        <div>Timestamp</div>
+        <div>Level</div>
+        <div>Agent</div>
+        <div>Action</div>
+        <div>Target Node / Payload</div>
+        <div class="text-right">Hash (8-hex)</div>
+      </div>
+
+      <!-- Exactly 20 Log Lines, 26px dense height -->
+      <div class="flex flex-col justify-between flex-1 pt-1">
+        
+        <!-- Line 1 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:58:02Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>agent-2</div>
+          <div>query</div>
+          <div class="truncate text-primary-term">heuristics-catalog</div>
+          <div class="text-right text-secondary-term font-mono">9f2c1ab4</div>
+        </div>
+
+        <!-- Line 2 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:57:48Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>sub-139</div>
+          <div>record_outcome</div>
+          <div class="truncate text-primary-term">vector-cache-tier-04</div>
+          <div class="text-right text-secondary-term font-mono">8a1d440f</div>
+        </div>
+
+        <!-- Line 3 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:57:15Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>operator</div>
+          <div>log_event</div>
+          <div class="truncate text-primary-term">store-mutex-sync-pass</div>
+          <div class="text-right text-secondary-term font-mono">77e19cb2</div>
+        </div>
+
+        <!-- Line 4 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:56:59Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>operator</div>
+          <div>query</div>
+          <div class="truncate text-primary-term">duckdb-memory-ast</div>
+          <div class="text-right text-secondary-term font-mono">3d81b899</div>
+        </div>
+
+        <!-- Line 5 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:56:32Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>agent-2</div>
+          <div>apply_improvement</div>
+          <div class="truncate text-primary-term">subgraph-partition-2</div>
+          <div class="text-right text-secondary-term font-mono">55c2f0a1</div>
+        </div>
+
+        <!-- Line 6 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:56:04Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>sub-139</div>
+          <div>record_outcome</div>
+          <div class="truncate text-primary-term">knn-embedding-space</div>
+          <div class="text-right text-secondary-term font-mono">a012e841</div>
+        </div>
+
+        <!-- Line 7 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:55:40Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>operator</div>
+          <div>log_event</div>
+          <div class="truncate text-primary-term">raft-delta-compaction</div>
+          <div class="text-right text-secondary-term font-mono">c190bb42</div>
+        </div>
+
+        <!-- Line 8 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:55:18Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>agent-2</div>
+          <div>apply_improvement</div>
+          <div class="truncate text-primary-term">concept-419-edge</div>
+          <div class="text-right text-secondary-term font-mono">e4479901</div>
+        </div>
+
+        <!-- Line 9 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:54:52Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>operator</div>
+          <div>query</div>
+          <div class="truncate text-primary-term">catalog-root-lease</div>
+          <div class="text-right text-secondary-term font-mono">43dcb102</div>
+        </div>
+
+        <!-- Line 10: WARN IN AMBER (SPECIFIED) -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center bg-[#FFD23F]/5 border-l-2 border-[#FFD23F] pl-1 row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-warn-term font-medium">[2026-11-04T11:54:11Z]</div>
+          <div class="text-warn-term font-bold">WARN</div>
+          <div class="text-warn-term">sub-144</div>
+          <div class="text-warn-term">record_outcome</div>
+          <div class="truncate text-warn-term font-medium">unreadable payload</div>
+          <div class="text-right text-warn-term font-mono">7a1c9e02</div>
+        </div>
+
+        <!-- Line 11 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:53:49Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>sub-139</div>
+          <div>apply_improvement</div>
+          <div class="truncate text-primary-term">dag-subgraph-tier-2</div>
+          <div class="text-right text-secondary-term font-mono">69bca711</div>
+        </div>
+
+        <!-- Line 12 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:53:12Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>agent-2</div>
+          <div>query</div>
+          <div class="truncate text-primary-term">kg-entity-4402</div>
+          <div class="text-right text-secondary-term font-mono">12e094fa</div>
+        </div>
+
+        <!-- Line 13 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:52:45Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>operator</div>
+          <div>apply_improvement</div>
+          <div class="truncate text-primary-term">duckdb-vector-table</div>
+          <div class="text-right text-secondary-term font-mono">b82ef455</div>
+        </div>
+
+        <!-- Line 14 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:52:10Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>agent-2</div>
+          <div>query</div>
+          <div class="truncate text-primary-term">knowledge-dag-nodes</div>
+          <div class="text-right text-secondary-term font-mono">4e112d7c</div>
+        </div>
+
+        <!-- Line 15 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:51:34Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>sub-139</div>
+          <div>log_event</div>
+          <div class="truncate text-primary-term">shacl-invariant-rules</div>
+          <div class="text-right text-secondary-term font-mono">33190ab7</div>
+        </div>
+
+        <!-- Line 16 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:50:55Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>operator</div>
+          <div>record_outcome</div>
+          <div class="truncate text-primary-term">ast-token-cache</div>
+          <div class="text-right text-secondary-term font-mono">4a01c482</div>
+        </div>
+
+        <!-- Line 17 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-secondary-term">[2026-11-04T11:50:18Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>sub-144</div>
+          <div>query</div>
+          <div class="truncate text-primary-term">hierarchical-taxonomy</div>
+          <div class="text-right text-secondary-term font-mono">d91b82fe</div>
+        </div>
+
+        <!-- Line 18: SECOND WARN IN AMBER -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center bg-[#FFD23F]/5 border-l-2 border-[#FFD23F] pl-1 row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-warn-term font-medium">[2026-11-04T11:49:40Z]</div>
+          <div class="text-warn-term font-bold">WARN</div>
+          <div class="text-warn-term">sub-144</div>
+          <div class="text-warn-term">log_event</div>
+          <div class="truncate text-warn-term font-medium">unindexed semantic tag flags</div>
+          <div class="text-right text-warn-term font-mono">e12a9c33</div>
+        </div>
+
+        <!-- Line 19: ERROR IN RED (SPECIFIED) -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center bg-[#FF4D4D]/10 border-l-2 border-[#FF4D4D] pl-1 row-hover border-b border-[#0e1f0e]/40">
+          <div class="text-danger-term font-medium">[2026-11-04T11:49:03Z]</div>
+          <div class="text-danger-term font-bold">ERROR</div>
+          <div class="text-danger-term">agent-2</div>
+          <div class="text-danger-term">apply_improvement</div>
+          <div class="truncate text-danger-term font-medium">unresolved reference</div>
+          <div class="text-right text-danger-term font-mono">c41d08aa</div>
+        </div>
+
+        <!-- Line 20 -->
+        <div class="grid grid-cols-[210px_70px_100px_170px_1fr_100px] text-xs h-[25px] items-center text-primary-term row-hover">
+          <div class="text-secondary-term">[2026-11-04T11:48:22Z]</div>
+          <div class="text-phosphor font-bold">INFO</div>
+          <div>operator</div>
+          <div>record_outcome</div>
+          <div class="truncate text-primary-term">deterministic-merkle-anchor</div>
+          <div class="text-right text-secondary-term font-mono">88fb21e0</div>
+        </div>
+
+      </div>
+
+      <!-- Fieldset Bottom Metadata -->
+      <div class="flex items-center justify-between text-[11px] text-secondary-term pt-1 border-t border-terminal/60">
+        <div>STREAM INTEGRITY: <span class="text-phosphor font-medium">VERIFIED (SHA-256)</span></div>
+        <div>WINDOW: <span class="text-primary-term font-medium">LAST 20 EVENTS</span></div>
+        <div>TOTAL MUTATIONS: <span class="text-primary-term font-medium">10,421</span></div>
+        <div>
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-phosphor mr-1"></span>
+          <span class="text-phosphor font-semibold">LIVE TAIL ACTIVE</span>
+          <span class="ml-2">LATENCY: 1.42ms</span>
+        </div>
+      </div>
+    </fieldset>
+
+  </main>
+
+  <!-- BOTTOM PANEL (~180px) with 1px top border -->
+  <footer class="h-[180px] w-full bg-panel-bottom border-t border-terminal flex flex-col justify-between p-4 shrink-0">
+    
+    <!-- Top Help / Command Palette Info in Bottom Panel -->
+    <div class="flex items-center justify-between text-[11px] text-secondary-term pb-2 border-b border-[#1A2E1A]/60">
+      <div class="flex items-center gap-4">
+        <span>SHORTCUTS:</span>
+        <span><kbd class="text-primary-term">[Enter]</kbd> EXEC</span>
+        <span><kbd class="text-primary-term">[Ctrl+L]</kbd> CLEAR</span>
+        <span><kbd class="text-primary-term">[Tab]</kbd> AUTOCOMPLETE</span>
+        <span><kbd class="text-primary-term">[↑/↓]</kbd> HISTORY</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span>AVAILABLE COMMANDS:</span>
+        <span class="text-phosphor">status</span> ·
+        <span class="text-primary-term">activity</span> ·
+        <span class="text-primary-term">graph</span> ·
+        <span class="text-primary-term">proposals</span> ·
+        <span class="text-primary-term">relearn</span>
+      </div>
+    </div>
+
+    <!-- Active Input Prompt Row 'kyc> _' -->
+    <div class="flex-1 flex flex-col justify-center py-2">
+      <div class="flex items-center gap-2 text-sm font-semibold">
+        <span class="text-phosphor">kyc&gt;</span>
+        <span class="text-primary-term">tail --follow --filter="level:error,warn"</span>
+        <span class="cursor-block"></span>
+      </div>
+      <div class="text-[11px] text-secondary-term mt-1 flex items-center gap-6">
+        <span>SESSION: <span class="text-primary-term">op@kyc.local (interactive_console)</span></span>
+        <span>SOCKET: <span class="text-primary-term">/dev/tty0 [IPC: UNIX DOMAIN]</span></span>
+        <span>ENFORCEMENT: <span class="text-primary-term font-medium">FAIL-CLOSED</span></span>
+        <span class="ml-auto text-secondary-term">ATTENTION QUEUE: <span class="text-warn-term font-semibold">2 WARN</span> · <span class="text-danger-term font-semibold">1 ERROR</span></span>
+      </div>
+    </div>
+
+    <!-- Bottom One-line Mono Status Strip -->
+    <div class="h-[28px] border-t border-terminal pt-1.5 flex items-center justify-between text-xs font-semibold tracking-wider">
+      <div class="flex items-center gap-3 text-phosphor">
+        <span>SEQ 10421</span>
+        <span class="text-secondary-term">·</span>
+        <span>CHAIN 9f2c1ab4</span>
+        <span class="text-secondary-term">·</span>
+        <span>AGENTS 3</span>
+        <span class="text-secondary-term">·</span>
+        <span>TAIL ON</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] text-secondary-term font-normal">
+        <div>TIME: <span class="text-primary-term">2026-11-04T11:58:02Z</span></div>
+        <div>CLUSTER: <span class="text-primary-term">node-01.local</span></div>
+        <div class="flex items-center gap-1.5 text-phosphor font-medium">
+          <span class="inline-block w-2 h-2 rounded-full bg-phosphor"></span>
+          <span>LIVE DETERMINISTIC</span>
+        </div>
+      </div>
+    </div>
+
+  </footer>
+
+</body>
+</html>

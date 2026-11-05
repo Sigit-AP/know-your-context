@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Know Your Context - Activity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#070B16',
+            surface: 'rgba(148, 178, 255, 0.05)',
+            surfaceRaised: 'rgba(148, 178, 255, 0.09)',
+            surfaceSelected: 'rgba(34, 213, 238, 0.10)',
+            borderGlass: 'rgba(148, 178, 255, 0.14)',
+            textPrimary: '#E3EBFF',
+            textSecondary: '#8FA3CC',
+            accentCyan: '#22D3EE',
+            statusOk: '#34D399',
+            statusWarn: '#FBBF24',
+            statusDanger: '#FB7185'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      background-color: #070B16;
+      color: #E3EBFF;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-base select-none">
+
+  <!-- PANE 1: 56px ICON RAIL (Full Height) -->
+  <aside class="w-[56px] h-full flex flex-col justify-between items-center py-5 border-r border-borderGlass bg-base flex-shrink-0 z-20">
+    <div class="flex flex-col items-center gap-4 w-full">
+      <!-- Top Brand Glyph / Anchor -->
+      <div class="w-9 h-9 rounded flex items-center justify-center border border-borderGlass bg-surface text-accentCyan mb-2">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+        </svg>
+      </div>
+
+      <!-- Icon: Overview -->
+      <button class="w-10 h-10 rounded flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface transition-colors" title="Overview">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        </svg>
+      </button>
+
+      <!-- Icon: Activity (ACTIVE -> Cyan Tint Tile) -->
+      <button class="w-10 h-10 rounded flex items-center justify-center text-accentCyan bg-surfaceSelected border border-accentCyan/30" title="Activity">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h3.375l2.625-6 4.5 12 2.625-6H20.25" />
+        </svg>
+      </button>
+
+      <!-- Icon: Graph -->
+      <button class="w-10 h-10 rounded flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface transition-colors" title="Graph">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex flex-col items-center gap-4 w-full">
+      <!-- Icon: Settings -->
+      <button class="w-10 h-10 rounded flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface transition-colors" title="Settings">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+
+      <!-- Shard sync indicator -->
+      <div class="w-2 h-2 rounded-full bg-statusOk" title="Consensus 3/3 Synced"></div>
+    </div>
+  </aside>
+
+  <!-- PANE 2: 300px LIST COLUMN (Full Height) -->
+  <section class="w-[300px] h-full flex flex-col border-r border-borderGlass bg-base flex-shrink-0 z-10">
+    <!-- Header / Mini Search -->
+    <div class="h-[56px] px-3.5 flex items-center border-b border-borderGlass bg-surface">
+      <div class="relative w-full">
+        <svg class="w-4 h-4 text-textSecondary absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+        <input
+          type="text"
+          value="filter ledger events..."
+          readonly
+          class="w-full h-8 pl-9 pr-3 rounded bg-base/80 border border-borderGlass text-xs font-mono text-textSecondary focus:outline-none"
+        />
+      </div>
+    </div>
+
+    <!-- Section Label / Subhead -->
+    <div class="h-[32px] px-3.5 flex items-center justify-between border-b border-borderGlass/60 bg-base">
+      <span class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary">JOURNAL LEDGER</span>
+      <span class="text-[10px] font-mono text-textSecondary">8 ENTRIES</span>
+    </div>
+
+    <!-- Selectable 52px Rows (8 entries) -->
+    <div class="flex-1 flex flex-col overflow-hidden divide-y divide-borderGlass/40">
+      
+      <!-- Row 1: Selected (WARN) -->
+      <div class="h-[52px] relative flex items-center px-3.5 bg-surfaceSelected border-l-2 border-accentCyan cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-statusWarn flex-shrink-0 mr-2.5"></span>
+        <div class="flex-1 min-w-0 pr-1">
+          <div class="text-[12px] font-medium text-textPrimary leading-tight truncate">record_outcome</div>
+          <div class="text-[10px] font-mono text-statusWarn leading-tight truncate">unreadable payload</div>
+        </div>
+        <div class="text-[10px] font-mono text-textSecondary flex-shrink-0">11:58:02Z</div>
+      </div>
+
+      <!-- Row 2: OK -->
+      <div class="h-[52px] relative flex items-center px-3.5 hover:bg-surface transition-colors cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-statusOk flex-shrink-0 mr-2.5"></span>
+        <div class="flex-1 min-w-0 pr-1">
+          <div class="text-[12px] font-medium text-textPrimary leading-tight truncate">mutate_graph</div>
+          <div class="text-[10px] font-mono text-textSecondary leading-tight truncate">attached directional edge</div>
+        </div>
+        <div class="text-[10px] font-mono text-textSecondary flex-shrink-0">11:57:48Z</div>
+      </div>
+
+      <!-- Row 3: OK -->
+      <div class="h-[52px] relative flex items-center px-3.5 hover:bg-surface transition-colors cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-statusOk flex-shrink-0 mr-2.5"></span>
+        <div class="flex-1 min-w-0 pr-1">
+          <div class="text-[12px] font-medium text-textPrimary leading-tight truncate">evaluate</div>
+          <div class="text-[10px] font-mono text-textSecondary leading-tight truncate">snapshot sync DuckDB</div>
+        </div>
+        <div class="text-[10px] font-mono text-textSecondary flex-shrink-0">11:56:59Z</div>
+      </div>
+
+      <!-- Row 4: OK -->
+      <div class="h-[52px] relative flex items-center px-3.5 hover:bg-surface transition-colors cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-statusOk flex-shrink-0 mr-2.5"></span>
+        <div class="flex-1 min-w-0 pr-1">
+          <div class="text-[12px] font-medium text-textPrimary leading-tight truncate">query</div>
+          <div class="text-[10px] font-mono text-textSecondary leading-tight truncate">merged subgraph tier2</div>
+        </div>
+        <div class="text-[10px] font-mono text-textSecondary flex-shrink-0">11:56:32Z</div>
+      </div>
+
+      <!-- Row 5: OK -->
+      <div class="h-[52px] relative flex items-center px-3.5 hover:bg-surface transition-colors cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-statusOk flex-shrink-0 mr-2.5"></span>
+        <div class="flex-1 min-w-0 pr-1">
+          <div class="text-[12px] font-medium text-textPrimary leading-tight truncate">record_outcome</div>
+          <div class="text-[10px] font-mono text-textSecondary leading-tight truncate">k-nearest embedding sync</div>
+        </div>
+        <div class="text-[10px] font-mono text-textSecondary flex-shrink-0">11:56:04Z</div>
+      </div>
+
+      <!-- Row 6: OK -->
+      <div class="h-[52px] relative flex items-center px-3.5 hover:bg-surface transition-colors cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-statusOk flex-shrink-0 mr-2.5"></span>
+        <div class="flex-1 min-w-0 pr-1">
+          <div class="text-[12px] font-medium text-textPrimary leading-tight truncate">log_event</div>
+          <div class="text-[10px] font-mono text-textSecondary leading-tight truncate">Raft delta compaction</div>
+        </div>
+        <div class="text-[10px] font-mono text-textSecondary flex-shrink-0">11:55:40Z</div>
+      </div>
+
+      <!-- Row 7: OK -->
+      <div class="h-[52px] relative flex items-center px-3.5 hover:bg-surface transition-colors cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-statusOk flex-shrink-0 mr-2.5"></span>
+        <div class="flex-1 min-w-0 pr-1">
+          <div class="text-[12px] font-medium text-textPrimary leading-tight truncate">mutate_graph</div>
+          <div class="text-[10px] font-mono text-textSecondary leading-tight truncate">resolved link concept_419</div>
+        </div>
+        <div class="text-[10px] font-mono text-textSecondary flex-shrink-0">11:55:18Z</div>
+      </div>
+
+      <!-- Row 8: OK -->
+      <div class="h-[52px] relative flex items-center px-3.5 hover:bg-surface transition-colors cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-statusOk flex-shrink-0 mr-2.5"></span>
+        <div class="flex-1 min-w-0 pr-1">
+          <div class="text-[12px] font-medium text-textPrimary leading-tight truncate">acquire_lease</div>
+          <div class="text-[10px] font-mono text-textSecondary leading-tight truncate">exclusive maintenance lease</div>
+        </div>
+        <div class="text-[10px] font-mono text-textSecondary flex-shrink-0">11:54:52Z</div>
+      </div>
+
+      <!-- Fill remaining list column height with subtle grid -->
+      <div class="flex-1 bg-base/50"></div>
+    </div>
+
+    <!-- Mini Bottom Status for List Column -->
+    <div class="h-[36px] px-3.5 flex items-center justify-between border-t border-borderGlass bg-base text-[10px] font-mono text-textSecondary">
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-accentCyan"></span>
+        <span>INGESTION STREAM</span>
+      </div>
+      <span>3.6 ops/min</span>
+    </div>
+  </section>
+
+  <!-- PANE 3: DETAIL PANE (~1084px Full Height) -->
+  <main class="flex-1 h-full flex flex-col bg-base overflow-hidden">
+    
+    <!-- Detail Pane Header Bar (running full width of pane 3) -->
+    <header class="h-[56px] px-8 flex items-center justify-between border-b border-borderGlass bg-surface flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 text-xs font-mono tracking-[0.12em] text-textSecondary uppercase">
+          <span>KYC // CONSOLE</span>
+          <span class="text-borderGlass">/</span>
+          <span>CLUSTER: node-01.local</span>
+        </div>
+        <div class="h-3 w-[1px] bg-borderGlass"></div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-2 h-2 rounded-full bg-statusOk"></span>
+          <span class="text-xs font-mono text-statusOk tracking-wider">RAFT: QUORUM 3/3 SYNCED</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6 text-xs font-mono text-textSecondary">
+        <div>EPOCH: <span class="text-textPrimary">0x8F4E</span></div>
+        <div>LOCAL TIME: <span class="text-textPrimary">2026-11-04T11:58:02Z</span></div>
+        <div class="px-2.5 py-1 rounded bg-surfaceRaised border border-borderGlass text-[11px] text-textPrimary tracking-wide">
+          BARRIER: <span class="text-accentCyan">LOCKED</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Detail Pane Content Body -->
+    <div class="flex-1 flex flex-col p-8 overflow-y-auto gap-6">
+
+      <!-- Title & Action Bar -->
+      <div class="flex items-center justify-between pb-1">
+        <div class="flex items-baseline gap-4">
+          <h1 class="text-3xl font-bold tracking-tight text-textPrimary font-mono">Event #10421</h1>
+          <span class="text-xs font-mono text-textSecondary tracking-wider uppercase">[SEQ #10421]</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-mono uppercase tracking-[0.12em] text-statusWarn bg-statusWarn/10 border border-statusWarn/25">
+            WARN RECONCILED
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-xs font-mono text-textSecondary">
+            MUTATION TIME: <span class="text-textPrimary">0.8ms</span>
+          </div>
+          <button class="px-3.5 py-1.5 rounded border border-borderGlass bg-surface text-xs font-mono text-textPrimary hover:bg-surfaceRaised hover:border-accentCyan/40 transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-accentCyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Trace Lineage
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Mini-strip: Level WARN · Agent sub-144 · Node heuristics-catalog -->
+      <div class="grid grid-cols-3 gap-4">
+        <!-- KPI 1: Level -->
+        <div class="p-4 rounded border border-borderGlass bg-surface flex flex-col justify-between">
+          <span class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary mb-2">EVENT LEVEL</span>
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-statusWarn"></span>
+            <span class="text-lg font-bold font-mono text-statusWarn">WARN</span>
+            <span class="text-xs font-mono text-textSecondary ml-1">(schema_check)</span>
+          </div>
+        </div>
+
+        <!-- KPI 2: Originating Agent -->
+        <div class="p-4 rounded border border-borderGlass bg-surface flex flex-col justify-between">
+          <span class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary mb-2">ORIGINATING AGENT</span>
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-bold font-mono text-textPrimary">sub-144</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono text-accentCyan bg-accentCyan/10 border border-accentCyan/20">
+              embedder
+            </span>
+          </div>
+        </div>
+
+        <!-- KPI 3: Target Node -->
+        <div class="p-4 rounded border border-borderGlass bg-surface flex flex-col justify-between">
+          <span class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary mb-2">TARGET NODE</span>
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-semibold font-mono text-accentCyan">heuristics-catalog</span>
+            <span class="text-xs font-mono text-textSecondary">(p2_ingest)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-PANEL: Payload (One mono line) -->
+      <div class="rounded border border-borderGlass bg-surface overflow-hidden">
+        <div class="px-4 py-2.5 border-b border-borderGlass bg-surfaceRaised flex items-center justify-between">
+          <span class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary">PAYLOAD</span>
+          <span class="text-[10px] font-mono text-textSecondary">JSON-LD RAW CAPTURE</span>
+        </div>
+        <div class="p-4 bg-base/60">
+          <code class="block font-mono text-xs text-textPrimary whitespace-nowrap overflow-x-auto leading-relaxed">{"action":"record_outcome","target":"heuristics-catalog","error":"unreadable payload schema validation skip"}</code>
+        </div>
+      </div>
+
+      <!-- SUB-PANEL: Hash chain (prev 7a1c9e02 -> entry 9f2c1ab4, full 8-hex mono) -->
+      <div class="rounded border border-borderGlass bg-surface overflow-hidden">
+        <div class="px-4 py-2.5 border-b border-borderGlass bg-surfaceRaised flex items-center justify-between">
+          <span class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary">HASH CHAIN</span>
+          <span class="text-[10px] font-mono text-textSecondary">SHA-256 MERKLE PROVENANCE</span>
+        </div>
+        <div class="p-5 flex items-center justify-between">
+          <div class="flex items-center gap-6">
+            <div class="p-3 rounded border border-borderGlass bg-base/80">
+              <div class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary mb-1">PREVIOUS HASH</div>
+              <div class="font-mono text-sm font-semibold text-textSecondary">7a1c9e02</div>
+            </div>
+
+            <div class="flex items-center text-accentCyan">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
+
+            <div class="p-3 rounded border border-accentCyan/30 bg-surfaceSelected">
+              <div class="text-[10px] font-mono uppercase tracking-[0.12em] text-accentCyan mb-1">COMMITTED ENTRY HASH</div>
+              <div class="font-mono text-sm font-bold text-accentCyan">9f2c1ab4</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded border border-statusOk/30 bg-statusOk/5 text-statusOk text-xs font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+            <span>MERKLE CONTINUITY VERIFIED</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-PANEL: Context (seq 10421 mono · occurred 2026-11-04T11:58:02Z full ISO mono) -->
+      <div class="rounded border border-borderGlass bg-surface overflow-hidden">
+        <div class="px-4 py-2.5 border-b border-borderGlass bg-surfaceRaised flex items-center justify-between">
+          <span class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary">CONTEXT</span>
+          <span class="text-[10px] font-mono text-textSecondary">EXECUTION ENVIRONMENT & INVARIANTS</span>
+        </div>
+        <div class="p-5 flex flex-col gap-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-3 rounded border border-borderGlass bg-base/60">
+              <div class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary mb-1">SEQUENCE NUMBER</div>
+              <div class="font-mono text-base font-semibold text-textPrimary">10421</div>
+            </div>
+            <div class="p-3 rounded border border-borderGlass bg-base/60">
+              <div class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary mb-1">OCCURRED TIMESTAMP</div>
+              <div class="font-mono text-base font-semibold text-textPrimary">2026-11-04T11:58:02Z</div>
+            </div>
+          </div>
+
+          <!-- Secondary Sub-specs / Assertions -->
+          <div class="border-t border-borderGlass/60 pt-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono uppercase tracking-[0.12em] text-textSecondary">RELATED INVARIANT CHECKS</span>
+              <span class="text-[10px] font-mono text-statusOk">4 OF 4 ASSERTIONS PASS</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div class="flex items-center justify-between px-3 py-2 rounded bg-base/40 border border-borderGlass/50">
+                <span class="text-textSecondary">store_readable</span>
+                <span class="text-statusOk">SQLite WAL descriptor sync</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] bg-statusOk/10 text-statusOk font-semibold">PASS</span>
+              </div>
+              <div class="flex items-center justify-between px-3 py-2 rounded bg-base/40 border border-borderGlass/50">
+                <span class="text-textSecondary">chain_integrity</span>
+                <span class="text-statusOk">SHA-256 Merkle root monotonic</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] bg-statusOk/10 text-statusOk font-semibold">PASS</span>
+              </div>
+              <div class="flex items-center justify-between px-3 py-2 rounded bg-base/40 border border-borderGlass/50">
+                <span class="text-textSecondary">projection_fresh</span>
+                <span class="text-statusOk">DuckDB AST index lag within 0.14ms</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] bg-statusOk/10 text-statusOk font-semibold">PASS</span>
+              </div>
+              <div class="flex items-center justify-between px-3 py-2 rounded bg-base/40 border border-borderGlass/50">
+                <span class="text-textSecondary">leases_consistent</span>
+                <span class="text-statusOk">Raft quorum fence tokens validated</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] bg-statusOk/10 text-statusOk font-semibold">PASS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Metadata Bar of Detail Pane (does not span across list/rail) -->
+    <footer class="h-[36px] px-8 flex items-center justify-between border-t border-borderGlass bg-base text-[10px] font-mono text-textSecondary flex-shrink-0">
+      <div class="flex items-center gap-6">
+        <span>VERIFIED AGAINST LEDGER SNAPSHOT 11:55Z</span>
+        <span>OPERATOR: <span class="text-textPrimary">sigit a.</span></span>
+      </div>
+      <div class="flex items-center gap-6">
+        <span>SHARD: <span class="text-textPrimary">0x3a</span></span>
+        <span>PARTITION: <span class="text-textPrimary">p2_heuristics</span></span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

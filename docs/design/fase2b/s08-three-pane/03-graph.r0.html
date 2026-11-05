@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>Know Your Context - Graph Explorer (Dark Glass Navy)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background-color: #070B16;
+    color: #E3EBFF;
+    font-family: 'Inter', sans-serif;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  .font-mono {
+    font-family: 'JetBrains+Mono', monospace;
+  }
+  .tracking-widest-custom {
+    letter-spacing: 0.12em;
+  }
+  .bg-pane {
+    background-color: rgba(148, 178, 255, 0.05);
+  }
+  .bg-pane-raised {
+    background-color: rgba(148, 178, 255, 0.09);
+  }
+  .border-glass {
+    border-color: rgba(148, 178, 255, 0.14);
+  }
+  .bg-cyan-tint {
+    background-color: rgba(34, 211, 238, 0.10);
+  }
+  .text-secondary {
+    color: #8FA3CC;
+  }
+  .text-cyan-accent {
+    color: #22D3EE;
+  }
+  .border-cyan-accent {
+    border-color: #22D3EE;
+  }
+  /* Dot grid background for the graph sub-panel */
+  .graph-grid {
+    background-color: rgba(148, 178, 255, 0.03);
+    background-image: radial-gradient(rgba(148, 178, 255, 0.18) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+</style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-[#070B16]">
+
+  <!-- PANE 1: 56px ICON RAIL (full height) -->
+  <aside class="w-[56px] h-[900px] flex-shrink-0 flex flex-col items-center justify-between py-4 border-r border-glass bg-[#070B16]">
+    <div class="flex flex-col items-center w-full gap-6">
+      <!-- Logo Glyph -->
+      <div class="w-9 h-9 rounded flex items-center justify-center bg-pane border border-glass text-cyan-accent">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 3v3m0 12v3M3 12h3m12 0h3"></path>
+          <circle cx="12" cy="12" r="8" stroke-dasharray="2 2"></circle>
+        </svg>
+      </div>
+
+      <!-- Navigation Icon Rail (Overview / Activity / Graph / Settings) -->
+      <nav class="flex flex-col items-center gap-2 w-full px-2">
+        <!-- Overview Icon -->
+        <button title="Overview" class="w-10 h-10 rounded flex items-center justify-center text-secondary hover:text-[#E3EBFF] hover:bg-pane transition-colors">
+          <span class="material-symbols-outlined text-[20px]">dashboard</span>
+        </button>
+
+        <!-- Activity Icon -->
+        <button title="Activity" class="w-10 h-10 rounded flex items-center justify-center text-secondary hover:text-[#E3EBFF] hover:bg-pane transition-colors">
+          <span class="material-symbols-outlined text-[20px]">pulse_alert</span>
+        </button>
+
+        <!-- Graph Icon (ACTIVE) -->
+        <button title="Graph" class="w-10 h-10 rounded flex items-center justify-center text-cyan-accent bg-cyan-tint border border-cyan-accent/40">
+          <span class="material-symbols-outlined text-[20px]">hub</span>
+        </button>
+
+        <!-- Settings Icon -->
+        <button title="Settings" class="w-10 h-10 rounded flex items-center justify-center text-secondary hover:text-[#E3EBFF] hover:bg-pane transition-colors">
+          <span class="material-symbols-outlined text-[20px]">settings</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Bottom Status / Profile Glyph -->
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-2.5 h-2.5 rounded-full bg-[#34D399]" title="Cluster 3/3 Synced"></div>
+      <div class="w-8 h-8 rounded border border-glass bg-pane flex items-center justify-center text-secondary text-xs font-mono font-medium">
+        OP
+      </div>
+    </div>
+  </aside>
+
+  <!-- PANE 2: 300px LIST COLUMN (full height) -->
+  <section class="w-[300px] h-[900px] flex-shrink-0 flex flex-col border-r border-glass bg-[#070B16]">
+    <!-- Column Top Header & Mini Search Field -->
+    <div class="h-14 px-3 flex items-center border-b border-glass flex-shrink-0">
+      <div class="w-full h-8 px-2.5 rounded bg-pane border border-glass flex items-center gap-2">
+        <span class="material-symbols-outlined text-secondary text-[16px]">search</span>
+        <input 
+          type="text" 
+          value="heuristics" 
+          readonly 
+          class="w-full bg-transparent text-xs text-[#E3EBFF] font-mono outline-none placeholder:text-secondary"
+          placeholder="Filter nodes..."
+        />
+        <span class="text-[10px] font-mono text-secondary px-1 border border-glass rounded bg-pane">8</span>
+      </div>
+    </div>
+
+    <!-- Section label -->
+    <div class="px-4 py-2 border-b border-glass flex items-center justify-between bg-pane/40">
+      <span class="text-[10px] font-semibold text-secondary uppercase tracking-widest-custom">Knowledge Nodes</span>
+      <span class="text-[10px] font-mono text-secondary">ACTIVE CLUSTER</span>
+    </div>
+
+    <!-- Selectable 52px Rows (8 items, 'heuristics-catalog' selected) -->
+    <div class="flex-1 flex flex-col overflow-hidden divide-y divide-glass/60">
+      
+      <!-- Row 1: heuristics-catalog (SELECTED: 10% cyan tint + 2px cyan left bar) -->
+      <div class="h-[52px] px-3.5 flex items-center justify-between bg-cyan-tint border-l-2 border-cyan-accent cursor-pointer">
+        <div class="flex flex-col min-w-0 pr-2">
+          <span class="text-xs font-mono font-semibold text-cyan-accent whitespace-nowrap">heuristics-catalog</span>
+          <span class="text-[10px] font-mono text-secondary whitespace-nowrap">deg 4 · rank #01 · 9f2c1ab4</span>
+        </div>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-cyan-accent border border-cyan-accent/30 bg-cyan-tint">P2</span>
+      </div>
+
+      <!-- Row 2: retrieval-core -->
+      <div class="h-[52px] px-3.5 flex items-center justify-between hover:bg-pane cursor-pointer border-l-2 border-transparent transition-colors">
+        <div class="flex flex-col min-w-0 pr-2">
+          <span class="text-xs font-mono font-medium text-[#E3EBFF] whitespace-nowrap">retrieval-core</span>
+          <span class="text-[10px] font-mono text-secondary whitespace-nowrap">deg 6 · rank #02 · 8a1d440f</span>
+        </div>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-secondary border border-glass bg-pane">P1</span>
+      </div>
+
+      <!-- Row 3: store-mutex -->
+      <div class="h-[52px] px-3.5 flex items-center justify-between hover:bg-pane cursor-pointer border-l-2 border-transparent transition-colors">
+        <div class="flex flex-col min-w-0 pr-2">
+          <span class="text-xs font-mono font-medium text-[#E3EBFF] whitespace-nowrap">store-mutex</span>
+          <span class="text-[10px] font-mono text-secondary whitespace-nowrap">deg 5 · rank #03 · 77e19cb2</span>
+        </div>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-secondary border border-glass bg-pane">P1</span>
+      </div>
+
+      <!-- Row 4: schema-contract-04 -->
+      <div class="h-[52px] px-3.5 flex items-center justify-between hover:bg-pane cursor-pointer border-l-2 border-transparent transition-colors">
+        <div class="flex flex-col min-w-0 pr-2">
+          <span class="text-xs font-mono font-medium text-[#E3EBFF] whitespace-nowrap">schema-contract-04</span>
+          <span class="text-[10px] font-mono text-secondary whitespace-nowrap">deg 3 · rank #04 · 3d81b899</span>
+        </div>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-[#FBBF24] border border-[#FBBF24]/30 bg-[#FBBF24]/10">P4</span>
+      </div>
+
+      <!-- Row 5: vector-indexer-p3 -->
+      <div class="h-[52px] px-3.5 flex items-center justify-between hover:bg-pane cursor-pointer border-l-2 border-transparent transition-colors">
+        <div class="flex flex-col min-w-0 pr-2">
+          <span class="text-xs font-mono font-medium text-[#E3EBFF] whitespace-nowrap">vector-indexer-p3</span>
+          <span class="text-[10px] font-mono text-secondary whitespace-nowrap">deg 4 · rank #05 · 55c2f0a1</span>
+        </div>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-secondary border border-glass bg-pane">P3</span>
+      </div>
+
+      <!-- Row 6: lease-arbiter -->
+      <div class="h-[52px] px-3.5 flex items-center justify-between hover:bg-pane cursor-pointer border-l-2 border-transparent transition-colors">
+        <div class="flex flex-col min-w-0 pr-2">
+          <span class="text-xs font-mono font-medium text-[#E3EBFF] whitespace-nowrap">lease-arbiter</span>
+          <span class="text-[10px] font-mono text-secondary whitespace-nowrap">deg 3 · rank #06 · a012e841</span>
+        </div>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-secondary border border-glass bg-pane">P5</span>
+      </div>
+
+      <!-- Row 7: wal-checkpoint -->
+      <div class="h-[52px] px-3.5 flex items-center justify-between hover:bg-pane cursor-pointer border-l-2 border-transparent transition-colors">
+        <div class="flex flex-col min-w-0 pr-2">
+          <span class="text-xs font-mono font-medium text-[#E3EBFF] whitespace-nowrap">wal-checkpoint</span>
+          <span class="text-[10px] font-mono text-secondary whitespace-nowrap">deg 2 · rank #07 · c190bb42</span>
+        </div>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-secondary border border-glass bg-pane">P5</span>
+      </div>
+
+      <!-- Row 8: eval-loop-async -->
+      <div class="h-[52px] px-3.5 flex items-center justify-between hover:bg-pane cursor-pointer border-l-2 border-transparent transition-colors">
+        <div class="flex flex-col min-w-0 pr-2">
+          <span class="text-xs font-mono font-medium text-[#E3EBFF] whitespace-nowrap">eval-loop-async</span>
+          <span class="text-[10px] font-mono text-secondary whitespace-nowrap">deg 3 · rank #08 · e4479901</span>
+        </div>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-secondary border border-glass bg-pane">P7</span>
+      </div>
+
+      <!-- Clean filler to bottom edge -->
+      <div class="flex-1 bg-[#070B16]/50"></div>
+    </div>
+
+    <!-- List Footer Status Strip -->
+    <div class="h-8 px-3 border-t border-glass flex items-center justify-between text-[10px] font-mono text-secondary flex-shrink-0 bg-pane/30">
+      <span>SHARD: 0x3a</span>
+      <span class="text-[#34D399]">LOCAL QUORUM OK</span>
+    </div>
+  </section>
+
+  <!-- PANE 3: ~1084px DETAIL PANE (full height) -->
+  <main class="flex-1 h-[900px] flex flex-col bg-[#070B16] overflow-hidden">
+    
+    <!-- Top Global Status Bar / Header (56px) -->
+    <header class="h-14 px-6 border-b border-glass flex items-center justify-between flex-shrink-0 bg-[#070B16]">
+      <div class="flex items-center gap-3">
+        <span class="text-[11px] font-mono text-secondary">KYC // CONSOLE</span>
+        <span class="text-secondary/40">/</span>
+        <span class="text-xs font-semibold text-[#E3EBFF]">Graph Explorer</span>
+        <span class="text-secondary/40">/</span>
+        <span class="text-xs font-mono text-cyan-accent">heuristics-catalog</span>
+      </div>
+
+      <div class="flex items-center gap-5 text-xs font-mono text-secondary">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span>
+          <span class="text-[#34D399]">RAFT 3/3 SYNCED</span>
+        </div>
+        <span>EPOCH: 0x8F4E</span>
+        <span>LOCAL TIME: 2026-11-04T11:58:02Z</span>
+        <button class="px-2.5 py-1 rounded border border-cyan-accent/40 bg-cyan-tint text-cyan-accent text-xs font-mono hover:bg-cyan-accent/20 transition-colors">
+          Trace Lineage
+        </button>
+      </div>
+    </header>
+
+    <!-- Node Header & KPI Mini-Strip Area -->
+    <div class="px-6 py-4 border-b border-glass bg-pane flex items-center justify-between flex-shrink-0">
+      <!-- Title & Chip -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-cyan-tint border border-cyan-accent/40 flex items-center justify-center text-cyan-accent">
+          <span class="material-symbols-outlined text-[18px]">hub</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-base font-mono font-semibold text-[#E3EBFF] tracking-tight">heuristics-catalog</h1>
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono font-medium text-cyan-accent bg-cyan-tint border border-cyan-accent/40">
+              P2 · active
+            </span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono text-secondary bg-pane-raised border border-glass">
+              leaf v3
+            </span>
+          </div>
+          <p class="text-xs text-secondary mt-0.5">Centralized heuristic registry and AST pattern evaluator across partitioned subgraphs.</p>
+        </div>
+      </div>
+
+      <!-- KPI Mini-Strip (P=0.828 M=0.341 E=0.898 conf 0.912) -->
+      <div class="flex items-center gap-2">
+        <!-- Metric P -->
+        <div class="px-3 py-1.5 rounded bg-pane-raised border border-glass flex flex-col items-center min-w-[76px]">
+          <span class="text-[10px] font-mono text-secondary uppercase tracking-widest-custom">PRECISION (P)</span>
+          <span class="text-xs font-mono font-semibold text-[#E3EBFF]">0.828</span>
+        </div>
+        <!-- Metric M -->
+        <div class="px-3 py-1.5 rounded bg-pane-raised border border-glass flex flex-col items-center min-w-[76px]">
+          <span class="text-[10px] font-mono text-secondary uppercase tracking-widest-custom">ENTROPY (M)</span>
+          <span class="text-xs font-mono font-semibold text-[#E3EBFF]">0.341</span>
+        </div>
+        <!-- Metric E -->
+        <div class="px-3 py-1.5 rounded bg-pane-raised border border-glass flex flex-col items-center min-w-[76px]">
+          <span class="text-[10px] font-mono text-secondary uppercase tracking-widest-custom">EIGEN (E)</span>
+          <span class="text-xs font-mono font-semibold text-[#E3EBFF]">0.898</span>
+        </div>
+        <!-- Confidence -->
+        <div class="px-3 py-1.5 rounded bg-cyan-tint border border-cyan-accent/30 flex flex-col items-center min-w-[80px]">
+          <span class="text-[10px] font-mono text-cyan-accent uppercase tracking-widest-custom">CONFIDENCE</span>
+          <span class="text-xs font-mono font-semibold text-cyan-accent">0.912</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Sub-Panels: Left (Small Graph Canvas) + Right (Relations & Evidence) -->
+    <div class="flex-1 p-6 grid grid-cols-12 gap-6 overflow-hidden">
+
+      <!-- LEFT SUB-PANEL: Small Graph Canvas (Center node + 5 neighbors, cyan active edges, dot grid) -->
+      <div class="col-span-7 h-full flex flex-col rounded border border-glass bg-pane overflow-hidden">
+        <!-- Sub-panel Top Toolbar -->
+        <div class="h-10 px-4 border-b border-glass flex items-center justify-between flex-shrink-0 bg-pane-raised">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-semibold text-secondary uppercase tracking-widest-custom">TOPOLOGY SUBGRAPH</span>
+            <span class="text-[10px] font-mono text-cyan-accent px-1.5 py-0.5 rounded bg-cyan-tint border border-cyan-accent/20">6 NODES · 5 EDGES</span>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] font-mono text-secondary">
+            <span>LAYOUT: FORCE-DIRECTED</span>
+            <span class="text-[#34D399] flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span> PHYSICS STABLE
+            </span>
+          </div>
+        </div>
+
+        <!-- Interactive Vector Graph Canvas with Dot Grid -->
+        <div class="flex-1 relative graph-grid overflow-hidden">
+          <svg class="w-full h-full" viewBox="0 0 580 570">
+            <defs>
+              <marker id="arrow-cyan" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#22D3EE" />
+              </marker>
+              <marker id="arrow-secondary" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#8FA3CC" />
+              </marker>
+              <marker id="arrow-warn" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#FBBF24" />
+              </marker>
+            </defs>
+
+            <!-- Edge 1: heuristics-catalog -> retrieval-core (cyan active edge) -->
+            <line x1="290" y1="285" x2="140" y2="150" stroke="#22D3EE" stroke-width="1.75" marker-end="url(#arrow-cyan)" />
+            <text x="200" y="210" fill="#22D3EE" font-size="9" font-family="'JetBrains Mono', monospace">depends_on</text>
+
+            <!-- Edge 2: heuristics-catalog -> heuristics-v1 (cyan active edge, dashed for supersedes) -->
+            <line x1="290" y1="285" x2="440" y2="150" stroke="#22D3EE" stroke-width="1.75" stroke-dasharray="4 3" marker-end="url(#arrow-cyan)" />
+            <text x="375" y="210" fill="#22D3EE" font-size="9" font-family="'JetBrains Mono', monospace">supersedes</text>
+
+            <!-- Edge 3: heuristics-catalog -> store-mutex (secondary edge) -->
+            <line x1="290" y1="285" x2="130" y2="420" stroke="#8FA3CC" stroke-width="1.2" stroke-opacity="0.8" marker-end="url(#arrow-secondary)" />
+            <text x="180" y="370" fill="#8FA3CC" font-size="9" font-family="'JetBrains Mono', monospace">governs</text>
+
+            <!-- Edge 4: heuristics-catalog -> schema-contract-04 (warn edge) -->
+            <line x1="290" y1="285" x2="450" y2="420" stroke="#FBBF24" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#arrow-warn)" />
+            <text x="365" y="370" fill="#FBBF24" font-size="9" font-family="'JetBrains Mono', monospace">contradicts</text>
+
+            <!-- Edge 5: heuristics-catalog -> vector-indexer-p3 (cyan edge) -->
+            <line x1="290" y1="285" x2="290" y2="110" stroke="#22D3EE" stroke-width="1.5" marker-end="url(#arrow-cyan)" />
+            <text x="298" y="195" fill="#22D3EE" font-size="9" font-family="'JetBrains Mono', monospace">indexes_by</text>
+
+            <!-- Neighbor Node 1: retrieval-core (Top Left) -->
+            <g transform="translate(140, 150)">
+              <rect x="-65" y="-18" width="130" height="36" rx="4" fill="#070B16" stroke="rgba(148, 178, 255, 0.22)" stroke-width="1" />
+              <circle cx="-50" cy="0" r="3" fill="#22D3EE" />
+              <text x="-40" y="4" fill="#E3EBFF" font-size="11" font-family="'JetBrains Mono', monospace" font-weight="500">retrieval-core</text>
+              <rect x="36" y="-8" width="20" height="16" rx="2" fill="rgba(148,178,255,0.08)" />
+              <text x="41" y="4" fill="#8FA3CC" font-size="9" font-family="'JetBrains Mono', monospace">P1</text>
+            </g>
+
+            <!-- Neighbor Node 2: vector-indexer-p3 (Top Center) -->
+            <g transform="translate(290, 110)">
+              <rect x="-70" y="-18" width="140" height="36" rx="4" fill="#070B16" stroke="rgba(148, 178, 255, 0.22)" stroke-width="1" />
+              <circle cx="-55" cy="0" r="3" fill="#22D3EE" />
+              <text x="-45" y="4" fill="#E3EBFF" font-size="11" font-family="'JetBrains Mono', monospace" font-weight="500">vector-indexer-p3</text>
+              <rect x="42" y="-8" width="20" height="16" rx="2" fill="rgba(148,178,255,0.08)" />
+              <text x="47" y="4" fill="#8FA3CC" font-size="9" font-family="'JetBrains Mono', monospace">P3</text>
+            </g>
+
+            <!-- Neighbor Node 3: heuristics-v1 (Top Right) -->
+            <g transform="translate(440, 150)">
+              <rect x="-65" y="-18" width="130" height="36" rx="4" fill="#070B16" stroke="rgba(148, 178, 255, 0.18)" stroke-width="1" stroke-dasharray="3 2" />
+              <circle cx="-50" cy="0" r="3" fill="#8FA3CC" />
+              <text x="-40" y="4" fill="#8FA3CC" font-size="11" font-family="'JetBrains Mono', monospace" font-weight="500">heuristics-v1</text>
+              <rect x="34" y="-8" width="24" height="16" rx="2" fill="rgba(148,178,255,0.05)" />
+              <text x="37" y="4" fill="#8FA3CC" font-size="8" font-family="'JetBrains Mono', monospace">DEPR</text>
+            </g>
+
+            <!-- Neighbor Node 4: store-mutex (Bottom Left) -->
+            <g transform="translate(130, 420)">
+              <rect x="-60" y="-18" width="120" height="36" rx="4" fill="#070B16" stroke="rgba(148, 178, 255, 0.22)" stroke-width="1" />
+              <circle cx="-45" cy="0" r="3" fill="#34D399" />
+              <text x="-35" y="4" fill="#E3EBFF" font-size="11" font-family="'JetBrains Mono', monospace" font-weight="500">store-mutex</text>
+              <rect x="34" y="-8" width="20" height="16" rx="2" fill="rgba(148,178,255,0.08)" />
+              <text x="39" y="4" fill="#8FA3CC" font-size="9" font-family="'JetBrains Mono', monospace">P1</text>
+            </g>
+
+            <!-- Neighbor Node 5: schema-contract-04 (Bottom Right) -->
+            <g transform="translate(450, 420)">
+              <rect x="-75" y="-18" width="150" height="36" rx="4" fill="#070B16" stroke="rgba(251, 191, 36, 0.4)" stroke-width="1" />
+              <circle cx="-60" cy="0" r="3" fill="#FBBF24" />
+              <text x="-50" y="4" fill="#E3EBFF" font-size="10.5" font-family="'JetBrains Mono', monospace" font-weight="500">schema-contract-04</text>
+              <rect x="46" y="-8" width="20" height="16" rx="2" fill="rgba(251,191,36,0.12)" />
+              <text x="51" y="4" fill="#FBBF24" font-size="9" font-family="'JetBrains Mono', monospace">P4</text>
+            </g>
+
+            <!-- Center Target Node: heuristics-catalog (HIGHLIGHTED CYAN) -->
+            <g transform="translate(290, 285)">
+              <!-- Outer Pulse Ring -->
+              <rect x="-90" y="-24" width="180" height="48" rx="6" fill="rgba(34, 211, 238, 0.12)" stroke="#22D3EE" stroke-width="1.75" />
+              <rect x="-84" y="-18" width="168" height="36" rx="4" fill="#070B16" stroke="rgba(34, 211, 238, 0.4)" stroke-width="1" />
+              <!-- Status Dot -->
+              <circle cx="-68" cy="0" r="3.5" fill="#22D3EE" />
+              <text x="-56" y="4" fill="#22D3EE" font-size="12" font-family="'JetBrains Mono', monospace" font-weight="600">heuristics-catalog</text>
+              <rect x="52" y="-9" width="24" height="18" rx="2" fill="rgba(34, 211, 238, 0.2)" />
+              <text x="57" y="4" fill="#22D3EE" font-size="10" font-family="'JetBrains Mono', monospace" font-weight="600">P2</text>
+            </g>
+          </svg>
+
+          <!-- Graph Overlay Legend -->
+          <div class="absolute bottom-3 left-3 px-3 py-1.5 rounded bg-[#070B16]/90 border border-glass text-[10px] font-mono text-secondary flex items-center gap-4">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyan-accent"></span> SELECTED CENTER</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-cyan-accent"></span> ACTIVE RELATION</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-[#FBBF24] border-t border-dashed"></span> CONTRADICTION</span>
+          </div>
+        </div>
+
+        <!-- Graph Sub-Panel Bottom Stats -->
+        <div class="h-8 px-4 border-t border-glass flex items-center justify-between text-[10px] font-mono text-secondary flex-shrink-0 bg-pane-raised">
+          <span>GRAPH ENGINE: DuckDB + GraphBLAS</span>
+          <span>SUBGRAPH RESOLVED IN 0.8ms</span>
+        </div>
+      </div>
+
+      <!-- RIGHT SUB-PANEL: Relations & Evidence -->
+      <div class="col-span-5 h-full flex flex-col rounded border border-glass bg-pane overflow-hidden">
+        <!-- Sub-panel Top Toolbar with VERIFIED Chip -->
+        <div class="h-10 px-4 border-b border-glass flex items-center justify-between flex-shrink-0 bg-pane-raised">
+          <span class="text-[10px] font-semibold text-secondary uppercase tracking-widest-custom">RELATIONS & VERIFIED EVIDENCE</span>
+          <!-- Chip VERIFIED 5/5 -->
+          <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#34D399]/10 border border-[#34D399]/40 text-[#34D399] font-mono text-[10px] font-semibold">
+            <span class="material-symbols-outlined text-[13px]">verified</span>
+            VERIFIED 5/5
+          </div>
+        </div>
+
+        <div class="flex-1 p-4 flex flex-col gap-4 overflow-hidden justify-between">
+          
+          <!-- BLOCK 1: Active Relations -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold text-secondary uppercase tracking-widest-custom">GRAPH RELATIONS</span>
+              <span class="text-[10px] font-mono text-secondary">4 TOTAL EDGES</span>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <!-- Relation 1: depends_on -> retrieval-core -->
+              <div class="p-2.5 rounded bg-pane-raised border border-glass flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-cyan-accent bg-cyan-tint border border-cyan-accent/30">
+                    depends_on
+                  </span>
+                  <span class="text-secondary text-xs">→</span>
+                  <span class="text-xs font-mono font-medium text-[#E3EBFF]">retrieval-core</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-mono text-secondary">wt 0.94</span>
+                  <span class="text-[9px] font-mono px-1 rounded bg-pane border border-glass text-secondary">P1</span>
+                </div>
+              </div>
+
+              <!-- Relation 2: supersedes -> heuristics-v1 -->
+              <div class="p-2.5 rounded bg-pane-raised border border-glass flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-cyan-accent bg-cyan-tint border border-cyan-accent/30">
+                    supersedes
+                  </span>
+                  <span class="text-secondary text-xs">→</span>
+                  <span class="text-xs font-mono font-medium text-[#E3EBFF]">heuristics-v1</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-mono text-secondary">legacy prune</span>
+                  <span class="text-[9px] font-mono px-1 rounded bg-pane border border-glass text-secondary">P2</span>
+                </div>
+              </div>
+
+              <!-- Relation 3: contradicts -> schema-contract-04 -->
+              <div class="p-2.5 rounded bg-pane-raised border border-[#FBBF24]/30 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-[#FBBF24] bg-[#FBBF24]/10 border border-[#FBBF24]/30">
+                    contradicts
+                  </span>
+                  <span class="text-secondary text-xs">→</span>
+                  <span class="text-xs font-mono font-medium text-[#E3EBFF]">schema-contract-04</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-mono text-[#FBBF24]">triage queue</span>
+                  <span class="text-[9px] font-mono px-1 rounded bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24]">P4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BLOCK 2: Verified Evidence Items (ev-0081, ev-0082) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold text-secondary uppercase tracking-widest-custom">VERIFIED EVIDENCE REPOSITORY</span>
+              <span class="text-[10px] font-mono text-[#34D399]">SHA-256 PROVENANCE</span>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <!-- Evidence 1: ev-0081 -->
+              <div class="p-3 rounded bg-pane-raised border border-glass flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono font-semibold text-cyan-accent">ev-0081</span>
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/30">
+                      score: 0.94
+                    </span>
+                  </div>
+                  <span class="text-[10px] font-mono text-[#34D399]">VERIFIED OK</span>
+                </div>
+                <div class="text-[11px] text-secondary">
+                  Corroborated by autonomous agent <span class="font-mono text-[#E3EBFF]">sub-139</span> (AST test pass confirmed).
+                </div>
+                <div class="text-[10px] font-mono text-secondary/80 flex items-center justify-between border-t border-glass/60 pt-1 mt-0.5">
+                  <span>HASH: 9f2c1ab4e7d38201</span>
+                  <span>CADENCE: DETERMINISTIC</span>
+                </div>
+              </div>
+
+              <!-- Evidence 2: ev-0082 -->
+              <div class="p-3 rounded bg-pane-raised border border-glass flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono font-semibold text-cyan-accent">ev-0082</span>
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/30">
+                      score: 0.91
+                    </span>
+                  </div>
+                  <span class="text-[10px] font-mono text-[#34D399]">VERIFIED OK</span>
+                </div>
+                <div class="text-[11px] text-secondary">
+                  Corroborated by <span class="font-mono text-[#E3EBFF]">operator</span> manual review signature (token valid).
+                </div>
+                <div class="text-[10px] font-mono text-secondary/80 flex items-center justify-between border-t border-glass/60 pt-1 mt-0.5">
+                  <span>HASH: 8a1d440f92b10492</span>
+                  <span>MERKLE: MONOTONIC</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BLOCK 3: Cryptographic Provenance Ledger Footer -->
+          <div class="p-3 rounded bg-cyan-tint border border-cyan-accent/20 flex flex-col gap-1">
+            <div class="flex items-center justify-between text-[10px] font-mono">
+              <span class="text-cyan-accent font-semibold uppercase tracking-widest-custom">CONSENSUS INTEGRITY</span>
+              <span class="text-[#34D399]">LOCK: IMMUTABLE</span>
+            </div>
+            <div class="text-[10px] font-mono text-secondary flex items-center justify-between">
+              <span>ROOT: 0x9f8a2c3b1</span>
+              <span>RAFT LEASE: 03m 12s REMAINING</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sub-panel Bottom Action Toolbar -->
+        <div class="h-10 px-4 border-t border-glass flex items-center justify-between text-xs font-mono flex-shrink-0 bg-pane-raised">
+          <button class="text-secondary hover:text-[#E3EBFF] flex items-center gap-1 transition-colors">
+            <span class="material-symbols-outlined text-[15px]">content_copy</span>
+            <span>Copy Canonical URI</span>
+          </button>
+          <button class="px-2.5 py-1 rounded bg-cyan-tint border border-cyan-accent/40 text-cyan-accent hover:bg-cyan-accent/20 transition-colors">
+            Inspect Full Merkle Chain
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Status / Engine Footer Bar (32px) -->
+    <footer class="h-8 px-6 border-t border-glass flex items-center justify-between text-[11px] font-mono text-secondary flex-shrink-0 bg-[#070B16]">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span>
+          <span>LOCAL ENGINE: DETERMINISTIC v14.2</span>
+        </span>
+        <span>SHARD: 0x3a (SYNCED)</span>
+        <span>MERKLE ANCHOR: 9F2C1AB4</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>VIEWPORT: 1440x900 FIXED</span>
+        <span>SCHEME: DARK GLASS NAVY</span>
+        <span class="text-cyan-accent">CLUSTER: NODE-01.LOCAL</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

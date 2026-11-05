@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Context - Activity Radial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #FFFFFF;
+      color: #0A0A0A;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tracking-widest-plus {
+      letter-spacing: 0.16em;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-col justify-between select-none relative bg-white">
+
+  <!-- Micro Header (36px high, crisp 1px rule) -->
+  <header class="h-[38px] w-full px-6 flex items-center justify-between border-b border-[#0A0A0A] bg-white z-20">
+    <div class="flex items-center gap-3">
+      <span class="text-[12px] font-bold tracking-[0.14em] uppercase text-[#0A0A0A]">KNOW YOUR CONTEXT</span>
+      <span class="mono text-[10px] px-1.5 py-0.5 border border-[#0A0A0A] text-[#0A0A0A] font-semibold">ACTIVITY // RADIAL</span>
+    </div>
+    <div class="mono text-[10px] text-[#525252] flex items-center gap-4">
+      <span>SHARD: <strong class="text-[#0A0A0A] font-medium">0x3a</strong></span>
+      <span>EPOCH: <strong class="text-[#0A0A0A] font-medium">0x8F4E</strong></span>
+      <span>CONSENSUS: <strong class="text-[#0A0A0A] font-medium">3/3 SYNCED</strong></span>
+      <span>CLUSTER: <strong class="text-[#0A0A0A] font-medium">NODE-01.LOCAL</strong></span>
+    </div>
+  </header>
+
+  <!-- Central Radial Canvas (Takes remaining vertical space above bottom strip) -->
+  <main class="relative flex-1 w-full overflow-hidden bg-white">
+
+    <!-- Background Concentric Geometric Orbit Guides & Connectors -->
+    <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Fine dotted line pattern -->
+        <pattern id="dotGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="0.6" fill="#E5E5E5" />
+        </pattern>
+      </defs>
+      <!-- Subdued subtle coordinate grid dots -->
+      <rect width="100%" height="100%" fill="url(#dotGrid)" />
+
+      <!-- Concentric Orbit rings centered at (720, 415) -->
+      <circle cx="720" cy="415" r="160" fill="none" stroke="#EAEAEA" stroke-width="1" />
+      <circle cx="720" cy="415" r="280" fill="none" stroke="#F0F0F0" stroke-width="1" stroke-dasharray="3 3" />
+      <circle cx="720" cy="415" r="420" fill="none" stroke="#F5F5F5" stroke-width="1" stroke-dasharray="4 4" />
+
+      <!-- Radial Axis Crosshairs -->
+      <line x1="720" y1="20" x2="720" y2="810" stroke="#F0F0F0" stroke-width="1" stroke-dasharray="2 4" />
+      <line x1="40" y1="415" x2="1400" y2="415" stroke="#F0F0F0" stroke-width="1" stroke-dasharray="2 4" />
+
+      <!-- Direct Solid Connector Lines (Center Box edges to Satellite Anchor points) -->
+      <!-- Center card box is approx x: 495 to 945 (width 450), y: 315 to 515 (height 200) -->
+      <!-- Top-Left Line: from center card top-left corner (495, 335) to TL satellite bottom-right anchor (410, 260) -->
+      <line x1="495" y1="335" x2="410" y2="260" stroke="#0A0A0A" stroke-width="1.5" />
+      <circle cx="410" cy="260" r="2.5" fill="#0A0A0A" />
+      <circle cx="495" cy="335" r="2.5" fill="#0A0A0A" />
+
+      <!-- Top-Right Line: from center card top-right (945, 335) to TR satellite bottom-left anchor (1030, 260) -->
+      <line x1="945" y1="335" x2="1030" y2="260" stroke="#0A0A0A" stroke-width="1.5" />
+      <circle cx="1030" cy="260" r="2.5" fill="#0A0A0A" />
+      <circle cx="945" cy="335" r="2.5" fill="#0A0A0A" />
+
+      <!-- Bottom-Left Line: from center card bottom-left (495, 495) to BL satellite top-right anchor (410, 565) -->
+      <line x1="495" y1="495" x2="410" y2="565" stroke="#0A0A0A" stroke-width="1.5" />
+      <circle cx="410" cy="565" r="2.5" fill="#0A0A0A" />
+      <circle cx="495" cy="495" r="2.5" fill="#0A0A0A" />
+
+      <!-- Bottom-Right Line: from center card bottom-right (945, 495) to BR satellite top-left anchor (1030, 565) -->
+      <line x1="945" y1="495" x2="1030" y2="565" stroke="#0A0A0A" stroke-width="1.5" />
+      <circle cx="1030" cy="565" r="2.5" fill="#0A0A0A" />
+      <circle cx="945" cy="495" r="2.5" fill="#0A0A0A" />
+
+      <!-- Sub-degree orbit callout markers -->
+      <text x="720" y="55" font-family="JetBrains Mono" font-size="9" fill="#888888" text-anchor="middle" letter-spacing="0.1em">RADIAL VECTOR N // 000°</text>
+      <text x="720" y="785" font-family="JetBrains Mono" font-size="9" fill="#888888" text-anchor="middle" letter-spacing="0.1em">RADIAL VECTOR S // 180°</text>
+      <text x="65" y="418" font-family="JetBrains Mono" font-size="9" fill="#888888" letter-spacing="0.1em">ORBIT W // 270°</text>
+      <text x="1375" y="418" font-family="JetBrains Mono" font-size="9" fill="#888888" text-anchor="end" letter-spacing="0.1em">ORBIT E // 090°</text>
+    </svg>
+
+    <!-- TOP-LEFT SATELLITE: RECENT INFO -->
+    <div class="absolute left-10 top-10 w-[370px] bg-[#FAFAFA] border border-[#0A0A0A] p-4 z-10">
+      <div class="flex items-center justify-between border-b border-[#0A0A0A] pb-2 mb-3">
+        <span class="mono text-[10px] font-bold tracking-widest-plus text-[#0A0A0A] uppercase">01 // RECENT INFO</span>
+        <span class="mono text-[10px] text-[#525252]">LIVE STREAM</span>
+      </div>
+      <div class="space-y-2.5">
+        <!-- Row 1 -->
+        <div class="flex items-center justify-between text-[11px] mono border-b border-[#E5E5E5] pb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-[#0A0A0A]"></span>
+            <span class="font-medium text-[#0A0A0A]">log_event</span>
+            <span class="text-[#525252]">agent-2</span>
+          </div>
+          <span class="text-[#0A0A0A] font-semibold">11:58:02Z</span>
+        </div>
+        <!-- Row 2 -->
+        <div class="flex items-center justify-between text-[11px] mono border-b border-[#E5E5E5] pb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-[#0A0A0A]"></span>
+            <span class="font-medium text-[#0A0A0A]">query</span>
+            <span class="text-[#525252]">operator</span>
+          </div>
+          <span class="text-[#0A0A0A] font-semibold">11:56:40Z</span>
+        </div>
+        <!-- Row 3 -->
+        <div class="flex items-center justify-between text-[11px] mono">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-[#0A0A0A]"></span>
+            <span class="font-medium text-[#0A0A0A]">log_event</span>
+            <span class="text-[#525252]">agent-2</span>
+          </div>
+          <span class="text-[#0A0A0A] font-semibold">11:55:19Z</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP-RIGHT SATELLITE: AGENTS ACTIVE -->
+    <div class="absolute right-10 top-10 w-[370px] bg-[#FAFAFA] border border-[#0A0A0A] p-4 z-10">
+      <div class="flex items-center justify-between border-b border-[#0A0A0A] pb-2 mb-3">
+        <span class="mono text-[10px] font-bold tracking-widest-plus text-[#0A0A0A] uppercase">02 // AGENTS ACTIVE</span>
+        <span class="mono text-[10px] text-[#0A0A0A] font-bold">● 3 ONLINE</span>
+      </div>
+      <div class="space-y-2.5">
+        <!-- Agent 1 -->
+        <div class="flex items-center justify-between text-[11px] mono border-b border-[#E5E5E5] pb-2">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-[#0A0A0A]">agent-2</span>
+            <span class="text-[9px] px-1 bg-white border border-[#D4D4D4] text-[#525252]">INDEXER</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[#525252]">TTL </span><span class="font-semibold text-[#0A0A0A]">03m 12s</span>
+          </div>
+        </div>
+        <!-- Agent 2 -->
+        <div class="flex items-center justify-between text-[11px] mono border-b border-[#E5E5E5] pb-2">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-[#0A0A0A]">sub-144</span>
+            <span class="text-[9px] px-1 bg-white border border-[#D4D4D4] text-[#525252]">EMBEDDER</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[#525252]">TTL </span><span class="font-semibold text-[#0A0A0A]">01m 04s</span>
+          </div>
+        </div>
+        <!-- Agent 3 -->
+        <div class="flex items-center justify-between text-[11px] mono">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-[#0A0A0A]">operator</span>
+            <span class="text-[9px] px-1 bg-white border border-[#D4D4D4] text-[#525252]">CONSOLE</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[#525252]">TTL </span><span class="font-semibold text-[#0A0A0A]">PERSISTENT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONE DOMINANT FOCUS ELEMENT (EXACT SCREEN CENTER) -->
+    <!-- Positioned absolutely at top: 50%, left: 50% with transform translate -->
+    <div class="absolute top-[415px] left-[720px] -translate-x-1/2 -translate-y-1/2 w-[480px] bg-white border-2 border-[#0A0A0A] p-6 shadow-none z-30">
+      
+      <!-- Micro category label & status badge -->
+      <div class="flex items-center justify-between pb-3 border-b border-[#0A0A0A] mb-4">
+        <span class="mono text-[10px] font-bold tracking-widest-plus text-[#0A0A0A] uppercase">PRIMARY INCIDENT RADAR</span>
+        <div class="flex items-center gap-2 px-2 py-0.5 border border-[#0A0A0A] bg-white">
+          <span class="text-[12px] leading-none">◐</span>
+          <span class="mono text-[10px] font-bold text-[#0A0A0A] uppercase tracking-wider">WARN</span>
+        </div>
+      </div>
+
+      <!-- Main Headline: Event title -->
+      <div class="mb-5">
+        <div class="flex items-center gap-2 text-[22px] font-bold text-[#0A0A0A] leading-tight tracking-tight">
+          <span>◐ WARN — unreadable payload</span>
+        </div>
+        <p class="text-[12px] text-[#525252] mt-1.5 leading-relaxed">
+          Autonomous parser encountered non-fatal schema mismatch during vector cache ingestion. Replay integrity verified.
+        </p>
+      </div>
+
+      <!-- Solid Black Inverted Pill / Callout for active telemetry -->
+      <div class="bg-[#0A0A0A] text-white p-3 border border-[#0A0A0A] mb-4">
+        <div class="mono text-[10px] uppercase text-[#D4D4D4] tracking-widest mb-1">EVENT METADATA & TELEMETRY ANCHOR</div>
+        <div class="mono text-[11px] font-medium text-white whitespace-nowrap">
+          seq 10421 · sub-144 · 2026-11-04T11:58:02Z · 9f2c1ab4
+        </div>
+      </div>
+
+      <!-- Detail Matrix Hairline Grid -->
+      <div class="grid grid-cols-3 gap-2 pt-3 border-t border-[#D4D4D4] mono text-[10px]">
+        <div>
+          <span class="text-[#525252] block">REPLAY SLA</span>
+          <span class="font-bold text-[#0A0A0A] text-[11px]">0.14 ms</span>
+        </div>
+        <div>
+          <span class="text-[#525252] block">DISPATCH BARRIER</span>
+          <span class="font-bold text-[#0A0A0A] text-[11px]">FAIL-CLOSED</span>
+        </div>
+        <div>
+          <span class="text-[#525252] block">STATUS SPEC</span>
+          <span class="font-bold text-[#0A0A0A] text-[11px]">RECONCILED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM-LEFT SATELLITE: HASH CHAIN -->
+    <div class="absolute left-10 bottom-10 w-[370px] bg-[#FAFAFA] border border-[#0A0A0A] p-4 z-10">
+      <div class="flex items-center justify-between border-b border-[#0A0A0A] pb-2 mb-3">
+        <span class="mono text-[10px] font-bold tracking-widest-plus text-[#0A0A0A] uppercase">03 // HASH CHAIN</span>
+        <span class="mono text-[10px] text-[#0A0A0A] font-semibold">● MONOTONIC</span>
+      </div>
+      <div class="space-y-3 mono">
+        <!-- Hash progression -->
+        <div class="p-2.5 bg-white border border-[#D4D4D4] flex items-center justify-between">
+          <div class="text-left">
+            <span class="text-[9px] text-[#525252] uppercase block">PREV HASH</span>
+            <span class="text-[12px] font-bold text-[#0A0A0A]">7a1c9e02</span>
+          </div>
+          <span class="text-[14px] text-[#0A0A0A] font-bold">→</span>
+          <div class="text-right">
+            <span class="text-[9px] text-[#525252] uppercase block">ENTRY HASH</span>
+            <span class="text-[12px] font-bold text-[#0A0A0A]">9f2c1ab4</span>
+          </div>
+        </div>
+        <!-- Verification notes -->
+        <div class="flex items-center justify-between text-[10px] text-[#525252]">
+          <span>ALGORITHM: <strong class="text-[#0A0A0A] font-semibold">SHA-256 HMAC</strong></span>
+          <span>PROOF: <strong class="text-[#0A0A0A] font-semibold">VALID</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM-RIGHT SATELLITE: LEVEL MIX -->
+    <div class="absolute right-10 bottom-10 w-[370px] bg-[#FAFAFA] border border-[#0A0A0A] p-4 z-10">
+      <div class="flex items-center justify-between border-b border-[#0A0A0A] pb-2 mb-3">
+        <span class="mono text-[10px] font-bold tracking-widest-plus text-[#0A0A0A] uppercase">04 // LEVEL MIX</span>
+        <span class="mono text-[10px] text-[#525252]">TOTAL 18 OPS</span>
+      </div>
+      
+      <!-- Metrics row -->
+      <div class="grid grid-cols-3 gap-2 mb-3 mono text-center">
+        <div class="p-2 border border-[#0A0A0A] bg-white">
+          <span class="text-[9px] text-[#525252] block uppercase">INFO</span>
+          <span class="text-[16px] font-bold text-[#0A0A0A]">15</span>
+        </div>
+        <div class="p-2 border border-[#0A0A0A] bg-white">
+          <span class="text-[9px] text-[#525252] block uppercase">WARN</span>
+          <span class="text-[16px] font-bold text-[#0A0A0A]">2</span>
+        </div>
+        <div class="p-2 border border-[#0A0A0A] bg-white">
+          <span class="text-[9px] text-[#525252] block uppercase">ERROR</span>
+          <span class="text-[16px] font-bold text-[#0A0A0A]">1</span>
+        </div>
+      </div>
+
+      <!-- Monochrome Proportion bar -->
+      <div class="space-y-1 mono text-[10px]">
+        <div class="h-2.5 w-full border border-[#0A0A0A] flex overflow-hidden">
+          <div class="h-full bg-[#0A0A0A]" style="width: 83.3%;"></div>
+          <div class="h-full bg-[#888888]" style="width: 11.1%;"></div>
+          <div class="h-full bg-white border-l border-[#0A0A0A]" style="width: 5.6%;"></div>
+        </div>
+        <div class="flex justify-between text-[9px] text-[#525252] pt-0.5">
+          <span>83.3% INFO</span>
+          <span>11.1% WARN</span>
+          <span>5.6% ERR</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Strip (Fixed single-line micro data strip, crisp 1px top border) -->
+  <footer class="h-[34px] w-full px-6 flex items-center justify-between border-t border-[#0A0A0A] bg-white z-20 mono text-[10px]">
+    <div class="flex items-center gap-3 text-[#0A0A0A] font-semibold tracking-[0.14em] uppercase">
+      <span>18 EVENTS LAST HOUR</span>
+      <span class="text-[#D4D4D4]">·</span>
+      <span>TAIL ON</span>
+      <span class="text-[#D4D4D4]">·</span>
+      <span>CHAIN VERIFIED ● OK</span>
+    </div>
+    <div class="text-[#525252] tracking-[0.12em] uppercase flex items-center gap-4">
+      <span>ENGINE: AST_DIRECTED_DAG</span>
+      <span>VIEWPORT: 1440x900 FIXED</span>
+      <span>MONOCHROME RADIAL</span>
+    </div>
+  </footer>
+
+</body>
+</html>

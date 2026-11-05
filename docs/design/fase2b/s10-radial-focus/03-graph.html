@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+<title>Know Your Context - Graph Radial (Egocentric Constellation)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+      },
+      colors: {
+        ink: {
+          base: '#FFFFFF',
+          panel: '#FAFAFA',
+          structural: '#0A0A0A',
+          hairline: '#D4D4D4',
+          primary: '#0A0A0A',
+          secondary: '#525252',
+        }
+      }
+    }
+  }
+}
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  body, html {
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background-color: #FFFFFF;
+    color: #0A0A0A;
+    font-family: 'Inter', sans-serif;
+  }
+  /* Subtle coordinate / constellation backdrop grid */
+  .constellation-bg {
+    background-color: #FFFFFF;
+    background-image: 
+      radial-gradient(#D4D4D4 0.75px, transparent 0.75px);
+    background-size: 24px 24px;
+  }
+</style>
+</head>
+<body class="relative w-[1440px] h-[900px] bg-white flex flex-col justify-between select-none constellation-bg">
+
+  <!-- 36px Micro Header -->
+  <header class="h-[36px] w-full px-6 flex items-center justify-between border-b border-[#0A0A0A] bg-white z-20">
+    <div class="flex items-center gap-3">
+      <span class="text-[12px] font-bold tracking-[0.14em] uppercase text-[#0A0A0A]">KNOW YOUR CONTEXT</span>
+      <span class="text-[11px] font-mono px-1.5 py-0.5 border border-[#0A0A0A] uppercase tracking-wider text-[#0A0A0A]">GRAPH // RADIAL</span>
+    </div>
+    <div class="flex items-center gap-6 font-mono text-[11px] tracking-tight text-[#0A0A0A]">
+      <span>SHARD: 0x3a</span>
+      <span>EPOCH: 0x8F4E</span>
+      <span class="flex items-center gap-1.5 font-semibold">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#0A0A0A]"></span> CONSENSUS: 3/3 SYNCED
+      </span>
+      <span>CLUSTER: NODE-01.LOCAL</span>
+    </div>
+  </header>
+
+  <!-- Main Canvas: Constellation / Radial Field (Exact 1440 x 834) -->
+  <main class="relative flex-1 w-full overflow-hidden">
+
+    <!-- Background Concentric Orbit Rings & Crosshair Guides (Pure 1px Hairlines #D4D4D4) -->
+    <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+      <!-- Crosshair Axes -->
+      <line x1="720" y1="0" x2="720" y2="834" stroke="#D4D4D4" stroke-width="1" stroke-dasharray="4 4" />
+      <line x1="0" y1="417" x2="1440" y2="417" stroke="#D4D4D4" stroke-width="1" stroke-dasharray="4 4" />
+
+      <!-- Concentric Orbits centered at (720, 417) -->
+      <circle cx="720" cy="417" r="190" fill="none" stroke="#D4D4D4" stroke-width="1" stroke-dasharray="2 3" />
+      <circle cx="720" cy="417" r="340" fill="none" stroke="#D4D4D4" stroke-width="1" stroke-dasharray="3 4" />
+      <circle cx="720" cy="417" r="490" fill="none" stroke="#E5E5E5" stroke-width="1" />
+
+      <!-- Orbit Labels -->
+      <text x="726" y="70" fill="#525252" font-family="'JetBrains Mono', monospace" font-size="9" letter-spacing="0.16em" text-anchor="start">RADIAL VECTOR N // 000°</text>
+      <text x="726" y="795" fill="#525252" font-family="'JetBrains Mono', monospace" font-size="9" letter-spacing="0.16em" text-anchor="start">RADIAL VECTOR S // 180°</text>
+      <text x="36" y="413" fill="#525252" font-family="'JetBrains Mono', monospace" font-size="9" letter-spacing="0.16em" text-anchor="start">ORBIT W // 270°</text>
+      <text x="1310" y="413" fill="#525252" font-family="'JetBrains Mono', monospace" font-size="9" letter-spacing="0.16em" text-anchor="start">ORBIT E // 090°</text>
+
+      <!-- Structural Connectors (Thin 1px black lines #0A0A0A from satellites to center) -->
+      <!-- Center card boundary: [500, 317] to [940, 517], center is (720, 417) -->
+      <!-- Line 1: Top-Left Satellite (cx: 260, cy: 155) -> Center Left Edge (x: 500, y: 367) -->
+      <line x1="410" y1="185" x2="500" y2="367" stroke="#0A0A0A" stroke-width="1.2" />
+      <circle cx="410" cy="185" r="3" fill="#0A0A0A" />
+      <circle cx="500" cy="367" r="3" fill="#0A0A0A" />
+
+      <!-- Line 2: Top-Right Satellite (cx: 1180, cy: 155) -> Center Right Edge (x: 940, y: 367) -->
+      <line x1="1030" y1="185" x2="940" y2="367" stroke="#0A0A0A" stroke-width="1.2" />
+      <circle cx="1030" cy="185" r="3" fill="#0A0A0A" />
+      <circle cx="940" cy="367" r="3" fill="#0A0A0A" />
+
+      <!-- Line 3: Bottom-Left Satellite (cx: 260, cy: 679) -> Center Left Edge (x: 500, y: 467) -->
+      <line x1="410" y1="649" x2="500" y2="467" stroke="#0A0A0A" stroke-width="1.2" />
+      <circle cx="410" cy="649" r="3" fill="#0A0A0A" />
+      <circle cx="500" cy="467" r="3" fill="#0A0A0A" />
+
+      <!-- Line 4: Bottom-Right Satellite (cx: 1180, cy: 679) -> Center Right Edge (x: 940, y: 467) -->
+      <line x1="1030" y1="649" x2="940" y2="467" stroke="#0A0A0A" stroke-width="1.2" />
+      <circle cx="1030" cy="649" r="3" fill="#0A0A0A" />
+      <circle cx="940" cy="467" r="3" fill="#0A0A0A" />
+    </svg>
+
+    <!-- Edge Midpoint Chips (Positioned along lines, solid black/outline pure monochrome) -->
+    <!-- Midpoint 1 (Top-Left): between (410, 185) and (500, 367) -> (455, 276) -->
+    <div class="absolute left-[455px] top-[276px] -translate-x-1/2 -translate-y-1/2 bg-white px-2 py-0.5 border border-[#0A0A0A] z-10">
+      <span class="font-mono text-[10px] uppercase tracking-wider text-[#0A0A0A] font-semibold">depends_on</span>
+    </div>
+
+    <!-- Midpoint 2 (Top-Right): between (1030, 185) and (940, 367) -> (985, 276) -->
+    <div class="absolute left-[985px] top-[276px] -translate-x-1/2 -translate-y-1/2 bg-white px-2 py-0.5 border border-[#0A0A0A] z-10">
+      <span class="font-mono text-[10px] uppercase tracking-wider text-[#0A0A0A] font-semibold">supersedes</span>
+    </div>
+
+    <!-- Midpoint 3 (Bottom-Left): between (410, 649) and (500, 467) -> (455, 558) -->
+    <div class="absolute left-[455px] top-[558px] -translate-x-1/2 -translate-y-1/2 bg-white px-2 py-0.5 border border-[#0A0A0A] z-10">
+      <span class="font-mono text-[10px] uppercase tracking-wider text-[#0A0A0A] font-semibold">depends_on</span>
+    </div>
+
+    <!-- Midpoint 4 (Bottom-Right): between (1030, 649) and (940, 467) -> (985, 558) -->
+    <div class="absolute left-[985px] top-[558px] -translate-x-1/2 -translate-y-1/2 bg-white px-2 py-0.5 border border-[#0A0A0A] z-10">
+      <span class="font-mono text-[10px] uppercase tracking-wider text-[#0A0A0A] font-semibold">parent_of</span>
+    </div>
+
+    <!-- SATELLITE 1: TOP-LEFT 'retrieval-core' -->
+    <div class="absolute left-[64px] top-[54px] w-[350px] bg-[#FAFAFA] border border-[#0A0A0A] p-4 z-10">
+      <div class="flex items-center justify-between pb-2 border-b border-[#D4D4D4] mb-3">
+        <span class="text-[10px] font-mono tracking-[0.14em] uppercase text-[#525252]">01 // NEIGHBOR NODE</span>
+        <span class="text-[10px] font-mono tracking-wider px-1.5 py-0.2 border border-[#0A0A0A] text-[#0A0A0A]">P1 INGEST</span>
+      </div>
+      <div class="flex items-baseline justify-between mb-2">
+        <h3 class="font-mono text-[18px] font-bold text-[#0A0A0A]">retrieval-core</h3>
+        <span class="font-mono text-[12px] text-[#525252]">SCORE <strong class="text-[#0A0A0A]">0.612</strong></span>
+      </div>
+      <p class="text-[12px] text-[#525252] leading-tight mb-3">AST semantic indexing & edge query engine runtime partition.</p>
+      <div class="flex items-center justify-between pt-2 border-t border-[#D4D4D4] font-mono text-[10px] text-[#525252]">
+        <span>DEGREE: 6 ARCS</span>
+        <span>STATUS: ● OK</span>
+      </div>
+    </div>
+
+    <!-- SATELLITE 2: TOP-RIGHT 'heuristics-v1' -->
+    <div class="absolute right-[64px] top-[54px] w-[350px] bg-[#FAFAFA] border border-[#0A0A0A] p-4 z-10">
+      <div class="flex items-center justify-between pb-2 border-b border-[#D4D4D4] mb-3">
+        <span class="text-[10px] font-mono tracking-[0.14em] uppercase text-[#525252]">02 // NEIGHBOR NODE</span>
+        <span class="text-[10px] font-mono tracking-wider px-1.5 py-0.2 border border-[#0A0A0A] text-[#0A0A0A]">P2 DEPRECATED</span>
+      </div>
+      <div class="flex items-baseline justify-between mb-2">
+        <h3 class="font-mono text-[18px] font-bold text-[#0A0A0A]">heuristics-v1</h3>
+        <span class="font-mono text-[12px] text-[#525252]">SCORE <strong class="text-[#0A0A0A]">0.612</strong></span>
+      </div>
+      <p class="text-[12px] text-[#525252] leading-tight mb-3">Legacy static AST rule analyzer superseded by v3 classifier.</p>
+      <div class="flex items-center justify-between pt-2 border-t border-[#D4D4D4] font-mono text-[10px] text-[#525252]">
+        <span>DEGREE: 2 ARCS</span>
+        <span>STATUS: ◐ WARN</span>
+      </div>
+    </div>
+
+    <!-- SATELLITE 3: BOTTOM-LEFT 'store' -->
+    <div class="absolute left-[64px] bottom-[54px] w-[350px] bg-[#FAFAFA] border border-[#0A0A0A] p-4 z-10">
+      <div class="flex items-center justify-between pb-2 border-b border-[#D4D4D4] mb-3">
+        <span class="text-[10px] font-mono tracking-[0.14em] uppercase text-[#525252]">03 // NEIGHBOR NODE</span>
+        <span class="text-[10px] font-mono tracking-wider px-1.5 py-0.2 border border-[#0A0A0A] text-[#0A0A0A]">P1 STORE</span>
+      </div>
+      <div class="flex items-baseline justify-between mb-2">
+        <h3 class="font-mono text-[18px] font-bold text-[#0A0A0A]">store</h3>
+        <span class="font-mono text-[12px] text-[#525252]">SCORE <strong class="text-[#0A0A0A]">0.612</strong></span>
+      </div>
+      <p class="text-[12px] text-[#525252] leading-tight mb-3">SQLite WAL transactional descriptor & DuckDB persistent storage.</p>
+      <div class="flex items-center justify-between pt-2 border-t border-[#D4D4D4] font-mono text-[10px] text-[#525252]">
+        <span>DEGREE: 11 ARCS</span>
+        <span>STATUS: ● OK</span>
+      </div>
+    </div>
+
+    <!-- SATELLITE 4: BOTTOM-RIGHT 'symbols' -->
+    <div class="absolute right-[64px] bottom-[54px] w-[350px] bg-[#FAFAFA] border border-[#0A0A0A] p-4 z-10">
+      <div class="flex items-center justify-between pb-2 border-b border-[#D4D4D4] mb-3">
+        <span class="text-[10px] font-mono tracking-[0.14em] uppercase text-[#525252]">04 // NEIGHBOR NODE</span>
+        <span class="text-[10px] font-mono tracking-wider px-1.5 py-0.2 border border-[#0A0A0A] text-[#0A0A0A]">P2 EMBED</span>
+      </div>
+      <div class="flex items-baseline justify-between mb-2">
+        <h3 class="font-mono text-[18px] font-bold text-[#0A0A0A]">symbols</h3>
+        <span class="font-mono text-[12px] text-[#525252]">SCORE <strong class="text-[#0A0A0A]">0.612</strong></span>
+      </div>
+      <p class="text-[12px] text-[#525252] leading-tight mb-3">Vectorized token AST table and symbol dictionary namespace.</p>
+      <div class="flex items-center justify-between pt-2 border-t border-[#D4D4D4] font-mono text-[10px] text-[#525252]">
+        <span>DEGREE: 12 ARCS</span>
+        <span>STATUS: ● OK</span>
+      </div>
+    </div>
+
+    <!-- CENTRAL FOCUS: ONE DOMINANT ELEMENT (Exact Center) -->
+    <!-- Positioned precisely at left: 500px, top: 300px, width: 440px -->
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] bg-white border-2 border-[#0A0A0A] p-6 z-20">
+      <!-- Header row inside focus card -->
+      <div class="flex items-center justify-between pb-3 border-b border-[#0A0A0A] mb-4">
+        <span class="text-[10px] font-mono tracking-[0.16em] uppercase text-[#525252] font-semibold">EGOCENTRIC FOCUS // TARGET NODE</span>
+        <!-- Active element is SOLID BLACK fill with white text -->
+        <span class="bg-[#0A0A0A] text-white font-mono text-[10px] font-bold px-2 py-0.5 tracking-widest uppercase">
+          P2 · ACTIVE
+        </span>
+      </div>
+
+      <!-- Node Name -->
+      <div class="mb-3">
+        <h2 class="font-mono text-[26px] font-bold tracking-tight text-[#0A0A0A] leading-none mb-1">
+          heuristics-catalog
+        </h2>
+        <div class="text-[11px] text-[#525252] font-sans">
+          Centralized heuristic registry & AST pattern evaluator across partitioned subgraphs.
+        </div>
+      </div>
+
+      <!-- Mono Scores Block in solid ink style -->
+      <div class="bg-[#0A0A0A] text-white p-3 mb-4">
+        <div class="text-[9px] font-mono tracking-[0.14em] text-[#D4D4D4] uppercase mb-1">CONVERGENCE VECTORS & CONFIDENCE</div>
+        <div class="font-mono text-[13px] font-semibold tracking-tight text-white flex items-center justify-between">
+          <span>P=0.828</span>
+          <span class="text-[#D4D4D4]">·</span>
+          <span>M=0.341</span>
+          <span class="text-[#D4D4D4]">·</span>
+          <span>E=0.898</span>
+          <span class="text-[#D4D4D4]">·</span>
+          <span class="font-bold underline decoration-1 underline-offset-2">CONF 0.912</span>
+        </div>
+      </div>
+
+      <!-- Sub-spec Invariant & Shard Anchor Row -->
+      <div class="grid grid-cols-3 gap-2 pt-2 border-t border-[#D4D4D4] font-mono text-[10px]">
+        <div>
+          <div class="text-[9px] text-[#525252] tracking-wider uppercase">REPLAY SLA</div>
+          <div class="font-bold text-[#0A0A0A] mt-0.5">0.14 ms</div>
+        </div>
+        <div>
+          <div class="text-[9px] text-[#525252] tracking-wider uppercase">BARRIER</div>
+          <div class="font-bold text-[#0A0A0A] mt-0.5">FAIL-CLOSED</div>
+        </div>
+        <div>
+          <div class="text-[9px] text-[#525252] tracking-wider uppercase">INVARIANTS</div>
+          <div class="font-bold text-[#0A0A0A] mt-0.5">● 11/11 PASS</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- One-Line Micro Data Strip at Bottom (30px high, 10px uppercase letterspaced facts separated by '·') -->
+  <footer class="h-[30px] w-full px-6 flex items-center justify-between border-t border-[#0A0A0A] bg-white font-mono text-[10px] tracking-[0.14em] uppercase text-[#0A0A0A] z-20">
+    <div class="flex items-center gap-2">
+      <span>EV-0081</span>
+      <span class="text-[#D4D4D4]">·</span>
+      <span>EV-0082</span>
+      <span class="text-[#D4D4D4]">·</span>
+      <span>PROVENANCE VERIFIED 5/5 ● OK</span>
+      <span class="text-[#D4D4D4]">·</span>
+      <span>EDGES 3,917</span>
+    </div>
+    <div class="flex items-center gap-3 text-[#525252]">
+      <span>ENGINE: AST_DIRECTED_DAG</span>
+      <span>·</span>
+      <span>VIEWPORT: 1440X900 FIXED</span>
+      <span>·</span>
+      <span class="text-[#0A0A0A] font-bold">RADIAL CONSTELLATION</span>
+    </div>
+  </footer>
+
+</body>
+</html>

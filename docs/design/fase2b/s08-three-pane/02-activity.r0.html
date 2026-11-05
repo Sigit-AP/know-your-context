@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>Know Your Context - Activity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        base: '#070B16',
+        primaryText: '#E3EBFF',
+        secondaryText: '#8FA3CC',
+        accentCyan: '#22D3EE',
+        statusOk: '#34D399',
+        statusWarn: '#FBBF24',
+        statusDanger: '#FB7185',
+        paneBorder: 'rgba(148,178,255,0.14)',
+        paneBg: 'rgba(148,178,255,0.05)',
+        paneBgRaised: 'rgba(148,178,255,0.09)',
+        cyanTint: 'rgba(34,211,238,0.10)',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      }
+    }
+  }
+}
+</script>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  width: 1440px;
+  height: 900px;
+  overflow: hidden;
+  background-color: #070B16;
+  color: #E3EBFF;
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+}
+.tracking-label {
+  letter-spacing: 0.12em;
+}
+.row-item {
+  height: 52px;
+}
+</style>
+</head>
+<body class="flex flex-col w-[1440px] h-[900px] bg-base">
+
+  <!-- TOP CONSOLE STATUS STRIP (36px) -->
+  <header class="h-[36px] w-full border-b border-[rgba(148,178,255,0.14)] bg-[rgba(148,178,255,0.03)] px-4 flex items-center justify-between font-mono text-[11px] text-secondaryText shrink-0">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2 text-primaryText font-semibold">
+        <span class="inline-block w-2 h-2 rounded-full bg-accentCyan"></span>
+        <span class="tracking-label uppercase text-[10px]">KYC // CONSOLE</span>
+      </div>
+      <span class="text-[rgba(148,178,255,0.25)]">|</span>
+      <span>CLUSTER: <span class="text-primaryText font-medium">node-01.local</span></span>
+      <span>RAFT: <span class="text-statusOk font-medium">QUORUM 3/3 SYNCED</span></span>
+      <span>EPOCH: <span class="text-primaryText font-medium">0x8F4E</span></span>
+    </div>
+    <div class="flex items-center gap-6">
+      <span>LOCAL TIME: <span class="text-primaryText font-medium">2026-11-04T11:58:02Z</span></span>
+      <span class="text-[rgba(148,178,255,0.25)]">|</span>
+      <span>BARRIER: <span class="text-statusOk font-medium">LOCKED</span></span>
+      <span>OP: <span class="text-accentCyan font-medium font-sans text-xs">sigit a.</span></span>
+    </div>
+  </header>
+
+  <!-- MAIN THREE-PANE BODY (864px height) -->
+  <div class="flex flex-1 w-full h-[864px] overflow-hidden">
+
+    <!-- PANE 1: 56px ICON RAIL -->
+    <aside class="w-[56px] h-full shrink-0 border-r border-[rgba(148,178,255,0.14)] bg-base flex flex-col items-center justify-between py-3">
+      <!-- Top glyph + Icons -->
+      <div class="flex flex-col items-center gap-3 w-full">
+        <!-- Logo glyph -->
+        <div class="w-9 h-9 rounded flex items-center justify-center bg-[rgba(148,178,255,0.08)] border border-[rgba(148,178,255,0.20)] text-accentCyan mb-2">
+          <span class="material-symbols-outlined text-[20px]">hub</span>
+        </div>
+        
+        <!-- Icon 1: Overview -->
+        <button title="Overview" class="w-10 h-10 rounded flex items-center justify-center text-secondaryText hover:text-primaryText hover:bg-[rgba(148,178,255,0.06)] transition-none">
+          <span class="material-symbols-outlined text-[20px]">dashboard</span>
+        </button>
+
+        <!-- Icon 2: Activity (ACTIVE - cyan tinted tile) -->
+        <button title="Activity" class="w-10 h-10 rounded flex items-center justify-center bg-[rgba(34,211,238,0.12)] border border-[rgba(34,211,238,0.35)] text-accentCyan">
+          <span class="material-symbols-outlined text-[20px]">pulse_alert</span>
+        </button>
+
+        <!-- Icon 3: Graph -->
+        <button title="Graph" class="w-10 h-10 rounded flex items-center justify-center text-secondaryText hover:text-primaryText hover:bg-[rgba(148,178,255,0.06)] transition-none">
+          <span class="material-symbols-outlined text-[20px]">account_tree</span>
+        </button>
+
+        <!-- Icon 4: Settings -->
+        <button title="Settings" class="w-10 h-10 rounded flex items-center justify-center text-secondaryText hover:text-primaryText hover:bg-[rgba(148,178,255,0.06)] transition-none">
+          <span class="material-symbols-outlined text-[20px]">settings</span>
+        </button>
+      </div>
+
+      <!-- Bottom System Status Icon -->
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-10 h-10 rounded flex items-center justify-center text-secondaryText hover:text-primaryText hover:bg-[rgba(148,178,255,0.06)]">
+          <span class="material-symbols-outlined text-[20px]">terminal</span>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-statusOk"></div>
+      </div>
+    </aside>
+
+    <!-- PANE 2: 300px LIST COLUMN -->
+    <section class="w-[300px] h-full shrink-0 border-r border-[rgba(148,178,255,0.14)] bg-[rgba(148,178,255,0.02)] flex flex-col">
+      <!-- Search / Header Filter at top (52px) -->
+      <div class="h-[52px] px-3.5 border-b border-[rgba(148,178,255,0.14)] flex items-center gap-2 shrink-0 bg-[rgba(148,178,255,0.03)]">
+        <span class="material-symbols-outlined text-[17px] text-secondaryText">search</span>
+        <input type="text" placeholder="Filter ledger events..." value="" readonly
+               class="bg-transparent border-none text-xs text-primaryText placeholder-secondaryText focus:outline-none w-full font-mono">
+        <span class="text-[10px] font-mono text-secondaryText px-1.5 py-0.5 rounded border border-[rgba(148,178,255,0.14)] bg-[rgba(148,178,255,0.04)]">/</span>
+      </div>
+
+      <!-- Column Meta Header (32px) -->
+      <div class="h-[32px] px-3.5 border-b border-[rgba(148,178,255,0.10)] flex items-center justify-between text-[10px] font-mono tracking-label uppercase text-secondaryText shrink-0 bg-[rgba(148,178,255,0.01)]">
+        <span>JOURNAL LEDGER</span>
+        <span>8 ENTRIES</span>
+      </div>
+
+      <!-- Exactly 8 Log Rows (Each exactly 52px high) -->
+      <div class="flex flex-col divide-y divide-[rgba(148,178,255,0.08)] flex-1 overflow-hidden">
+
+        <!-- Row 1: Selected (WARN) with 2px cyan bar & 10% cyan tint -->
+        <div class="row-item px-3.5 flex items-center justify-between bg-cyanTint relative cursor-pointer border-l-2 border-accentCyan">
+          <div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusWarn shrink-0"></span>
+              <span class="font-mono text-xs font-semibold text-primaryText">record_outcome</span>
+            </div>
+            <span class="font-mono text-[11px] text-secondaryText pl-3.5">unreadable payload</span>
+          </div>
+          <div class="flex flex-col items-end justify-center shrink-0">
+            <span class="font-mono text-[11px] text-primaryText">11:58:02Z</span>
+            <span class="text-[9px] font-mono font-medium text-statusWarn uppercase">WARN</span>
+          </div>
+        </div>
+
+        <!-- Row 2: mutate_graph (OK) -->
+        <div class="row-item px-3.5 flex items-center justify-between hover:bg-[rgba(148,178,255,0.04)] cursor-pointer">
+          <div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk shrink-0"></span>
+              <span class="font-mono text-xs text-primaryText">mutate_graph</span>
+            </div>
+            <span class="font-mono text-[11px] text-secondaryText pl-3.5">attached directional edge</span>
+          </div>
+          <div class="flex flex-col items-end justify-center shrink-0">
+            <span class="font-mono text-[11px] text-secondaryText">11:57:48Z</span>
+            <span class="text-[9px] font-mono text-statusOk uppercase">OK</span>
+          </div>
+        </div>
+
+        <!-- Row 3: evaluate (OK) -->
+        <div class="row-item px-3.5 flex items-center justify-between hover:bg-[rgba(148,178,255,0.04)] cursor-pointer">
+          <div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk shrink-0"></span>
+              <span class="font-mono text-xs text-primaryText">evaluate</span>
+            </div>
+            <span class="font-mono text-[11px] text-secondaryText pl-3.5">snapshot sync DuckDB</span>
+          </div>
+          <div class="flex flex-col items-end justify-center shrink-0">
+            <span class="font-mono text-[11px] text-secondaryText">11:56:59Z</span>
+            <span class="text-[9px] font-mono text-statusOk uppercase">OK</span>
+          </div>
+        </div>
+
+        <!-- Row 4: query (OK) -->
+        <div class="row-item px-3.5 flex items-center justify-between hover:bg-[rgba(148,178,255,0.04)] cursor-pointer">
+          <div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk shrink-0"></span>
+              <span class="font-mono text-xs text-primaryText">query</span>
+            </div>
+            <span class="font-mono text-[11px] text-secondaryText pl-3.5">merged subgraph tier2</span>
+          </div>
+          <div class="flex flex-col items-end justify-center shrink-0">
+            <span class="font-mono text-[11px] text-secondaryText">11:56:32Z</span>
+            <span class="text-[9px] font-mono text-statusOk uppercase">OK</span>
+          </div>
+        </div>
+
+        <!-- Row 5: record_outcome (OK) -->
+        <div class="row-item px-3.5 flex items-center justify-between hover:bg-[rgba(148,178,255,0.04)] cursor-pointer">
+          <div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk shrink-0"></span>
+              <span class="font-mono text-xs text-primaryText">record_outcome</span>
+            </div>
+            <span class="font-mono text-[11px] text-secondaryText pl-3.5">k-nearest embedding sync</span>
+          </div>
+          <div class="flex flex-col items-end justify-center shrink-0">
+            <span class="font-mono text-[11px] text-secondaryText">11:56:04Z</span>
+            <span class="text-[9px] font-mono text-statusOk uppercase">OK</span>
+          </div>
+        </div>
+
+        <!-- Row 6: log_event (OK) -->
+        <div class="row-item px-3.5 flex items-center justify-between hover:bg-[rgba(148,178,255,0.04)] cursor-pointer">
+          <div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk shrink-0"></span>
+              <span class="font-mono text-xs text-primaryText">log_event</span>
+            </div>
+            <span class="font-mono text-[11px] text-secondaryText pl-3.5">Raft delta compaction</span>
+          </div>
+          <div class="flex flex-col items-end justify-center shrink-0">
+            <span class="font-mono text-[11px] text-secondaryText">11:55:40Z</span>
+            <span class="text-[9px] font-mono text-statusOk uppercase">OK</span>
+          </div>
+        </div>
+
+        <!-- Row 7: mutate_graph (OK) -->
+        <div class="row-item px-3.5 flex items-center justify-between hover:bg-[rgba(148,178,255,0.04)] cursor-pointer">
+          <div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk shrink-0"></span>
+              <span class="font-mono text-xs text-primaryText">mutate_graph</span>
+            </div>
+            <span class="font-mono text-[11px] text-secondaryText pl-3.5">resolved link concept_419</span>
+          </div>
+          <div class="flex flex-col items-end justify-center shrink-0">
+            <span class="font-mono text-[11px] text-secondaryText">11:55:18Z</span>
+            <span class="text-[9px] font-mono text-statusOk uppercase">OK</span>
+          </div>
+        </div>
+
+        <!-- Row 8: acquire_lease (OK) -->
+        <div class="row-item px-3.5 flex items-center justify-between hover:bg-[rgba(148,178,255,0.04)] cursor-pointer">
+          <div class="flex flex-col justify-center gap-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk shrink-0"></span>
+              <span class="font-mono text-xs text-primaryText">acquire_lease</span>
+            </div>
+            <span class="font-mono text-[11px] text-secondaryText pl-3.5">exclusive maintenance lease</span>
+          </div>
+          <div class="flex flex-col items-end justify-center shrink-0">
+            <span class="font-mono text-[11px] text-secondaryText">11:54:52Z</span>
+            <span class="text-[9px] font-mono text-statusOk uppercase">OK</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Stream Status in Pane 2 (36px) -->
+      <div class="h-[36px] px-3.5 border-t border-[rgba(148,178,255,0.14)] bg-[rgba(148,178,255,0.03)] flex items-center justify-between font-mono text-[10px] text-secondaryText shrink-0">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>INGESTION STREAM</span>
+        </span>
+        <span class="text-primaryText font-medium">3.6 ops/min</span>
+      </div>
+    </section>
+
+    <!-- PANE 3: ~1084px DETAIL PANE -->
+    <main class="flex-1 h-full bg-base flex flex-col overflow-hidden">
+
+      <!-- Detail Header (64px) -->
+      <div class="h-[64px] px-8 border-b border-[rgba(148,178,255,0.14)] bg-[rgba(148,178,255,0.02)] flex items-center justify-between shrink-0">
+        <div class="flex items-baseline gap-4">
+          <h1 class="text-2xl font-bold font-sans tracking-tight text-primaryText">Event #10421</h1>
+          <span class="font-mono text-xs text-secondaryText font-medium">[SEQ #10421]</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-[rgba(251,191,36,0.12)] border border-[rgba(251,191,36,0.30)] text-statusWarn font-semibold">
+            WARN RECONCILED
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 px-3 py-1 rounded bg-[rgba(148,178,255,0.05)] border border-[rgba(148,178,255,0.14)] font-mono text-xs text-secondaryText">
+            <span>MUTATION TIME:</span>
+            <span class="text-primaryText font-medium">0.8ms</span>
+          </div>
+          <button class="px-3 py-1 rounded bg-[rgba(34,211,238,0.10)] border border-[rgba(34,211,238,0.30)] text-accentCyan font-mono text-xs font-medium hover:bg-[rgba(34,211,238,0.16)]">
+            Trace Lineage
+          </button>
+        </div>
+      </div>
+
+      <!-- Detail Content Area (800px) -->
+      <div class="flex-1 p-8 flex flex-col gap-6 overflow-hidden">
+
+        <!-- KPI Mini-Strip (3 cards) -->
+        <div class="grid grid-cols-3 gap-4 shrink-0">
+          <!-- KPI 1: Level -->
+          <div class="h-[74px] p-3.5 rounded bg-paneBg border border-paneBorder flex flex-col justify-between">
+            <span class="text-[10px] font-mono tracking-label uppercase text-secondaryText">EVENT LEVEL</span>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-statusWarn"></span>
+              <span class="text-base font-bold font-mono text-statusWarn">WARN</span>
+              <span class="text-xs font-mono text-secondaryText ml-2">(schema_check)</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Originating Agent -->
+          <div class="h-[74px] p-3.5 rounded bg-paneBg border border-paneBorder flex flex-col justify-between">
+            <span class="text-[10px] font-mono tracking-label uppercase text-secondaryText">ORIGINATING AGENT</span>
+            <div class="flex items-center gap-2">
+              <span class="text-base font-bold font-mono text-primaryText">sub-144</span>
+              <span class="text-xs font-mono text-secondaryText px-1.5 py-0.5 rounded bg-[rgba(148,178,255,0.06)] border border-[rgba(148,178,255,0.10)]">embedder</span>
+            </div>
+          </div>
+
+          <!-- KPI 3: Target Node -->
+          <div class="h-[74px] p-3.5 rounded bg-paneBg border border-paneBorder flex flex-col justify-between">
+            <span class="text-[10px] font-mono tracking-label uppercase text-secondaryText">TARGET NODE</span>
+            <div class="flex items-center gap-2">
+              <span class="text-base font-bold font-mono text-accentCyan">heuristics-catalog</span>
+              <span class="text-xs font-mono text-secondaryText">(p2_ingest)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-panel: Payload (Flat Translucent Tint) -->
+        <div class="p-4 rounded bg-paneBg border border-paneBorder flex flex-col gap-2 shrink-0">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono tracking-label uppercase text-secondaryText">PAYLOAD</span>
+            <span class="text-[10px] font-mono text-secondaryText">JSON-LD RAW CAPTURE</span>
+          </div>
+          <div class="p-3 rounded bg-[rgba(7,11,22,0.85)] border border-[rgba(148,178,255,0.10)] font-mono text-xs text-primaryText whitespace-nowrap overflow-hidden">
+            <code>{"action":"record_outcome","target":"heuristics-catalog","error":"unreadable payload schema validation skip"}</code>
+          </div>
+        </div>
+
+        <!-- Sub-panel: Hash Chain -->
+        <div class="p-4 rounded bg-paneBg border border-paneBorder flex flex-col gap-3 shrink-0">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono tracking-label uppercase text-secondaryText">HASH CHAIN</span>
+            <span class="text-[10px] font-mono text-secondaryText">SHA-256 MERKLE PROVENANCE</span>
+          </div>
+          <div class="p-3.5 rounded bg-[rgba(7,11,22,0.85)] border border-[rgba(148,178,255,0.10)] flex items-center justify-between font-mono text-xs">
+            <div class="flex items-center gap-4">
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[9px] uppercase tracking-label text-secondaryText">PREVIOUS HASH</span>
+                <span class="font-semibold text-secondaryText">7a1c9e02</span>
+              </div>
+              <span class="text-accentCyan font-bold text-base">&rarr;</span>
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[9px] uppercase tracking-label text-accentCyan font-semibold">COMMITTED ENTRY HASH</span>
+                <span class="font-semibold text-accentCyan">9f2c1ab4</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1 rounded bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.25)] text-statusOk">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+              <span class="text-[11px] font-medium">MERKLE CONTINUITY VERIFIED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-panel: Context -->
+        <div class="p-4 rounded bg-paneBg border border-paneBorder flex flex-col gap-3 flex-1 overflow-hidden">
+          <div class="flex items-center justify-between shrink-0">
+            <span class="text-[10px] font-mono tracking-label uppercase text-secondaryText">CONTEXT</span>
+            <span class="text-[10px] font-mono text-secondaryText">EXECUTION ENVIRONMENT &amp; INVARIANTS</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 shrink-0">
+            <div class="p-3 rounded bg-[rgba(7,11,22,0.85)] border border-[rgba(148,178,255,0.10)] flex flex-col justify-between">
+              <span class="text-[10px] font-mono tracking-label uppercase text-secondaryText mb-1">SEQUENCE NUMBER</span>
+              <span class="font-mono text-sm font-semibold text-primaryText">10421</span>
+            </div>
+            <div class="p-3 rounded bg-[rgba(7,11,22,0.85)] border border-[rgba(148,178,255,0.10)] flex flex-col justify-between">
+              <span class="text-[10px] font-mono tracking-label uppercase text-secondaryText mb-1">OCCURRED TIMESTAMP</span>
+              <span class="font-mono text-sm font-semibold text-primaryText">2026-11-04T11:58:02Z</span>
+            </div>
+          </div>
+
+          <!-- Invariant assertions table -->
+          <div class="rounded border border-[rgba(148,178,255,0.10)] bg-[rgba(7,11,22,0.85)] flex flex-col flex-1 overflow-hidden">
+            <div class="h-7 px-3 border-b border-[rgba(148,178,255,0.10)] flex items-center justify-between text-[10px] font-mono uppercase tracking-label text-secondaryText bg-[rgba(148,178,255,0.02)] shrink-0">
+              <span>RELATED INVARIANT CHECKS</span>
+              <span>4 OF 4 ASSERTIONS PASS</span>
+            </div>
+            <div class="flex-1 divide-y divide-[rgba(148,178,255,0.06)] font-mono text-xs overflow-hidden flex flex-col justify-around px-3 py-1">
+              <div class="flex items-center justify-between py-1">
+                <span class="text-secondaryText">store_readable</span>
+                <span class="text-primaryText">SQLite WAL descriptor sync</span>
+                <span class="text-statusOk font-medium text-[11px]">PASS</span>
+              </div>
+              <div class="flex items-center justify-between py-1">
+                <span class="text-secondaryText">chain_integrity</span>
+                <span class="text-primaryText">SHA-256 Merkle root monotonic</span>
+                <span class="text-statusOk font-medium text-[11px]">PASS</span>
+              </div>
+              <div class="flex items-center justify-between py-1">
+                <span class="text-secondaryText">projection_fresh</span>
+                <span class="text-primaryText">DuckDB AST index lag within 0.14ms</span>
+                <span class="text-statusOk font-medium text-[11px]">PASS</span>
+              </div>
+              <div class="flex items-center justify-between py-1">
+                <span class="text-secondaryText">leases_consistent</span>
+                <span class="text-primaryText">Raft quorum fence tokens validated</span>
+                <span class="text-statusOk font-medium text-[11px]">PASS</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Detail Pane Bottom Status Line (36px) -->
+      <footer class="h-[36px] px-8 border-t border-[rgba(148,178,255,0.14)] bg-[rgba(148,178,255,0.02)] flex items-center justify-between font-mono text-[10px] text-secondaryText shrink-0">
+        <span>VERIFIED AGAINST LEDGER SNAPSHOT 11:55Z</span>
+        <div class="flex items-center gap-6">
+          <span>OPERATOR: <span class="text-primaryText">sigit a.</span></span>
+          <span>SHARD: <span class="text-primaryText">0x3a</span></span>
+          <span>PARTITION: <span class="text-accentCyan">p2_heuristics</span></span>
+        </div>
+      </footer>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900">
+  <title>Know Your Context - Graph River</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #0E1116;
+      color: #D8DEE6;
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono-data {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Hairline borders */
+    .border-hairline {
+      border-color: #1E2630;
+    }
+    /* Specific row styling */
+    .river-row {
+      height: 38px;
+    }
+    .micro-row {
+      height: 19px;
+    }
+    /* Custom SVG overlay for directed relation links */
+    .relation-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] bg-[#0E1116] flex flex-col justify-between overflow-hidden">
+
+  <!-- TOP COMPACT HEADER BAR (44px) -->
+  <header class="h-[44px] w-full bg-[#12161C] border-b border-[#1E2630] px-4 flex items-center justify-between shrink-0 z-30">
+    <!-- Brand / Title -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#FB923C]"></span>
+        <span class="font-bold text-[13px] tracking-wider text-[#D8DEE6] uppercase font-mono-data">KNOW YOUR CONTEXT</span>
+      </div>
+      <span class="text-[11px] font-mono-data text-[#7C8794] px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] rounded">GRAPH // TIME-RIVER</span>
+      <span class="text-[11px] font-mono-data text-[#4ADE80] flex items-center gap-1.5 pl-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+        SYNCED 0.14ms
+      </span>
+    </div>
+
+    <!-- SIX Tiny Inline KPI Readouts -->
+    <div class="flex items-center divide-x divide-[#1E2630] text-[11px] font-mono-data">
+      <div class="px-3 flex items-center gap-1.5">
+        <span class="text-[#7C8794]">NODES</span>
+        <span class="font-bold text-[13px] text-[#D8DEE6] text-right">1,284</span>
+      </div>
+      <div class="px-3 flex items-center gap-1.5">
+        <span class="text-[#7C8794]">EDGES</span>
+        <span class="font-bold text-[13px] text-[#D8DEE6] text-right">3,917</span>
+      </div>
+      <div class="px-3 flex items-center gap-1.5">
+        <span class="text-[#7C8794]">EVENTS</span>
+        <span class="font-bold text-[13px] text-[#D8DEE6] text-right">214</span>
+      </div>
+      <div class="px-3 flex items-center gap-1.5">
+        <span class="text-[#7C8794]">WARN</span>
+        <span class="font-bold text-[13px] text-[#FACC15] text-right">2</span>
+      </div>
+      <div class="px-3 flex items-center gap-1.5">
+        <span class="text-[#7C8794]">ERROR</span>
+        <span class="font-bold text-[13px] text-[#4ADE80] text-right">0</span>
+      </div>
+      <div class="pl-3 flex items-center gap-1.5">
+        <span class="text-[#7C8794]">STORE</span>
+        <span class="font-bold text-[13px] text-[#D8DEE6] text-right">46.2 MB</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN BODY: VERTICAL TIME AXIS RIVER (approx 696px tall) -->
+  <main class="flex-1 w-full flex overflow-hidden relative">
+    
+    <!-- LEFT RAIL: Time Axis (110px) -->
+    <div class="w-[110px] h-full bg-[#0E1116] border-r border-[#1E2630] flex flex-col justify-between py-4 pl-3 pr-2 shrink-0 z-20">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-[10px] font-mono-data text-[#7C8794] uppercase tracking-wider">TIME AXIS</span>
+        <span class="text-[9px] font-mono-data text-[#4ADE80]">LIVE STREAM</span>
+      </div>
+
+      <!-- Hour markers along spine -->
+      <div class="flex flex-col justify-between h-[580px] font-mono-data text-[11px] text-right pr-2">
+        <div class="flex items-center justify-end gap-1.5 text-[#FB923C]">
+          <span>11:58Z</span>
+          <span class="w-1.5 h-[1px] bg-[#FB923C]"></span>
+        </div>
+        <div class="flex items-center justify-end gap-1.5 text-[#7C8794]">
+          <span>11:54Z</span>
+          <span class="w-1.5 h-[1px] bg-[#1E2630]"></span>
+        </div>
+        <div class="flex items-center justify-end gap-1.5 text-[#7C8794]">
+          <span>11:49Z</span>
+          <span class="w-1.5 h-[1px] bg-[#1E2630]"></span>
+        </div>
+        <div class="flex items-center justify-end gap-1.5 text-[#7C8794]">
+          <span>11:44Z</span>
+          <span class="w-1.5 h-[1px] bg-[#1E2630]"></span>
+        </div>
+        <div class="flex items-center justify-end gap-1.5 text-[#7C8794]">
+          <span>11:39Z</span>
+          <span class="w-1.5 h-[1px] bg-[#1E2630]"></span>
+        </div>
+      </div>
+
+      <div class="text-[10px] font-mono-data text-[#7C8794] border-t border-[#1E2630] pt-2">
+        <span>EPOCH 0x8F4E</span>
+      </div>
+    </div>
+
+    <!-- RIVER CONTAINER: Spine + Hanging Node Rows (12 nodes) -->
+    <div class="flex-1 h-full bg-[#0E1116] relative flex flex-col justify-between py-2 px-6 overflow-hidden">
+      
+      <!-- 1px Vertical Spine Line located at x = 32px (inside padding) -->
+      <div class="absolute left-[32px] top-0 bottom-0 w-[1px] bg-[#1E2630] z-0"></div>
+
+      <!-- SVG CONNECTORS & RELATION OVERLAYS -->
+      <svg class="relation-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow-depends" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+            <path d="M 0 0 L 6 3 L 0 6 z" fill="#FB923C"/>
+          </marker>
+          <marker id="arrow-supersedes" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+            <path d="M 0 0 L 6 3 L 0 6 z" fill="#7C8794"/>
+          </marker>
+          <marker id="arrow-parent" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+            <path d="M 0 0 L 6 3 L 0 6 z" fill="#7C8794"/>
+          </marker>
+        </defs>
+
+        <!-- Relation 1: row 0 (heuristics-catalog) to row 1 (retrieval-core) -->
+        <!-- Row 0 midpoint y ~ 26, Row 1 midpoint y ~ 81 -->
+        <path d="M 680 28 C 710 40, 710 70, 680 82" fill="none" stroke="#FB923C" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrow-depends)"/>
+        <!-- Chip 1 at midpoint -->
+        <rect x="692" y="47" width="76" height="16" rx="2" fill="#12161C" stroke="#FB923C" stroke-width="1"/>
+        <text x="730" y="59" fill="#FB923C" font-size="9.5" font-family="JetBrains Mono" text-anchor="middle" font-weight="600">depends_on</text>
+
+        <!-- Relation 2: row 0 (heuristics-catalog) to row 7 (heuristics-v1) -->
+        <!-- Row 0 midpoint y ~ 28, Row 7 midpoint y ~ 412 -->
+        <path d="M 780 28 C 840 180, 840 280, 780 412" fill="none" stroke="#7C8794" stroke-width="1.2" stroke-dasharray="4,4" marker-end="url(#arrow-supersedes)"/>
+        <!-- Chip 2 at midpoint -->
+        <rect x="806" y="210" width="74" height="16" rx="2" fill="#12161C" stroke="#7C8794" stroke-width="1"/>
+        <text x="843" y="222" fill="#D8DEE6" font-size="9.5" font-family="JetBrains Mono" text-anchor="middle">supersedes</text>
+
+        <!-- Relation 3: row 0 (heuristics-catalog) to row 3 (schema-contract-04) -->
+        <!-- Row 0 midpoint y ~ 28, Row 3 midpoint y ~ 192 -->
+        <path d="M 480 28 C 450 80, 450 140, 480 192" fill="none" stroke="#FACC15" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <rect x="424" y="102" width="68" height="16" rx="2" fill="#12161C" stroke="#FACC15" stroke-width="1"/>
+        <text x="458" y="114" fill="#FACC15" font-size="9.5" font-family="JetBrains Mono" text-anchor="middle">contradicts</text>
+
+        <!-- Relation 4: row 0 (heuristics-catalog) to row 5 (symbols) -->
+        <!-- Row 0 midpoint y ~ 28, Row 5 midpoint y ~ 302 -->
+        <path d="M 910 28 C 960 120, 960 210, 910 302" fill="none" stroke="#7C8794" stroke-width="1.2" marker-end="url(#arrow-parent)"/>
+        <rect x="930" y="157" width="66" height="16" rx="2" fill="#12161C" stroke="#1E2630" stroke-width="1"/>
+        <text x="963" y="169" fill="#7C8794" font-size="9.5" font-family="JetBrains Mono" text-anchor="middle">parent_of</text>
+      </svg>
+
+      <!-- 12 NODE ROWS ORDERED BY LAST-TOUCHED TIME -->
+      <div class="w-full flex flex-col justify-between h-full z-10 py-1">
+
+        <!-- ROW 0: heuristics-catalog (SELECTED NODE - ORANGE BORDER + TINT) -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <!-- Connection to spine: horizontal line + dot -->
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FB923C] border-2 border-[#0E1116] -ml-[4px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#FB923C]"></span>
+          </div>
+          <!-- Node Card Container -->
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#FB923C] bg-opacity-95 rounded px-3 flex items-center justify-between shadow-none relative" style="background-color: rgba(251, 146, 60, 0.06); border-color: #FB923C;">
+            <div class="flex items-center gap-3">
+              <span class="text-[10px] font-mono-data text-[#FB923C] font-semibold">SELECTED</span>
+              <span class="font-mono-data text-[12px] font-bold text-[#FB923C]">heuristics-catalog</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#FB923C] text-[10px] font-mono-data text-[#FB923C] rounded">P2 INGEST</span>
+              <span class="text-[11px] text-[#7C8794] hidden lg:inline">Centralized AST pattern arbiter and heuristic mutation engine</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:58:02Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">6 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="font-bold text-[#FB923C] text-[12px] text-right">0.828</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 1: retrieval-core -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">retrieval-core</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P1 CORE</span>
+              <span class="text-[11px] text-[#7C8794]">AST semantic indexing & edge query engine runtime partition</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:57:48Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">6 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.794</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 2: store-mutex (WARN EVENT ROW: AMBER WASH + 2PX AMBER LEFT BAR) -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FACC15] border-2 border-[#0E1116] -ml-[4px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#FACC15]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] border-l-2 border-l-[#FACC15] rounded px-3 flex items-center justify-between" style="background-color: rgba(250, 204, 21, 0.07);">
+            <div class="flex items-center gap-3">
+              <span class="px-1 py-0.2 bg-[#FACC15]/20 text-[#FACC15] text-[9.5px] font-mono-data font-bold rounded">WARN 11:57:15Z</span>
+              <span class="font-mono-data text-[12px] font-bold text-[#FACC15]">store-mutex</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P1 CORE</span>
+              <span class="text-[11px] text-[#FACC15]">unreadable payload: store-mutex-sync payload malformed token header</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#FACC15]">11:57:15Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">5 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#FACC15] text-[12px] font-bold text-right">0.741</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#FACC15]/20 text-[#FACC15] border border-[#FACC15]/40 rounded text-[10px] font-bold">WARN</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 3: schema-contract-04 -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">schema-contract-04</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P4 SCHEMA</span>
+              <span class="text-[11px] text-[#7C8794]">SHACL immutable ontology validator constraints and schema projection</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:56:59Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">4 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.698</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 4: vector-indexer-p3 -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">vector-indexer-p3</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P3 VECTOR</span>
+              <span class="text-[11px] text-[#7C8794]">Dense index HNSW vector projection cache & nearest-neighbor partition</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:56:32Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">4 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.641</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 5: symbols -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">symbols</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P2 EMBED</span>
+              <span class="text-[11px] text-[#7C8794]">Vectorized token AST table and symbol dictionary namespace</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:56:04Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">12 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.612</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 6: lease-arbiter -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">lease-arbiter</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P5 CONSENSUS</span>
+              <span class="text-[11px] text-[#7C8794]">Distributed Raft quorum fence token synchronization coordinator</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:55:40Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">3 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.589</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 7: heuristics-v1 -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#7C8794]">heuristics-v1</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P2 DEPRECATED</span>
+              <span class="text-[11px] text-[#7C8794]">Legacy static AST rule analyzer superseded by v3 classifier model</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#7C8794]">11:55:18Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#7C8794]">2 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#7C8794] text-[12px] text-right">0.542</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#7C8794]/10 text-[#7C8794] border border-[#7C8794]/30 rounded text-[10px]">DEPR</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 8: store -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">store</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P1 STORE</span>
+              <span class="text-[11px] text-[#7C8794]">SQLite WAL transactional descriptor & DuckDB persistent storage</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:54:52Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">11 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.518</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 9: scoring-engine -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">scoring-engine</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P2 INGEST</span>
+              <span class="text-[11px] text-[#7C8794]">Eigenvector convergence & node centrality ranking engine</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:54:21Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">3 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.495</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 10: taxo-closure -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">taxo-closure</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P6 SUBSUMPTION</span>
+              <span class="text-[11px] text-[#7C8794]">Transitive subsumption mapping & ontology hierarchical graph</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:53:49Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">2 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.461</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 11: wal-checkpoint -->
+        <div class="flex items-center h-[38px] w-full relative">
+          <div class="w-[32px] flex items-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-[#1E2630] border border-[#0E1116] -ml-[3px] z-10"></span>
+            <span class="flex-1 h-[1px] bg-[#1E2630]"></span>
+          </div>
+          <div class="flex-1 h-[38px] bg-[#12161C] border border-[#1E2630] rounded px-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono-data text-[12px] font-medium text-[#D8DEE6]">wal-checkpoint</span>
+              <span class="px-1.5 py-0.5 bg-[#0E1116] border border-[#1E2630] text-[10px] font-mono-data text-[#7C8794] rounded">P5 CONSENSUS</span>
+              <span class="text-[11px] text-[#7C8794]">Zero-checkpoint frame log validation and WAL ring flush barrier</span>
+            </div>
+            <div class="flex items-center gap-5 font-mono-data text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">LAST-TOUCHED:</span>
+                <span class="text-[#D8DEE6]">11:53:12Z</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">DEGREE:</span>
+                <span class="text-[#D8DEE6]">2 ARCS</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[#7C8794]">SCORE:</span>
+                <span class="text-[#D8DEE6] text-[12px] text-right">0.412</span>
+              </div>
+              <span class="px-1.5 py-0.5 bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 rounded text-[10px]">OK</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- BOTTOM STRIP: DENSE MICRO-TABLE 'RELATIONS' (Exactly 160px, 8 rows, 11-12px) -->
+  <section class="h-[160px] w-full bg-[#12161C] border-t border-[#1E2630] flex flex-col justify-between shrink-0 z-30 px-4 py-2">
+    <!-- Section Header Bar (20px) -->
+    <div class="flex items-center justify-between border-b border-[#1E2630] pb-1">
+      <div class="flex items-center gap-3">
+        <span class="text-[11px] font-bold font-mono-data text-[#D8DEE6] tracking-wider uppercase">RELATIONS // TOPOLOGY ARCS</span>
+        <span class="text-[10px] font-mono-data text-[#7C8794]">8 ACTIVE EDGES DISPLAYED</span>
+      </div>
+      <div class="flex items-center gap-4 text-[10px] font-mono-data text-[#7C8794]">
+        <span>SOURCE &#8594; RELATION &#8594; TARGET</span>
+        <span class="text-[#FB923C] font-semibold">TARGET SHARD: 0x3a</span>
+      </div>
+    </div>
+
+    <!-- Micro-Table Content: 8 Rows (each ~16px) -->
+    <div class="flex-1 flex flex-col justify-evenly font-mono-data text-[11px] pt-1">
+      
+      <!-- ROW 1 -->
+      <div class="flex items-center justify-between hover:bg-[#1E2630]/30 px-1 py-0.5 rounded">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#FB923C]"></span>
+          <span class="font-bold text-[#FB923C] w-[160px]">heuristics-catalog</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="px-1.5 py-0.2 bg-[#0E1116] border border-[#1E2630] text-[#FB923C] text-[10px] rounded w-[110px] text-center font-medium">depends_on</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">retrieval-core</span>
+        </div>
+        <div class="flex items-center gap-6 text-[#7C8794] text-[10.5px]">
+          <span>WEIGHT: <strong class="text-[#D8DEE6] font-normal font-mono-data">0.94</strong></span>
+          <span>DOMAIN: <span class="text-[#D8DEE6]">P2 &#8594; P1</span></span>
+          <span>MUTATION: <span class="text-[#4ADE80]">DETERMINISTIC PASS</span></span>
+          <span class="text-right w-[80px] text-[#D8DEE6]">9f2c1ab4</span>
+        </div>
+      </div>
+
+      <!-- ROW 2 -->
+      <div class="flex items-center justify-between hover:bg-[#1E2630]/30 px-1 py-0.5 rounded">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#FB923C]"></span>
+          <span class="font-bold text-[#FB923C] w-[160px]">heuristics-catalog</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="px-1.5 py-0.2 bg-[#0E1116] border border-[#1E2630] text-[#7C8794] text-[10px] rounded w-[110px] text-center">supersedes</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="text-[#7C8794] font-medium w-[160px]">heuristics-v1</span>
+        </div>
+        <div class="flex items-center gap-6 text-[#7C8794] text-[10.5px]">
+          <span>WEIGHT: <strong class="text-[#D8DEE6] font-normal font-mono-data">0.88</strong></span>
+          <span>DOMAIN: <span class="text-[#D8DEE6]">P2 &#8594; P2</span></span>
+          <span>MUTATION: <span class="text-[#7C8794]">LEGACY PRUNE</span></span>
+          <span class="text-right w-[80px] text-[#D8DEE6]">8a1d440f</span>
+        </div>
+      </div>
+
+      <!-- ROW 3 -->
+      <div class="flex items-center justify-between hover:bg-[#1E2630]/30 px-1 py-0.5 rounded">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#FB923C]"></span>
+          <span class="font-bold text-[#FB923C] w-[160px]">heuristics-catalog</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="px-1.5 py-0.2 bg-[#0E1116] border border-[#1E2630] text-[#7C8794] text-[10px] rounded w-[110px] text-center">parent_of</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">symbols</span>
+        </div>
+        <div class="flex items-center gap-6 text-[#7C8794] text-[10.5px]">
+          <span>WEIGHT: <strong class="text-[#D8DEE6] font-normal font-mono-data">0.91</strong></span>
+          <span>DOMAIN: <span class="text-[#D8DEE6]">P2 &#8594; P2</span></span>
+          <span>MUTATION: <span class="text-[#4ADE80]">AST TABLE SYNC</span></span>
+          <span class="text-right w-[80px] text-[#D8DEE6]">77e19cb2</span>
+        </div>
+      </div>
+
+      <!-- ROW 4 -->
+      <div class="flex items-center justify-between hover:bg-[#1E2630]/30 px-1 py-0.5 rounded">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#FB923C]"></span>
+          <span class="font-bold text-[#FB923C] w-[160px]">heuristics-catalog</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="px-1.5 py-0.2 bg-[#0E1116] border border-[#FACC15]/40 text-[#FACC15] text-[10px] rounded w-[110px] text-center font-bold">contradicts</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">schema-contract-04</span>
+        </div>
+        <div class="flex items-center gap-6 text-[#7C8794] text-[10.5px]">
+          <span>WEIGHT: <strong class="text-[#FACC15] font-normal font-mono-data">0.65</strong></span>
+          <span>DOMAIN: <span class="text-[#D8DEE6]">P2 &#8594; P4</span></span>
+          <span>MUTATION: <span class="text-[#FACC15]">SHACL ASSERT ALERT</span></span>
+          <span class="text-right w-[80px] text-[#FACC15]">3d81b899</span>
+        </div>
+      </div>
+
+      <!-- ROW 5 -->
+      <div class="flex items-center justify-between hover:bg-[#1E2630]/30 px-1 py-0.5 rounded">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7C8794]"></span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">retrieval-core</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="px-1.5 py-0.2 bg-[#0E1116] border border-[#1E2630] text-[#7C8794] text-[10px] rounded w-[110px] text-center">governs</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">store-mutex</span>
+        </div>
+        <div class="flex items-center gap-6 text-[#7C8794] text-[10.5px]">
+          <span>WEIGHT: <strong class="text-[#D8DEE6] font-normal font-mono-data">0.82</strong></span>
+          <span>DOMAIN: <span class="text-[#D8DEE6]">P1 &#8594; P1</span></span>
+          <span>MUTATION: <span class="text-[#4ADE80]">EXCLUSIVE LEASE OK</span></span>
+          <span class="text-right w-[80px] text-[#D8DEE6]">55c2f0a1</span>
+        </div>
+      </div>
+
+      <!-- ROW 6 -->
+      <div class="flex items-center justify-between hover:bg-[#1E2630]/30 px-1 py-0.5 rounded">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7C8794]"></span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">scoring-engine</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="px-1.5 py-0.2 bg-[#0E1116] border border-[#1E2630] text-[#7C8794] text-[10px] rounded w-[110px] text-center">evaluates</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">vector-indexer-p3</span>
+        </div>
+        <div class="flex items-center gap-6 text-[#7C8794] text-[10.5px]">
+          <span>WEIGHT: <strong class="text-[#D8DEE6] font-normal font-mono-data">0.78</strong></span>
+          <span>DOMAIN: <span class="text-[#D8DEE6]">P2 &#8594; P3</span></span>
+          <span>MUTATION: <span class="text-[#4ADE80]">COSINE REINDEX PASS</span></span>
+          <span class="text-right w-[80px] text-[#D8DEE6]">a012e841</span>
+        </div>
+      </div>
+
+      <!-- ROW 7 -->
+      <div class="flex items-center justify-between hover:bg-[#1E2630]/30 px-1 py-0.5 rounded">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7C8794]"></span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">lease-arbiter</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="px-1.5 py-0.2 bg-[#0E1116] border border-[#1E2630] text-[#7C8794] text-[10px] rounded w-[110px] text-center">fences</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">wal-checkpoint</span>
+        </div>
+        <div class="flex items-center gap-6 text-[#7C8794] text-[10.5px]">
+          <span>WEIGHT: <strong class="text-[#D8DEE6] font-normal font-mono-data">0.96</strong></span>
+          <span>DOMAIN: <span class="text-[#D8DEE6]">P5 &#8594; P5</span></span>
+          <span>MUTATION: <span class="text-[#4ADE80]">RAFT QUORUM CONSISTENT</span></span>
+          <span class="text-right w-[80px] text-[#D8DEE6]">c190bb42</span>
+        </div>
+      </div>
+
+      <!-- ROW 8 -->
+      <div class="flex items-center justify-between hover:bg-[#1E2630]/30 px-1 py-0.5 rounded">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7C8794]"></span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">taxo-closure</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="px-1.5 py-0.2 bg-[#0E1116] border border-[#1E2630] text-[#7C8794] text-[10px] rounded w-[110px] text-center">subsumes</span>
+          <span class="text-[#7C8794]">&#8594;</span>
+          <span class="text-[#D8DEE6] font-medium w-[160px]">store</span>
+        </div>
+        <div class="flex items-center gap-6 text-[#7C8794] text-[10.5px]">
+          <span>WEIGHT: <strong class="text-[#D8DEE6] font-normal font-mono-data">0.71</strong></span>
+          <span>DOMAIN: <span class="text-[#D8DEE6]">P6 &#8594; P1</span></span>
+          <span>MUTATION: <span class="text-[#4ADE80]">ONTOLOGY MERGE OK</span></span>
+          <span class="text-right w-[80px] text-[#D8DEE6]">e4479901</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900">
+  <title>Know Your Context - Graph (Command Center)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#05070D',
+            panel: '#0A0E18',
+            raised: '#0E1424',
+            accent: '#8B5CF6',
+            'hairline': 'rgba(139,92,246,0.12)',
+            'hairline-subtle': 'rgba(139,92,246,0.08)',
+            'text-primary': '#E8E6F5',
+            'text-secondary': '#8B86A8',
+            'status-ok': '#22C55E',
+            'status-warn': '#F59E0B',
+            'status-danger': '#EF4444'
+          },
+          fontFamily: {
+            headline: ['"Space Grotesk"', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      background-color: #05070D;
+      color: #E8E6F5;
+      font-family: 'Inter', sans-serif;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    .dot-grid {
+      background-image: radial-gradient(rgba(139, 92, 246, 0.18) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+    .hairline-border {
+      border: 1px solid rgba(139, 92, 246, 0.14);
+    }
+    .hairline-b {
+      border-bottom: 1px solid rgba(139, 92, 246, 0.14);
+    }
+    .hairline-t {
+      border-top: 1px solid rgba(139, 92, 246, 0.14);
+    }
+    .hairline-r {
+      border-right: 1px solid rgba(139, 92, 246, 0.14);
+    }
+    .hairline-l {
+      border-left: 1px solid rgba(139, 92, 246, 0.14);
+    }
+  </style>
+</head>
+<body class="flex flex-col bg-base text-text-primary h-[900px] w-[1440px] overflow-hidden">
+
+  <!-- TOP STATUS BAND (~25% of 900px => ~200px) -->
+  <header class="w-full bg-panel hairline-b flex flex-col justify-between px-6 pt-3 pb-0 shrink-0 h-[195px] relative">
+    <!-- Meta System Micro Header -->
+    <div class="flex items-center justify-between font-mono text-[10px] tracking-wider text-text-secondary pb-1 hairline-b">
+      <div class="flex items-center gap-4">
+        <span class="text-accent font-semibold tracking-widest">KYC // COMMAND CENTER</span>
+        <span>LOCAL-FIRST GRAPH OPS</span>
+        <span>CLUSTER: node-01.local</span>
+        <span>TOPOLOGY: IN-MEMORY GRAPHBLAS</span>
+      </div>
+      <div class="flex items-center gap-5 text-text-secondary">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-status-ok animate-pulse"></span>
+          <span class="text-text-primary font-medium">RAFT QUORUM 3/3 SYNCED</span>
+        </div>
+        <span>EPOCH: 0x8F4E</span>
+        <span>SHARD: 0x3A</span>
+      </div>
+    </div>
+
+    <!-- Huge Status Band & KPI Readouts -->
+    <div class="grid grid-cols-12 items-center gap-4 py-3">
+      <!-- Left: Big Status text -->
+      <div class="col-span-3 flex flex-col justify-center">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-status-ok shrink-0"></span>
+          <h1 class="font-headline font-bold text-[28px] tracking-tight leading-none text-text-primary whitespace-nowrap">
+            SYSTEM HEALTHY
+          </h1>
+        </div>
+        <p class="font-mono text-[10px] uppercase text-text-secondary tracking-wider mt-2">
+          ALL 11 INVARIANTS VERIFIED · 0 TAIL DRIFT
+        </p>
+      </div>
+
+      <!-- Center: 4 Huge KPI Readouts in a row -->
+      <div class="col-span-6 grid grid-cols-4 gap-2 hairline-l hairline-r px-4">
+        <!-- KPI 1: Nodes -->
+        <div class="flex flex-col">
+          <span class="font-mono text-[10px] text-text-secondary uppercase tracking-widest leading-tight">NODES</span>
+          <span class="font-headline font-bold text-[38px] leading-tight text-text-primary tracking-tight">1,284</span>
+          <span class="font-mono text-[10px] text-status-ok leading-none font-medium">+14 TODAY</span>
+        </div>
+        <!-- KPI 2: Edges -->
+        <div class="flex flex-col">
+          <span class="font-mono text-[10px] text-text-secondary uppercase tracking-widest leading-tight">EDGES</span>
+          <span class="font-headline font-bold text-[38px] leading-tight text-text-primary tracking-tight">3,917</span>
+          <span class="font-mono text-[10px] text-text-secondary leading-none">AVG DEG 3.05</span>
+        </div>
+        <!-- KPI 3: Events Today -->
+        <div class="flex flex-col">
+          <span class="font-mono text-[10px] text-text-secondary uppercase tracking-widest leading-tight">EVENTS TODAY</span>
+          <span class="font-headline font-bold text-[38px] leading-tight text-text-primary tracking-tight">214</span>
+          <span class="font-mono text-[10px] text-text-secondary leading-none">PEAK 42/HR</span>
+        </div>
+        <!-- KPI 4: Store -->
+        <div class="flex flex-col">
+          <span class="font-mono text-[10px] text-text-secondary uppercase tracking-widest leading-tight">STORE</span>
+          <div class="flex items-baseline gap-1">
+            <span class="font-headline font-bold text-[38px] leading-tight text-text-primary tracking-tight">46.2</span>
+            <span class="font-mono text-[14px] text-text-secondary font-medium">MB</span>
+          </div>
+          <span class="font-mono text-[10px] text-text-secondary leading-none">WAL ZERO LAG</span>
+        </div>
+      </div>
+
+      <!-- Right: Clock + LIVE badge -->
+      <div class="col-span-3 flex flex-col items-end justify-center">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2 py-0.5 rounded bg-status-ok/15 text-status-ok font-mono text-[10px] font-bold tracking-wider uppercase border border-status-ok/30">
+            ● LIVE
+          </span>
+          <span class="font-mono text-[10px] text-text-secondary">P99 1.42ms</span>
+        </div>
+        <div class="font-headline font-bold text-[28px] text-text-primary tracking-tight leading-none whitespace-nowrap">
+          2026-11-04T11:58:02Z
+        </div>
+        <span class="font-mono text-[10px] text-text-secondary uppercase tracking-wider mt-1.5">
+          RECONCILIATION: FAIL-CLOSED
+        </span>
+      </div>
+    </div>
+
+    <!-- Sub-Nav inside bottom edge of status band -->
+    <div class="flex items-center justify-between hairline-t pt-0">
+      <div class="flex items-center gap-8 font-mono text-[12px] uppercase tracking-wider">
+        <a href="#" class="py-2.5 text-text-secondary hover:text-text-primary transition-colors">
+          OVERVIEW
+        </a>
+        <a href="#" class="py-2.5 text-text-secondary hover:text-text-primary transition-colors">
+          ACTIVITY
+        </a>
+        <a href="#" class="py-2.5 text-text-primary font-bold border-b-2 border-accent text-accent">
+          GRAPH
+        </a>
+      </div>
+      <div class="flex items-center gap-6 font-mono text-[11px] text-text-secondary">
+        <div class="flex items-center gap-2">
+          <span>LAYOUT:</span>
+          <span class="text-text-primary px-1.5 py-0.5 bg-raised rounded hairline-border text-[10px]">FORCE-DIRECTED (BARNES-HUT)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>PHYSICS:</span>
+          <span class="text-status-ok font-semibold">STABLE</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>SHOWN:</span>
+          <span class="text-text-primary font-semibold">30 / 1,284 NODES</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT (Below Band, 16px Gutters, Grid of Panels) -->
+  <main class="flex-1 w-full p-4 grid grid-cols-4 gap-4 overflow-hidden min-h-0 bg-base">
+    
+    <!-- LEFT 3 COLUMNS: LARGE GRAPH PANEL WITH DOT-GRID AND ~30 NODES -->
+    <section class="col-span-3 bg-panel rounded hairline-border relative overflow-hidden flex flex-col justify-between dot-grid">
+      
+      <!-- Graph Canvas Top HUD Toolbar -->
+      <div class="w-full flex items-center justify-between px-3 py-2 bg-panel/90 hairline-b z-20 font-mono text-[11px]">
+        <div class="flex items-center gap-3">
+          <span class="w-2 h-2 rounded-sm bg-accent"></span>
+          <span class="text-text-primary font-semibold tracking-wider uppercase text-[11px]">KNOWLEDGE GRAPH TOPOLOGY</span>
+          <span class="text-text-secondary">//</span>
+          <span class="text-text-secondary">PRIMARY CLUSTER GRAPH</span>
+          <span class="px-2 py-0.5 bg-raised rounded text-[10px] text-accent hairline-border font-medium">128 DIRECTED EDGES</span>
+        </div>
+        <div class="flex items-center gap-4 text-text-secondary text-[10px]">
+          <div class="flex items-center gap-1.5">
+            <span>ACTIVE FOCUS:</span>
+            <span class="text-accent font-semibold">heuristics-catalog</span>
+          </div>
+          <div class="flex items-center gap-1 bg-raised px-2 py-0.5 rounded hairline-border">
+            <span>ZOOM:</span>
+            <span class="text-text-primary font-semibold">100%</span>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-raised hairline-border text-text-primary hover:text-accent cursor-pointer">RESET VIEW</span>
+        </div>
+      </div>
+
+      <!-- Vector Canvas Area with ~30 Node Cards & SVG Vector Edges -->
+      <div class="relative flex-1 w-full h-full overflow-hidden select-none">
+        
+        <!-- SVG Vector Connections Overlay -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+          <defs>
+            <!-- Marker for active violet edges -->
+            <marker id="arrow-violet" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L6,3 z" fill="#8B5CF6" />
+            </marker>
+            <marker id="arrow-muted" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L6,3 z" fill="rgba(139,92,246,0.3)" />
+            </marker>
+            <marker id="arrow-amber" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L6,3 z" fill="#F59E0B" />
+            </marker>
+          </defs>
+
+          <!-- Focus Node Central Edges (Active Violet #8B5CF6) -->
+          <!-- heuristics-catalog (510, 240) to retrieval-core (260, 160) -->
+          <line x1="470" y1="230" x2="310" y2="175" stroke="#8B5CF6" stroke-width="2.5" marker-end="url(#arrow-violet)" />
+          <!-- heuristics-catalog (510, 240) to heuristics-v1 (470, 320) -->
+          <line x1="510" y1="265" x2="490" y2="310" stroke="#8B5CF6" stroke-width="1.8" stroke-dasharray="3,3" marker-end="url(#arrow-violet)" />
+          <!-- heuristics-catalog (510, 240) to schema-contract-04 (320, 290) -->
+          <line x1="470" y1="255" x2="340" y2="285" stroke="#8B5CF6" stroke-width="2" marker-end="url(#arrow-violet)" />
+          <!-- heuristics-catalog (510, 240) to store-mutex (620, 210) -->
+          <line x1="565" y1="235" x2="615" y2="225" stroke="#8B5CF6" stroke-width="2" marker-end="url(#arrow-violet)" />
+          <!-- heuristics-catalog (510, 240) to concept_419 (590, 310) -->
+          <line x1="560" y1="255" x2="590" y2="295" stroke="#8B5CF6" stroke-width="2" marker-end="url(#arrow-violet)" />
+
+          <!-- Network structural edges (hairline rgba(139,92,246,0.22)) -->
+          <line x1="140" y1="130" x2="220" y2="155" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="270" y1="140" x2="320" y2="90" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="330" y1="90" x2="430" y2="160" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="450" y1="165" x2="590" y2="150" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="640" y1="150" x2="730" y2="200" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="660" y1="230" x2="720" y2="270" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="650" y1="330" x2="740" y2="355" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="540" y1="365" x2="600" y2="405" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="470" y1="345" x2="380" y2="420" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="320" y1="320" x2="350" y2="390" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="280" y1="310" x2="210" y2="375" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="160" y1="375" x2="160" y2="430" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="130" y1="280" x2="220" y2="295" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="130" y1="235" x2="110" y2="175" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="280" y1="185" x2="260" y2="265" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="680" y1="210" x2="750" y2="120" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="570" y1="120" x2="670" y2="120" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="200" y1="65" x2="270" y2="70" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+          <line x1="490" y1="420" x2="480" y2="435" stroke="rgba(139,92,246,0.25)" stroke-width="1" />
+        </svg>
+
+        <!-- Node 1: PRIMARY FOCUS NODE (heuristics-catalog) -->
+        <div class="absolute left-[440px] top-[195px] z-30 bg-panel px-3 py-2 rounded hairline-border ring-2 ring-accent flex flex-col min-w-[170px] shadow-none">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="px-1.5 py-0.5 rounded bg-accent/25 text-accent font-mono text-[9px] font-bold">P2 INGEST</span>
+            <span class="flex items-center gap-1 font-mono text-[9px] text-status-ok font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+              ACTIVE
+            </span>
+          </div>
+          <span class="font-headline font-bold text-[13px] text-text-primary tracking-tight">heuristics-catalog</span>
+          <div class="flex items-center justify-between font-mono text-[10px] text-text-secondary mt-1 pt-1 hairline-t">
+            <span>DEG: 6</span>
+            <span class="text-accent font-medium">CONF: 0.912</span>
+          </div>
+        </div>
+
+        <!-- Node 2: retrieval-core (P1) -->
+        <div class="absolute left-[240px] top-[135px] z-10 bg-raised px-2.5 py-1.5 rounded hairline-border flex flex-col min-w-[125px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P1 CORE</span>
+          <span class="font-headline font-semibold text-[11px] text-text-primary">retrieval-core</span>
+          <div class="flex items-center justify-between font-mono text-[9px] text-text-secondary mt-0.5">
+            <span>DEG: 4</span>
+            <span class="text-status-ok">0.794</span>
+          </div>
+        </div>
+
+        <!-- Node 3: store-mutex (P1) -->
+        <div class="absolute left-[620px] top-[180px] z-10 bg-raised px-2.5 py-1.5 rounded hairline-border flex flex-col min-w-[125px]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[8px] text-text-secondary uppercase">P1 CORE</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+          </div>
+          <span class="font-headline font-semibold text-[11px] text-text-primary">store-mutex</span>
+          <div class="flex items-center justify-between font-mono text-[9px] text-text-secondary mt-0.5">
+            <span>DEG: 5</span>
+            <span>0.741</span>
+          </div>
+        </div>
+
+        <!-- Node 4: schema-contract-04 (P4) -->
+        <div class="absolute left-[240px] top-[260px] z-10 bg-raised px-2.5 py-1.5 rounded hairline-border flex flex-col min-w-[135px]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[8px] text-status-warn uppercase">P4 SCHEMA</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+          </div>
+          <span class="font-headline font-semibold text-[11px] text-text-primary">schema-contract-04</span>
+          <div class="flex items-center justify-between font-mono text-[9px] text-text-secondary mt-0.5">
+            <span>DEG: 3</span>
+            <span>0.698</span>
+          </div>
+        </div>
+
+        <!-- Node 5: heuristics-v1 (P2 DEPR) -->
+        <div class="absolute left-[430px] top-[295px] z-10 bg-raised/80 px-2 py-1 rounded hairline-border flex flex-col min-w-[120px] opacity-80">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[8px] text-text-secondary uppercase">P2 INGEST</span>
+            <span class="font-mono text-[8px] text-status-warn">▲ DEPR</span>
+          </div>
+          <span class="font-headline font-semibold text-[10px] text-text-secondary">heuristics-v1</span>
+          <div class="flex items-center justify-between font-mono text-[8px] text-text-secondary">
+            <span>DEG: 2</span>
+            <span>SUPERSEDED</span>
+          </div>
+        </div>
+
+        <!-- Node 6: concept_419 (P2) -->
+        <div class="absolute left-[585px] top-[280px] z-10 bg-raised px-2.5 py-1.5 rounded hairline-border flex flex-col min-w-[115px]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[8px] text-text-secondary uppercase">P2 INGEST</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+          </div>
+          <span class="font-headline font-semibold text-[11px] text-text-primary">concept_419</span>
+          <div class="flex items-center justify-between font-mono text-[9px] text-text-secondary mt-0.5">
+            <span>DEG: 3</span>
+            <span>0.274</span>
+          </div>
+        </div>
+
+        <!-- Node 7: edge_rel_882 (P2) -->
+        <div class="absolute left-[390px] top-[125px] z-10 bg-raised px-2.5 py-1.5 rounded hairline-border flex flex-col min-w-[115px]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[8px] text-text-secondary uppercase">P2 INGEST</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+          </div>
+          <span class="font-headline font-semibold text-[11px] text-text-primary">edge_rel_882</span>
+          <div class="flex items-center justify-between font-mono text-[9px] text-text-secondary mt-0.5">
+            <span>DEG: 2</span>
+            <span>0.412</span>
+          </div>
+        </div>
+
+        <!-- Node 8: query-planner (P1) -->
+        <div class="absolute left-[280px] top-[75px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[105px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P1 CORE</span>
+          <span class="font-headline text-[10px] text-text-primary">query-planner</span>
+        </div>
+
+        <!-- Node 9: vector-cache (P1) -->
+        <div class="absolute left-[110px] top-[115px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[105px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P1 CORE</span>
+          <span class="font-headline text-[10px] text-text-primary">vector-cache</span>
+        </div>
+
+        <!-- Node 10: store.db (P1) -->
+        <div class="absolute left-[30px] top-[95px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P1: store.db</span>
+        </div>
+
+        <!-- Node 11: kg_entity_4402 (P2) -->
+        <div class="absolute left-[45px] top-[175px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P2: kg_entity_4402</span>
+        </div>
+
+        <!-- Node 12: hnsw-indexer (P3) -->
+        <div class="absolute left-[105px] top-[220px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[95px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P3 VECTOR</span>
+          <span class="font-headline text-[10px] text-text-primary">hnsw-indexer</span>
+        </div>
+
+        <!-- Node 13: embedding-p4 (P3) -->
+        <div class="absolute left-[35px] top-[275px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P3: embedding-p4</span>
+        </div>
+
+        <!-- Node 14: shacl-validator (P4) -->
+        <div class="absolute left-[145px] top-[325px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[105px]">
+          <span class="font-mono text-[8px] text-status-warn uppercase">P4 SCHEMA</span>
+          <span class="font-headline text-[10px] text-text-primary">shacl-validator</span>
+        </div>
+
+        <!-- Node 15: jsonld-v14 (P4) -->
+        <div class="absolute left-[105px] top-[385px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P4: jsonld-v14</span>
+        </div>
+
+        <!-- Node 16: raft-lease-mgr (P5) -->
+        <div class="absolute left-[255px] top-[345px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[100px]">
+          <span class="font-mono text-[8px] text-status-ok uppercase">P5 CONSENSUS</span>
+          <span class="font-headline text-[10px] text-text-primary">raft-lease-mgr</span>
+        </div>
+
+        <!-- Node 17: quorum-gate (P5) -->
+        <div class="absolute left-[200px] top-[405px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P5: quorum-gate</span>
+        </div>
+
+        <!-- Node 18: rule-indexer (P6) -->
+        <div class="absolute left-[365px] top-[375px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P6: rule-indexer</span>
+        </div>
+
+        <!-- Node 19: metric-probe (P7) -->
+        <div class="absolute left-[460px] top-[395px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P7: metric-probe</span>
+        </div>
+
+        <!-- Node 20: subsume-dag (P6) -->
+        <div class="absolute left-[520px] top-[350px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[100px]">
+          <span class="font-mono text-[8px] text-accent uppercase">P6 INFERENCE</span>
+          <span class="font-headline text-[10px] text-text-primary">subsume-dag</span>
+        </div>
+
+        <!-- Node 21: scoring-engine (P2) -->
+        <div class="absolute left-[630px] top-[375px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[95px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P2: scoring-engine</span>
+        </div>
+
+        <!-- Node 22: eval-loop-async (P7) -->
+        <div class="absolute left-[625px] top-[320px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[95px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P7 EVAL</span>
+          <span class="font-headline text-[10px] text-text-primary">eval-loop-async</span>
+        </div>
+
+        <!-- Node 23: duckdb-compact (P1) -->
+        <div class="absolute left-[660px] top-[235px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[95px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P1 CORE</span>
+          <span class="font-headline text-[10px] text-text-primary">duckdb-compact</span>
+        </div>
+
+        <!-- Node 24: p4-domain (P6) -->
+        <div class="absolute left-[725px] top-[300px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P6: p4-domain</span>
+        </div>
+
+        <!-- Node 25: lease-arbiter (P5) -->
+        <div class="absolute left-[745px] top-[205px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[90px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P5: lease-arbiter</span>
+        </div>
+
+        <!-- Node 26: ipc-socket (P1) -->
+        <div class="absolute left-[735px] top-[125px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P1: ipc-socket</span>
+        </div>
+
+        <!-- Node 27: wal-checkpoint (P5) -->
+        <div class="absolute left-[625px] top-[145px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[95px]">
+          <span class="font-mono text-[8px] text-status-ok uppercase">P5 CONSENSUS</span>
+          <span class="font-headline text-[10px] text-text-primary">wal-checkpoint</span>
+        </div>
+
+        <!-- Node 28: vector-indexer-p3 (P3) -->
+        <div class="absolute left-[505px] top-[110px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col min-w-[100px]">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P3 VECTOR</span>
+          <span class="font-headline text-[10px] text-text-primary">vector-indexer-...</span>
+        </div>
+
+        <!-- Node 29: ast-parser (P4) -->
+        <div class="absolute left-[620px] top-[80px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P4: ast-parser</span>
+        </div>
+
+        <!-- Node 30: audit-ledger (P7) -->
+        <div class="absolute left-[170px] top-[60px] z-10 bg-raised px-2 py-1 rounded hairline-border flex flex-col">
+          <span class="font-mono text-[8px] text-text-secondary uppercase">P7: audit-ledger</span>
+        </div>
+
+      </div>
+
+      <!-- Floating Legend P1..P7 inside large panel bottom -->
+      <div class="w-full flex items-center justify-between px-3 py-2 bg-panel/95 hairline-t z-20 font-mono text-[10px]">
+        <div class="flex items-center gap-3">
+          <span class="text-text-secondary uppercase font-bold tracking-wider">DOMAINS LEGEND:</span>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-status-ok"></span><span>P1 Core Execution</span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-accent"></span><span class="text-text-primary font-semibold">P2 Heuristics</span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-text-secondary"></span><span>P3 Vector Space</span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-status-warn"></span><span>P4 Schema</span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-status-ok"></span><span>P5 Consensus</span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-accent/60"></span><span>P6 Inference</span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-400"></span><span>P7 Feedback</span></div>
+        </div>
+        <div class="flex items-center gap-3 text-text-secondary">
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-0.5 bg-accent"></span>
+            <span>ACTIVE RELATION</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-0.5 border-t border-dashed border-accent"></span>
+            <span>SUPERSEDES</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT 1 COLUMN: SELECTED NODE INSPECTOR + DOMAINS DISTRIBUTION PANEL -->
+    <aside class="col-span-1 flex flex-col gap-4 overflow-hidden h-full min-h-0">
+      
+      <!-- Panel 1: Selected Node Inspector -->
+      <div class="flex-1 bg-panel rounded hairline-border p-3.5 flex flex-col justify-between overflow-hidden">
+        <div>
+          <!-- Header with Title & Domain Chip -->
+          <div class="flex items-center justify-between pb-2 hairline-b mb-3">
+            <span class="font-mono text-[10px] uppercase tracking-wider text-text-secondary font-semibold">SELECTED NODE</span>
+            <span class="px-2 py-0.5 rounded bg-accent/20 text-accent font-mono text-[10px] font-bold border border-accent/40">
+              CHIP P2
+            </span>
+          </div>
+
+          <!-- Main Entity Identifier -->
+          <div class="mb-3">
+            <span class="font-mono text-[9px] uppercase tracking-wider text-text-secondary block">IDENTIFIER</span>
+            <div class="font-headline font-bold text-[16px] text-text-primary tracking-tight">heuristics-catalog</div>
+            <p class="font-body text-[11px] text-text-secondary mt-0.5 leading-snug">
+              Central heuristic pattern evaluator across partitioned subgraphs.
+            </p>
+          </div>
+
+          <!-- Convergence Scores Grid (4 boxes) -->
+          <div class="mb-3">
+            <span class="font-mono text-[9px] uppercase tracking-wider text-text-secondary block mb-1.5">CONVERGENCE SCORES</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-raised p-2 rounded hairline-border">
+                <span class="font-mono text-[9px] text-text-secondary block">PRECISION (P)</span>
+                <span class="font-headline font-bold text-[16px] text-text-primary">0.828</span>
+              </div>
+              <div class="bg-raised p-2 rounded hairline-border">
+                <span class="font-mono text-[9px] text-text-secondary block">ENTROPY (M)</span>
+                <span class="font-headline font-bold text-[16px] text-text-primary">0.341</span>
+              </div>
+              <div class="bg-raised p-2 rounded hairline-border">
+                <span class="font-mono text-[9px] text-text-secondary block">EIGEN (E)</span>
+                <span class="font-headline font-bold text-[16px] text-text-primary">0.898</span>
+              </div>
+              <div class="bg-raised p-2 rounded hairline-border">
+                <span class="font-mono text-[9px] text-text-secondary block">CONFIDENCE</span>
+                <span class="font-headline font-bold text-[16px] text-accent">0.912</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Relations List -->
+          <div class="mb-3">
+            <span class="font-mono text-[9px] uppercase tracking-wider text-text-secondary block mb-1">RELATIONS</span>
+            <div class="space-y-1.5 font-mono text-[10px]">
+              <div class="flex items-center justify-between p-1.5 rounded bg-raised hairline-border">
+                <span class="text-accent font-semibold">depends_on</span>
+                <span class="text-text-primary">retrieval-core</span>
+              </div>
+              <div class="flex items-center justify-between p-1.5 rounded bg-raised hairline-border">
+                <span class="text-text-secondary">supersedes</span>
+                <span class="text-text-secondary">heuristics-v1</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evidence List -->
+          <div>
+            <span class="font-mono text-[9px] uppercase tracking-wider text-text-secondary block mb-1">EVIDENCE</span>
+            <div class="flex items-center gap-2 font-mono text-[10px]">
+              <span class="px-2 py-1 rounded bg-raised text-text-primary hairline-border">ev-0081</span>
+              <span class="px-2 py-1 rounded bg-raised text-text-primary hairline-border">ev-0082</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verification Receipt Status -->
+        <div class="pt-2 hairline-t flex items-center justify-between font-mono text-[11px]">
+          <span class="text-text-secondary">INTEGRITY:</span>
+          <span class="px-2 py-0.5 rounded bg-status-ok/15 text-status-ok font-semibold border border-status-ok/30 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+            VERIFIED 5/5
+          </span>
+        </div>
+      </div>
+
+      <!-- Panel 2: Domains Chips P1..P7 with Counts -->
+      <div class="bg-panel rounded hairline-border p-3.5 shrink-0 flex flex-col justify-between">
+        <div class="flex items-center justify-between pb-2 hairline-b mb-2">
+          <span class="font-mono text-[10px] uppercase tracking-wider text-text-secondary font-semibold">DOMAINS PARTITIONS</span>
+          <span class="font-mono text-[10px] text-text-secondary">7 TOTAL</span>
+        </div>
+
+        <div class="space-y-1 font-mono text-[10px]">
+          <div class="flex items-center justify-between p-1.5 rounded bg-raised hairline-border hover:bg-raised/80 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-status-ok/20 text-status-ok text-center font-bold text-[9px] flex items-center justify-center">P1</span>
+              <span class="text-text-primary">Core Runtime Execution</span>
+            </div>
+            <span class="text-text-secondary font-semibold">3,842</span>
+          </div>
+
+          <div class="flex items-center justify-between p-1.5 rounded bg-accent/15 border border-accent/40 font-semibold">
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-accent text-panel text-center font-bold text-[9px] flex items-center justify-center">P2</span>
+              <span class="text-accent font-bold">Heuristics & Ingestion</span>
+            </div>
+            <span class="text-accent font-bold">2,118</span>
+          </div>
+
+          <div class="flex items-center justify-between p-1.5 rounded bg-raised hairline-border hover:bg-raised/80 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-text-secondary/20 text-text-secondary text-center font-bold text-[9px] flex items-center justify-center">P3</span>
+              <span class="text-text-primary">Vector Space & Embeddings</span>
+            </div>
+            <span class="text-text-secondary font-semibold">1,940</span>
+          </div>
+
+          <div class="flex items-center justify-between p-1.5 rounded bg-raised hairline-border hover:bg-raised/80 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-status-warn/20 text-status-warn text-center font-bold text-[9px] flex items-center justify-center">P4</span>
+              <span class="text-text-primary">JSON-LD Schema & Invariants</span>
+            </div>
+            <span class="text-text-secondary font-semibold">1,656</span>
+          </div>
+
+          <div class="flex items-center justify-between p-1.5 rounded bg-raised hairline-border hover:bg-raised/80 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-status-ok/20 text-status-ok text-center font-bold text-[9px] flex items-center justify-center">P5</span>
+              <span class="text-text-primary">Consensus, Leases & Fencing</span>
+            </div>
+            <span class="text-text-secondary font-semibold">1,112</span>
+          </div>
+
+          <div class="flex items-center justify-between px-1.5 py-1 text-[9px] text-text-secondary">
+            <span>P6 Inference: <strong class="text-text-primary">1,280</strong></span>
+            <span>P7 Feedback: <strong class="text-text-primary">869</strong></span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- BOTTOM ONE-LINE MONO TICKER -->
+  <footer class="w-full h-[28px] bg-panel hairline-t px-6 flex items-center justify-between shrink-0 font-mono text-[10px] text-text-secondary">
+    <div class="flex items-center gap-4">
+      <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+      <span class="text-text-primary tracking-wider">
+        SEQ 10421 · CHAIN 9f2c1ab4 · AGENT agent-2 · LEASES 3 · DEBT 12
+      </span>
+    </div>
+    <div class="flex items-center gap-6">
+      <span>VIEWPORT: 1440x900 FIXED</span>
+      <span>EPOCH: 0x8F4E</span>
+      <span class="text-status-ok font-semibold">● FLUSH DETERMINISTIC</span>
+    </div>
+  </footer>
+
+</body>
+</html>

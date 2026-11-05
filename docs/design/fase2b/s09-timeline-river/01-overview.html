@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=1440, height=900, initial-scale=1.0" name="viewport"/>
+<title>Know Your Context — Overview River</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            base: "#0E1116",
+            panel: "#12161C",
+            hairline: "#1E2630",
+            primaryText: "#D8DEE6",
+            secondaryText: "#7C8794",
+            accent: "#FB923C",
+            statusOk: "#4ADE80",
+            statusWarn: "#FACC15",
+            statusDanger: "#F87171"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #0E1116;
+      color: #D8DEE6;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-size: 15px;
+      line-height: 1;
+    }
+    .mono-token {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Fixed pixel grid helpers for dense engineering HUD */
+    .row-h {
+      height: 34px;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] max-w-[1440px] max-h-[900px] flex flex-col bg-[#0E1116] text-[#D8DEE6] overflow-hidden antialiased border border-[#1E2630]">
+<!-- TOP HEADER (44px) -->
+<header class="flex justify-between items-center h-[44px] w-full px-3 gap-3 bg-[#12161C] border-b border-[#1E2630] shrink-0 font-headline text-[11px] leading-tight select-none">
+<!-- Left: Brand, Version & Nav -->
+<div class="flex items-center gap-4 h-full">
+<div class="flex items-center gap-2">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#FB923C]"></span>
+<span class="font-display text-[12px] font-bold tracking-wider text-[#D8DEE6] uppercase">KYS2</span>
+<span class="text-[#7C8794] text-[11px] font-mono">v14.2 LOCAL-FIRST</span>
+</div>
+<div class="h-3.5 w-px bg-[#1E2630]"></div>
+<!-- Navigation Links from Shared Components with exact active state rule -->
+<nav class="flex items-center h-full gap-1">
+<button class="text-[#D8DEE6] border-b-2 border-[#FB923C] h-full flex items-center font-medium px-2 transition-colors duration-75 text-[11px]">Overview</button>
+<button class="text-[#7C8794] hover:text-[#D8DEE6] hover:bg-[#1E2630] h-full flex items-center px-2 transition-colors duration-75 text-[11px]">Activity</button>
+<button class="text-[#7C8794] hover:text-[#D8DEE6] hover:bg-[#1E2630] h-full flex items-center px-2 transition-colors duration-75 text-[11px]">Graph</button>
+</nav>
+</div>
+<!-- Center/Right: 6 KPI Readouts + Status Lag -->
+<div class="flex items-center gap-3 font-mono text-[11px]">
+<div class="flex items-center gap-3 text-[#7C8794]">
+<span>NODES <strong class="text-[#D8DEE6] font-medium">1,284</strong></span>
+<span class="text-[#1E2630]">·</span>
+<span>EDGES <strong class="text-[#D8DEE6] font-medium">3,917</strong></span>
+<span class="text-[#1E2630]">·</span>
+<span>EVENTS <strong class="text-[#D8DEE6] font-medium">214</strong></span>
+<span class="text-[#1E2630]">·</span>
+<span>WARN <strong class="text-[#FACC15] font-medium">2</strong></span>
+<span class="text-[#1E2630]">·</span>
+<span>ERROR <strong class="text-[#4ADE80] font-medium">0</strong></span>
+<span class="text-[#1E2630]">·</span>
+<span>STORE <strong class="text-[#D8DEE6] font-medium">46.2 MB</strong></span>
+<span class="text-[#1E2630]">·</span>
+<span class="text-[#4ADE80] flex items-center gap-1">
+<span class="w-1 h-1 rounded-full bg-[#4ADE80] inline-block animate-pulse"></span>
+          STREAMING 0ms LAG
+        </span>
+</div>
+<div class="h-3.5 w-px bg-[#1E2630] mx-1"></div>
+<!-- Trailing Icon Actions -->
+<div class="flex items-center gap-1 text-[#7C8794]">
+<button class="p-1 hover:text-[#D8DEE6] hover:bg-[#1E2630] transition-colors duration-75 rounded flex items-center justify-center" data-icon="terminal" title="Terminal">
+<span class="material-symbols-outlined">terminal</span>
+</button>
+<button class="p-1 hover:text-[#D8DEE6] hover:bg-[#1E2630] transition-colors duration-75 rounded flex items-center justify-center" data-icon="refresh" title="Refresh">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+<button class="p-1 hover:text-[#D8DEE6] hover:bg-[#1E2630] transition-colors duration-75 rounded flex items-center justify-center" data-icon="settings" title="Settings">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- MAIN TIME RIVER BODY (Vertical Time Axis) -->
+<main class="w-full flex-1 flex flex-row overflow-hidden bg-[#0E1116] relative">
+<!-- LEFT RAIL: Time Ruler (110px width) -->
+<aside class="w-[110px] min-w-[110px] max-w-[110px] h-full bg-[#12161C] border-r border-[#1E2630] flex flex-col justify-between py-3 relative select-none font-mono text-[11px] text-[#7C8794]">
+<!-- Continuous vertical spine dot / guide indicator -->
+<div class="absolute right-0 top-0 bottom-0 w-[1px] bg-[#1E2630]"></div>
+<!-- Tick Labels (11:58Z down to 11:39Z) -->
+<div class="flex flex-col h-full justify-between pr-2.5 pl-3">
+<div class="flex items-center justify-between group">
+<span class="text-[#D8DEE6] font-medium">11:58Z</span>
+<span class="w-2 h-[1px] bg-[#FB923C]"></span>
+</div>
+<div class="flex items-center justify-between group">
+<span>11:54Z</span>
+<span class="w-1.5 h-[1px] bg-[#1E2630]"></span>
+</div>
+<div class="flex items-center justify-between group">
+<span>11:49Z</span>
+<span class="w-1.5 h-[1px] bg-[#1E2630]"></span>
+</div>
+<div class="flex items-center justify-between group">
+<span>11:44Z</span>
+<span class="w-1.5 h-[1px] bg-[#1E2630]"></span>
+</div>
+<div class="flex items-center justify-between group">
+<span>11:39Z</span>
+<span class="w-1.5 h-[1px] bg-[#1E2630]"></span>
+</div>
+</div>
+</aside>
+<!-- MAIN RIVER CANVAS (1330px width) -->
+<section class="w-[1330px] flex-1 flex flex-col h-full overflow-hidden bg-[#0E1116]">
+<!-- Table Header Bar (28px) -->
+<div class="h-[28px] min-h-[28px] w-full px-4 flex items-center bg-[#12161C] border-b border-[#1E2630] font-headline text-[10px] uppercase tracking-wider text-[#7C8794]">
+<div class="w-[110px]">TIMESTAMP</div>
+<div class="w-[74px]">LEVEL</div>
+<div class="w-[100px]">AGENT</div>
+<div class="w-[170px]">ACTION</div>
+<div class="flex-1">TARGET NODE / PAYLOAD</div>
+<div class="w-[110px] text-right font-mono">SHA8 HASH</div>
+</div>
+<!-- Event Rows (12 rows exactly, 37px each = 444px total height, fits precisely) -->
+<div class="flex-1 flex flex-col justify-start w-full font-mono text-[11px] leading-tight divide-y divide-[#1E2630]">
+<!-- Row 1 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[5px] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#FB923C] border-2 border-[#0E1116]"></div>
+<div class="w-[110px] text-[#D8DEE6] font-medium">11:58:02Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">agent-2</div>
+<div class="w-[170px] text-[#FB923C]">mutate_graph</div>
+<div class="flex-1 text-[#D8DEE6]">heuristics-catalog</div>
+<div class="w-[110px] text-right text-[#7C8794]">9f2c1ab4</div>
+</div>
+<!-- Row 2 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:57:48Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">sub-139</div>
+<div class="w-[170px] text-[#D8DEE6]">record_outcome</div>
+<div class="flex-1 text-[#D8DEE6]">vector-cache-tier-04</div>
+<div class="w-[110px] text-right text-[#7C8794]">8a1d440f</div>
+</div>
+<!-- Row 3: WARN Row (Amber wash, 2px amber bar, text highlight) -->
+<div class="h-[37px] px-4 flex items-center relative bg-[#FACC15]/10 border-l-2 border-[#FACC15] -ml-[2px] transition-colors duration-75">
+<div class="absolute -left-[5px] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#FACC15] border-2 border-[#0E1116]"></div>
+<div class="w-[110px] text-[#FACC15] font-medium">11:57:15Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#FACC15]/20 text-[#FACC15] font-semibold">WARN</span></div>
+<div class="w-[100px] text-[#FACC15]">operator</div>
+<div class="w-[170px] text-[#FACC15]">log_event</div>
+<div class="flex-1 text-[#FACC15] font-medium">unreadable payload</div>
+<div class="w-[110px] text-right text-[#FACC15]">77e19cb2</div>
+</div>
+<!-- Row 4 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:56:59Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">sub-144</div>
+<div class="w-[170px] text-[#D8DEE6]">query</div>
+<div class="flex-1 text-[#D8DEE6]">duckdb-memory-ast</div>
+<div class="w-[110px] text-right text-[#7C8794]">3d81b899</div>
+</div>
+<!-- Row 5 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:56:32Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">agent-2</div>
+<div class="w-[170px] text-[#FB923C]">apply_improvement</div>
+<div class="flex-1 text-[#D8DEE6]">knn-embedding-space</div>
+<div class="w-[110px] text-right text-[#7C8794]">55c2f0a1</div>
+</div>
+<!-- Row 6 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:56:04Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">sub-139</div>
+<div class="w-[170px] text-[#D8DEE6]">record_outcome</div>
+<div class="flex-1 text-[#D8DEE6]">raft-delta-compaction</div>
+<div class="w-[110px] text-right text-[#7C8794]">a012e841</div>
+</div>
+<!-- Row 7 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:55:40Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">operator</div>
+<div class="w-[170px] text-[#FB923C]">apply_improvement</div>
+<div class="flex-1 text-[#D8DEE6]">concept-419-edge</div>
+<div class="w-[110px] text-right text-[#7C8794]">c190bb42</div>
+</div>
+<!-- Row 8 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:55:18Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">sub-144</div>
+<div class="w-[170px] text-[#D8DEE6]">mutate_graph</div>
+<div class="flex-1 text-[#D8DEE6]">dag-subgraph-tier-2</div>
+<div class="w-[110px] text-right text-[#7C8794]">e4479901</div>
+</div>
+<!-- Row 9 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:54:52Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">agent-2</div>
+<div class="w-[170px] text-[#D8DEE6]">query</div>
+<div class="flex-1 text-[#D8DEE6]">heuristics-catalog</div>
+<div class="w-[110px] text-right text-[#7C8794]">43dcb102</div>
+</div>
+<!-- Row 10 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:54:21Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">sub-139</div>
+<div class="w-[170px] text-[#D8DEE6]">record_outcome</div>
+<div class="flex-1 text-[#D8DEE6]">vector-cache-tier-04</div>
+<div class="w-[110px] text-right text-[#7C8794]">78fe23a9</div>
+</div>
+<!-- Row 11 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:53:49Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">sub-144</div>
+<div class="w-[170px] text-[#FB923C]">apply_improvement</div>
+<div class="flex-1 text-[#D8DEE6]">dag-subgraph-tier-2</div>
+<div class="w-[110px] text-right text-[#7C8794]">69bca711</div>
+</div>
+<!-- Row 12 -->
+<div class="h-[37px] px-4 flex items-center relative hover:bg-[#12161C] transition-colors duration-75">
+<div class="absolute -left-[3px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2630]"></div>
+<div class="w-[110px] text-[#D8DEE6]">11:53:12Z</div>
+<div class="w-[74px]"><span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#4ADE80]/10 text-[#4ADE80]">INFO</span></div>
+<div class="w-[100px] text-[#D8DEE6]">operator</div>
+<div class="w-[170px] text-[#D8DEE6]">query</div>
+<div class="flex-1 text-[#D8DEE6]">kg-entity-4402</div>
+<div class="w-[110px] text-right text-[#7C8794]">12e094fa</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BOTTOM STRIP (Height 170px, Micro-Table) -->
+<footer class="h-[170px] min-h-[170px] max-h-[170px] w-full bg-[#12161C] border-t border-[#1E2630] flex flex-col shrink-0 select-none">
+<!-- Micro-table Header Bar (26px) -->
+<div class="h-[26px] min-h-[26px] w-full px-4 flex items-center justify-between border-b border-[#1E2630] bg-[#0E1116] font-mono text-[11px]">
+<div class="flex items-center gap-2">
+<span class="font-headline font-semibold text-[11px] text-[#D8DEE6] tracking-tight">DOMAIN HEALTH &amp; TOPOLOGY</span>
+<span class="text-[#1E2630]">|</span>
+<span class="text-[#7C8794]">SHARD: <span class="text-[#D8DEE6]">0x3a</span></span>
+<span class="text-[#1E2630]">·</span>
+<span class="text-[#7C8794]">LATENCY: <span class="text-[#4ADE80]">0.14ms</span></span>
+<span class="text-[#1E2630]">·</span>
+<span class="text-[#7C8794]">PARTITIONS: <span class="text-[#D8DEE6]">7 ACTIVE</span></span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[#7C8794]">CONSENSUS: <span class="text-[#4ADE80]">QUORUM_REACHED</span></span>
+<span class="text-[#1E2630]">|</span>
+<span class="text-[#7C8794]">OVERALL HEALTH: <span class="text-[#4ADE80] font-medium">99.4% OK</span></span>
+</div>
+</div>
+<!-- Micro-table Data Rows (7 Partitions, each exactly 20px) -->
+<div class="flex-1 flex flex-col justify-between py-1 px-4 font-mono text-[11px] divide-y divide-[#1E2630]/40">
+<!-- P1 -->
+<div class="flex items-center justify-between py-0.5 leading-none hover:bg-[#1E2630]/30">
+<div class="w-[300px] flex items-center gap-2">
+<span class="text-[#7C8794]">P1</span>
+<span class="text-[#D8DEE6]">Core Runtime</span>
+</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">184 nodes</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">492 edges</div>
+<div class="w-[150px] text-right text-[#7C8794]">0.98 score</div>
+<div class="w-[120px] text-right">
+<span class="text-[#4ADE80] font-medium">STATUS: OK</span>
+</div>
+</div>
+<!-- P2 -->
+<div class="flex items-center justify-between py-0.5 leading-none hover:bg-[#1E2630]/30">
+<div class="w-[300px] flex items-center gap-2">
+<span class="text-[#7C8794]">P2</span>
+<span class="text-[#D8DEE6]">Ingest &amp; Heuristics</span>
+</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">412 nodes</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">1,204 edges</div>
+<div class="w-[150px] text-right text-[#7C8794]">0.94 score</div>
+<div class="w-[120px] text-right">
+<span class="text-[#4ADE80] font-medium">STATUS: OK</span>
+</div>
+</div>
+<!-- P3 -->
+<div class="flex items-center justify-between py-0.5 leading-none hover:bg-[#1E2630]/30">
+<div class="w-[300px] flex items-center gap-2">
+<span class="text-[#7C8794]">P3</span>
+<span class="text-[#D8DEE6]">Vector Space &amp; Embeddings</span>
+</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">229 nodes</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">812 edges</div>
+<div class="w-[150px] text-right text-[#7C8794]">0.91 score</div>
+<div class="w-[120px] text-right">
+<span class="text-[#4ADE80] font-medium">STATUS: OK</span>
+</div>
+</div>
+<!-- P4: WARN STATUS -->
+<div class="flex items-center justify-between py-0.5 leading-none bg-[#FACC15]/5 hover:bg-[#FACC15]/10">
+<div class="w-[300px] flex items-center gap-2">
+<span class="text-[#FACC15] font-semibold">P4</span>
+<span class="text-[#FACC15]">Schema &amp; SHACL Invariants</span>
+</div>
+<div class="w-[150px] text-right text-[#FACC15]">156 nodes</div>
+<div class="w-[150px] text-right text-[#FACC15]">530 edges</div>
+<div class="w-[150px] text-right text-[#FACC15]">0.88 score</div>
+<div class="w-[120px] text-right">
+<span class="text-[#FACC15] font-semibold">STATUS: WARN</span>
+</div>
+</div>
+<!-- P5 -->
+<div class="flex items-center justify-between py-0.5 leading-none hover:bg-[#1E2630]/30">
+<div class="w-[300px] flex items-center gap-2">
+<span class="text-[#7C8794]">P5</span>
+<span class="text-[#D8DEE6]">Consensus &amp; Raft Leases</span>
+</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">112 nodes</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">344 edges</div>
+<div class="w-[150px] text-right text-[#7C8794]">0.96 score</div>
+<div class="w-[120px] text-right">
+<span class="text-[#4ADE80] font-medium">STATUS: OK</span>
+</div>
+</div>
+<!-- P6 -->
+<div class="flex items-center justify-between py-0.5 leading-none hover:bg-[#1E2630]/30">
+<div class="w-[300px] flex items-center gap-2">
+<span class="text-[#7C8794]">P6</span>
+<span class="text-[#D8DEE6]">Inference &amp; Subsumption</span>
+</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">128 nodes</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">382 edges</div>
+<div class="w-[150px] text-right text-[#7C8794]">0.93 score</div>
+<div class="w-[120px] text-right">
+<span class="text-[#4ADE80] font-medium">STATUS: OK</span>
+</div>
+</div>
+<!-- P7 -->
+<div class="flex items-center justify-between py-0.5 leading-none hover:bg-[#1E2630]/30">
+<div class="w-[300px] flex items-center gap-2">
+<span class="text-[#7C8794]">P7</span>
+<span class="text-[#D8DEE6]">Feedback &amp; Audit Ledger</span>
+</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">63 nodes</div>
+<div class="w-[150px] text-right text-[#D8DEE6]">153 edges</div>
+<div class="w-[150px] text-right text-[#7C8794]">0.97 score</div>
+<div class="w-[120px] text-right">
+<span class="text-[#4ADE80] font-medium">STATUS: OK</span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

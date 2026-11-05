@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1440, height=900, initial-scale=1.0"/>
+<title>Know Your Context - Activity Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          base: '#F6F8FB',
+          card: '#FFFFFF',
+          hairline: '#E3E8F0',
+          ptext: '#0F1B2D',
+          stext: '#5B6B82',
+          accent: '#2563EB',
+          ok: '#16A34A',
+          warn: '#D97706',
+          danger: '#DC2626'
+        },
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          mono: ['Roboto Mono', 'monospace']
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background-color: #F6F8FB;
+    color: #0F1B2D;
+    font-family: 'Inter', sans-serif;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  .hairline-b { border-bottom: 1px solid #E3E8F0; }
+  .hairline-t { border-top: 1px solid #E3E8F0; }
+  .hairline-r { border-right: 1px solid #E3E8F0; }
+  .hairline-l { border-left: 1px solid #E3E8F0; }
+  .hairline-all { border: 1px solid #E3E8F0; }
+</style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-col bg-[#F6F8FB] text-[#0F1B2D]">
+
+  <!-- TOP NAVIGATION BAR (64px) - FULL TOP NAVIGATION, NO SIDEBAR -->
+  <header class="h-[64px] w-full bg-[#FFFFFF] hairline-b px-6 flex items-center justify-between shrink-0">
+    <!-- Left: Brand Logo & Title -->
+    <div class="flex items-center gap-8">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center text-white font-mono font-bold text-xs tracking-wider">
+          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <span class="font-semibold text-base tracking-tight text-[#0F1B2D]">Know Your Context</span>
+      </div>
+
+      <!-- Navigation Tabs (Active = Activity with 2px blue underline) -->
+      <nav class="flex items-center gap-1 h-[64px]">
+        <a href="#" class="h-full px-3 flex items-center text-sm font-medium text-[#5B6B82] hover:text-[#0F1B2D] border-b-2 border-transparent">Overview</a>
+        <a href="#" class="h-full px-3 flex items-center text-sm font-semibold text-[#2563EB] border-b-2 border-[#2563EB]">Activity</a>
+        <a href="#" class="h-full px-3 flex items-center text-sm font-medium text-[#5B6B82] hover:text-[#0F1B2D] border-b-2 border-transparent">Graph</a>
+        <a href="#" class="h-full px-3 flex items-center text-sm font-medium text-[#5B6B82] hover:text-[#0F1B2D] border-b-2 border-transparent">Metrics</a>
+        <a href="#" class="h-full px-3 flex items-center text-sm font-medium text-[#5B6B82] hover:text-[#0F1B2D] border-b-2 border-transparent">Health</a>
+      </nav>
+    </div>
+
+    <!-- Right: Search field + Gear + Avatar -->
+    <div class="flex items-center gap-4">
+      <div class="relative w-72">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#5B6B82]">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <input type="text" placeholder="Search knowledge graph..." class="w-full h-9 pl-9 pr-8 text-xs bg-[#F6F8FB] hairline-all rounded-lg text-[#0F1B2D] placeholder-[#5B6B82] focus:outline-none"/>
+        <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[10px] font-mono text-[#5B6B82]">⌘K</span>
+      </div>
+
+      <!-- Gear icon -->
+      <button class="w-9 h-9 rounded-lg hairline-all bg-[#FFFFFF] flex items-center justify-center text-[#5B6B82] hover:text-[#0F1B2D]">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
+
+      <!-- Avatar -->
+      <div class="w-9 h-9 rounded-lg bg-[#E3E8F0] hairline-all flex items-center justify-center font-mono font-semibold text-xs text-[#0F1B2D]">
+        SA
+      </div>
+    </div>
+  </header>
+
+  <!-- BREADCRUMB BAND (40px) -->
+  <div class="h-[40px] w-full bg-[#FFFFFF] hairline-b px-6 flex items-center justify-between shrink-0 text-xs">
+    <div class="flex items-center gap-2">
+      <span class="text-[#5B6B82]">Home</span>
+      <span class="text-[#5B6B82]">/</span>
+      <span class="font-semibold text-[#0F1B2D]">Activity Log</span>
+      <span class="ml-3 px-2 py-0.5 rounded bg-[#F6F8FB] hairline-all font-mono text-[11px] text-[#5B6B82]">CLUSTER: node-01.local</span>
+      <span class="px-2 py-0.5 rounded bg-[#F6F8FB] hairline-all font-mono text-[11px] text-[#16A34A] font-medium">RAFT 3/3 SYNCED</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="h-7 px-3 rounded-lg hairline-all bg-[#FFFFFF] text-[#5B6B82] hover:text-[#0F1B2D] font-medium flex items-center gap-1.5 text-xs">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Export CSV
+      </button>
+      <button class="h-7 px-3 rounded-lg bg-[#2563EB] text-white font-medium hover:bg-blue-700 flex items-center gap-1.5 text-xs">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Stream Logs
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN VIEWPORT CONTAINER (Stacked Full-Width Horizontal Bands) -->
+  <main class="flex-1 w-full flex flex-col p-4 gap-3 overflow-hidden">
+
+    <!-- BAND 1: FILTER TOOLBAR (48px) -->
+    <div class="h-[48px] w-full bg-[#FFFFFF] hairline-all rounded-xl px-4 flex items-center justify-between shrink-0">
+      <!-- Left Filters: Levels & Agents -->
+      <div class="flex items-center gap-5">
+        <!-- Level Chips -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-[11px] font-medium text-[#5B6B82] uppercase tracking-wider mr-1">Level:</span>
+          <button class="h-7 px-2.5 rounded-lg bg-[#2563EB] text-white text-xs font-semibold">ALL</button>
+          <button class="h-7 px-2.5 rounded-lg bg-[#F6F8FB] hairline-all text-[#16A34A] text-xs font-medium hover:bg-green-50">INFO (1,498)</button>
+          <button class="h-7 px-2.5 rounded-lg bg-[#F6F8FB] hairline-all text-[#D97706] text-xs font-medium hover:bg-amber-50">WARN (21)</button>
+          <button class="h-7 px-2.5 rounded-lg bg-[#F6F8FB] hairline-all text-[#DC2626] text-xs font-medium hover:bg-red-50">ERROR (2)</button>
+        </div>
+
+        <div class="h-4 w-[1px] bg-[#E3E8F0]"></div>
+
+        <!-- Agent Chips -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-[11px] font-medium text-[#5B6B82] uppercase tracking-wider mr-1">Agent:</span>
+          <button class="h-7 px-2.5 rounded-lg bg-[#F6F8FB] hairline-all text-[#0F1B2D] text-xs font-mono font-medium hover:bg-gray-100">agent-2</button>
+          <button class="h-7 px-2.5 rounded-lg bg-[#F6F8FB] hairline-all text-[#0F1B2D] text-xs font-mono font-medium hover:bg-gray-100">sub-144</button>
+          <button class="h-7 px-2.5 rounded-lg bg-[#F6F8FB] hairline-all text-[#0F1B2D] text-xs font-mono font-medium hover:bg-gray-100">operator</button>
+        </div>
+      </div>
+
+      <!-- Right Filters: Search + Autoscroll toggle ON -->
+      <div class="flex items-center gap-4">
+        <div class="relative w-64">
+          <input type="text" placeholder="Filter by action, node, hash..." class="w-full h-7 pl-3 pr-3 text-xs bg-[#F6F8FB] hairline-all rounded-lg text-[#0F1B2D] placeholder-[#5B6B82] focus:outline-none"/>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium text-[#0F1B2D]">AUTOSCROLL</span>
+          <div class="w-9 h-5 rounded-full bg-[#2563EB] flex items-center p-0.5 cursor-pointer">
+            <div class="w-4 h-4 rounded-full bg-white ml-auto"></div>
+          </div>
+          <span class="text-[11px] font-mono text-[#16A34A] font-semibold">ON</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BAND 2: FULL-WIDTH TABLE WITH EXACTLY 14 VISIBLE ROWS (Card Container) -->
+    <!-- Table container fits 14 rows comfortably with zero ellipsis and zero vertical scroll -->
+    <div class="flex-1 w-full bg-[#FFFFFF] hairline-all rounded-xl flex flex-col overflow-hidden shrink-0">
+      <!-- Table Header (28px) -->
+      <div class="h-[28px] w-full bg-[#F6F8FB] hairline-b px-4 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center text-[10px] font-mono uppercase tracking-wider text-[#5B6B82] font-semibold shrink-0">
+        <div>SEQ</div>
+        <div>LEVEL</div>
+        <div>AGENT</div>
+        <div>ACTION</div>
+        <div>DESCRIPTION</div>
+        <div>NODE</div>
+        <div>SHA8</div>
+        <div class="text-right">TIME</div>
+      </div>
+
+      <!-- Table Body: EXACTLY 14 VISIBLE ROWS (Each ~21px-22px, perfectly proportioned) -->
+      <div class="flex-1 flex flex-col divide-y divide-[#E3E8F0] justify-between text-xs">
+        
+        <!-- Row 1: Selected Row (#10421) -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center bg-blue-50/70 border-l-2 border-[#2563EB]">
+          <div class="font-mono text-[#2563EB] font-bold">10421</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D] font-medium">sub-144</div>
+          <div class="font-mono text-[#0F1B2D]">mutate_graph</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Attached directional edge heuristics-cat to AST hierarchy</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">heuristics-catalog</div>
+          <div class="font-mono text-[#2563EB] font-medium">9f2c1ab4</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:58:02Z</div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10420</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">agent-2</div>
+          <div class="font-mono text-[#0F1B2D]">ingest.commit</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Streaming batch AST ingested across local shard cluster partition</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">staging-dag-v2</div>
+          <div class="font-mono text-[#5B6B82]">8a1d440f</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:57:44Z</div>
+        </div>
+
+        <!-- Row 3: WARN Row (Amber-tinted) -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center bg-amber-50/70 border-l-2 border-[#D97706]">
+          <div class="font-mono text-[#D97706] font-bold">10419</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-[#D97706]">WARN</span></div>
+          <div class="font-mono text-[#0F1B2D]">operator</div>
+          <div class="font-mono text-[#D97706] font-medium">log.event</div>
+          <div class="text-[#D97706] font-medium truncate">unreadable payload schema validation skipped on non-fatal entity</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">schema-contract-04</div>
+          <div class="font-mono text-[#D97706] font-medium">77e19cb2</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:56:58Z</div>
+        </div>
+
+        <!-- Row 4 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10418</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">agent-2</div>
+          <div class="font-mono text-[#0F1B2D]">eval.pipeline</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Topological sort invariant asserted over 1,284 verified nodes</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">heuristics-catalog</div>
+          <div class="font-mono text-[#5B6B82]">3d81b899</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:55:12Z</div>
+        </div>
+
+        <!-- Row 5 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10417</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">operator</div>
+          <div class="font-mono text-[#0F1B2D]">record.state</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Snapshot sync completed to DuckDB memory table cache store</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">store-mutex</div>
+          <div class="font-mono text-[#5B6B82]">55c2f0a1</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:54:30Z</div>
+        </div>
+
+        <!-- Row 6 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10416</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">sub-144</div>
+          <div class="font-mono text-[#0F1B2D]">query.knn</div>
+          <div class="text-[#0F1B2D] truncate font-normal">K-nearest embedding search across HNSW vector index cluster</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">vector-cache-evict</div>
+          <div class="font-mono text-[#5B6B82]">a012e841</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:53:15Z</div>
+        </div>
+
+        <!-- Row 7 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10415</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">operator</div>
+          <div class="font-mono text-[#0F1B2D]">log.event</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Raft log delta compaction lag evaluated with zero drift across cluster</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">raft-lease-quorum</div>
+          <div class="font-mono text-[#5B6B82]">e4479901</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:52:04Z</div>
+        </div>
+
+        <!-- Row 8 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10414</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">agent-2</div>
+          <div class="font-mono text-[#0F1B2D]">mutate_graph</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Resolved cross-context link between heuristic rule and token cache</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">heuristics-catalog</div>
+          <div class="font-mono text-[#5B6B82]">43dcb102</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:50:41Z</div>
+        </div>
+
+        <!-- Row 9 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10413</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">operator</div>
+          <div class="font-mono text-[#0F1B2D]">acquire.lease</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Acquired exclusive maintenance lease on cluster schema registry root</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">catalog-root</div>
+          <div class="font-mono text-[#5B6B82]">78fe23a9</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:49:19Z</div>
+        </div>
+
+        <!-- Row 10 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10412</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">agent-2</div>
+          <div class="font-mono text-[#0F1B2D]">record.state</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Hypothesis score upgraded to nominal 0.94 following peer evaluation</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">scoring-engine</div>
+          <div class="font-mono text-[#5B6B82]">69bca711</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:48:02Z</div>
+        </div>
+
+        <!-- Row 11 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10411</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">sub-144</div>
+          <div class="font-mono text-[#0F1B2D]">mutate_graph</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Added 12 semantic edges to dag subgraph partition tier 2 in storage</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">p4-domain</div>
+          <div class="font-mono text-[#5B6B82]">12e094fa</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:46:25Z</div>
+        </div>
+
+        <!-- Row 12 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10410</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">agent-2</div>
+          <div class="font-mono text-[#0F1B2D]">acquire.lease</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Acquired exclusive write lease for vector embeddings partition store</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">embedding-store</div>
+          <div class="font-mono text-[#5B6B82]">b82ef455</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:45:00Z</div>
+        </div>
+
+        <!-- Row 13 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10409</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">operator</div>
+          <div class="font-mono text-[#0F1B2D]">log.event</div>
+          <div class="text-[#0F1B2D] truncate font-normal">Garbage collector swept 41 orphaned ephemeral nodes with zero barrier</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">gc-vacuum-v4</div>
+          <div class="font-mono text-[#5B6B82]">4e112d7c</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:43:18Z</div>
+        </div>
+
+        <!-- Row 14 -->
+        <div class="px-4 py-1 grid grid-cols-[70px_80px_90px_130px_1fr_170px_95px_175px] items-center hover:bg-gray-50">
+          <div class="font-mono text-[#0F1B2D]">10408</div>
+          <div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-[#16A34A]">INFO</span></div>
+          <div class="font-mono text-[#0F1B2D]">sub-144</div>
+          <div class="font-mono text-[#0F1B2D]">record.state</div>
+          <div class="text-[#0F1B2D] truncate font-normal">DuckDB append vector table partitioned and committed cleanly</div>
+          <div class="font-mono text-[#5B6B82] text-[11px]">duckdb-compact</div>
+          <div class="font-mono text-[#5B6B82]">33190ab7</div>
+          <div class="font-mono text-[#5B6B82] text-[11px] text-right">2026-11-04T11:41:52Z</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BOTTOM DOCK: EXACTLY 220px TALL 'Selected event detail' ARRANGED AS HORIZONTAL COLUMNS -->
+    <section class="h-[220px] w-full bg-[#FFFFFF] hairline-all rounded-xl p-4 flex flex-col shrink-0 overflow-hidden">
+      <!-- Dock Header Strip -->
+      <div class="flex items-center justify-between pb-3 hairline-b mb-3 shrink-0">
+        <div class="flex items-center gap-3">
+          <h2 class="text-sm font-semibold text-[#0F1B2D]">Selected event detail</h2>
+          <span class="px-2 py-0.5 rounded bg-blue-50 text-[#2563EB] font-mono text-xs font-bold hairline-all">SEQ 10421</span>
+          <span class="px-2 py-0.5 rounded bg-green-50 text-[#16A34A] font-mono text-[11px] font-medium">Status: Committed to DAG</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="h-6 px-2.5 rounded bg-[#F6F8FB] hairline-all text-[#5B6B82] hover:text-[#0F1B2D] text-xs font-medium">Copy JSON-LD</button>
+          <button class="h-6 px-2.5 rounded bg-[#2563EB] text-white text-xs font-medium hover:bg-blue-700">Trace Invariant</button>
+        </div>
+      </div>
+
+      <!-- Dock Content: 3 HORIZONTAL COLUMNS (Span across width) -->
+      <div class="grid grid-cols-3 gap-4 flex-1 overflow-hidden">
+        
+        <!-- Column 1: Event Provenance & Invariants -->
+        <div class="bg-[#F6F8FB] hairline-all rounded-lg p-3 flex flex-col justify-between text-xs">
+          <div>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-[#5B6B82] font-semibold mb-2">EVENT PROVENANCE</div>
+            <div class="space-y-1.5 font-mono text-xs">
+              <div class="flex justify-between">
+                <span class="text-[#5B6B82]">Sequence:</span>
+                <span class="font-bold text-[#0F1B2D]">10421</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#5B6B82]">Originating Agent:</span>
+                <span class="font-bold text-[#0F1B2D]">sub-144</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#5B6B82]">Target Node:</span>
+                <span class="text-[#2563EB]">heuristics-catalog</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#5B6B82]">Occurred Timestamp:</span>
+                <span class="text-[#0F1B2D]">2026-11-04T11:58:02Z</span>
+              </div>
+            </div>
+          </div>
+          <div class="pt-2 hairline-t flex items-center justify-between text-[11px] font-mono">
+            <span class="text-[#5B6B82]">Invariant Checks:</span>
+            <span class="text-[#16A34A] font-semibold">4 OF 4 ASSERTIONS PASS</span>
+          </div>
+        </div>
+
+        <!-- Column 2: Cryptographic Hash Chain & Verification -->
+        <div class="bg-[#F6F8FB] hairline-all rounded-lg p-3 flex flex-col justify-between text-xs">
+          <div>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-[#5B6B82] font-semibold mb-2">CRYPTOGRAPHIC HASH CHAIN</div>
+            <div class="p-2.5 bg-[#FFFFFF] hairline-all rounded-md font-mono text-xs mb-2">
+              <div class="text-[10px] text-[#5B6B82] uppercase mb-1">SHA-256 Merkle Provenance:</div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-gray-100 text-[#0F1B2D] font-bold">7a1c9e02</span>
+                <span class="text-[#2563EB] font-bold">→</span>
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-[#2563EB] font-bold">9f2c1ab4</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] font-mono text-[#16A34A]">
+              <svg class="w-3.5 h-3.5 text-[#16A34A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span>MERKLE CONTINUITY VERIFIED</span>
+            </div>
+          </div>
+          <div class="pt-2 hairline-t flex items-center justify-between text-[11px] font-mono text-[#5B6B82]">
+            <span>Consensus: Raft 3/3 OK</span>
+            <span>Latency: 0.84ms</span>
+          </div>
+        </div>
+
+        <!-- Column 3: Payload Preview (One Line) & Execution Context -->
+        <div class="bg-[#F6F8FB] hairline-all rounded-lg p-3 flex flex-col justify-between text-xs">
+          <div>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-[#5B6B82] font-semibold mb-2">PAYLOAD PREVIEW (JSON-LD)</div>
+            <div class="p-2 bg-[#FFFFFF] hairline-all rounded-md font-mono text-[11px] text-[#0F1B2D] overflow-hidden whitespace-nowrap mb-2">
+              {"action":"mutate_graph","target":"heuristics-catalog","edge_type":"depends_on","source":"sub-144"}
+            </div>
+            <div class="space-y-1 font-mono text-[11px] text-[#5B6B82]">
+              <div class="flex justify-between">
+                <span>Mutation Reversible:</span>
+                <span class="text-[#0F1B2D]">NO (Committed)</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Lease Status:</span>
+                <span class="text-[#16A34A] font-semibold">Active Fence Verified</span>
+              </div>
+            </div>
+          </div>
+          <div class="pt-2 hairline-t flex items-center justify-between text-[11px] font-mono text-[#5B6B82]">
+            <span>Thread: worker_04</span>
+            <span>PID: 4108</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
