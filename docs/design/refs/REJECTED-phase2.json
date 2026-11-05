@@ -1,0 +1,128 @@
+[
+ {
+  "cand": 1,
+  "title": "Icon Grid",
+  "shot_url": "https://dribbble.com/shots/13383940-Icon-Grid",
+  "reason": "logo construction diagram (1 mark, bukan icon set)"
+ },
+ {
+  "cand": 7,
+  "title": "Design Tip - Perfect Colors for the Button States",
+  "shot_url": "https://dribbble.com/shots/17268026-Design-Tip-Perfect-Colors-for-the-Button-States",
+  "reason": "cover slide carousel, 0 button dirender"
+ },
+ {
+  "cand": 8,
+  "title": "Button states micro-interaction",
+  "shot_url": "https://dribbble.com/shots/24835079-Button-states-micro-interaction",
+  "reason": "single-state button saja, tanpa label/state lain"
+ },
+ {
+  "cand": 9,
+  "title": "Buttons: Cheat sheet \u2013 Nucleus UI",
+  "shot_url": "https://dribbble.com/shots/24087119-Buttons-Cheat-sheet-Nucleus-UI",
+  "reason": "single-state button di atas gradient dekoratif"
+ },
+ {
+  "cand": 14,
+  "title": "Fintech Payment Request Empty State UI",
+  "shot_url": "https://dribbble.com/shots/27775621-Fintech-Payment-Request-Empty-State-UI",
+  "reason": "dashboard terisi penuh data \u2014 0 empty state"
+ },
+ {
+  "cand": 28,
+  "title": "Breadcrumbs \u2014 Untitled UI",
+  "shot_url": "https://dribbble.com/shots/26589304-Breadcrumbs-Untitled-UI",
+  "reason": "full dashboard page; breadcrumb hanya 1 instans <10% frame"
+ },
+ {
+  "cand": 37,
+  "title": "Animated Icon Set \u2014 Micro-Interactions",
+  "shot_url": "https://dribbble.com/shots/27807153-Animated-Icon-Set-Micro-Interactions",
+  "reason": "icon set statis 35 glyph \u2014 1 state per ikon, 0 frame animasi"
+ },
+ {
+  "cand": 38,
+  "title": "Banking UI Micro Interactions",
+  "shot_url": "https://dribbble.com/shots/26373488-Banking-UI-Micro-Interactions",
+  "reason": "marketing dashboard 1 frame + kartu 3D miring"
+ },
+ {
+  "cand": 39,
+  "title": "UI Micro Interaction",
+  "shot_url": "https://dribbble.com/shots/27414130-UI-Micro-Interaction",
+  "reason": "landing page statis, 0 sequence interaksi"
+ },
+ {
+  "cand": 41,
+  "title": "Comments Widget \u2014 Animated Dark Mode Reply UI, Micro Interaction",
+  "shot_url": "https://dribbble.com/shots/27804676-Comments-Widget-Animated-Dark-Mode-Reply-UI-Micro-Interaction",
+  "reason": "comments widget 1 frame statis (bukan sequence)"
+ },
+ {
+  "cand": 42,
+  "title": "Human-in-the-Loop AI Agent UI \u00b7 Approval Flow Animation",
+  "shot_url": "https://dribbble.com/shots/27780283-Human-in-the-Loop-AI-Agent-UI-Approval-Flow-Animation",
+  "reason": "approval flow 1 frame statis, 0 timing/easing"
+ },
+ {
+  "cand": 43,
+  "title": "AI Design Kit - From Tokens to Components",
+  "shot_url": "https://dribbble.com/shots/27345016-AI-Design-Kit-From-Tokens-to-Components",
+  "reason": "dashboard investasi concept render, 0 token"
+ },
+ {
+  "cand": 46,
+  "title": "Stability - Foundation & Design System",
+  "shot_url": "https://dribbble.com/shots/26821947-Stability-Foundation-Design-System",
+  "reason": "component showcase tanpa nilai token (0 hex/nama)"
+ },
+ {
+  "cand": 47,
+  "title": "Autovera - Full Design System & UI Overview",
+  "shot_url": "https://dribbble.com/shots/27091957-Autovera-Full-Design-System-UI-Overview",
+  "reason": "landing hero foto + 3D, 0 token"
+ },
+ {
+  "cand": 48,
+  "title": "Typeset - TypeScale Plugin For Figma",
+  "shot_url": "https://dribbble.com/shots/27793057-Typeset-TypeScale-Plugin-For-Figma",
+  "reason": "kolase marketing miring, app-icon dominan, type scale = bar abstrak"
+ },
+ {
+  "cand": 51,
+  "title": "Modus. Typography Scale",
+  "shot_url": "https://dribbble.com/shots/27241285-Modus-Typography-Scale",
+  "reason": "logo wordmark + tick ring, 0 skala tipe"
+ },
+ {
+  "cand": 53,
+  "title": "Eyewear Brand Style Guide with Typography and Color System",
+  "shot_url": "https://dribbble.com/shots/27808464-Eyewear-Brand-Style-Guide-with-Typography-and-Color-System",
+  "reason": "hero landing + 3D crystal + foto, 0 nilai tipe/warna"
+ },
+ {
+  "cand": 62,
+  "title": "Weather Widget Loading Animation \u2014 Skeleton to Empty State",
+  "shot_url": "https://dribbble.com/shots/27768526-Weather-Widget-Loading-Animation-Skeleton-to-Empty-State",
+  "reason": "single frame skeleton saja (bukan sequence)"
+ },
+ {
+  "cand": 63,
+  "title": "Skeleton Loading Animation [FREE DOWNLOAD]",
+  "shot_url": "https://dribbble.com/shots/7056106-Skeleton-Loading-Animation-FREE-DOWNLOAD",
+  "reason": "mobile-only dalam device mockup + blobs dekoratif"
+ },
+ {
+  "cand": 68,
+  "title": "HelloUI Design System \u2013 for SaaS & Enterprise Products",
+  "shot_url": "https://dribbble.com/shots/27046172-HelloUI-Design-System-for-SaaS-Enterprise-Products",
+  "reason": "banner marketing, 0 swatch bernama/bernilai"
+ },
+ {
+  "cand": 69,
+  "title": "Isora \u2013 SaaS Web App Design System",
+  "shot_url": "https://dribbble.com/shots/25290092-Isora-SaaS-Web-App-Design-System",
+  "reason": "showcase isometrik 3D, 0 hex/nama pada ~50 swatch"
+ }
+]
