@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Know Your Context — Graph Explorer</title>
+<style>
+  :root {
+    --bg-page: #EBEDF1;
+    --bg-app: #FFFFFF;
+    --bg-canvas: #F8F8F9;
+    --border: #F0F0F0;
+    --border-strong: #E5E7EB;
+    --text-1: #18181B;
+    --text-2: #4B5563;
+    --text-3: #9CA3AF;
+    --ink: #111827;
+    --accent: #7C3AED;
+    --accent-soft: #EDE9FE;
+    --edge: #D4D4D8;
+    --dot: #E4E4E7;
+    --radius-card: 12px;
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    --shadow-float: 0 8px 30px rgba(0,0,0,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg-page);
+    font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    color: var(--text-1);
+  }
+  button { font-family: inherit; cursor: pointer; background: none; border: none; }
+
+  /* ============ APP WINDOW ============ */
+  .app {
+    width: min(1440px, 96vw); height: min(900px, 94vh);
+    background: var(--bg-app);
+    border-radius: 16px;
+    box-shadow: var(--shadow-float);
+    display: flex; overflow: hidden;
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    width: 176px; flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    background: var(--bg-app);
+  }
+  .logo-row {
+    height: 48px; display: flex; align-items: center; gap: 8px;
+    padding: 0 14px; border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+    background: linear-gradient(135deg, #A855F7, #EC4899 55%, #F97316);
+  }
+  .logo-name { font-size: 14px; font-weight: 600; }
+  .logo-badge {
+    font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em;
+    background: var(--accent); color: #fff;
+    padding: 2px 6px; border-radius: 4px;
+  }
+  .logo-chevron { margin-left: auto; color: var(--text-3); font-size: 11px; }
+
+  .nav { flex: 1; overflow-y: auto; padding: 12px 8px; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-section { margin-bottom: 18px; }
+  .nav-label {
+    font-size: 10.5px; color: var(--text-3);
+    padding: 0 8px; margin-bottom: 4px; letter-spacing: 0.02em;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    height: 30px; padding: 0 8px; border-radius: 7px;
+    font-size: 13px; font-weight: 500; color: var(--text-2);
+    width: 100%; text-align: left; transition: background 0.12s;
+  }
+  .nav-item:hover { background: #F7F7F8; }
+  .nav-item.active { background: #F4F4F5; color: var(--ink); }
+  .nav-item svg { width: 15px; height: 15px; stroke-width: 1.5; flex-shrink: 0; }
+
+  .promo {
+    margin: 0 10px 10px; padding: 10px;
+    border: 1px solid var(--border-strong); border-radius: 10px;
+  }
+  .promo-head { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .promo-icon {
+    width: 26px; height: 26px; border-radius: 7px; background: var(--ink);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .promo-icon svg { width: 13px; height: 13px; stroke: #fff; }
+  .promo-title { font-size: 11.5px; font-weight: 600; }
+  .promo-new {
+    font-size: 8px; font-weight: 700; background: var(--accent-soft);
+    color: var(--accent); padding: 1.5px 5px; border-radius: 4px; letter-spacing: 0.05em;
+  }
+  .promo-desc { font-size: 10.5px; color: var(--text-2); line-height: 1.4; margin-bottom: 7px; }
+  .promo-links { display: flex; justify-content: space-between; font-size: 11px; }
+  .promo-links .cta { font-weight: 600; color: var(--text-1); }
+  .promo-links .dismiss { color: var(--text-3); }
+
+  .user-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-top: 1px solid var(--border);
+  }
+  .avatar {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #A855F7, #EC4899 55%, #F97316);
+  }
+  .user-name { font-size: 12px; font-weight: 500; }
+  .user-menu { margin-left: auto; color: var(--text-3); font-weight: 700; letter-spacing: 1px; }
+
+  /* ============ MAIN ============ */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  .topbar {
+    height: 47px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 16px;
+    padding: 0 16px; border-bottom: 1px solid var(--border);
+  }
+  .crumb { font-size: 13px; color: var(--text-2); }
+  .crumb b { color: var(--text-1); font-weight: 600; }
+  .cmdk {
+    margin: 0 auto; width: 210px; height: 28px;
+    background: #F5F6F7; border-radius: 999px;
+    display: flex; align-items: center; gap: 7px; padding: 0 12px;
+    color: var(--text-3); font-size: 12px;
+  }
+  .cmdk kbd {
+    margin-left: auto; font-family: inherit; font-size: 10.5px;
+    background: #fff; border: 1px solid var(--border-strong);
+    border-radius: 4px; padding: 1px 5px; color: var(--text-2);
+  }
+  .balance { font-size: 13px; font-weight: 600; }
+  .btn-primary {
+    height: 30px; padding: 0 12px; border-radius: 8px;
+    background: #111111; color: #fff; font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: #000; }
+
+  .subbar {
+    height: 43px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 16px; border-bottom: 1px solid var(--border);
+  }
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-2); transition: background 0.12s;
+  }
+  .icon-btn:hover { background: #F4F4F5; }
+  .icon-btn svg { width: 16px; height: 16px; stroke-width: 1.6; }
+  .subbar-node-icon {
+    width: 18px; height: 18px; border-radius: 5px;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+  }
+  .subbar-title { font-size: 13px; font-weight: 600; }
+  .subbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .autosave { font-size: 12px; color: var(--text-3); margin-right: 4px; }
+  .btn-run {
+    height: 30px; padding: 0 14px; border-radius: 8px;
+    border: 1px solid var(--border-strong); background: #fff;
+    font-size: 13px; font-weight: 500; color: var(--text-1);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .btn-run:hover { background: #F9FAFB; }
+
+  /* ============ CANVAS ============ */
+  .canvas-wrap { flex: 1; position: relative; overflow: hidden; background: var(--bg-canvas); }
+  .canvas {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
+    background-size: 22px 22px;
+    transform-origin: 0 0;
+  }
+  .edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .edges path {
+    fill: none; stroke: var(--edge); stroke-width: 1.5;
+    transition: stroke 0.15s;
+  }
+  .edges path.hot { stroke: #A78BFA; stroke-width: 2; }
+
+  /* ============ NODE ============ */
+  .node {
+    position: absolute; width: 252px; min-height: 56px;
+    background: #fff; border: 1px solid #EFEFEF; border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    cursor: pointer; user-select: none;
+    transition: width 0.28s cubic-bezier(0.32, 0.72, 0.35, 1),
+                box-shadow 0.2s, border-color 0.2s;
+  }
+  .node:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.06); }
+  .node.selected { border-color: var(--ink); border-width: 1.5px; }
+  .node-tile {
+    width: 33px; height: 33px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .node-tile svg { width: 15px; height: 15px; stroke: #fff; stroke-width: 1.8; fill: none; }
+  .node-tile.dark { background: #1F2937; }
+  .node-text { min-width: 0; flex: 1; }
+  .node-eyebrow { font-size: 9.5px; color: var(--text-3); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .node-title { font-size: 13px; font-weight: 600; color: #1F2937; line-height: 1.25; }
+  .node-menu { color: var(--text-3); font-weight: 700; letter-spacing: 1px; font-size: 13px; flex-shrink: 0; }
+
+  /* Node expanded (medium detail) */
+  .node.expanded {
+    width: 330px; height: auto; min-height: 54px;
+    align-items: flex-start; padding: 12px;
+    z-index: 30; box-shadow: var(--shadow-float);
+    border-color: var(--ink); border-width: 1.5px;
+  }
+  .node.expanded .node-body { display: block; }
+  .node.expanded .node-head { display: flex; align-items: center; gap: 10px; width: 100%; }
+  .node-body { display: none; width: 100%; margin-top: 10px; }
+  .node-desc { font-size: 11.5px; color: var(--text-2); line-height: 1.5; margin-bottom: 10px; }
+  .node-stats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .node-stat {
+    font-size: 10px; font-weight: 500; color: var(--text-2);
+    background: #F4F4F5; border-radius: 5px; padding: 3px 8px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+  .node-links-title { font-size: 9.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+  .node-link {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-2); padding: 3px 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .node-link::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #C4B5FD; flex-shrink: 0; }
+
+  /* edge + buttons */
+  .edge-add {
+    position: absolute; width: 23px; height: 23px; border-radius: 50%;
+    background: var(--ink); color: #fff; font-size: 13px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15); z-index: 5;
+    transform: translate(-50%, -50%);
+    transition: transform 0.12s, background 0.12s;
+  }
+  .edge-add:hover { transform: translate(-50%, -50%) scale(1.12); background: var(--accent); }
+
+  /* ============ DETAIL PANEL (slide from right) ============ */
+  .detail-panel {
+    position: absolute; top: 0; right: 0; bottom: 0; width: 340px;
+    background: #fff; border-left: 1px solid var(--border-strong);
+    box-shadow: -12px 0 32px rgba(0,0,0,0.07);
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0.35, 1);
+    z-index: 40; display: flex; flex-direction: column;
+  }
+  .detail-panel.open { transform: translateX(0); }
+  .dp-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+  }
+  .dp-title { font-size: 13px; font-weight: 600; flex: 1; }
+  .dp-close {
+    width: 26px; height: 26px; border-radius: 7px; font-size: 15px;
+    color: var(--text-2); display: flex; align-items: center; justify-content: center;
+  }
+  .dp-close:hover { background: #F4F4F5; color: var(--text-1); }
+  .dp-body { flex: 1; overflow-y: auto; padding: 16px; }
+  .dp-eyebrow { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .dp-name { font-size: 17px; font-weight: 600; margin-bottom: 12px; }
+  .dp-section { margin-bottom: 18px; }
+  .dp-kv { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #F7F7F8; }
+  .dp-kv span:first-child { color: var(--text-3); }
+  .dp-kv span:last-child { font-family: 'JetBrains Mono', monospace; color: var(--text-1); font-size: 11.5px; }
+  .dp-pill {
+    display: inline-block; font-size: 10.5px; font-weight: 600;
+    padding: 3px 9px; border-radius: 999px; margin: 2px 4px 2px 0;
+  }
+  .pill-ok { background: #ECFDF5; color: #059669; }
+  .pill-warn { background: #FFFBEB; color: #D97706; }
+  .pill-info { background: var(--accent-soft); color: var(--accent); }
+
+  /* ============ HUD ============ */
+  .hud {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 14px; z-index: 20;
+  }
+  .hud-controls {
+    display: flex; align-items: center;
+    background: #fff; border: 1px solid var(--border-strong);
+    border-radius: 10px; height: 33px; overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .hud-controls button, .hud-zoom {
+    height: 33px; min-width: 34px; padding: 0 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text-2); font-weight: 500;
+    border-right: 1px solid var(--border);
+  }
+  .hud-controls button:last-child { border-right: none; }
+  .hud-controls button:hover { background: #F7F7F8; }
+  .hud-stats { font-size: 11.5px; color: var(--text-3); display: flex; gap: 14px; }
+  .hud-stats b { color: var(--text-2); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-row">
+      <div class="logo-mark"></div>
+      <span class="logo-name">KnowYourCtx</span>
+      <span class="logo-badge">OPS</span>
+      <span class="logo-chevron">▾</span>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <div class="nav-label">Knowledge</div>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Home</button>
+        <button class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 9v6a3 3 0 003 3h6"/></svg>Graph</button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Search</button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Activity</button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>Proposals</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Intelligence</div>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Analytics</button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/><circle cx="12" cy="12" r="4"/></svg>Code Intel</button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v4l2.5 2.5"/><circle cx="12" cy="12" r="9"/></svg>Debt Queue</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">System</div>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8M8 8h8M8 16h5"/></svg>Audit</button>
+        <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 01-.1 1.2l2 1.6-2 3.4-2.4-1a7 7 0 01-2 1.2L14 21h-4l-.5-2.6a7 7 0 01-2-1.2l-2.4 1-2-3.4 2-1.6A7 7 0 015 12a7 7 0 01.1-1.2l-2-1.6 2-3.4 2.4 1a7 7 0 012-1.2L10 3h4l.5 2.6a7 7 0 012 1.2l2.4-1 2 3.4-2 1.6c.06.4.1.8.1 1.2z"/></svg>Settings</button>
+      </div>
+    </nav>
+    <div class="promo">
+      <div class="promo-head">
+        <div class="promo-icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+        <span class="promo-title">Hardware Monitor</span>
+        <span class="promo-new">NEW</span>
+      </div>
+      <div class="promo-desc">Pantau RAM, disk, dan worker daemon secara real-time.</div>
+      <div class="promo-links"><span class="cta">Check it out ↗</span><span class="dismiss">Dismiss</span></div>
+    </div>
+    <div class="user-row">
+      <div class="avatar"></div>
+      <span class="user-name">operator</span>
+      <span class="user-menu">···</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <span class="crumb">Stores / <b>main-context</b></span>
+      <div class="cmdk">⌘ Enter a command <kbd>⌘K</kbd></div>
+      <span class="balance">8.476 tests</span>
+      <button class="btn-primary">＋ New Node</button>
+    </div>
+    <div class="subbar">
+      <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="subbar-node-icon"></div>
+      <span class="subbar-title">main-context — graph</span>
+      <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 012-2h10"/></svg></button>
+      <div class="subbar-right">
+        <span class="autosave">Chain verified: baru saja</span>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg></button>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></button>
+        <button class="btn-run">▶ Verify</button>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="canvas" id="canvas">
+        <svg class="edges" id="edges"></svg>
+        <!-- nodes injected by JS -->
+      </div>
+      <!-- DETAIL PANEL -->
+      <div class="detail-panel" id="detailPanel">
+        <div class="dp-head">
+          <span class="dp-title" id="dpTitle">Node detail</span>
+          <button class="dp-close" id="dpClose">✕</button>
+        </div>
+        <div class="dp-body" id="dpBody"></div>
+      </div>
+      <!-- HUD -->
+      <div class="hud">
+        <div class="hud-controls">
+          <button id="zoomOut">−</button>
+          <span class="hud-zoom" id="zoomLabel">100%</span>
+          <button id="zoomIn">＋</button>
+          <button id="fitView">⛶</button>
+          <button id="reLayout">✦</button>
+        </div>
+        <div class="hud-stats">
+          <span>Nodes: <b id="statNodes">0</b></span>
+          <span>Edges: <b id="statEdges">0</b></span>
+          <span>Chain: <b>valid</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= DATA — knowledge graph nyata (struktur produk) ================= */
+const NODES = [
+  { id:'brief',   eyebrow:'Get started',       title:'Project Brief (.MD)',           x:560, y:24,  g:'dark', icon:'doc',
+    desc:'Dokumen kontrak beku produk. Sumber kebenaran schema v1–v5 yang tidak pernah berubah byte.',
+    stats:['v5','frozen','sha256'], links:['phase1'], kv:{Kind:'document',Score:'P 0.97',Events:'12',Updated:'2h ago'} },
+  { id:'phase1',  eyebrow:'Pilar 1',           title:'Knowledge Memory',              x:560, y:128, g:['#A855F7','#EC4899','#F59E0B'], icon:'layers',
+    stats:['hash-chain','rollback'], links:['store','resolve'], kv:{Kind:'primary',Events:'4.812',Chain:'valid',Merkle:'0x8F4E'} },
+  { id:'store',   eyebrow:'Pilar 1 · Engine',  title:'Event Store (SQLite WAL)',      x:300, y:250, g:['#D946EF','#8B5CF6'], icon:'db',
+    desc:'Append-only event log hash-chained. Rollback byte-exact, group commit 7,04× throughput.',
+    stats:['WAL','group-commit'], links:['leases'], kv:{Kind:'store',Tables:'17',Migrations:'v5',Mode:'WAL'} },
+  { id:'resolve', eyebrow:'Pilar 2 · Cabang',  title:'Code Intelligence',             x:820, y:250, g:['#3B82F6','#F97316'], icon:'code',
+    desc:'Tree-sitter dua engine byte-identik (Python + Rust). 33 bahasa, 12 synthesis pass.',
+    stats:['33 lang','dual-engine'], links:['extract','synth'], kv:{Kind:'pipeline',Languages:'33',Parity:'100%',Passes:'12'} },
+  { id:'leases',  eyebrow:'Pilar 1 · Guard',   title:'Node Leases',                   x:300, y:372, g:['#EC4899','#A78BFA'], icon:'lock',
+    desc:'Anti-tabrakan antar-agent: node ter-claim saat ditulis, konflik = NODE_IN_USE teraudit.',
+    stats:['NODE_IN_USE'], links:['serve'], kv:{Kind:'guard',Schema:'v5',TTL:'300s',Conflicts:'0'} },
+  { id:'extract', eyebrow:'Pilar 2 · Sub 2.1', title:'Extractor 33 Bahasa',           x:700, y:372, g:['#34D399','#8B5CF6'], icon:'tree',
+    stats:['tree-sitter'], links:['synth'], kv:{Kind:'extractor',Fixtures:'604',Fuzz:'24K pass'} },
+  { id:'synth',   eyebrow:'Pilar 2 · Sub 2.2', title:'Synthesis 12 Pass',             x:980, y:372, g:['#FDE047','#F97316','#EF4444'], icon:'spark',
+    stats:['kill-switch ×12'], links:['serve'], kv:{Kind:'synthesis',Passes:'12',Edges:'+2.1K'} },
+  { id:'serve',   eyebrow:'Fase 3',            title:'Superpower Server',             x:560, y:494, g:['#FCA5A5','#F87171'], icon:'server',
+    desc:'Daemon 50-agent: 3 jalur, fair queue, watchdog, capability security per-agent.',
+    stats:['50 agent','fairness 85%'], links:['webview'], kv:{Kind:'daemon',Lanes:'3',Storm:'0 error',Lease:'aktif'} },
+  { id:'webview', eyebrow:'Fase 3 · Visual',   title:'Webview 19 Tab',                x:560, y:616, g:['#EF4444','#F97316'], icon:'eye',
+    stats:['real-time','localhost'], links:['export'], kv:{Kind:'ui',Tabs:'19',Routes:'68',Live:'ya'} },
+  { id:'export',  eyebrow:'Final',             title:'Verdict 391,9%',                x:560, y:738, g:'dark', icon:'up', selected:true,
+    desc:'Skor terukur vs codegraph. 15.616 test hijau, CI 2 OS, nol CVE.',
+    stats:['verified','CI ✓'], links:[], kv:{Kind:'result',Score:'391,9%',Tests:'15.616',CVE:'0'} },
+];
+
+const EDGES = [
+  ['brief','phase1'],['phase1','store'],['phase1','resolve'],
+  ['store','leases'],['resolve','extract'],['resolve','synth'],
+  ['extract','synth'],['leases','serve'],['synth','serve'],
+  ['serve','webview'],['webview','export'],
+];
+
+// Edge "+" hanya pada edge vertikal murni (bukan konektor horizontal antar-saudara)
+const EDGE_ADD_SKIP = new Set(['extract->synth']);
+
+const ICONS = {
+  doc:'<svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>',
+  layers:'<svg viewBox="0 0 24 24"><path d="M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg>',
+  db:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>',
+  code:'<svg viewBox="0 0 24 24"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg>',
+  lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>',
+  tree:'<svg viewBox="0 0 24 24"><path d="M12 3v18M12 8l-4-3M12 8l4-3M12 14l-5-4M12 14l5-4"/></svg>',
+  spark:'<svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.3-6.3-4.5-6.3 4.5L8 13.2 2 9.2h7.6z"/></svg>',
+  server:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><circle cx="8" cy="7.5" r="1"/><circle cx="8" cy="16.5" r="1"/></svg>',
+  eye:'<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 5V4a1 1 0 011-1h14a1 1 0 011 1v1"/></svg>',
+};
+
+const canvas = document.getElementById('canvas');
+const wrap = document.getElementById('canvasWrap');
+const edgesSvg = document.getElementById('edges');
+const panel = document.getElementById('detailPanel');
+const dpTitle = document.getElementById('dpTitle');
+const dpBody = document.getElementById('dpBody');
+let zoom = 1, panX = 0, panY = 0;
+let selectedId = null;
+
+/* ---------- render nodes ================= */
+function tileStyle(g) {
+  if (g === 'dark') return 'background:#1F2937';
+  return `background:linear-gradient(135deg, ${g.join(',')})`;
+}
+
+function renderNodes() {
+  canvas.querySelectorAll('.node, .edge-add').forEach(e => e.remove());
+  for (const n of NODES) {
+    const el = document.createElement('div');
+    el.className = 'node' + (n.selected ? ' selected' : '');
+    el.id = 'node-' + n.id;
+    el.style.left = n.x + 'px'; el.style.top = n.y + 'px';
+    el.innerHTML = `
+      <div class="node-head" style="display:flex;align-items:center;gap:10px;width:100%">
+        <div class="node-tile ${n.g === 'dark' ? 'dark' : ''}" style="${tileStyle(n.g)}">${ICONS[n.icon]}</div>
+        <div class="node-text">
+          <div class="node-eyebrow">${n.eyebrow}</div>
+          <div class="node-title">${n.title}</div>
+        </div>
+        <span class="node-menu">···</span>
+      </div>
+      <div class="node-body">
+        ${n.desc ? `<div class="node-desc">${n.desc}</div>` : ''}
+        <div class="node-stats">${(n.stats||[]).map(s => `<span class="node-stat">${s}</span>`).join('')}</div>
+        ${n.links && n.links.length ? `<div class="node-links-title">Terhubung</div>${n.links.map(l => `<div class="node-link">${l}</div>`).join('')}` : ''}
+      </div>`;
+    el.addEventListener('click', (ev) => { ev.stopPropagation(); selectNode(n.id); });
+    canvas.appendChild(el);
+  }
+  renderEdges();
+  renderEdgeButtons();
+}
+
+/* ---------- edges: flexible bezier (bukan garis kaku) ---------- */
+function center(n) {
+  const el = document.getElementById('node-' + n.id);
+  const h = el ? el.offsetHeight : 54;
+  return { x: n.x + (el ? el.offsetWidth : 208) / 2, yTop: n.y, yBot: n.y + h, h };
+}
+
+function renderEdges() {
+  edgesSvg.innerHTML = '';
+  for (const [a, b] of EDGES) {
+    const na = NODES.find(n => n.id === a), nb = NODES.find(n => n.id === b);
+    if (!na || !nb) continue;
+    const A = center(na), B = center(nb);
+    const x1 = A.x, y1 = A.yBot, x2 = B.x, y2 = B.yTop;
+    const dy = Math.max(46, Math.abs(y2 - y1) * 0.55);
+    // kurva bezier lentur vertikal
+    const d = `M ${x1} ${y1} C ${x1} ${y1 + dy}, ${x2} ${y2 - dy}, ${x2} ${y2}`;
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', d);
+    p.dataset.from = a; p.dataset.to = b;
+    edgesSvg.appendChild(p);
+  }
+}
+
+/* tombol + di tengah tiap edge (skip konektor horizontal antar-saudara) */
+function renderEdgeButtons() {
+  canvas.querySelectorAll('.edge-add').forEach(e => e.remove());
+  for (const [a, b] of EDGES) {
+    if (EDGE_ADD_SKIP.has(a + '->' + b)) continue;
+    const na = NODES.find(n => n.id === a), nb = NODES.find(n => n.id === b);
+    if (!na || !nb) continue;
+    const A = center(na), B = center(nb);
+    const btn = document.createElement('button');
+    btn.className = 'edge-add';
+    btn.textContent = '+';
+    // posisikan di segmen vertikal keluar dari parent (bukan di tikungan)
+    btn.style.left = A.x + 'px';
+    btn.style.top = (A.yBot + (B.yTop - A.yBot) * 0.5) + 'px';
+    btn.title = `Sisipkan node: ${a} → ${b}`;
+    btn.addEventListener('click', (ev) => { ev.stopPropagation(); });
+    canvas.appendChild(btn);
+  }
+}
+
+/* ---------- seleksi: node melebar + panel kanan ---------- */
+function selectNode(id) {
+  selectedId = id;
+  const n = NODES.find(x => x.id === id);
+  canvas.querySelectorAll('.node').forEach(el => {
+    el.classList.toggle('expanded', el.id === 'node-' + id);
+    el.classList.toggle('selected', el.id === 'node-' + id);
+  });
+  edgesSvg.querySelectorAll('path').forEach(p => {
+    p.classList.toggle('hot', p.dataset.from === id || p.dataset.to === id);
+  });
+  // panel kanan slide in
+  dpTitle.textContent = n.title;
+  dpBody.innerHTML = `
+    <div class="dp-eyebrow">${n.eyebrow}</div>
+    <div class="dp-name">${n.title}</div>
+    <div class="dp-section">${(n.stats||[]).map((s,i) => `<span class="dp-pill ${i%3===0?'pill-ok':i%3===1?'pill-info':'pill-warn'}">${s}</span>`).join('')}</div>
+    <div class="dp-section"><div class="dp-eyebrow">Detail</div>
+      ${Object.entries(n.kv||{}).map(([k,v]) => `<div class="dp-kv"><span>${k}</span><span>${v}</span></div>`).join('')}
+    </div>
+    ${n.links && n.links.length ? `<div class="dp-section"><div class="dp-eyebrow">Terhubung ke</div>${n.links.map(l => `<div class="dp-kv"><span>edge</span><span>${l}</span></div>`).join('')}</div>` : ''}
+    <div class="dp-section"><div class="dp-eyebrow">Identitas</div>
+      <div class="dp-kv"><span>node_id</span><span>${n.id}</span></div>
+      <div class="dp-kv"><span>sha8</span><span>${sha8(n.id)}</span></div>
+    </div>`;
+  panel.classList.add('open');
+  // geser canvas sedikit ke kiri agar node terpilih tidak tertutup panel
+  const panelW = 340;
+  panX -= panelW * 0.5 * zoom;
+  applyTransform();
+  // tunggu animasi expand lalu gambar ulang edge agar tetap lentur,
+  // lalu terapkan ulang highlight (render ulang menghapus kelas hot)
+  setTimeout(() => {
+    renderEdges(); renderEdgeButtons();
+    edgesSvg.querySelectorAll('path').forEach(p => {
+      p.classList.toggle('hot', p.dataset.from === id || p.dataset.to === id);
+    });
+  }, 300);
+}
+
+function deselectAll() {
+  selectedId = null;
+  canvas.querySelectorAll('.node').forEach(el => el.classList.remove('expanded', 'selected'));
+  edgesSvg.querySelectorAll('path').forEach(p => p.classList.remove('hot'));
+  panel.classList.remove('open');
+  setTimeout(() => { renderEdges(); renderEdgeButtons(); }, 300);
+}
+document.getElementById('dpClose').addEventListener('click', (e) => { e.stopPropagation(); deselect(); });
+wrap.addEventListener('click', (e) => {
+  // klik di luar node (area graph kosong) → kembali kecil
+  if (!e.target.closest('.node') && !e.target.closest('.detail-panel') && !e.target.closest('.hud') && !e.target.closest('.edge-add')) deselect();
+});
+function deselect() { deselectAll(); }
+
+function sha8(s) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 0x01000193) >>> 0; }
+  return ('0000000' + h.toString(16)).slice(-8);
+}
+
+/* ---------- pan & zoom ---------- */
+let dragging = false, sx = 0, sy = 0;
+wrap.addEventListener('mousedown', (e) => {
+  if (e.target.closest('.node') || e.target.closest('.detail-panel') || e.target.closest('.hud')) return;
+  dragging = true; sx = e.clientX - panX; sy = e.clientY - panY;
+});
+window.addEventListener('mousemove', (e) => {
+  if (!dragging) return;
+  panX = e.clientX - sx; panY = e.clientY - sy; applyTransform();
+});
+window.addEventListener('mouseup', () => dragging = false);
+wrap.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  zoom = Math.min(2, Math.max(0.4, zoom - Math.sign(e.deltaY) * 0.08));
+  applyTransform();
+}, { passive: false });
+
+function applyTransform() {
+  canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  document.getElementById('zoomLabel').textContent = Math.round(zoom * 100) + '%';
+}
+document.getElementById('zoomIn').onclick = () => { zoom = Math.min(2, zoom + 0.15); applyTransform(); };
+document.getElementById('zoomOut').onclick = () => { zoom = Math.max(0.4, zoom - 0.15); applyTransform(); };
+document.getElementById('fitView').onclick = () => { zoom = 1; panX = 0; panY = 0; applyTransform(); };
+
+document.getElementById('statNodes').textContent = NODES.length;
+document.getElementById('statEdges').textContent = EDGES.length;
+
+/* fit-to-view saat load: seluruh graph terlihat, tidak ada yang terpotong */
+function fitToView() {
+  const pad = 40;
+  const xs = NODES.map(n => n.x), ys = NODES.map(n => n.y);
+  const minX = Math.min(...xs) - pad, maxX = Math.max(...xs) + 236 + pad;
+  const minY = Math.min(...ys) - pad, maxY = Math.max(...ys) + 56 + pad;
+  const w = wrap.clientWidth, h = wrap.clientHeight - 70; // sisakan ruang HUD bawah
+  zoom = Math.min(1.1, Math.max(0.4, Math.min(w / (maxX - minX), h / (maxY - minY))));
+  panX = (w - (maxX - minX) * zoom) / 2 - minX * zoom;
+  panY = (h - (maxY - minY) * zoom) / 2 - minY * zoom + 10;
+  applyTransform();
+}
+
+renderNodes();
+fitToView();
+</script>
+</body>
+</html>

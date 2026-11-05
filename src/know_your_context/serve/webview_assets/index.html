@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,198 +7,266 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header id="topbar">
-  <span id="brand">Know&nbsp;Your&nbsp;Context</span>
-  <nav id="tabs" aria-label="views">
-    <button class="tab active" data-tab="graph" type="button">Graph</button>
-    <button class="tab" data-tab="activity" type="button">Activity</button>
-    <button class="tab" data-tab="search" type="button">Search</button>
-    <button class="tab" data-tab="browse" type="button">Browse</button>
-    <button class="tab" data-tab="metrics" type="button">Metrics</button>
-    <button class="tab" data-tab="health" type="button">Health</button>
-    <button class="tab" data-tab="analytics" type="button">Analytics</button>
-    <button class="tab" data-tab="audit" type="button">Audit</button>
-    <button class="tab" data-tab="proposals" type="button">Proposals</button>
-    <button class="tab" data-tab="debt" type="button">Debt</button>
-    <button class="tab" data-tab="codeintel" type="button">Code Intel</button>
-    <button class="tab" data-tab="extractions" type="button">Extractions</button>
-    <button class="tab" data-tab="store" type="button">Store</button>
-    <button class="tab" data-tab="system" type="button">System</button>
-    <button class="tab" data-tab="bench" type="button">Bench</button>
-    <button class="tab" data-tab="ledgers" type="button">Ledgers</button>
-    <button class="tab" data-tab="exports" type="button">Exports</button>
-    <button class="tab" data-tab="contracts" type="button">Contracts</button>
-    <button class="tab" data-tab="setup" type="button">Setup</button>
-  </nav>
-  <span id="liveness" class="muted" title="live refresh"></span>
-  <span id="status" role="status"></span>
-</header>
+<div class="app">
 
-<main id="main">
-  <section id="view-graph" class="view active">
-    <div class="toolbar" id="graph-toolbar">
-      <span id="graph-stats" class="muted"></span>
-      <button id="graph-fit" type="button">Fit</button>
-      <button id="graph-reload" type="button">Reload</button>
+  <aside class="sidebar">
+    <div class="logo-row">
+      <span class="logo-mark" aria-hidden="true"></span>
+      <span id="brand" class="logo-name">KnowYourCtx</span>
+      <span class="logo-badge">OPS</span>
     </div>
-    <div id="graph-wrap">
-      <canvas id="graph-canvas"></canvas>
-      <aside id="detail-panel" class="hidden" aria-label="node detail">
-        <button id="detail-close" type="button" aria-label="close">×</button>
-        <h2 id="detail-title"></h2>
-        <div id="detail-body"></div>
-      </aside>
+    <nav class="nav" id="tabs" aria-label="views">
+      <div class="nav-section">
+        <div class="nav-label">Knowledge</div>
+        <button class="tab nav-item active" data-tab="graph" type="button"><span class="nav-ico" aria-hidden="true">◈</span>Graph</button>
+        <button class="tab nav-item" data-tab="search" type="button"><span class="nav-ico" aria-hidden="true">⌕</span>Search</button>
+        <button class="tab nav-item" data-tab="browse" type="button"><span class="nav-ico" aria-hidden="true">≡</span>Browse</button>
+        <button class="tab nav-item" data-tab="activity" type="button"><span class="nav-ico" aria-hidden="true">≣</span>Activity</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Intelligence</div>
+        <button class="tab nav-item" data-tab="analytics" type="button"><span class="nav-ico" aria-hidden="true">↗</span>Analytics</button>
+        <button class="tab nav-item" data-tab="codeintel" type="button"><span class="nav-ico" aria-hidden="true">⌗</span>Code Intel</button>
+        <button class="tab nav-item" data-tab="proposals" type="button"><span class="nav-ico" aria-hidden="true">□</span>Proposals</button>
+        <button class="tab nav-item" data-tab="debt" type="button"><span class="nav-ico" aria-hidden="true">◷</span>Debt</button>
+        <button class="tab nav-item" data-tab="extractions" type="button"><span class="nav-ico" aria-hidden="true">⇥</span>Extractions</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Operations</div>
+        <button class="tab nav-item" data-tab="metrics" type="button"><span class="nav-ico" aria-hidden="true">∑</span>Metrics</button>
+        <button class="tab nav-item" data-tab="health" type="button"><span class="nav-ico" aria-hidden="true">+</span>Health</button>
+        <button class="tab nav-item" data-tab="audit" type="button"><span class="nav-ico" aria-hidden="true">▤</span>Audit</button>
+        <button class="tab nav-item" data-tab="bench" type="button"><span class="nav-ico" aria-hidden="true">⌁</span>Bench</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">System</div>
+        <button class="tab nav-item" data-tab="store" type="button"><span class="nav-ico" aria-hidden="true">▦</span>Store</button>
+        <button class="tab nav-item" data-tab="ledgers" type="button"><span class="nav-ico" aria-hidden="true">§</span>Ledgers</button>
+        <button class="tab nav-item" data-tab="exports" type="button"><span class="nav-ico" aria-hidden="true">⇓</span>Exports</button>
+        <button class="tab nav-item" data-tab="contracts" type="button"><span class="nav-ico" aria-hidden="true">¶</span>Contracts</button>
+        <button class="tab nav-item" data-tab="system" type="button"><span class="nav-ico" aria-hidden="true">◐</span>System</button>
+        <button class="tab nav-item" data-tab="setup" type="button"><span class="nav-ico" aria-hidden="true">▸</span>Setup</button>
+      </div>
+    </nav>
+    <div class="promo">
+      <div class="promo-head">
+        <span class="promo-icon" aria-hidden="true">⌁</span>
+        <span class="promo-title">Live refresh</span>
+        <span class="promo-new" id="liveness" title="live refresh"></span>
+      </div>
+      <div class="promo-desc">Every open tab re-reads the store on the live interval; set <code>live_refresh_seconds=0</code> to freeze.</div>
     </div>
-  </section>
-
-  <section id="view-activity" class="view">
-    <div class="toolbar" id="activity-toolbar">
-      <input id="activity-search" type="search" placeholder="filter activity…" aria-label="activity filter">
-      <span class="toolbar-group" role="group" aria-label="level filters">
-        <label class="check"><input type="checkbox" id="activity-level-info" checked> info</label>
-        <label class="check"><input type="checkbox" id="activity-level-warn" checked> warn</label>
-        <label class="check"><input type="checkbox" id="activity-level-error" checked> error</label>
-      </span>
-      <select id="activity-agent" aria-label="agent filter"><option value="">all agents</option></select>
-      <label class="check"><input type="checkbox" id="activity-group" checked> group bursts</label>
-      <label class="check"><input type="checkbox" id="activity-autoscroll" checked> follow</label>
-      <button id="activity-clear" type="button">Clear view</button>
-      <span id="activity-count" class="muted"></span>
+    <div class="user-row">
+      <span class="avatar" aria-hidden="true">op</span>
+      <span class="user-name">operator</span>
+      <span class="user-menu" aria-hidden="true">···</span>
     </div>
-    <div id="leases-panel">
-      <h3 class="panel-title">Active node leases</h3>
-      <div id="leases-body"></div>
-    </div>
-    <div id="activity-wrap">
-      <div id="activity-list" role="log" aria-live="polite"></div>
-      <button id="activity-resume" class="hidden" type="button">new entries below — resume follow</button>
-    </div>
-  </section>
+  </aside>
 
-  <section id="view-search" class="view">
-    <form id="search-form" class="toolbar" autocomplete="off">
-      <input id="search-q" type="search" placeholder="search symbols…" aria-label="query">
-      <input id="search-kind" type="text" placeholder="kind (function, class…)" aria-label="kind filter">
-      <input id="search-lang" type="text" placeholder="lang (python, javascript…)" aria-label="language filter">
-      <button type="submit">Search</button>
-    </form>
-    <div id="search-results"></div>
-  </section>
+  <div class="main">
+    <header class="topbar" id="topbar">
+      <span class="crumb">Webview / <b id="crumb-tab">Graph</b></span>
+      <button class="cmdk" id="cmdk" type="button" title="Focus the current view's primary filter">
+        <span class="cmdk-icon" aria-hidden="true">⌕</span> Enter a command <kbd>⌘K</kbd>
+      </button>
+      <span id="status" class="topbar-status" role="status"></span>
+      <button class="btn-primary" id="topbar-refresh" type="button">↻ Refresh</button>
+    </header>
 
-  <section id="view-browse" class="view">
-    <div class="toolbar" id="browse-toolbar">
-      <select id="browse-table" aria-label="table">
-        <option value="nodes">nodes</option>
-        <option value="edges">relations</option>
-        <option value="graph/edges">code edges</option>
-        <option value="symbols">symbols</option>
-        <option value="refs/pending">refs: pending</option>
-        <option value="refs/failed">refs: failed</option>
-        <option value="refs/resolved">refs: resolved</option>
-      </select>
-      <input id="browse-filter" type="search" placeholder="filter rows…" aria-label="row filter">
-      <button id="browse-prev" type="button">Prev</button>
-      <span id="browse-page" class="muted"></span>
-      <button id="browse-next" type="button">Next</button>
-    </div>
-    <div id="browse-body" class="scroll-y"></div>
-  </section>
+    <main id="main">
+      <section id="view-graph" class="view active">
+        <div class="toolbar subbar" id="graph-toolbar">
+          <span class="subbar-title">Knowledge graph</span>
+          <span id="graph-stats" class="muted"></span>
+          <span class="subbar-right">
+            <button id="graph-fit" type="button">Fit to view</button>
+            <button id="graph-reload" type="button">Reload</button>
+          </span>
+        </div>
+        <div id="graph-wrap">
+          <div id="graph-canvas">
+            <svg id="graph-edges" class="edges" aria-hidden="true"></svg>
+          </div>
+          <aside id="detail-panel" class="hidden" aria-label="node detail">
+            <div class="dp-head">
+              <span id="detail-title" class="dp-title"></span>
+              <button id="detail-close" class="dp-close" type="button" aria-label="close">×</button>
+            </div>
+            <div id="detail-body" class="dp-body"></div>
+          </aside>
+          <div class="hud" id="graph-hud">
+            <div class="hud-controls">
+              <button id="graph-zoom-out" type="button" title="Zoom out">−</button>
+              <span class="hud-zoom" id="graph-zoom-label">100%</span>
+              <button id="graph-zoom-in" type="button" title="Zoom in">+</button>
+              <button id="graph-hud-fit" type="button" title="Fit to view">Fit</button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <section id="view-metrics" class="view"><div class="scroll-y pad" id="metrics-body"></div></section>
-  <section id="view-health" class="view"><div class="scroll-y pad" id="health-body"></div></section>
-  <section id="view-analytics" class="view"><div class="scroll-y pad" id="analytics-body"></div></section>
-  <section id="view-audit" class="view">
-    <div class="toolbar">
-      <button id="audit-verify" type="button">Verify chain</button>
-      <span id="audit-verify-out" class="muted"></span>
-    </div>
-    <div class="scroll-y pad" id="audit-body"></div>
-  </section>
-  <section id="view-proposals" class="view"><div class="scroll-y pad" id="proposals-body"></div></section>
-  <section id="view-debt" class="view"><div class="scroll-y pad" id="debt-body"></div></section>
+      <section id="view-activity" class="view">
+        <div class="toolbar" id="activity-toolbar">
+          <input id="activity-search" type="search" placeholder="filter activity…" aria-label="activity filter">
+          <span class="toolbar-group" role="group" aria-label="level filters">
+            <label class="check"><input type="checkbox" id="activity-level-info" checked> info</label>
+            <label class="check"><input type="checkbox" id="activity-level-warn" checked> warn</label>
+            <label class="check"><input type="checkbox" id="activity-level-error" checked> error</label>
+          </span>
+          <select id="activity-agent" aria-label="agent filter"><option value="">all agents</option></select>
+          <label class="check"><input type="checkbox" id="activity-group" checked> group bursts</label>
+          <label class="check"><input type="checkbox" id="activity-autoscroll" checked> follow</label>
+          <button id="activity-clear" type="button">Clear view</button>
+          <span id="activity-count" class="muted"></span>
+        </div>
+        <div id="leases-panel">
+          <h3 class="panel-title">Active node leases</h3>
+          <div id="leases-body"></div>
+        </div>
+        <div id="activity-wrap">
+          <div id="activity-list" role="log" aria-live="polite"></div>
+          <button id="activity-resume" class="hidden" type="button">new entries below — resume follow</button>
+        </div>
+      </section>
 
-  <section id="view-codeintel" class="view">
-    <form id="codeintel-form" class="toolbar" autocomplete="off">
-      <select id="codeintel-op" aria-label="operation">
-        <option value="callers">callers of</option>
-        <option value="callees">callees of</option>
-        <option value="impact">impact of</option>
-        <option value="path">dependency path</option>
-        <option value="co-change">co-change</option>
-        <option value="boundary">boundary violations</option>
-      </select>
-      <input id="codeintel-symbol" type="search" placeholder="symbol or node id…" aria-label="symbol">
-      <input id="codeintel-target" type="search" placeholder="target (path op only)" aria-label="target">
-      <input id="codeintel-layers" type="text" placeholder="layers ui:ui,web;core:core (boundary only)" aria-label="layers">
-      <button type="submit">Run</button>
-    </form>
-    <div class="scroll-y pad" id="codeintel-body"></div>
-  </section>
+      <section id="view-search" class="view">
+        <form id="search-form" class="toolbar" autocomplete="off">
+          <input id="search-q" type="search" placeholder="search symbols…" aria-label="query">
+          <input id="search-kind" type="text" placeholder="kind (function, class…)" aria-label="kind filter">
+          <input id="search-lang" type="text" placeholder="lang (python, javascript…)" aria-label="language filter">
+          <button type="submit">Search</button>
+        </form>
+        <div id="search-results"></div>
+      </section>
 
-  <section id="view-extractions" class="view"><div class="scroll-y pad" id="extractions-body"></div></section>
+      <section id="view-browse" class="view">
+        <div class="toolbar" id="browse-toolbar">
+          <select id="browse-table" aria-label="table">
+            <option value="nodes">nodes</option>
+            <option value="edges">relations</option>
+            <option value="graph/edges">code edges</option>
+            <option value="symbols">symbols</option>
+            <option value="refs/pending">refs: pending</option>
+            <option value="refs/failed">refs: failed</option>
+            <option value="refs/resolved">refs: resolved</option>
+          </select>
+          <input id="browse-filter" type="search" placeholder="filter rows…" aria-label="row filter">
+          <button id="browse-prev" type="button">Prev</button>
+          <span id="browse-page" class="muted"></span>
+          <button id="browse-next" type="button">Next</button>
+        </div>
+        <div id="browse-body" class="scroll-y"></div>
+      </section>
 
-  <section id="view-store" class="view">
-    <div class="scroll-y pad">
-      <div id="store-stats" class="card-grid"></div>
-      <h3 class="panel-title">Tables</h3>
-      <div id="store-tables"></div>
-      <h3 class="panel-title">Schema versions</h3>
-      <div id="store-schema"></div>
-    </div>
-  </section>
+      <section id="view-metrics" class="view"><div class="scroll-y pad" id="metrics-body"></div></section>
+      <section id="view-health" class="view"><div class="scroll-y pad" id="health-body"></div></section>
+      <section id="view-analytics" class="view"><div class="scroll-y pad" id="analytics-body"></div></section>
+      <section id="view-audit" class="view">
+        <div class="toolbar">
+          <button id="audit-verify" type="button">Verify chain</button>
+          <span id="audit-verify-out" class="muted"></span>
+        </div>
+        <div class="scroll-y pad" id="audit-body"></div>
+      </section>
+      <section id="view-proposals" class="view"><div class="scroll-y pad" id="proposals-body"></div></section>
+      <section id="view-debt" class="view"><div class="scroll-y pad" id="debt-body"></div></section>
 
-  <section id="view-system" class="view">
-    <div class="scroll-y pad">
-      <h3 class="panel-title">Hardware profile</h3>
-      <div id="system-hardware"></div>
-      <h3 class="panel-title">Relearn gate</h3>
-      <div id="system-relearn"></div>
-      <h3 class="panel-title">Kill switches</h3>
-      <div id="system-switches"></div>
-      <h3 class="panel-title">Configuration</h3>
-      <div id="system-config"></div>
-      <h3 class="panel-title">API routes</h3>
-      <div id="system-routes"></div>
-    </div>
-  </section>
+      <section id="view-codeintel" class="view">
+        <form id="codeintel-form" class="toolbar" autocomplete="off">
+          <select id="codeintel-op" aria-label="operation">
+            <option value="callers">callers of</option>
+            <option value="callees">callees of</option>
+            <option value="impact">impact of</option>
+            <option value="path">dependency path</option>
+            <option value="co-change">co-change</option>
+            <option value="boundary">boundary violations</option>
+          </select>
+          <input id="codeintel-symbol" type="search" placeholder="symbol or node id…" aria-label="symbol">
+          <input id="codeintel-target" type="search" placeholder="target (path op only)" aria-label="target">
+          <input id="codeintel-layers" type="text" placeholder="layers ui:ui,web;core:core" aria-label="layers">
+          <button type="submit">Run</button>
+        </form>
+        <div class="scroll-y pad" id="codeintel-body"></div>
+      </section>
 
-  <section id="view-bench" class="view"><div class="scroll-y pad" id="bench-body"></div></section>
+      <section id="view-extractions" class="view"><div class="scroll-y pad" id="extractions-body"></div></section>
 
-  <section id="view-ledgers" class="view">
-    <div class="scroll-y pad">
-      <h3 class="panel-title">Health ledger</h3>
-      <div id="ledgers-health"></div>
-      <h3 class="panel-title">Debt ledger</h3>
-      <div id="ledgers-debt"></div>
-      <h3 class="panel-title">Experience rerank</h3>
-      <div id="ledgers-experience"></div>
-    </div>
-  </section>
+      <section id="view-store" class="view">
+        <div class="scroll-y pad">
+          <div id="store-stats"></div>
+          <h3 class="panel-title">Tables</h3>
+          <div id="store-tables"></div>
+          <h3 class="panel-title">Schema versions</h3>
+          <div id="store-schema"></div>
+        </div>
+      </section>
 
-  <section id="view-exports" class="view">
-    <form id="export-form" class="toolbar" autocomplete="off">
-      <input id="export-node" type="text" placeholder="node id (subgraph or node export)" aria-label="node id">
-      <input id="export-domain" type="text" placeholder="domain (subgraph export)" aria-label="domain">
-      <select id="export-kind" aria-label="export kind">
-        <option value="subgraph">subgraph</option>
-        <option value="node">node bundle</option>
-      </select>
-      <button type="submit">Export</button>
-    </form>
-    <div class="scroll-y pad" id="exports-body"></div>
-  </section>
+      <section id="view-system" class="view">
+        <div class="scroll-y pad">
+          <h3 class="panel-title">Hardware profile</h3>
+          <div id="system-hardware"></div>
+          <div class="cols-2">
+            <div>
+              <h3 class="panel-title">Relearn gate</h3>
+              <div id="system-relearn"></div>
+            </div>
+            <div>
+              <h3 class="panel-title">Kill switches</h3>
+              <div id="system-switches" class="panel-scroll"></div>
+            </div>
+          </div>
+          <div class="cols-2">
+            <div>
+              <h3 class="panel-title">Configuration</h3>
+              <div id="system-config" class="panel-scroll"></div>
+            </div>
+            <div>
+              <h3 class="panel-title">API routes</h3>
+              <div id="system-routes" class="panel-scroll"></div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <section id="view-contracts" class="view"><div class="scroll-y pad" id="contracts-body"></div></section>
+      <section id="view-bench" class="view"><div class="scroll-y pad" id="bench-body"></div></section>
 
-  <section id="view-setup" class="view">
-    <div class="scroll-y pad">
-      <h3 class="panel-title">Install progress</h3>
-      <div id="setup-progress"></div>
-      <h3 class="panel-title">Webview preference (persisted)</h3>
-      <div id="setup-prefs"></div>
-    </div>
-  </section>
-</main>
+      <section id="view-ledgers" class="view">
+        <div class="scroll-y pad">
+          <h3 class="panel-title">Health ledger</h3>
+          <div id="ledgers-health"></div>
+          <h3 class="panel-title">Debt ledger</h3>
+          <div id="ledgers-debt"></div>
+          <h3 class="panel-title">Experience rerank</h3>
+          <div id="ledgers-experience"></div>
+        </div>
+      </section>
+
+      <section id="view-exports" class="view">
+        <form id="export-form" class="toolbar" autocomplete="off">
+          <input id="export-node" type="text" placeholder="node id (subgraph or node export)" aria-label="node id">
+          <input id="export-domain" type="text" placeholder="domain (subgraph)" aria-label="domain">
+          <select id="export-kind" aria-label="export kind">
+            <option value="subgraph">subgraph</option>
+            <option value="node">node bundle</option>
+          </select>
+          <button type="submit">Export</button>
+        </form>
+        <div class="scroll-y pad" id="exports-body"></div>
+      </section>
+
+      <section id="view-contracts" class="view"><div class="scroll-y pad" id="contracts-body"></div></section>
+
+      <section id="view-setup" class="view">
+        <div class="scroll-y pad">
+          <h3 class="panel-title">Install progress</h3>
+          <div id="setup-progress"></div>
+          <h3 class="panel-title">Webview preference (persisted)</h3>
+          <div id="setup-prefs"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
 
 <script src="/static/app.js"></script>
 </body>

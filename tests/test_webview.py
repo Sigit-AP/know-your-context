@@ -557,9 +557,10 @@ class TestAssets:
         assert "http-equiv" not in body or "cdn" not in body
         assert "integrity=" not in body  # no external subresource at all
 
-    def test_index_dark_theme_default(self, server: WebviewServer) -> None:
+    def test_index_light_theme_default(self, server: WebviewServer) -> None:
+        # W18 SUB-146: light restyle (foto-1 tokens); still a single pinned theme.
         body = _http(server, "/")[2]
-        assert b'data-theme="dark"' in body
+        assert b'data-theme="light"' in body
 
     def test_app_js_served(self, server: WebviewServer) -> None:
         status, headers, body = _http(server, "/static/app.js")
