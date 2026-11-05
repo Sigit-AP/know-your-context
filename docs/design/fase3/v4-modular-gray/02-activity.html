@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900">
+  <title>Know Your Context - Agent Activity Log</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+    }
+    html, body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #EEF1F5;
+      color: #101828;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Hairline borders */
+    .hairline-border {
+      border: 1px solid #DCE2EA;
+    }
+    .hairline-b {
+      border-bottom: 1px solid #DCE2EA;
+    }
+    .hairline-t {
+      border-top: 1px solid #DCE2EA;
+    }
+    .hairline-r {
+      border-right: 1px solid #DCE2EA;
+    }
+    .hairline-l {
+      border-left: 1px solid #DCE2EA;
+    }
+    /* Strictly no shadows */
+    *, *::before, *::after {
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+  </style>
+</head>
+<body class="flex flex-col bg-[#EEF1F5] text-[#101828] select-none">
+
+  <!-- 52px White Topbar -->
+  <header class="w-[1440px] h-[52px] min-h-[52px] bg-[#FFFFFF] hairline-b px-4 flex items-center justify-between z-30 shrink-0">
+    <!-- Left: Brand / Product info -->
+    <div class="flex items-center gap-3 w-[280px]">
+      <div class="w-7 h-7 rounded-[6px] bg-[#0D9488] text-white flex items-center justify-center font-mono font-semibold text-[13px] tracking-tight">
+        KC
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-[14px] font-bold text-[#101828] tracking-tight">Know Your Context</span>
+        <span class="text-[11px] font-mono font-medium text-[#667085] bg-[#F1F4F9] px-1.5 py-0.5 rounded-[4px] hairline-border">v2.4.1</span>
+      </div>
+    </div>
+
+    <!-- Center: Tab navigation (Activity active) -->
+    <nav class="flex items-center bg-[#F1F4F9] p-[3px] rounded-[8px] hairline-border gap-1">
+      <a href="#" class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-[6px]">Overview</a>
+      <a href="#" class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-[6px]">Graph</a>
+      <a href="#" class="px-3.5 py-1 text-[12px] font-semibold text-[#0D9488] bg-[#FFFFFF] rounded-[6px] hairline-border flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+        Activity
+      </a>
+      <a href="#" class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-[6px]">Analytics</a>
+    </nav>
+
+    <!-- Right: Global Search + Status pill + User Avatar -->
+    <div class="flex items-center justify-end gap-3 w-[320px]">
+      <div class="relative w-[180px]">
+        <input 
+          type="text" 
+          placeholder="Global search..." 
+          class="w-full h-8 pl-8 pr-2.5 bg-[#F8FAFC] hairline-border rounded-[8px] text-[12px] text-[#101828] placeholder-[#94A3B8] outline-none"
+        />
+        <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+        </svg>
+      </div>
+
+      <div class="flex items-center gap-1.5 px-2 py-1 rounded-[6px] bg-[#ECFDF5] hairline-border border-[#A7F3D0]">
+        <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+        <span class="font-mono text-[11px] font-medium text-[#16A34A]">RAFT 3/3</span>
+      </div>
+
+      <div class="w-7 h-7 rounded-[8px] bg-[#101828] text-white flex items-center justify-center font-mono font-medium text-[11px] tracking-tight">
+        OP
+      </div>
+    </div>
+  </header>
+
+  <!-- 12-Column Grid Content: 1440x824 available (padding 16px, gutters 16px) -->
+  <main class="w-[1440px] h-[824px] p-4 grid grid-cols-12 gap-4 shrink-0 overflow-hidden">
+    
+    <!-- LEFT PRIMARY MODULE (8 Columns, Full Height: 792px) -->
+    <section class="col-span-8 h-full bg-[#FFFFFF] rounded-[12px] hairline-border flex flex-col overflow-hidden">
+      <!-- Title Row (13px/600) with hairline under it -->
+      <div class="h-[44px] min-h-[44px] px-4 flex items-center justify-between hairline-b bg-[#FFFFFF]">
+        <div class="flex items-center gap-2.5">
+          <h2 class="text-[13px] font-semibold text-[#101828] tracking-tight uppercase">EVENT STREAM</h2>
+          <span class="font-mono text-[11px] text-[#667085] bg-[#F1F4F9] px-2 py-0.5 rounded-[4px] hairline-border">10,421 events</span>
+          <span class="flex items-center gap-1 text-[11px] font-mono text-[#0D9488]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+            STREAMING 0ms LAG
+          </span>
+        </div>
+        <div class="flex items-center gap-3 text-[11px] font-mono text-[#667085]">
+          <span>BUFFER: 14/10421</span>
+          <span>SCHEMA V5</span>
+        </div>
+      </div>
+
+      <!-- Module Toolbar / Filters Controls -->
+      <div class="h-[48px] min-h-[48px] px-4 flex items-center justify-between hairline-b bg-[#FAFAFC]">
+        <!-- Multi-select Filter Chips -->
+        <div class="flex items-center gap-2">
+          <!-- INFO Chip (Selected: teal tint) -->
+          <button class="h-7 px-2.5 rounded-[6px] bg-[#CCFBF1] text-[#0D9488] border border-[#0D9488] text-[11px] font-medium flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+            <span>INFO</span>
+            <span class="font-mono text-[10px] bg-white/70 px-1 py-0.2 rounded text-[#0F766E]">14</span>
+          </button>
+          
+          <!-- WARN Chip (Outline) -->
+          <button class="h-7 px-2.5 rounded-[6px] bg-[#FFFFFF] text-[#667085] hairline-border text-[11px] font-medium flex items-center gap-1.5 hover:text-[#101828]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
+            <span>WARN</span>
+            <span class="font-mono text-[10px] bg-[#F1F4F9] px-1 py-0.2 rounded text-[#667085]">2</span>
+          </button>
+
+          <!-- ERROR Chip (Outline) -->
+          <button class="h-7 px-2.5 rounded-[6px] bg-[#FFFFFF] text-[#667085] hairline-border text-[11px] font-medium flex items-center gap-1.5 hover:text-[#101828]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
+            <span>ERROR</span>
+            <span class="font-mono text-[10px] bg-[#F1F4F9] px-1 py-0.2 rounded text-[#667085]">0</span>
+          </button>
+
+          <!-- Vertical separator -->
+          <div class="w-[1px] h-4 bg-[#DCE2EA] mx-1"></div>
+
+          <!-- Agent Chip 'all 50 ▾' -->
+          <button class="h-7 px-2.5 rounded-[6px] bg-[#FFFFFF] text-[#101828] hairline-border text-[11px] font-mono flex items-center gap-1.5 hover:bg-[#F8FAFC]">
+            <span class="text-[#667085]">agent:</span>
+            <span class="font-semibold">all 50</span>
+            <span class="text-[9px] text-[#667085]">▾</span>
+          </button>
+        </div>
+
+        <!-- Right Toolbar: FOCUSED Search Input (2px teal ring) + Autoscroll Toggle ON -->
+        <div class="flex items-center gap-3">
+          <!-- Focused Search Input with 2px Teal Ring -->
+          <div class="relative w-[210px]">
+            <input 
+              type="text" 
+              value="heuristics-catalog" 
+              class="w-full h-7 pl-7 pr-6 bg-[#FFFFFF] border-2 border-[#0D9488] rounded-[6px] text-[11px] font-mono text-[#101828] outline-none"
+            />
+            <svg class="w-3.5 h-3.5 absolute left-2 top-1.5 text-[#0D9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+            </svg>
+            <span class="absolute right-2 top-1.5 text-[10px] font-mono text-[#0D9488]">↵</span>
+          </div>
+
+          <!-- Autoscroll Toggle ON -->
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-medium text-[#667085]">Autoscroll</span>
+            <div class="w-8 h-4.5 bg-[#0D9488] rounded-full p-0.5 flex items-center justify-end cursor-pointer">
+              <div class="w-3.5 h-3.5 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Header (32px) -->
+      <div class="h-8 min-h-8 bg-[#F8FAFC] hairline-b grid grid-cols-12 px-4 items-center text-[10px] font-semibold text-[#667085] uppercase tracking-wider font-mono">
+        <div class="col-span-2">TIME</div>
+        <div class="col-span-1">LEVEL</div>
+        <div class="col-span-2">AGENT</div>
+        <div class="col-span-3">ACTION</div>
+        <div class="col-span-3">NODE</div>
+        <div class="col-span-1 text-right">SHA8</div>
+      </div>
+
+      <!-- Table Body: EXACTLY 14 rows, 38px each (14 x 38px = 532px) -->
+      <div class="flex-1 flex flex-col bg-[#FFFFFF] divide-y divide-[#DCE2EA] overflow-hidden">
+        
+        <!-- Row 1: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:58:02Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">agent-2</div>
+          <div class="col-span-3 font-mono font-medium text-[#0D9488]">mutate_graph</div>
+          <div class="col-span-3 text-[#101828] font-medium">heuristics-catalog</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">9f2c1ab4</div>
+        </div>
+
+        <!-- Row 2: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:57:48Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">sub-139</div>
+          <div class="col-span-3 font-mono text-[#475569]">record_outcome</div>
+          <div class="col-span-3 text-[#101828]">vector-cache-tier-04</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">8a1d440f</div>
+        </div>
+
+        <!-- Row 3: 38px — WARN row 'unreadable payload' amber chip -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] bg-[#FFFBEB]/50 hover:bg-[#FEF3C7]/40">
+          <div class="col-span-2 font-mono font-semibold text-[#D97706]">11:57:15Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-[4px] bg-[#FEF3C7] text-[#D97706] hairline-border border-[#FDE68A]">WARN</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">operator</div>
+          <div class="col-span-3 font-mono font-semibold text-[#D97706]">log_event</div>
+          <div class="col-span-3 text-[#B45309] font-medium">unreadable payload</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#D97706] text-right">77e19cb2</div>
+        </div>
+
+        <!-- Row 4: 38px — HOVERED (light gray wash: bg-[#F1F4F9]) -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] bg-[#F1F4F9]">
+          <div class="col-span-2 font-mono text-[#667085]">11:56:59Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">sub-144</div>
+          <div class="col-span-3 font-mono text-[#475569]">query</div>
+          <div class="col-span-3 text-[#101828]">duckdb-memory-ast</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">3d81b899</div>
+        </div>
+
+        <!-- Row 5: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:56:32Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">agent-2</div>
+          <div class="col-span-3 font-mono text-[#475569]">apply_improvement</div>
+          <div class="col-span-3 text-[#101828]">knn-embedding-space</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">55c2f0a1</div>
+        </div>
+
+        <!-- Row 6: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:56:04Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">sub-139</div>
+          <div class="col-span-3 font-mono text-[#475569]">record_outcome</div>
+          <div class="col-span-3 text-[#101828]">raft-delta-compaction</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">a012e841</div>
+        </div>
+
+        <!-- Row 7: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:55:40Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">operator</div>
+          <div class="col-span-3 font-mono text-[#475569]">apply_improvement</div>
+          <div class="col-span-3 text-[#101828]">concept-419-edge</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">c190bb42</div>
+        </div>
+
+        <!-- Row 8: 38px — SELECTED (3px teal left bar + teal tint bg-[#F0FDFA]) -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] bg-[#F0FDFA] border-l-[3px] border-l-[#0D9488]">
+          <div class="col-span-2 font-mono font-semibold text-[#0D9488]">11:55:18Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-[4px] bg-[#0D9488] text-white">INFO</span>
+          </div>
+          <div class="col-span-2 font-semibold text-[#0F766E]">sub-144</div>
+          <div class="col-span-3 font-mono font-semibold text-[#0D9488]">mutate_graph</div>
+          <div class="col-span-3 font-semibold text-[#101828]">heuristics-catalog</div>
+          <div class="col-span-1 font-mono text-[11px] font-semibold text-[#0D9488] text-right">e4479901</div>
+        </div>
+
+        <!-- Row 9: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:54:52Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">agent-2</div>
+          <div class="col-span-3 font-mono text-[#475569]">query</div>
+          <div class="col-span-3 text-[#101828]">heuristics-catalog</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">43dcb102</div>
+        </div>
+
+        <!-- Row 10: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:54:21Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">sub-139</div>
+          <div class="col-span-3 font-mono text-[#475569]">record_outcome</div>
+          <div class="col-span-3 text-[#101828]">vector-cache-tier-04</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">78fe23a9</div>
+        </div>
+
+        <!-- Row 11: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:53:49Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">sub-144</div>
+          <div class="col-span-3 font-mono text-[#475569]">apply_improvement</div>
+          <div class="col-span-3 text-[#101828]">dag-subgraph-tier-2</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">69bca711</div>
+        </div>
+
+        <!-- Row 12: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:53:12Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">operator</div>
+          <div class="col-span-3 font-mono text-[#475569]">query</div>
+          <div class="col-span-3 text-[#101828]">kg-entity-4402</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">12e094fa</div>
+        </div>
+
+        <!-- Row 13: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:52:45Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">operator</div>
+          <div class="col-span-3 font-mono text-[#475569]">apply_improvement</div>
+          <div class="col-span-3 text-[#101828]">duckdb-vector-table</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">b82ef455</div>
+        </div>
+
+        <!-- Row 14: 38px -->
+        <div class="h-[38px] min-h-[38px] grid grid-cols-12 px-4 items-center text-[11px] hover:bg-[#F8FAFC]">
+          <div class="col-span-2 font-mono text-[#667085]">11:52:10Z</div>
+          <div class="col-span-1">
+            <span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[4px] bg-[#ECFDF5] text-[#16A34A] hairline-border border-[#BBF7D0]">INFO</span>
+          </div>
+          <div class="col-span-2 font-medium text-[#101828]">agent-2</div>
+          <div class="col-span-3 font-mono text-[#475569]">query</div>
+          <div class="col-span-3 text-[#101828]">heuristics-catalog</div>
+          <div class="col-span-1 font-mono text-[11px] text-[#667085] text-right">4e112d7c</div>
+        </div>
+
+      </div>
+
+      <!-- Pagination / Footer Bar of Event Stream (38px) -->
+      <div class="h-[38px] min-h-[38px] px-4 flex items-center justify-between hairline-t bg-[#FAFAFC] text-[11px] text-[#667085]">
+        <span>Showing 1-14 of 214 filtered events</span>
+        <div class="flex items-center gap-1 font-mono text-[11px]">
+          <button class="px-2 py-0.5 bg-white hairline-border rounded-[4px] text-[#667085] hover:text-[#101828]">‹</button>
+          <span class="px-2 font-medium text-[#101828]">Page 1 / 16</span>
+          <button class="px-2 py-0.5 bg-white hairline-border rounded-[4px] text-[#667085] hover:text-[#101828]">›</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT STACK (4 Columns): Taller Half (Agent Roster) + Shorter Half (Level Mix) -->
+    <div class="col-span-4 h-full flex flex-col gap-4 overflow-hidden">
+
+      <!-- SECONDARY MODULE: AGENT ROSTER — 50 (Taller Half: flex-[1.6]) -->
+      <section class="flex-[1.6] bg-[#FFFFFF] rounded-[12px] hairline-border flex flex-col overflow-hidden">
+        <!-- Title Row (13px/600) with hairline under it -->
+        <div class="h-[44px] min-h-[44px] px-4 flex items-center justify-between hairline-b bg-[#FFFFFF]">
+          <div class="flex items-center gap-2">
+            <h2 class="text-[13px] font-semibold text-[#101828] tracking-tight uppercase">AGENT ROSTER — 50</h2>
+          </div>
+          <span class="px-2 py-0.5 rounded-[4px] bg-[#ECFDF5] text-[#16A34A] font-mono text-[11px] font-medium hairline-border border-[#A7F3D0]">
+            3 ONLINE
+          </span>
+        </div>
+
+        <!-- Roster Subhead -->
+        <div class="h-7 min-h-7 bg-[#F8FAFC] hairline-b px-4 flex items-center justify-between text-[10px] font-semibold text-[#667085] font-mono uppercase tracking-wider">
+          <span>AGENT IDENTIFIER</span>
+          <span>ACTIVITY / LEASE TTL</span>
+        </div>
+
+        <!-- 12 Visible Rows (dense ~34px each) -->
+        <div class="flex-1 flex flex-col bg-[#FFFFFF] divide-y divide-[#DCE2EA] overflow-hidden text-[11px]">
+          
+          <!-- Item 1 (Online) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+              <span class="font-medium text-[#101828]">agent-2</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">INDEXER</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="font-semibold text-[#101828]">684 ev</span>
+              <span class="text-[#667085]">03m 12s</span>
+            </div>
+          </div>
+
+          <!-- Item 2 (Online) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+              <span class="font-medium text-[#101828]">sub-139</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">EMBEDDER</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="font-semibold text-[#101828]">395 ev</span>
+              <span class="text-[#667085]">03m 12s</span>
+            </div>
+          </div>
+
+          <!-- Item 3 (Online - Operator, Persistent) - HOVERED (gray wash) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between bg-[#F1F4F9]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+              <span class="font-semibold text-[#101828]">operator</span>
+              <span class="text-[10px] font-mono text-[#0D9488] bg-[#CCFBF1] px-1 rounded font-medium">INTERACTIVE</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="font-semibold text-[#101828]">512 ev</span>
+              <span class="text-[#0D9488] font-medium">PERSISTENT</span>
+            </div>
+          </div>
+
+          <!-- Item 4 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">sub-144</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">PARSER</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">189 ev</span>
+              <span class="text-[#667085]">01m 45s</span>
+            </div>
+          </div>
+
+          <!-- Item 5 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">eval-agent-07</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">EVAL</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">142 ev</span>
+              <span class="text-[#667085]">00m 58s</span>
+            </div>
+          </div>
+
+          <!-- Item 6 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">sub-141</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">VECTOR</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">98 ev</span>
+              <span class="text-[#667085]">02m 14s</span>
+            </div>
+          </div>
+
+          <!-- Item 7 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">raft-arbiter-1</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">RAFT</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">76 ev</span>
+              <span class="text-[#667085]">04m 10s</span>
+            </div>
+          </div>
+
+          <!-- Item 8 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">sync-probe-12</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">PROBE</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">54 ev</span>
+              <span class="text-[#667085]">01m 20s</span>
+            </div>
+          </div>
+
+          <!-- Item 9 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">telemetry-sink</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">METRICS</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">41 ev</span>
+              <span class="text-[#667085]">02m 45s</span>
+            </div>
+          </div>
+
+          <!-- Item 10 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">shacl-gate-03</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">GATE</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">32 ev</span>
+              <span class="text-[#667085]">00m 42s</span>
+            </div>
+          </div>
+
+          <!-- Item 11 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">wal-compact-01</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">STORAGE</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">28 ev</span>
+              <span class="text-[#667085]">03m 50s</span>
+            </div>
+          </div>
+
+          <!-- Item 12 (Idle) -->
+          <div class="h-[34px] min-h-[34px] px-4 flex items-center justify-between hover:bg-[#F8FAFC]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
+              <span class="text-[#475569]">ast-cleaner-09</span>
+              <span class="text-[10px] font-mono text-[#667085] bg-[#F1F4F9] px-1 rounded">GARBAGE</span>
+            </div>
+            <div class="flex items-center gap-2.5 font-mono text-[11px]">
+              <span class="text-[#475569]">19 ev</span>
+              <span class="text-[#667085]">01m 15s</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer link 'View all 50' (36px) -->
+        <div class="h-[36px] min-h-[36px] px-4 flex items-center justify-between hairline-t bg-[#FAFAFC]">
+          <span class="text-[11px] font-mono text-[#667085]">50 agents total</span>
+          <a href="#" class="text-[11px] font-semibold text-[#0D9488] hover:text-[#0F766E] flex items-center gap-1">
+            <span>View all 50</span>
+            <span class="text-[12px]">→</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- TERTIARY MODULE: LEVEL MIX (Shorter Half: flex-[0.9]) -->
+      <section class="flex-[0.9] bg-[#FFFFFF] rounded-[12px] hairline-border flex flex-col overflow-hidden">
+        <!-- Title Row (13px/600) with hairline under it -->
+        <div class="h-[44px] min-h-[44px] px-4 flex items-center justify-between hairline-b bg-[#FFFFFF]">
+          <h2 class="text-[13px] font-semibold text-[#101828] tracking-tight uppercase">LEVEL MIX</h2>
+          <span class="text-[11px] font-mono text-[#667085]">TOTAL 18 OPS</span>
+        </div>
+
+        <!-- 3 Thin horizontal bars INFO 15 / WARN 2 / ERROR 1 with mono counts -->
+        <div class="flex-1 p-4 flex flex-col justify-around bg-[#FFFFFF]">
+          
+          <!-- INFO 15 -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+                <span class="font-semibold text-[#101828]">INFO</span>
+                <span class="font-mono text-[#667085] text-[10px]">(83.3%)</span>
+              </div>
+              <span class="font-mono text-[13px] font-semibold text-[#101828]">15</span>
+            </div>
+            <div class="w-full h-2 bg-[#F1F4F9] rounded-full overflow-hidden">
+              <div class="h-full bg-[#16A34A] rounded-full" style="width: 83.3%;"></div>
+            </div>
+          </div>
+
+          <!-- WARN 2 -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#D97706]"></span>
+                <span class="font-semibold text-[#101828]">WARN</span>
+                <span class="font-mono text-[#667085] text-[10px]">(11.1%)</span>
+              </div>
+              <span class="font-mono text-[13px] font-semibold text-[#101828]">2</span>
+            </div>
+            <div class="w-full h-2 bg-[#F1F4F9] rounded-full overflow-hidden">
+              <div class="h-full bg-[#D97706] rounded-full" style="width: 11.1%;"></div>
+            </div>
+          </div>
+
+          <!-- ERROR 1 -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#DC2626]"></span>
+                <span class="font-semibold text-[#101828]">ERROR</span>
+                <span class="font-mono text-[#667085] text-[10px]">(5.6%)</span>
+              </div>
+              <span class="font-mono text-[13px] font-semibold text-[#101828]">1</span>
+            </div>
+            <div class="w-full h-2 bg-[#F1F4F9] rounded-full overflow-hidden">
+              <div class="h-full bg-[#DC2626] rounded-full" style="width: 5.6%;"></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Single-Line Bottom Statusbar Chrome (fits fully inside 1440x900 viewport) -->
+  <footer class="w-[1440px] h-6 min-h-6 bg-[#FFFFFF] hairline-t px-4 flex items-center justify-between text-[10px] font-mono text-[#667085] z-30 shrink-0">
+    <div class="flex items-center gap-4">
+      <span class="flex items-center gap-1.5 text-[#16A34A] font-semibold">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+        11/11 CHECKS PASS
+      </span>
+      <span>•</span>
+      <span>SCHEMA v5</span>
+      <span>•</span>
+      <span>WAL MODE: ZERO DRIFT</span>
+      <span>•</span>
+      <span>LAST EVENT 2026-11-05T11:58:02Z</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span>SHARD: 0x3a (SYNCED)</span>
+      <span>•</span>
+      <span>HASH: 9f2c1ab4</span>
+      <span>•</span>
+      <span>RAFT: 3/3 LEASE ACTIVE</span>
+      <span>•</span>
+      <span class="text-[#101828] font-medium">1440x900 FIXED VIEWPORT</span>
+    </div>
+  </footer>
+
+</body>
+</html>

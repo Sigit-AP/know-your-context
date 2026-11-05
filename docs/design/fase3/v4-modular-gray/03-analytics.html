@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Context - Analytics (Light Cool-Gray Modular)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #EEF1F5;
+      color: #101828;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Hairline borders */
+    .border-hairline {
+      border-color: #DCE2EA;
+    }
+    /* Custom scrollbar suppression for fixed 1440x900 viewport */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-[#EEF1F5] w-[1440px] h-[900px] flex flex-col justify-between overflow-hidden">
+
+  <!-- TOPBAR (52px white) -->
+  <header class="h-[52px] bg-white border-b border-[#DCE2EA] px-4 flex items-center justify-between shrink-0 z-20">
+    <!-- Left: Brand / Product Name -->
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded-lg bg-[#0D9488] text-white flex items-center justify-center font-mono font-bold text-[13px] tracking-tight">
+        KC
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="font-semibold text-[14px] tracking-tight text-[#101828]">Know Your Context</span>
+        <span class="font-mono text-[11px] text-[#667085] bg-[#EEF1F5] px-1.5 py-0.5 rounded border border-[#DCE2EA]">v2.4.1</span>
+      </div>
+    </div>
+
+    <!-- Center: Tab Nav (active = teal tinted pill) -->
+    <nav class="flex items-center bg-[#EEF1F5] p-1 rounded-lg border border-[#DCE2EA]">
+      <button class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-md">Overview</button>
+      <button class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-md flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>Graph
+      </button>
+      <button class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-md">Activity</button>
+      <button class="px-3.5 py-1 text-[12px] font-semibold text-[#0D9488] bg-white rounded-md border border-[#DCE2EA] shadow-none flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>Analytics
+      </button>
+    </nav>
+
+    <!-- Right: Focused Search Input + Cluster badge + Avatar -->
+    <div class="flex items-center gap-3">
+      <!-- Search Input FOCUSED (2px teal ring) -->
+      <div class="relative w-64">
+        <div class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-[#0D9488]">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <input type="text"
+               value="heuristics-catalog"
+               class="w-full h-8 pl-8 pr-7 text-[12px] font-mono text-[#101828] bg-white border border-[#0D9488] ring-2 ring-[#0D9488] ring-opacity-30 rounded-lg outline-none"
+               readonly>
+        <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+          <span class="font-mono text-[9px] text-[#667085] bg-[#EEF1F5] px-1 py-0.5 rounded border border-[#DCE2EA]">ESC</span>
+        </div>
+      </div>
+
+      <!-- Status Quorum Chip -->
+      <div class="flex items-center gap-1.5 bg-[#EEF1F5] px-2.5 py-1 rounded-lg border border-[#DCE2EA] text-[11px] font-mono font-medium text-[#101828]">
+        <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+        <span>RAFT 3/3</span>
+      </div>
+
+      <!-- Avatar -->
+      <div class="w-8 h-8 rounded-lg bg-white border border-[#DCE2EA] flex items-center justify-center font-mono font-semibold text-[11px] text-[#101828]">
+        OP
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CANVAS AREA (1440x900 budget, strictly padded 16px, gap 16px) -->
+  <main class="flex-1 p-4 grid grid-cols-12 gap-4 h-[calc(900px-52px-28px)] overflow-hidden">
+
+    <!-- TOP SECTION: PRIMARY MODULE (8 COLS) + RIGHT STACK (4 COLS) -->
+    <!-- PRIMARY MODULE (8 cols) -->
+    <section class="col-span-8 bg-white rounded-xl border border-[#DCE2EA] flex flex-col overflow-hidden h-[480px]">
+      <!-- Module Header with hairline -->
+      <div class="h-10 px-4 flex items-center justify-between border-b border-[#DCE2EA] shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-[13px] font-semibold text-[#101828] tracking-tight">EVENTS PER DAY</span>
+          <span class="text-[11px] text-[#667085]">14-day continuous AST replay window (rising 120 → 214)</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Multi-select Filter Chips -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-mono font-medium text-[#0D9488] bg-[#0D9488]/10 border border-[#0D9488]/40 px-2 py-0.5 rounded-[6px]">14D Window</span>
+            <span class="text-[10px] font-mono font-medium text-[#667085] bg-white border border-[#DCE2EA] px-2 py-0.5 rounded-[6px]">7D</span>
+            <span class="text-[10px] font-mono font-medium text-[#667085] bg-white border border-[#DCE2EA] px-2 py-0.5 rounded-[6px]">24H</span>
+          </div>
+          <!-- Toggle ON (mandatory state) -->
+          <div class="flex items-center gap-1.5 pl-2 border-l border-[#DCE2EA]">
+            <span class="text-[11px] text-[#667085]">Autorefresh</span>
+            <div class="w-7 h-4 bg-[#0D9488] rounded-full p-0.5 flex items-center justify-end cursor-pointer">
+              <div class="w-3 h-3 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module Content -->
+      <div class="p-4 flex-1 flex flex-col justify-between overflow-hidden">
+        <!-- 4 Inline KPI Readouts in a row -->
+        <div class="grid grid-cols-4 gap-3 shrink-0">
+          <div class="bg-[#EEF1F5] rounded-lg p-2.5 border border-[#DCE2EA]">
+            <div class="flex items-center justify-between text-[11px] font-medium text-[#667085] mb-0.5">
+              <span>NODES</span>
+              <span class="text-[10px] font-mono text-[#16A34A] bg-[#16A34A]/10 px-1 rounded">+14 today</span>
+            </div>
+            <div class="text-[24px] font-[650] font-mono text-[#101828] leading-tight tracking-tight">1,284</div>
+          </div>
+          <div class="bg-[#EEF1F5] rounded-lg p-2.5 border border-[#DCE2EA]">
+            <div class="flex items-center justify-between text-[11px] font-medium text-[#667085] mb-0.5">
+              <span>EDGES</span>
+              <span class="text-[10px] font-mono text-[#667085]">3.05 deg/node</span>
+            </div>
+            <div class="text-[24px] font-[650] font-mono text-[#101828] leading-tight tracking-tight">3,917</div>
+          </div>
+          <div class="bg-[#EEF1F5] rounded-lg p-2.5 border border-[#DCE2EA]">
+            <div class="flex items-center justify-between text-[11px] font-medium text-[#667085] mb-0.5">
+              <span>EVENTS TODAY</span>
+              <span class="text-[10px] font-mono text-[#0D9488]">peak 42 ops/hr</span>
+            </div>
+            <div class="text-[24px] font-[650] font-mono text-[#101828] leading-tight tracking-tight">214</div>
+          </div>
+          <div class="bg-[#EEF1F5] rounded-lg p-2.5 border border-[#DCE2EA]">
+            <div class="flex items-center justify-between text-[11px] font-medium text-[#667085] mb-0.5">
+              <span>STORE</span>
+              <span class="text-[10px] font-mono text-[#667085]">WAL mode · 0 lag</span>
+            </div>
+            <div class="text-[24px] font-[650] font-mono text-[#101828] leading-tight tracking-tight">46.2 <span class="text-[14px] text-[#667085] font-normal">MB</span></div>
+          </div>
+        </div>
+
+        <!-- 14-Bar Chart: Strictly all 14 teal bars side by side, mono axis, value above bar -->
+        <div class="mt-3 flex-1 flex flex-col justify-end bg-[#EEF1F5] rounded-lg border border-[#DCE2EA] p-3 pb-2">
+          <!-- Cadence legend & Target threshold line banner -->
+          <div class="flex items-center justify-between text-[11px] font-mono text-[#667085] mb-2 px-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 bg-[#0D9488] rounded-[2px]"></span>
+              <span class="text-[#101828] font-medium">Ingestion Cadence (ops/day)</span>
+              <span class="text-[#667085]">| Total 14d: 2,342 ops</span>
+              <span class="text-[#667085]">| Target P90: 150 ops</span>
+            </div>
+            <div class="text-[10px] text-[#16A34A] font-semibold bg-[#16A34A]/10 border border-[#16A34A]/30 px-1.5 py-0.5 rounded">
+              DETERMINISTIC PASS
+            </div>
+          </div>
+
+          <!-- Chart Area with 14 bars -->
+          <div class="relative w-full h-[220px] flex items-end justify-between px-2 pt-6 pb-5 border-b border-[#DCE2EA]">
+            <!-- Dashed Target Line at 150 ops (normalized height = ~150/220 = 68%) -->
+            <div class="absolute left-0 right-0 top-[88px] border-b border-dashed border-[#667085]/40 pointer-events-none z-0">
+              <span class="absolute right-2 -top-4 text-[9px] font-mono text-[#667085] bg-white/80 px-1 rounded">150 TARGET</span>
+            </div>
+
+            <!-- Bar 1: D-13 (120) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">120</span>
+              <div class="w-8 bg-[#0D9488]/60 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[95px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-13</span>
+            </div>
+
+            <!-- Bar 2: D-12 (128) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">128</span>
+              <div class="w-8 bg-[#0D9488]/60 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[102px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-12</span>
+            </div>
+
+            <!-- Bar 3: D-11 (135) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">135</span>
+              <div class="w-8 bg-[#0D9488]/65 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[108px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-11</span>
+            </div>
+
+            <!-- Bar 4: D-10 (142) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">142</span>
+              <div class="w-8 bg-[#0D9488]/65 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[114px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-10</span>
+            </div>
+
+            <!-- Bar 5: D-09 (150) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">150</span>
+              <div class="w-8 bg-[#0D9488]/70 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[120px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-09</span>
+            </div>
+
+            <!-- Bar 6: D-08 (158) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">158</span>
+              <div class="w-8 bg-[#0D9488]/70 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[126px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-08</span>
+            </div>
+
+            <!-- Bar 7: D-07 (164) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">164</span>
+              <div class="w-8 bg-[#0D9488]/75 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[131px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-07</span>
+            </div>
+
+            <!-- Bar 8: D-06 (172) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">172</span>
+              <div class="w-8 bg-[#0D9488]/75 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[138px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-06</span>
+            </div>
+
+            <!-- Bar 9: D-05 (180) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">180</span>
+              <div class="w-8 bg-[#0D9488]/80 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[144px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-05</span>
+            </div>
+
+            <!-- Bar 10: D-04 (189) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">189</span>
+              <div class="w-8 bg-[#0D9488]/80 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[151px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-04</span>
+            </div>
+
+            <!-- Bar 11: D-03 (195) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">195</span>
+              <div class="w-8 bg-[#0D9488]/85 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[156px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-03</span>
+            </div>
+
+            <!-- Bar 12: D-02 (202) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">202</span>
+              <div class="w-8 bg-[#0D9488]/90 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[162px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-02</span>
+            </div>
+
+            <!-- Bar 13: D-01 (208) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono text-[#667085] mb-1">208</span>
+              <div class="w-8 bg-[#0D9488]/95 hover:bg-[#0D9488] transition-colors rounded-t-[4px] h-[166px]"></div>
+              <span class="text-[10px] font-mono text-[#667085] mt-1.5">D-01</span>
+            </div>
+
+            <!-- Bar 14: TODAY (214) -->
+            <div class="flex flex-col items-center flex-1 z-10">
+              <span class="text-[10px] font-mono font-bold text-[#0D9488] mb-1">214</span>
+              <div class="w-8 bg-[#0D9488] hover:bg-[#0f766e] transition-colors rounded-t-[4px] h-[172px]"></div>
+              <span class="text-[10px] font-mono font-semibold text-[#0D9488] mt-1.5">TODAY</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT STACK: SECONDARY MODULE 'HEALTH' + TERTIARY MODULE 'RELEARN' (4 COLS) -->
+    <div class="col-span-4 flex flex-col gap-4 h-[480px]">
+      <!-- SECONDARY MODULE: HEALTH (4 cols) -->
+      <section class="bg-white rounded-xl border border-[#DCE2EA] flex flex-col h-[288px] overflow-hidden">
+        <!-- Header -->
+        <div class="h-10 px-4 flex items-center justify-between border-b border-[#DCE2EA] shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+            <span class="text-[13px] font-semibold text-[#101828] tracking-tight">HEALTH</span>
+          </div>
+          <span class="font-mono text-[11px] font-semibold text-[#16A34A]">11/11 OK</span>
+        </div>
+
+        <!-- 4 Invariant PASS rows -->
+        <div class="p-3 flex-1 flex flex-col justify-between">
+          <!-- Row 1 -->
+          <div class="flex items-center justify-between py-2 px-2.5 rounded-lg bg-[#EEF1F5]/60 border border-[#DCE2EA]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+              <span class="font-mono text-[12px] font-medium text-[#101828]">store_readable</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-[#667085]">0.4ms</span>
+              <span class="text-[10px] font-mono font-semibold text-[#16A34A] bg-[#16A34A]/10 border border-[#16A34A]/30 px-1.5 py-0.5 rounded-[6px]">PASS</span>
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="flex items-center justify-between py-2 px-2.5 rounded-lg bg-[#EEF1F5]/60 border border-[#DCE2EA]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+              <span class="font-mono text-[12px] font-medium text-[#101828]">chain_integrity</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-[#667085]">1.8ms</span>
+              <span class="text-[10px] font-mono font-semibold text-[#16A34A] bg-[#16A34A]/10 border border-[#16A34A]/30 px-1.5 py-0.5 rounded-[6px]">PASS</span>
+            </div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="flex items-center justify-between py-2 px-2.5 rounded-lg bg-[#EEF1F5]/60 border border-[#DCE2EA]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+              <span class="font-mono text-[12px] font-medium text-[#101828]">projection_fresh</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-[#667085]">0.9ms</span>
+              <span class="text-[10px] font-mono font-semibold text-[#16A34A] bg-[#16A34A]/10 border border-[#16A34A]/30 px-1.5 py-0.5 rounded-[6px]">PASS</span>
+            </div>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="flex items-center justify-between py-2 px-2.5 rounded-lg bg-[#EEF1F5]/60 border border-[#DCE2EA]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+              <span class="font-mono text-[12px] font-medium text-[#101828]">leases_consistent</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-[#667085]">0.5ms</span>
+              <span class="text-[10px] font-mono font-semibold text-[#16A34A] bg-[#16A34A]/10 border border-[#16A34A]/30 px-1.5 py-0.5 rounded-[6px]">PASS</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TERTIARY MODULE: RELEARN (4 cols, half height) -->
+      <section class="bg-white rounded-xl border border-[#DCE2EA] flex flex-col h-[176px] overflow-hidden">
+        <!-- Header -->
+        <div class="h-10 px-4 flex items-center justify-between border-b border-[#DCE2EA] shrink-0">
+          <span class="text-[13px] font-semibold text-[#101828] tracking-tight">RELEARN</span>
+          <span class="text-[10px] font-mono text-[#667085] bg-[#EEF1F5] px-1.5 py-0.5 rounded border border-[#DCE2EA]">State Machine</span>
+        </div>
+
+        <!-- Content: Stepper IDLE -> SCAN -> DIFF -> SYNC (IDLE active) -->
+        <div class="p-3.5 flex-1 flex flex-col justify-between">
+          <div class="grid grid-cols-4 gap-2">
+            <!-- Step 1: IDLE (Active) -->
+            <div class="bg-[#0D9488]/10 border border-[#0D9488] rounded-lg p-2 text-center">
+              <div class="font-mono text-[11px] font-bold text-[#0D9488]">IDLE</div>
+              <div class="text-[9px] font-mono text-[#0D9488] mt-0.5 font-medium">ACTIVE</div>
+            </div>
+            <!-- Step 2: SCAN -->
+            <div class="bg-[#EEF1F5] border border-[#DCE2EA] rounded-lg p-2 text-center opacity-70">
+              <div class="font-mono text-[11px] font-semibold text-[#667085]">SCAN</div>
+              <div class="text-[9px] font-mono text-[#667085] mt-0.5">WAIT</div>
+            </div>
+            <!-- Step 3: DIFF -->
+            <div class="bg-[#EEF1F5] border border-[#DCE2EA] rounded-lg p-2 text-center opacity-70">
+              <div class="font-mono text-[11px] font-semibold text-[#667085]">DIFF</div>
+              <div class="text-[9px] font-mono text-[#667085] mt-0.5">WAIT</div>
+            </div>
+            <!-- Step 4: SYNC -->
+            <div class="bg-[#EEF1F5] border border-[#DCE2EA] rounded-lg p-2 text-center opacity-70">
+              <div class="font-mono text-[11px] font-semibold text-[#667085]">SYNC</div>
+              <div class="text-[9px] font-mono text-[#667085] mt-0.5">WAIT</div>
+            </div>
+          </div>
+
+          <!-- Bottom state caption -->
+          <div class="pt-2 border-t border-[#DCE2EA] flex items-center justify-between text-[11px] text-[#667085]">
+            <span>Next automatic sweep:</span>
+            <span class="font-mono font-semibold text-[#101828]">18m 42s</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- BOTTOM ROW: 2 MODULES (6 COLS + 6 COLS) -->
+    <!-- MODULE: TOP NODES (6 cols) -->
+    <section class="col-span-6 bg-white rounded-xl border border-[#DCE2EA] flex flex-col h-[308px] overflow-hidden">
+      <!-- Header -->
+      <div class="h-10 px-4 flex items-center justify-between border-b border-[#DCE2EA] shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-[13px] font-semibold text-[#101828] tracking-tight">TOP NODES</span>
+          <span class="text-[11px] text-[#667085]">sorted by eigenvector centrality</span>
+        </div>
+        <span class="text-[10px] font-mono text-[#667085]">6 active AST targets</span>
+      </div>
+
+      <!-- Table Rows (Dense 38px, mandatory states: one SELECTED with 3px teal bar, one HOVERED with light gray wash) -->
+      <div class="flex-1 flex flex-col divide-y divide-[#DCE2EA] text-[12px]">
+        <!-- Row 1: heuristics-catalog (SELECTED: 3px teal left bar) -->
+        <div class="h-[38px] px-3.5 flex items-center justify-between bg-white border-l-[3px] border-[#0D9488]">
+          <div class="flex items-center gap-2.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+            <span class="font-mono font-semibold text-[#101828]">heuristics-catalog</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] font-mono text-[#0D9488] bg-[#0D9488]/10 border border-[#0D9488]/30 px-1.5 py-0.5 rounded">P2 · Ingest</span>
+            <span class="font-mono text-[12px] font-bold text-[#101828] w-12 text-right">0.828</span>
+            <span class="font-mono text-[11px] text-[#667085] w-14 text-right">6 arcs</span>
+          </div>
+        </div>
+
+        <!-- Row 2: retrieval-core (HOVERED: light gray wash #EEF1F5) -->
+        <div class="h-[38px] px-3.5 flex items-center justify-between bg-[#EEF1F5] transition-colors border-l-[3px] border-transparent">
+          <div class="flex items-center gap-2.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+            <span class="font-mono font-medium text-[#101828]">retrieval-core</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] font-mono text-[#667085] bg-white border border-[#DCE2EA] px-1.5 py-0.5 rounded">P1 · Core</span>
+            <span class="font-mono text-[12px] font-semibold text-[#101828] w-12 text-right">0.794</span>
+            <span class="font-mono text-[11px] text-[#667085] w-14 text-right">6 arcs</span>
+          </div>
+        </div>
+
+        <!-- Row 3: store-mutex -->
+        <div class="h-[38px] px-3.5 flex items-center justify-between bg-white border-l-[3px] border-transparent hover:bg-[#EEF1F5]/50">
+          <div class="flex items-center gap-2.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
+            <span class="font-mono font-medium text-[#101828]">store-mutex</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] font-mono text-[#667085] bg-[#EEF1F5] border border-[#DCE2EA] px-1.5 py-0.5 rounded">P1 · Core</span>
+            <span class="font-mono text-[12px] font-medium text-[#101828] w-12 text-right">0.741</span>
+            <span class="font-mono text-[11px] text-[#667085] w-14 text-right">5 arcs</span>
+          </div>
+        </div>
+
+        <!-- Row 4: schema-contract-04 -->
+        <div class="h-[38px] px-3.5 flex items-center justify-between bg-white border-l-[3px] border-transparent hover:bg-[#EEF1F5]/50">
+          <div class="flex items-center gap-2.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+            <span class="font-mono font-medium text-[#101828]">schema-contract-04</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] font-mono text-[#667085] bg-[#EEF1F5] border border-[#DCE2EA] px-1.5 py-0.5 rounded">P4 · Schema</span>
+            <span class="font-mono text-[12px] font-medium text-[#101828] w-12 text-right">0.698</span>
+            <span class="font-mono text-[11px] text-[#667085] w-14 text-right">4 arcs</span>
+          </div>
+        </div>
+
+        <!-- Row 5: vector-indexer-p3 -->
+        <div class="h-[38px] px-3.5 flex items-center justify-between bg-white border-l-[3px] border-transparent hover:bg-[#EEF1F5]/50">
+          <div class="flex items-center gap-2.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+            <span class="font-mono font-medium text-[#101828]">vector-indexer-p3</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] font-mono text-[#667085] bg-[#EEF1F5] border border-[#DCE2EA] px-1.5 py-0.5 rounded">P3 · Vector</span>
+            <span class="font-mono text-[12px] font-medium text-[#101828] w-12 text-right">0.641</span>
+            <span class="font-mono text-[11px] text-[#667085] w-14 text-right">4 arcs</span>
+          </div>
+        </div>
+
+        <!-- Row 6: lease-arbiter -->
+        <div class="h-[38px] px-3.5 flex items-center justify-between bg-white border-l-[3px] border-transparent hover:bg-[#EEF1F5]/50">
+          <div class="flex items-center gap-2.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+            <span class="font-mono font-medium text-[#101828]">lease-arbiter</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] font-mono text-[#667085] bg-[#EEF1F5] border border-[#DCE2EA] px-1.5 py-0.5 rounded">P5 · Leases</span>
+            <span class="font-mono text-[12px] font-medium text-[#101828] w-12 text-right">0.589</span>
+            <span class="font-mono text-[11px] text-[#667085] w-14 text-right">3 arcs</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE: DOMAIN DISTRIBUTION (6 cols) -->
+    <section class="col-span-6 bg-white rounded-xl border border-[#DCE2EA] flex flex-col h-[308px] overflow-hidden">
+      <!-- Header -->
+      <div class="h-10 px-4 flex items-center justify-between border-b border-[#DCE2EA] shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-[13px] font-semibold text-[#101828] tracking-tight">DOMAIN DISTRIBUTION</span>
+          <span class="text-[11px] text-[#667085]">ontology partition quotas</span>
+        </div>
+        <span class="text-[10px] font-mono text-[#667085]">1,284 total nodes</span>
+      </div>
+
+      <!-- 5 Thin Bars P1..P5 with mono counts -->
+      <div class="p-3.5 flex-1 flex flex-col justify-between">
+        <!-- P1 -->
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-mono font-medium text-[#101828]">P1 · Core Runtime</span>
+            <span class="font-mono text-[#667085]">184 (14.3%)</span>
+          </div>
+          <div class="w-full bg-[#EEF1F5] h-2 rounded-full overflow-hidden">
+            <div class="bg-[#0D9488]/70 h-full rounded-full" style="width: 14.3%"></div>
+          </div>
+        </div>
+
+        <!-- P2 (Dominant) -->
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between text-[11px]">
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-semibold text-[#0D9488]">P2 · Ingest & Heuristics</span>
+              <span class="text-[9px] font-mono text-[#0D9488] bg-[#0D9488]/10 border border-[#0D9488]/30 px-1 rounded">DOMINANT</span>
+            </div>
+            <span class="font-mono font-bold text-[#0D9488]">412 (32.1%)</span>
+          </div>
+          <div class="w-full bg-[#EEF1F5] h-2 rounded-full overflow-hidden">
+            <div class="bg-[#0D9488] h-full rounded-full" style="width: 32.1%"></div>
+          </div>
+        </div>
+
+        <!-- P3 -->
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-mono font-medium text-[#101828]">P3 · Vector Space</span>
+            <span class="font-mono text-[#667085]">229 (17.8%)</span>
+          </div>
+          <div class="w-full bg-[#EEF1F5] h-2 rounded-full overflow-hidden">
+            <div class="bg-[#0D9488]/75 h-full rounded-full" style="width: 17.8%"></div>
+          </div>
+        </div>
+
+        <!-- P4 -->
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-mono font-medium text-[#101828]">P4 · Schema & Invariants</span>
+            <span class="font-mono text-[#667085]">156 (12.1%)</span>
+          </div>
+          <div class="w-full bg-[#EEF1F5] h-2 rounded-full overflow-hidden">
+            <div class="bg-[#0D9488]/65 h-full rounded-full" style="width: 12.1%"></div>
+          </div>
+        </div>
+
+        <!-- P5 -->
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-mono font-medium text-[#101828]">P5 · Consensus Leases</span>
+            <span class="font-mono text-[#667085]">112 (8.7%)</span>
+          </div>
+          <div class="w-full bg-[#EEF1F5] h-2 rounded-full overflow-hidden">
+            <div class="bg-[#0D9488]/55 h-full rounded-full" style="width: 8.7%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FLUSH BOTTOM STATUS BAR (28px) - ZERO EMPTY BAND -->
+  <footer class="h-[28px] bg-white border-t border-[#DCE2EA] px-4 flex items-center justify-between text-[11px] font-mono text-[#667085] shrink-0 z-20">
+    <div class="flex items-center gap-4">
+      <span class="flex items-center gap-1.5 text-[#16A34A] font-medium">
+        <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>11/11 CHECKS PASS
+      </span>
+      <span>SCHEMA v5</span>
+      <span>WAL MODE: ZERO DRIFT</span>
+      <span>LAST EVENT 2026-11-05T11:58:02Z</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span>SHARD: 0x3a (SYNCED)</span>
+      <span>HASH: 9f2c1ab4</span>
+      <span>RAFT: 3/3 LEASE ACTIVE</span>
+      <span class="text-[#101828] font-semibold">1440x900 FIXED VIEWPORT</span>
+    </div>
+  </footer>
+
+</body>
+</html>

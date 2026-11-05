@@ -1,0 +1,98 @@
+{
+ "v1": {
+  "screens": {
+   "01-graph": {
+    "screen_id": "1bb9307c91294f20b076f649c69ad9ad",
+    "html": "projects/15376293374719786204/files/15bfabe890484b3499c4b62b505715ae",
+    "png": "projects/15376293374719786204/files/9ed25803a1584f35aa69db38b2f27e93",
+    "title": "Know Your Context - Graph Explorer (Light Warm Minimal)",
+    "attempts": 1,
+    "png_ok": 537845,
+    "html_ok": 44532
+   },
+   "02-activity": {
+    "screen_id": "1ac13ba16eea46698ae1f233b16142c4",
+    "html": "projects/15376293374719786204/files/e39f08cb80624cfeac2003f65869837b",
+    "png": "projects/15376293374719786204/files/e2ee7503398a4760b0c6cb618c60dabf",
+    "title": "Know Your Context - Agent Activity Log (Light Warm Minimal)",
+    "attempts": 1,
+    "png_ok": 614052,
+    "html_ok": 35618
+   },
+   "03-analytics": {
+    "screen_id": "ae82ed74cf9e40178bd096ab6da3b00a",
+    "html": "projects/15376293374719786204/files/9e953c6f9aaa4141bd01f5873e4a4c74",
+    "png": "projects/15376293374719786204/files/8c3594e68dd24c6097ffb23fd65a829b",
+    "title": "Know Your Context - Analytics (Light Warm Minimal)",
+    "attempts": 1,
+    "png_ok": 460860,
+    "html_ok": 40376
+   }
+  },
+  "ds": "assets/2052345128370305648"
+ },
+ "v5": {
+  "screens": {
+   "01-graph": {
+    "screen_id": "f225feaeccb54969966a6073d1cc27bc",
+    "html": "projects/15376293374719786204/files/e4edb4a2c54b41f69e8e0824354689e9",
+    "png": "projects/15376293374719786204/files/05084ea5b87a493d99bcafc928674286",
+    "title": "Know Your Context - Graph Explorer (Modern Ops Minimal)",
+    "attempts": 1,
+    "png_ok": 565709,
+    "html_ok": 40784
+   },
+   "02-activity": {
+    "screen_id": "0578dc29e7ab4f659830497ec85da53e",
+    "html": "projects/15376293374719786204/files/c72feb67c3ab41c6893647ccd664af80",
+    "png": "projects/15376293374719786204/files/8ad2b5cc97ff4c7c90a66bb411d6004e",
+    "title": "Know Your Context - Agent Activity Log (Modern Ops Minimal)",
+    "attempts": 1,
+    "png_ok": 569221,
+    "html_ok": 33140
+   },
+   "03-analytics": {
+    "screen_id": "f149f3fdd9924e49848b93444e86f505",
+    "html": "projects/15376293374719786204/files/2bbd9822d841464d96a9fd970fdc0086",
+    "png": "projects/15376293374719786204/files/f823a1d9bd8847dbac74253bee958cff",
+    "title": "Know Your Context - Analytics (Modern Ops Minimal)",
+    "attempts": 1,
+    "png_ok": 507315,
+    "html_ok": 39352
+   }
+  },
+  "ds": "assets/16380479213927938597"
+ },
+ "v3": {
+  "screens": {
+   "01-graph": {
+    "screen_id": "cbba94a912ff48c9b5093b198c17291f",
+    "html": "projects/15376293374719786204/files/1449cead61324a06a5fb81f369bfe01a",
+    "png": "projects/15376293374719786204/files/e55c4c2352f84b22b5611e8560fa2026",
+    "title": "Know Your Context - Graph Explorer (Calm Dark Minimal)",
+    "attempts": 1,
+    "png_ok": 486360,
+    "html_ok": 44332
+   },
+   "02-activity": {
+    "screen_id": "1255c86747cb4fd0aa844c3da5543a0a",
+    "html": "projects/15376293374719786204/files/fcfdec87bf23499f966b84e5eba53ac4",
+    "png": "projects/15376293374719786204/files/bd69b0b50f3343c98cf0c33b5417e73c",
+    "title": "Agent Activity Log - Know Your Context (Calm Dark Minimal)",
+    "attempts": 1,
+    "png_ok": 491889,
+    "html_ok": 35432
+   },
+   "03-analytics": {
+    "screen_id": "caf38e98e0274834aa0aa38969f95961",
+    "html": "projects/15376293374719786204/files/d35de5d4cb7543fb83bc3320d3f162bb",
+    "png": "projects/15376293374719786204/files/3c5b4a5fd52848f99b8bef84dd8efce7",
+    "title": "Know Your Context - Analytics (Calm Dark Minimal)",
+    "attempts": 1,
+    "png_ok": 462976,
+    "html_ok": 30988
+   }
+  },
+  "ds": "assets/15624791635585255334"
+ }
+}

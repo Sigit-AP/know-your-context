@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Know Your Context - Analytics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        base: '#FAFAF8',
+        card: '#FFFFFF',
+        hairline: '#E7E5E0',
+        ink: '#1C1917',
+        secondary: '#78716C',
+        indigoAcc: '#4338CA',
+        statusOk: '#15803D',
+        statusWarn: '#B45309',
+        statusDanger: '#B91C1C',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #FAFAF8;
+    color: #1C1917;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    height: 900px;
+    width: 1440px;
+    max-height: 900px;
+    max-width: 1440px;
+    user-select: none;
+  }
+</style>
+</head>
+<body class="flex flex-col h-[900px] w-[1440px] bg-base text-ink antialiased justify-between">
+
+  <!-- TOPBAR (56px) -->
+  <header class="h-[56px] min-h-[56px] w-full border-b border-hairline bg-card px-6 flex items-center justify-between">
+    <!-- Left: Brand Logo & Title -->
+    <div class="flex items-center gap-8">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-[6px] bg-indigoAcc flex items-center justify-center text-white font-mono font-bold text-xs">
+          KC
+        </div>
+        <span class="font-semibold text-sm tracking-tight text-ink">Know Your Context</span>
+      </div>
+
+      <!-- Navigation links -->
+      <nav class="flex items-center gap-1.5 text-xs font-medium">
+        <a href="#" class="px-3 py-1.5 rounded-[6px] text-secondary hover:text-ink transition-colors">Overview</a>
+        <a href="#" class="px-3 py-1.5 rounded-[6px] text-secondary hover:text-ink transition-colors">Graph</a>
+        <a href="#" class="px-3 py-1.5 rounded-[6px] text-secondary hover:text-ink transition-colors">Activity</a>
+        <a href="#" class="px-3 py-1.5 rounded-[6px] bg-indigo-50 text-indigoAcc font-semibold">Analytics</a>
+        <a href="#" class="px-3 py-1.5 rounded-[6px] text-secondary hover:text-ink transition-colors">Health</a>
+      </nav>
+    </div>
+
+    <!-- Right: Search field, Bell, Avatar -->
+    <div class="flex items-center gap-3.5">
+      <!-- Search input with 2px indigo focus ring with offset -->
+      <div class="relative flex items-center">
+        <svg class="w-3.5 h-3.5 absolute left-3 text-secondary pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" value="heuristics-catalog" class="w-64 h-8 pl-8 pr-9 bg-base border border-hairline rounded-[6px] text-xs font-mono text-ink ring-2 ring-indigoAcc ring-offset-2 ring-offset-card outline-none" readonly>
+        <span class="absolute right-2.5 px-1.5 py-0.5 rounded-[4px] border border-hairline bg-card text-[10px] font-mono text-secondary">⌘K</span>
+      </div>
+
+      <!-- Notifications Bell -->
+      <button class="w-8 h-8 rounded-[6px] border border-hairline bg-card flex items-center justify-center text-secondary hover:text-ink transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+      </button>
+
+      <!-- Avatar -->
+      <div class="w-8 h-8 rounded-[6px] bg-[#E0E7FF] border border-[#C7D2FE] flex items-center justify-center text-indigoAcc font-mono text-xs font-semibold">
+        OP
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT CONTAINER (Height stretches to fill 900px exactly) -->
+  <main class="flex-1 px-6 pt-3.5 pb-2.5 flex flex-col gap-3 overflow-hidden">
+
+    <!-- PAGE HEADER ROW -->
+    <div class="flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-3">
+        <h1 class="text-[24px] font-[650] leading-none text-ink tracking-tight">Analytics</h1>
+        <span class="text-xs text-secondary font-normal">Local-first knowledge-graph performance &amp; structural metrics</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- Filter chips: selected & unselected -->
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="px-2 py-0.5 rounded-[4px] bg-indigo-50 border border-indigo-200 text-indigoAcc font-mono text-[11px] font-medium">14D Window</span>
+          <span class="px-2 py-0.5 rounded-[4px] border border-hairline bg-card text-secondary font-mono text-[11px]">7D</span>
+          <span class="px-2 py-0.5 rounded-[4px] border border-hairline bg-card text-secondary font-mono text-[11px]">24H</span>
+        </div>
+
+        <!-- Autoscroll toggle drawn ON -->
+        <div class="flex items-center gap-2 pl-2 border-l border-hairline">
+          <span class="text-[11px] text-secondary">Autorefresh</span>
+          <div class="w-8 h-4 bg-indigoAcc rounded-full relative flex items-center p-0.5 cursor-default">
+            <div class="w-3 h-3 bg-white rounded-full ml-auto"></div>
+          </div>
+        </div>
+
+        <span class="text-xs font-mono text-secondary tracking-tight">2026-11-05T11:58:02Z · schema v5</span>
+      </div>
+    </div>
+
+    <!-- KPI STRIP (4 CARDS) -->
+    <section class="grid grid-cols-4 gap-4 shrink-0">
+      <!-- KPI 1 -->
+      <div class="bg-card border border-hairline rounded-[10px] p-3.5 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-mono uppercase tracking-wider text-secondary">NODES</div>
+          <div class="text-[22px] font-mono font-semibold text-ink leading-tight mt-0.5">1,284</div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          <span class="text-[10px] font-mono font-medium text-statusOk bg-emerald-50 px-1.5 py-0.5 rounded-[4px] border border-emerald-100">+14 today</span>
+          <svg class="w-16 h-5 text-indigoAcc" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 64 20">
+            <polyline points="2,16 14,14 26,11 38,12 50,6 62,4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- KPI 2 -->
+      <div class="bg-card border border-hairline rounded-[10px] p-3.5 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-mono uppercase tracking-wider text-secondary">EDGES</div>
+          <div class="text-[22px] font-mono font-semibold text-ink leading-tight mt-0.5">3,917</div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          <span class="text-[10px] font-mono text-secondary">3.05 deg/node</span>
+          <svg class="w-16 h-5 text-indigoAcc" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 64 20">
+            <polyline points="2,15 14,16 26,13 38,9 50,7 62,3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- KPI 3 -->
+      <div class="bg-card border border-hairline rounded-[10px] p-3.5 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-mono uppercase tracking-wider text-secondary">EVENTS TODAY</div>
+          <div class="text-[22px] font-mono font-semibold text-ink leading-tight mt-0.5">214</div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          <span class="text-[10px] font-mono text-secondary">peak 42 ops/hr</span>
+          <svg class="w-16 h-5 text-indigoAcc" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 64 20">
+            <polyline points="2,17 14,15 26,16 38,12 50,8 62,2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- KPI 4 -->
+      <div class="bg-card border border-hairline rounded-[10px] p-3.5 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-mono uppercase tracking-wider text-secondary">STORE</div>
+          <div class="text-[22px] font-mono font-semibold text-ink leading-tight mt-0.5">46.2 MB</div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          <span class="text-[10px] font-mono text-statusOk">WAL mode · 0 lag</span>
+          <svg class="w-16 h-5 text-indigoAcc" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 64 20">
+            <polyline points="2,16 14,14 26,15 38,11 50,10 62,5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENT WORKSPACE: PRIMARY (68%) + RIGHT RAIL (320px) -->
+    <div class="flex-1 flex gap-4 min-h-0 overflow-hidden">
+
+      <!-- PRIMARY ZONE (Left, ~1056px wide) -->
+      <div class="flex-1 flex flex-col gap-3 min-h-0">
+
+        <!-- 01 · EVENTS PER DAY PANEL (Taller to fill vertical room with headroom) -->
+        <div class="flex-1 bg-card border border-hairline rounded-[10px] p-4 flex flex-col min-h-0 justify-between">
+          <div class="flex items-center justify-between shrink-0 mb-1">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">01 · EVENTS PER DAY</span>
+              <span class="text-xs text-secondary">14-day continuous AST replay window (rising 120 → 214)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-mono text-secondary">Target P90: 150 ops</span>
+              <span class="px-2 py-0.5 rounded-[4px] bg-emerald-50 border border-emerald-200 text-statusOk font-mono text-[10px] font-semibold">DETERMINISTIC PASS</span>
+            </div>
+          </div>
+
+          <!-- 14-Bar Chart SVG Container -->
+          <div class="w-full flex-1 flex flex-col justify-end pt-2 pb-1 relative min-h-[140px]">
+            <!-- Target line at 150 ops -->
+            <div class="absolute w-full border-b border-dashed border-secondary/30 top-[42%] left-0 z-0">
+              <span class="absolute right-0 -top-4 text-[10px] font-mono text-secondary/60">150 TARGET</span>
+            </div>
+
+            <!-- Bars flex container with headroom -->
+            <div class="w-full h-full flex items-end justify-between gap-3 px-2 z-10">
+              <!-- Bar 1 (120) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">120</span>
+                <div class="w-full bg-indigo-300 rounded-t-[3px]" style="height: 52%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-13</span>
+              </div>
+              <!-- Bar 2 (128) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">128</span>
+                <div class="w-full bg-indigo-300 rounded-t-[3px]" style="height: 55%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-12</span>
+              </div>
+              <!-- Bar 3 (135) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">135</span>
+                <div class="w-full bg-indigo-300 rounded-t-[3px]" style="height: 58%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-11</span>
+              </div>
+              <!-- Bar 4 (142) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">142</span>
+                <div class="w-full bg-indigo-400 rounded-t-[3px]" style="height: 61%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-10</span>
+              </div>
+              <!-- Bar 5 (150) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">150</span>
+                <div class="w-full bg-indigo-400 rounded-t-[3px]" style="height: 64%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-09</span>
+              </div>
+              <!-- Bar 6 (158) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">158</span>
+                <div class="w-full bg-indigo-500 rounded-t-[3px]" style="height: 68%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-08</span>
+              </div>
+              <!-- Bar 7 (164) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">164</span>
+                <div class="w-full bg-indigo-500 rounded-t-[3px]" style="height: 70%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-07</span>
+              </div>
+              <!-- Bar 8 (172) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">172</span>
+                <div class="w-full bg-indigo-500 rounded-t-[3px]" style="height: 74%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-06</span>
+              </div>
+              <!-- Bar 9 (180) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">180</span>
+                <div class="w-full bg-indigo-500 rounded-t-[3px]" style="height: 77%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-05</span>
+              </div>
+              <!-- Bar 10 (189) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">189</span>
+                <div class="w-full bg-indigo-600 rounded-t-[3px]" style="height: 81%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-04</span>
+              </div>
+              <!-- Bar 11 (195) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">195</span>
+                <div class="w-full bg-indigo-600 rounded-t-[3px]" style="height: 83%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-03</span>
+              </div>
+              <!-- Bar 12 (202) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">202</span>
+                <div class="w-full bg-indigo-600 rounded-t-[3px]" style="height: 86%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-02</span>
+              </div>
+              <!-- Bar 13 (208) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono text-secondary">208</span>
+                <div class="w-full bg-indigo-600 rounded-t-[3px]" style="height: 89%;"></div>
+                <span class="text-[10px] font-mono text-secondary mt-1">D-01</span>
+              </div>
+              <!-- Bar 14 (214 TODAY - solid indigoAcc) -->
+              <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <span class="text-[10px] font-mono font-bold text-indigoAcc">214</span>
+                <div class="w-full bg-indigoAcc rounded-t-[3px]" style="height: 92%;"></div>
+                <span class="text-[10px] font-mono font-semibold text-indigoAcc mt-1">TODAY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 02 · TOP NODES TABLE PANEL (Exactly 6 rows, dense 36px) -->
+        <div class="h-[258px] bg-card border border-hairline rounded-[10px] p-3 flex flex-col shrink-0">
+          <div class="flex items-center justify-between pb-2 border-b border-hairline">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">02 · TOP NODES</span>
+              <span class="text-[11px] text-secondary">sorted by eigenvector centrality</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <!-- Ghost button -->
+              <button class="px-2.5 py-1 rounded-[6px] border border-hairline text-xs font-medium text-secondary hover:text-ink transition-colors">
+                Export CSV
+              </button>
+              <!-- Primary button -->
+              <button class="px-3 py-1 rounded-[6px] bg-indigoAcc text-white text-xs font-medium hover:bg-indigo-700 transition-colors">
+                Recompute Centrality
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Header -->
+          <div class="grid grid-cols-12 text-[10px] font-mono uppercase tracking-wider text-secondary px-3 py-1.5 border-b border-hairline bg-base/50">
+            <div class="col-span-5">NODE IDENTIFIER</div>
+            <div class="col-span-3">DOMAIN PARTITION</div>
+            <div class="col-span-2 text-right">EIGENVECTOR</div>
+            <div class="col-span-2 text-right">DIRECTED EDGES</div>
+          </div>
+
+          <!-- Table Body (6 dense 36px rows with interaction states) -->
+          <div class="flex-1 flex flex-col divide-y divide-hairline text-xs">
+            <!-- Row 1: SELECTED STATE (3px indigo left bar + light indigo tint) -->
+            <div class="h-[36px] grid grid-cols-12 items-center px-3 bg-indigo-50/70 border-l-[3px] border-indigoAcc">
+              <div class="col-span-5 font-mono font-medium text-indigoAcc flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigoAcc"></span>
+                <span>heuristics-catalog</span>
+              </div>
+              <div class="col-span-3">
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-card border border-indigo-200 text-indigoAcc text-[10px] font-mono font-medium">P2 · Ingest</span>
+              </div>
+              <div class="col-span-2 text-right font-mono font-semibold text-ink">0.828</div>
+              <div class="col-span-2 text-right font-mono text-secondary">6 arcs</div>
+            </div>
+
+            <!-- Row 2: HOVERED STATE (warm gray wash) -->
+            <div class="h-[36px] grid grid-cols-12 items-center px-3 bg-[#F5F4F0] border-l-[3px] border-transparent">
+              <div class="col-span-5 font-mono font-medium text-ink flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary/50"></span>
+                <span>retrieval-core</span>
+              </div>
+              <div class="col-span-3">
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-card border border-hairline text-secondary text-[10px] font-mono">P1 · Core</span>
+              </div>
+              <div class="col-span-2 text-right font-mono text-ink">0.794</div>
+              <div class="col-span-2 text-right font-mono text-secondary">6 arcs</div>
+            </div>
+
+            <!-- Row 3: Default -->
+            <div class="h-[36px] grid grid-cols-12 items-center px-3 border-l-[3px] border-transparent">
+              <div class="col-span-5 font-mono font-medium text-ink flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary/50"></span>
+                <span>store-mutex</span>
+              </div>
+              <div class="col-span-3">
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-card border border-hairline text-secondary text-[10px] font-mono">P1 · Core</span>
+              </div>
+              <div class="col-span-2 text-right font-mono text-ink">0.741</div>
+              <div class="col-span-2 text-right font-mono text-secondary">5 arcs</div>
+            </div>
+
+            <!-- Row 4: Default -->
+            <div class="h-[36px] grid grid-cols-12 items-center px-3 border-l-[3px] border-transparent">
+              <div class="col-span-5 font-mono font-medium text-ink flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary/50"></span>
+                <span>schema-contract-04</span>
+              </div>
+              <div class="col-span-3">
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-card border border-hairline text-secondary text-[10px] font-mono">P4 · Schema</span>
+              </div>
+              <div class="col-span-2 text-right font-mono text-ink">0.698</div>
+              <div class="col-span-2 text-right font-mono text-secondary">4 arcs</div>
+            </div>
+
+            <!-- Row 5: Default -->
+            <div class="h-[36px] grid grid-cols-12 items-center px-3 border-l-[3px] border-transparent">
+              <div class="col-span-5 font-mono font-medium text-ink flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary/50"></span>
+                <span>vector-indexer-p3</span>
+              </div>
+              <div class="col-span-3">
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-card border border-hairline text-secondary text-[10px] font-mono">P3 · Vector</span>
+              </div>
+              <div class="col-span-2 text-right font-mono text-ink">0.641</div>
+              <div class="col-span-2 text-right font-mono text-secondary">4 arcs</div>
+            </div>
+
+            <!-- Row 6: Default -->
+            <div class="h-[36px] grid grid-cols-12 items-center px-3 border-l-[3px] border-transparent">
+              <div class="col-span-5 font-mono font-medium text-ink flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary/50"></span>
+                <span>lease-arbiter</span>
+              </div>
+              <div class="col-span-3">
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-card border border-hairline text-secondary text-[10px] font-mono">P5 · Leases</span>
+              </div>
+              <div class="col-span-2 text-right font-mono text-ink">0.589</div>
+              <div class="col-span-2 text-right font-mono text-secondary">3 arcs</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT RAIL (320px wide, quieter typography, stretched vertically) -->
+      <aside class="w-[320px] flex flex-col gap-3 shrink-0 min-h-0">
+
+        <!-- 03 · DOMAIN DISTRIBUTION PANEL -->
+        <div class="bg-card border border-hairline rounded-[10px] p-3.5 flex flex-col justify-between shrink-0">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">03 · DOMAIN DISTRIBUTION</span>
+            <span class="text-[10px] font-mono text-secondary">1,284 total</span>
+          </div>
+
+          <div class="space-y-2.5">
+            <!-- P1 -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-ink text-[11px] font-medium">P1 · Core Runtime</span>
+                <span class="font-mono text-[11px] text-secondary">184 (14.3%)</span>
+              </div>
+              <div class="w-full h-1.5 bg-base rounded-full overflow-hidden">
+                <div class="bg-indigo-300 h-full rounded-full" style="width: 14.3%;"></div>
+              </div>
+            </div>
+
+            <!-- P2 (DOMINANT - indigoAcc) -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-indigoAcc text-[11px] font-semibold">P2 · Ingest &amp; Heuristics</span>
+                  <span class="text-[9px] font-mono bg-indigo-50 text-indigoAcc border border-indigo-200 px-1 py-0.2 rounded">DOMINANT</span>
+                </div>
+                <span class="font-mono text-[11px] font-semibold text-indigoAcc">412 (32.1%)</span>
+              </div>
+              <div class="w-full h-1.5 bg-base rounded-full overflow-hidden">
+                <div class="bg-indigoAcc h-full rounded-full" style="width: 32.1%;"></div>
+              </div>
+            </div>
+
+            <!-- P3 -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-ink text-[11px] font-medium">P3 · Vector Space</span>
+                <span class="font-mono text-[11px] text-secondary">229 (17.8%)</span>
+              </div>
+              <div class="w-full h-1.5 bg-base rounded-full overflow-hidden">
+                <div class="bg-indigo-400 h-full rounded-full" style="width: 17.8%;"></div>
+              </div>
+            </div>
+
+            <!-- P4 -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-ink text-[11px] font-medium">P4 · Schema &amp; Invariants</span>
+                <span class="font-mono text-[11px] text-secondary">156 (12.1%)</span>
+              </div>
+              <div class="w-full h-1.5 bg-base rounded-full overflow-hidden">
+                <div class="bg-indigo-300 h-full rounded-full" style="width: 12.1%;"></div>
+              </div>
+            </div>
+
+            <!-- P5 -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-ink text-[11px] font-medium">P5 · Consensus Leases</span>
+                <span class="font-mono text-[11px] text-secondary">112 (8.7%)</span>
+              </div>
+              <div class="w-full h-1.5 bg-base rounded-full overflow-hidden">
+                <div class="bg-indigo-200 h-full rounded-full" style="width: 8.7%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 04 · HEALTH PANEL -->
+        <div class="bg-card border border-hairline rounded-[10px] p-3.5 flex flex-col justify-between shrink-0">
+          <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-hairline">
+            <span class="text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">04 · HEALTH</span>
+            <span class="text-[10px] font-mono text-statusOk font-semibold">11/11 OK</span>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+                <span class="font-mono text-[11px] text-ink">store_readable</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] text-secondary">0.4ms</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-emerald-50 border border-emerald-200 text-statusOk font-mono text-[10px] font-medium">PASS</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+                <span class="font-mono text-[11px] text-ink">chain_integrity</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] text-secondary">1.8ms</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-emerald-50 border border-emerald-200 text-statusOk font-mono text-[10px] font-medium">PASS</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+                <span class="font-mono text-[11px] text-ink">projection_fresh</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] text-secondary">0.9ms</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-emerald-50 border border-emerald-200 text-statusOk font-mono text-[10px] font-medium">PASS</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+                <span class="font-mono text-[11px] text-ink">leases_consistent</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] text-secondary">0.5ms</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-emerald-50 border border-emerald-200 text-statusOk font-mono text-[10px] font-medium">PASS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 05 · RELEARN PANEL (fills remainder of right rail down to bottom) -->
+        <div class="flex-1 bg-card border border-hairline rounded-[10px] p-3.5 flex flex-col justify-between min-h-0">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">05 · RELEARN</span>
+              <span class="text-[10px] font-mono text-secondary">State Machine</span>
+            </div>
+
+            <!-- Stepper IDLE -> SCAN -> DIFF -> SYNC with IDLE active -->
+            <div class="grid grid-cols-4 gap-1.5 my-2">
+              <div class="border border-indigoAcc bg-indigo-50 rounded-[6px] py-1.5 text-center">
+                <div class="text-[10px] font-mono font-semibold text-indigoAcc">IDLE</div>
+                <div class="text-[8px] font-mono text-indigoAcc/70 uppercase">active</div>
+              </div>
+              <div class="border border-hairline bg-base/60 rounded-[6px] py-1.5 text-center">
+                <div class="text-[10px] font-mono text-secondary">SCAN</div>
+                <div class="text-[8px] font-mono text-secondary/60 uppercase">wait</div>
+              </div>
+              <div class="border border-hairline bg-base/60 rounded-[6px] py-1.5 text-center">
+                <div class="text-[10px] font-mono text-secondary">DIFF</div>
+                <div class="text-[8px] font-mono text-secondary/60 uppercase">wait</div>
+              </div>
+              <div class="border border-hairline bg-base/60 rounded-[6px] py-1.5 text-center">
+                <div class="text-[10px] font-mono text-secondary">SYNC</div>
+                <div class="text-[8px] font-mono text-secondary/60 uppercase">wait</div>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-secondary leading-relaxed mt-2.5">
+              AST topological reconciliation idle. Zero drift detected against memory journal.
+            </p>
+          </div>
+
+          <div class="pt-2 border-t border-hairline flex items-center justify-between text-[11px] font-mono text-secondary">
+            <span>Next automatic sweep:</span>
+            <span class="font-semibold text-ink">18m 42s</span>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+  <!-- BOTTOM STATUS BAR (Flush at bottom edge of 900px, 11px font) -->
+  <footer class="h-[28px] min-h-[28px] w-full border-t border-hairline bg-card px-6 flex items-center justify-between text-[11px] font-mono text-secondary">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+        <span class="font-medium text-statusOk">11/11 CHECKS PASS</span>
+      </div>
+      <span>·</span>
+      <span>SCHEMA v5</span>
+      <span>·</span>
+      <span>WAL MODE: ZERO DRIFT</span>
+      <span>·</span>
+      <span>LAST EVENT 2026-11-05T11:58:02Z</span>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <span>SHARD: 0x3a (SYNCED)</span>
+      <span>·</span>
+      <span>HASH: 9f2c1ab4</span>
+      <span>·</span>
+      <span>RAFT: 3/3 LEASE ACTIVE</span>
+      <span>·</span>
+      <span class="text-ink font-medium">1440x900 FIXED VIEWPORT</span>
+    </div>
+  </footer>
+
+</body>
+</html>

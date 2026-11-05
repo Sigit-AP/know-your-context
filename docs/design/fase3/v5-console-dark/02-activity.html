@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>Know Your Context - Agent Activity Log (Modern Ops Minimal)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background-color: #09090B;
+    color: #D4D4D8;
+    font-family: 'Inter', sans-serif;
+  }
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+  /* Color system tokens */
+  /* Base: #09090B | Panel: #111113 | Raised: #18181B | Hairline: #232328 */
+  /* Text Tiers: 100% #F4F4F5 | 85% #D4D4D8 | 65% #A1A1AA | 40% #52525B */
+  /* Accent: #8B5CF6 | OK: #4ADE80 | WARN: #FACC15 | DANGER: #F87171 */
+  .border-hairline {
+    border-color: #232328;
+  }
+  .bg-panel {
+    background-color: #111113;
+  }
+  .bg-raised {
+    background-color: #18181B;
+  }
+  .text-t100 { color: #F4F4F5; }
+  .text-t85  { color: #D4D4D8; }
+  .text-t65  { color: #A1A1AA; }
+  .text-t40  { color: #52525B; }
+  .accent-violet { color: #8B5CF6; }
+</style>
+</head>
+<body class="flex flex-col select-none">
+
+  <!-- 1. UTILITY TOP BAR: 44px -->
+  <header class="h-[44px] w-full bg-panel border-b border-hairline px-4 flex items-center justify-between text-xs font-mono">
+    <!-- Left: Brand + Cluster -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5 font-bold tracking-wider">
+        <span class="text-t100">KYC</span>
+        <span class="text-t40">▪</span>
+        <span class="text-[#8B5CF6]">PROD</span>
+      </div>
+      <span class="text-t40 text-[10px]">CLUSTER: LOCAL-FIRST // 0x8F4E</span>
+    </div>
+
+    <!-- Center Nav Tabs -->
+    <nav class="flex items-center gap-7 h-full text-[11px] font-semibold tracking-wider uppercase">
+      <a href="#" class="h-full flex items-center text-t40 hover:text-t65 transition-colors">OVERVIEW</a>
+      <a href="#" class="h-full flex items-center text-t40 hover:text-t65 transition-colors">GRAPH</a>
+      <a href="#" class="h-full flex items-center text-t100 border-b-2 border-[#8B5CF6] transition-colors">ACTIVITY</a>
+      <a href="#" class="h-full flex items-center text-t40 hover:text-t65 transition-colors">ANALYTICS</a>
+    </nav>
+
+    <!-- Right: Telemetry + Status -->
+    <div class="flex items-center gap-4 text-[11px]">
+      <div class="text-t65">
+        <span class="text-t40">STORE</span> <span class="text-t85">46.2 MB</span>
+      </div>
+      <div class="text-t65">
+        <span class="text-t40">UTC</span> <span class="text-t85">11:58:02Z</span>
+      </div>
+      <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-[6px] bg-[#18181B] border border-hairline">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+        <span class="text-[10px] font-bold text-[#4ADE80] tracking-wider">LIVE</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. MIDDLE WORKSPACE: Height = 900 - 44(top) - 200(dock) - 24(status) = 632px -->
+  <div class="h-[632px] w-full flex overflow-hidden">
+    
+    <!-- LEFT FACET COLUMN: 220px -->
+    <aside class="w-[220px] h-full bg-panel border-r border-hairline flex flex-col p-3 shrink-0">
+      
+      <!-- Section: LEVEL -->
+      <div class="mb-4">
+        <div class="text-[10px] font-mono uppercase tracking-wider text-t40 mb-2 font-semibold">LEVEL</div>
+        <div class="space-y-1">
+          <!-- INFO row -->
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] transition-colors cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <span class="w-3.5 h-3.5 rounded-[4px] border border-hairline bg-[#09090B] flex items-center justify-center"></span>
+              <span class="text-[11px] font-mono text-t85">INFO</span>
+            </label>
+            <span class="text-[11px] font-mono text-t65">15</span>
+          </div>
+          <!-- WARN row (Checked with Violet) -->
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] bg-[#18181B]/60 transition-colors cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <span class="w-3.5 h-3.5 rounded-[4px] bg-[#8B5CF6] flex items-center justify-center">
+                <svg class="w-2.5 h-2.5 text-[#09090B]" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M2.5 6L5 8.5L9.5 3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="text-[11px] font-mono text-[#FACC15] font-medium">WARN</span>
+            </label>
+            <span class="text-[11px] font-mono text-t100 font-semibold">2</span>
+          </div>
+          <!-- ERROR row -->
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] transition-colors cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <span class="w-3.5 h-3.5 rounded-[4px] border border-hairline bg-[#09090B] flex items-center justify-center"></span>
+              <span class="text-[11px] font-mono text-t85">ERROR</span>
+            </label>
+            <span class="text-[11px] font-mono text-t65">1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full h-px bg-hairline my-2"></div>
+
+      <!-- Section: AGENTS -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-mono uppercase tracking-wider text-t40 font-semibold">AGENTS</span>
+          <span class="text-[10px] font-mono text-[#8B5CF6] font-medium cursor-pointer hover:underline">ALL 50</span>
+        </div>
+
+        <!-- Agent Search Input (Focused state with 2px violet ring) -->
+        <div class="mb-2 relative">
+          <input type="text" value="agent-" 
+                 class="w-full h-[28px] px-2.5 bg-[#09090B] border border-transparent ring-2 ring-[#8B5CF6] rounded-[6px] text-xs font-mono text-t100 outline-none placeholder-[#52525B]"
+                 spellcheck="false">
+          <span class="absolute right-2 top-1.5 text-[9px] font-mono text-t40">⌘K</span>
+        </div>
+
+        <!-- Agent Rows (8 rows) -->
+        <div class="flex-1 space-y-0.5 overflow-hidden font-mono text-[11px]">
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] cursor-pointer">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+              <span class="text-t85">agent-2</span>
+            </div>
+            <span class="text-t40">684</span>
+          </div>
+
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] cursor-pointer">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+              <span class="text-t85">sub-139</span>
+            </div>
+            <span class="text-t40">395</span>
+          </div>
+
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] cursor-pointer">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+              <span class="text-t85">operator</span>
+            </div>
+            <span class="text-t40">512</span>
+          </div>
+
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] cursor-pointer">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-t40"></span>
+              <span class="text-t85">sub-144</span>
+            </div>
+            <span class="text-t40">189</span>
+          </div>
+
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] cursor-pointer">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-t40"></span>
+              <span class="text-t85">eval-agent-07</span>
+            </div>
+            <span class="text-t40">142</span>
+          </div>
+
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] cursor-pointer">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-t40"></span>
+              <span class="text-t85">sub-141</span>
+            </div>
+            <span class="text-t40">98</span>
+          </div>
+
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] cursor-pointer">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-t40"></span>
+              <span class="text-t85">raft-arbiter-1</span>
+            </div>
+            <span class="text-t40">76</span>
+          </div>
+
+          <div class="flex items-center justify-between px-2 py-1 rounded-[6px] hover:bg-[#18181B] cursor-pointer">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-t40"></span>
+              <span class="text-t85">sync-probe-12</span>
+            </div>
+            <span class="text-t40">54</span>
+          </div>
+        </div>
+
+        <!-- Autoscroll Toggle Control (ON State) -->
+        <div class="pt-2 border-t border-hairline flex items-center justify-between">
+          <span class="text-[10px] font-mono text-t40 uppercase">AUTOSCROLL STREAM</span>
+          <div class="w-7 h-4 bg-[#8B5CF6] rounded-full p-0.5 flex items-center justify-end cursor-pointer">
+            <div class="w-3 h-3 bg-[#F4F4F5] rounded-full shadow-none"></div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- MAIN LOG TABLE ZONE: Width = 1440 - 220 = 1220px -->
+    <main class="w-[1220px] h-full flex flex-col bg-[#09090B]">
+      
+      <!-- Sub-header bar inside main zone: 32px -->
+      <div class="h-[32px] px-4 bg-panel border-b border-hairline flex items-center justify-between text-[11px] font-mono">
+        <div class="flex items-center gap-4">
+          <span class="text-t40">EVENT STREAM</span>
+          <span class="text-t85 font-medium">10,421 events</span>
+          <span class="text-t40">·</span>
+          <span class="text-[#4ADE80] flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+            STREAMING 0ms LAG
+          </span>
+          <span class="text-t40">·</span>
+          <span class="text-t40">BUFFER: 16/10421</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-t40">TARGET NODE: <span class="text-[#8B5CF6] font-medium border border-[#8B5CF6]/40 px-1 py-0.5 rounded-[4px]">heuristics-catalog</span></span>
+          <span class="text-t40">SCHEMA V5</span>
+        </div>
+      </div>
+
+      <!-- Table Header: 24px -->
+      <div class="h-[24px] px-4 bg-[#09090B] border-b border-hairline grid grid-cols-12 text-[10px] font-mono text-t40 uppercase tracking-wider items-center">
+        <div class="col-span-2">TIME</div>
+        <div class="col-span-1">LEVEL</div>
+        <div class="col-span-2">AGENT</div>
+        <div class="col-span-3">ACTION</div>
+        <div class="col-span-3">NODE</div>
+        <div class="col-span-1 text-right">SHA8</div>
+      </div>
+
+      <!-- Table Body: EXACTLY 16 rows of 36px = 576px. Total 32 + 24 + 576 = 632px -->
+      <div class="flex-1 flex flex-col divide-y divide-hairline font-mono text-xs">
+
+        <!-- Row 1 (seq 10421) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:58:02Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">agent-2</div>
+          <div class="col-span-3 text-t65">mutate_graph</div>
+          <div class="col-span-3 text-t85">heuristics-catalog</div>
+          <div class="col-span-1 text-right text-t65">9f2c1ab4</div>
+        </div>
+
+        <!-- Row 2 (seq 10420) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:57:48Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">sub-139</div>
+          <div class="col-span-3 text-t65">record_outcome</div>
+          <div class="col-span-3 text-t85">vector-cache-tier-04</div>
+          <div class="col-span-1 text-right text-t65">8a1d440f</div>
+        </div>
+
+        <!-- Row 3 (seq 10419) - WARN row with 6% amber wash -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-[#FACC15] bg-[#FACC15]/[0.06] border-y border-[#FACC15]/20">
+          <div class="col-span-2 font-medium">11:57:15Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#FACC15]"></span><span class="text-[10px] font-bold">WARN</span></div>
+          <div class="col-span-2 text-t100 font-medium">operator</div>
+          <div class="col-span-3 font-semibold text-[#FACC15]">log_event</div>
+          <div class="col-span-3 text-[#FACC15]">unreadable payload</div>
+          <div class="col-span-1 text-right font-medium">77e19cb2</div>
+        </div>
+
+        <!-- Row 4 (seq 10418) - HOVERED STATE: wash #18181B -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t100 bg-[#18181B]">
+          <div class="col-span-2 text-t85">11:56:59Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t100">sub-144</div>
+          <div class="col-span-3 text-t85">query</div>
+          <div class="col-span-3 text-t100">duckdb-memory-ast</div>
+          <div class="col-span-1 text-right text-t85">3d81b899</div>
+        </div>
+
+        <!-- Row 5 (seq 10417) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:56:32Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">agent-2</div>
+          <div class="col-span-3 text-t65">apply_improvement</div>
+          <div class="col-span-3 text-t85">knn-embedding-space</div>
+          <div class="col-span-1 text-right text-t65">55c2f0a1</div>
+        </div>
+
+        <!-- Row 6 (seq 10416) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:56:04Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">sub-139</div>
+          <div class="col-span-3 text-t65">record_outcome</div>
+          <div class="col-span-3 text-t85">raft-delta-compaction</div>
+          <div class="col-span-1 text-right text-t65">a012e841</div>
+        </div>
+
+        <!-- Row 7 (seq 10415) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:55:40Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">operator</div>
+          <div class="col-span-3 text-t65">apply_improvement</div>
+          <div class="col-span-3 text-t85">concept-419-edge</div>
+          <div class="col-span-1 text-right text-t65">c190bb42</div>
+        </div>
+
+        <!-- Row 8 (seq 10414 alt) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:55:18Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">sub-144</div>
+          <div class="col-span-3 text-t65">mutate_graph</div>
+          <div class="col-span-3 text-t85">dag-subgraph-tier-2</div>
+          <div class="col-span-1 text-right text-t65">e4479901</div>
+        </div>
+
+        <!-- Row 9 (seq 10414) - SELECTED STATE: 2px violet left bar + 8% violet wash -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t100 bg-[#8B5CF6]/[0.08] relative border-l-2 border-[#8B5CF6]">
+          <div class="col-span-2 font-bold text-[#8B5CF6]">11:54:52Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t100 font-semibold">sub-144</div>
+          <div class="col-span-3 text-[#8B5CF6] font-semibold">query</div>
+          <div class="col-span-3 text-t100 font-semibold flex items-center gap-1.5">
+            <span class="px-1.5 py-0.5 rounded-[4px] border border-[#8B5CF6] bg-[#8B5CF6]/10 text-[#F4F4F5]">heuristics-catalog</span>
+          </div>
+          <div class="col-span-1 text-right font-bold text-[#8B5CF6]">43dcb102</div>
+        </div>
+
+        <!-- Row 10 (seq 10413) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:54:21Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">sub-139</div>
+          <div class="col-span-3 text-t65">record_outcome</div>
+          <div class="col-span-3 text-t85">vector-cache-tier-04</div>
+          <div class="col-span-1 text-right text-t65">78fe23a9</div>
+        </div>
+
+        <!-- Row 11 (seq 10412) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:53:49Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">sub-144</div>
+          <div class="col-span-3 text-t65">apply_improvement</div>
+          <div class="col-span-3 text-t85">dag-subgraph-tier-2</div>
+          <div class="col-span-1 text-right text-t65">69bca711</div>
+        </div>
+
+        <!-- Row 12 (seq 10411) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:53:12Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">operator</div>
+          <div class="col-span-3 text-t65">query</div>
+          <div class="col-span-3 text-t85">kg-entity-4402</div>
+          <div class="col-span-1 text-right text-t65">12e094fa</div>
+        </div>
+
+        <!-- Row 13 (seq 10410) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:52:45Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">operator</div>
+          <div class="col-span-3 text-t65">apply_improvement</div>
+          <div class="col-span-3 text-t85">duckdb-vector-table</div>
+          <div class="col-span-1 text-right text-t65">b82ef455</div>
+        </div>
+
+        <!-- Row 14 (seq 10409) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:52:10Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">agent-2</div>
+          <div class="col-span-3 text-t65">query</div>
+          <div class="col-span-3 text-t85">heuristics-catalog</div>
+          <div class="col-span-1 text-right text-t65">4e112d7c</div>
+        </div>
+
+        <!-- Row 15 (seq 10408) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:51:34Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span><span class="text-[10px] text-[#4ADE80] font-semibold">INFO</span></div>
+          <div class="col-span-2 text-t85">sub-139</div>
+          <div class="col-span-3 text-t65">log_event</div>
+          <div class="col-span-3 text-t85">heuristics-catalog</div>
+          <div class="col-span-1 text-right text-t65">33190ab7</div>
+        </div>
+
+        <!-- Row 16 (seq 10407) -->
+        <div class="h-[36px] px-4 grid grid-cols-12 items-center text-t85 hover:bg-[#18181B] transition-colors">
+          <div class="col-span-2 text-t65">11:49:03Z</div>
+          <div class="col-span-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#F87171]"></span><span class="text-[10px] text-[#F87171] font-semibold">ERROR</span></div>
+          <div class="col-span-2 text-t85">agent-2</div>
+          <div class="col-span-3 text-t65">apply_improvement</div>
+          <div class="col-span-3 text-[#F87171]">unresolved reference</div>
+          <div class="col-span-1 text-right text-t65">c41d08aa</div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- 3. HORIZONTAL BOTTOM DOCK: EXACTLY 200px -->
+  <section class="h-[200px] w-full bg-raised border-t border-hairline flex flex-col p-4 shrink-0">
+    <!-- Header row of the dock: labels and status badge -->
+    <div class="flex items-center justify-between pb-2 border-b border-hairline">
+      <div class="flex items-center gap-3">
+        <span class="text-[10px] font-mono text-t40 uppercase tracking-widest font-semibold">INSPECTOR // EVENT DETAIL</span>
+        <span class="px-2 py-0.5 rounded-[4px] bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-[#8B5CF6] text-[10px] font-mono font-medium">ROW 09 SELECTED · SEQ 10414</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+        <span class="text-[10px] font-mono text-[#4ADE80] font-medium tracking-wide">DETERMINISTIC PASS</span>
+        <span class="text-t40 text-[10px] font-mono ml-2">SHARD: 0x3a (SYNCED)</span>
+      </div>
+    </div>
+
+    <!-- 3 Horizontal Columns layout (Aligned with Row 9: seq 10414, sub-144, 43dcb102, 11:54:52Z) -->
+    <div class="flex-1 grid grid-cols-12 gap-5 pt-3">
+      
+      <!-- Column 1: Event Identity (Col span 4) -->
+      <div class="col-span-4 flex flex-col justify-between border-r border-hairline pr-4">
+        <div>
+          <div class="text-[10px] font-mono text-t40 uppercase tracking-wider mb-1">EVENT IDENTIFIER</div>
+          <div class="text-[24px] font-mono font-bold text-t100 leading-tight">EVENT #10414</div>
+        </div>
+        <div class="space-y-1.5 font-mono text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-t40">ORIGINATING AGENT:</span>
+            <span class="text-t100 font-semibold px-1.5 py-0.5 rounded bg-[#111113] border border-hairline">sub-144</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-t40">TARGET GRAPH NODE:</span>
+            <span class="text-[#8B5CF6] font-semibold">heuristics-catalog</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2: Hash Chain Verification (Col span 4) -->
+      <div class="col-span-4 flex flex-col justify-between border-r border-hairline pr-4 font-mono">
+        <div>
+          <div class="text-[10px] text-t40 uppercase tracking-wider mb-2">CRYPTOGRAPHIC MERKLE ANCHOR</div>
+          <div class="p-2.5 rounded-[6px] bg-[#111113] border border-hairline flex items-center justify-between">
+            <div class="text-xs">
+              <span class="text-t40">prev</span> <span class="text-t85">e4479901</span>
+            </div>
+            <span class="text-[#8B5CF6] font-bold text-sm">→</span>
+            <div class="text-xs">
+              <span class="text-t40">entry</span> <span class="text-t100 font-bold px-1.5 py-0.5 rounded bg-[#8B5CF6]/15 border border-[#8B5CF6]/40 text-[#8B5CF6]">43dcb102</span>
+            </div>
+          </div>
+        </div>
+        <div class="space-y-1 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-t40">INTEGRITY PROOF:</span>
+            <span class="text-[#4ADE80] font-medium">SHA-256 HMAC VERIFIED</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-t40">REPLAY LATENCY:</span>
+            <span class="text-t85">0.14ms (P99 DETERMINISTIC)</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-t40">RAFT LEASE:</span>
+            <span class="text-t85">3/3 QUORUM COMMITTED</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 3: Payload Preview & Timing (Col span 4) -->
+      <div class="col-span-4 flex flex-col justify-between font-mono">
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[10px] text-t40 uppercase tracking-wider">PAYLOAD PREVIEW</span>
+            <span class="text-[10px] text-t40">OCCURRED: <span class="text-t85">2026-11-05T11:54:52Z</span></span>
+          </div>
+          <!-- Critical fix: short plain mono line that fits on one line completely -->
+          <div class="p-2.5 rounded-[6px] bg-[#111113] border border-hairline text-xs text-t85 overflow-hidden whitespace-nowrap">
+            <span class="text-t40">payload:</span> <span class="text-t100 font-medium">query heuristics-catalog k=8</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-2">
+          <div class="text-xs">
+            <span class="text-t40">STATUS:</span>
+            <span class="text-[#4ADE80] font-semibold ml-1">11/11 INVARIANTS PASS</span>
+          </div>
+          <button class="px-3 py-1 rounded-[6px] bg-[#8B5CF6] hover:bg-[#7C3AED] text-t100 font-semibold text-xs transition-colors flex items-center gap-1.5">
+            Trace Lineage
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 4. BOTTOM STATUS STRIP: EXACTLY 24px -->
+  <footer class="h-[24px] w-full bg-[#09090B] border-t border-hairline px-4 flex items-center justify-between text-[11px] font-mono text-t40 shrink-0">
+    <div class="flex items-center gap-3">
+      <span class="flex items-center gap-1.5 text-t65">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE80]"></span>
+        DAEMON SYNCHRONIZED
+      </span>
+      <span>·</span>
+      <span>SEQ 10421</span>
+      <span>·</span>
+      <span>CHAIN 9f2c1ab4</span>
+      <span>·</span>
+      <span>50 AGENTS</span>
+      <span>·</span>
+      <span class="text-t65 font-medium">TAIL ON</span>
+      <span>·</span>
+      <span class="text-[#4ADE80] font-semibold">11/11 CHECKS PASS</span>
+    </div>
+    <div class="flex items-center gap-4 text-[10px]">
+      <span>SHARD: 0x3a (SYNCED)</span>
+      <span>·</span>
+      <span>RAFT: 3/3 LEASE ACTIVE</span>
+      <span>·</span>
+      <span class="text-t65">1440x900 FIXED VIEWPORT</span>
+      <span>·</span>
+      <span class="text-[#8B5CF6] font-semibold uppercase">MODERN OPS MINIMAL</span>
+    </div>
+  </footer>
+
+</body>
+</html>

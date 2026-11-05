@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>Know Your Context - Graph Explorer (Light Cool-Gray Modular)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        colors: {
+          canvas: '#EEF1F5',
+          module: '#FFFFFF',
+          hairline: '#DCE2EA',
+          ink: '#101828',
+          subtext: '#667085',
+          teal: {
+            DEFAULT: '#0D9488',
+            hover: '#0F766E',
+            light: '#F0FDFA',
+            tint: '#CCFBF1',
+            border: '#99F6E4'
+          },
+          statusOk: '#16A34A',
+          statusWarn: '#D97706',
+          statusDanger: '#DC2626'
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1440px;
+    height: 900px;
+    max-width: 1440px;
+    max-height: 900px;
+    overflow: hidden;
+    background-color: #EEF1F5;
+    color: #101828;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+</style>
+</head>
+<body class="flex flex-col h-[900px] w-[1440px] bg-[#EEF1F5] select-none text-[#101828]">
+
+  <!-- TOPBAR (52px white) -->
+  <header class="h-[52px] min-h-[52px] bg-white border-b border-[#DCE2EA] px-4 flex items-center justify-between z-20">
+    <!-- Left: Brand / Monogram -->
+    <div class="flex items-center gap-3 w-[280px]">
+      <div class="w-8 h-8 rounded-[8px] bg-[#0D9488] flex items-center justify-center text-white font-mono text-[13px] font-bold tracking-tight">
+        KC
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[15px] font-semibold text-[#101828] tracking-tight">Know Your Context</span>
+        <span class="text-[11px] font-mono font-medium px-1.5 py-0.5 rounded-[4px] bg-[#EEF1F5] text-[#667085] border border-[#DCE2EA]">v2.4.1</span>
+      </div>
+    </div>
+
+    <!-- Center: Tab Navigation (Teal-tinted pill for active) -->
+    <nav class="flex items-center gap-1.5 bg-[#EEF1F5] p-1 rounded-[10px] border border-[#DCE2EA]">
+      <a href="#" class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-[7px]">Overview</a>
+      <!-- Active tab with teal tint fill pill -->
+      <a href="#" class="px-3.5 py-1 text-[12px] font-semibold text-[#0D9488] bg-[#CCFBF1] border border-[#99F6E4] rounded-[7px] flex items-center gap-1.5 shadow-none">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+        Graph
+      </a>
+      <a href="#" class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-[7px]">Activity</a>
+      <a href="#" class="px-3.5 py-1 text-[12px] font-medium text-[#667085] hover:text-[#101828] transition-colors rounded-[7px]">Analytics</a>
+    </nav>
+
+    <!-- Right: Search field + Cluster status + Avatar -->
+    <div class="flex items-center justify-end gap-3 w-[340px]">
+      <div class="relative w-[180px]">
+        <input type="text" placeholder="Global search..." readonly value="" class="w-full h-8 pl-8 pr-2 text-[12px] bg-[#EEF1F5] border border-[#DCE2EA] rounded-[8px] text-[#101828] placeholder-[#667085] focus:outline-none">
+        <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+
+      <div class="flex items-center gap-1.5 px-2.5 py-1 bg-[#F0FDF4] border border-[#BBF7D0] rounded-[6px] text-[11px] font-mono text-[#16A34A] font-medium">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+        <span>RAFT 3/3</span>
+      </div>
+
+      <div class="w-8 h-8 rounded-[8px] bg-[#EEF1F5] border border-[#DCE2EA] flex items-center justify-center font-mono text-[12px] font-semibold text-[#101828]">
+        OP
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CANVAS (Padding 16px, gutters 16px) -->
+  <main class="flex-1 p-4 grid grid-cols-12 gap-4 overflow-hidden" style="height: calc(900px - 52px - 28px);">
+    
+    <!-- TOP STRIP MODULE: FILTERS (12 cols, short, 54px) -->
+    <section class="col-span-12 h-[56px] bg-white rounded-[12px] border border-[#DCE2EA] px-3.5 flex items-center justify-between">
+      <!-- Left: Title & Filter Chips -->
+      <div class="flex items-center gap-3">
+        <span class="text-[13px] font-semibold text-[#101828] tracking-tight">FILTERS</span>
+        <div class="h-4 w-[1px] bg-[#DCE2EA]"></div>
+
+        <div class="flex items-center gap-1.5">
+          <!-- P1 Selected (Teal Tint) -->
+          <button class="h-7 px-2.5 rounded-[6px] text-[11px] font-mono font-medium bg-[#CCFBF1] text-[#0D9488] border border-[#99F6E4] flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+            P1 Core
+          </button>
+          <!-- P2 Selected (Teal Tint) -->
+          <button class="h-7 px-2.5 rounded-[6px] text-[11px] font-mono font-medium bg-[#CCFBF1] text-[#0D9488] border border-[#99F6E4] flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+            P2 Ingest
+          </button>
+          <!-- P3 Outline -->
+          <button class="h-7 px-2.5 rounded-[6px] text-[11px] font-mono font-medium bg-white text-[#667085] border border-[#DCE2EA] hover:border-[#CBD5E1]">
+            P3 Vector
+          </button>
+          <!-- P4 Selected (Teal Tint) -->
+          <button class="h-7 px-2.5 rounded-[6px] text-[11px] font-mono font-medium bg-[#CCFBF1] text-[#0D9488] border border-[#99F6E4] flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+            P4 Schema
+          </button>
+          <!-- P5 Outline -->
+          <button class="h-7 px-2.5 rounded-[6px] text-[11px] font-mono font-medium bg-white text-[#667085] border border-[#DCE2EA] hover:border-[#CBD5E1]">
+            P5 Consensus
+          </button>
+          <!-- P6 Outline -->
+          <button class="h-7 px-2.5 rounded-[6px] text-[11px] font-mono font-medium bg-white text-[#667085] border border-[#DCE2EA] hover:border-[#CBD5E1]">
+            P6 Inference
+          </button>
+          <!-- P7 Outline -->
+          <button class="h-7 px-2.5 rounded-[6px] text-[11px] font-mono font-medium bg-white text-[#667085] border border-[#DCE2EA] hover:border-[#CBD5E1]">
+            P7 Feedback
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Search-to-focus (FOCUSED 2px teal ring) + Layout segment + Toggle ON -->
+      <div class="flex items-center gap-3">
+        <!-- FOCUSED Search input with 2px teal ring -->
+        <div class="relative w-[240px]">
+          <div class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-[#0D9488]">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <input type="text" value="heuristics-catalog" readonly class="w-full h-8 pl-8 pr-7 text-[12px] font-mono bg-white text-[#101828] border border-[#0D9488] ring-2 ring-[#0D9488] rounded-[8px] focus:outline-none">
+          <div class="absolute inset-y-0 right-2 flex items-center text-[10px] font-mono text-[#667085] bg-[#EEF1F5] px-1 py-0.5 rounded my-auto h-4 border border-[#DCE2EA]">
+            ESC
+          </div>
+        </div>
+
+        <div class="h-4 w-[1px] bg-[#DCE2EA]"></div>
+
+        <!-- Layout Segmented Control: FORCE active -->
+        <div class="flex items-center bg-[#EEF1F5] p-0.5 rounded-[8px] border border-[#DCE2EA] text-[11px] font-mono">
+          <button class="px-2.5 py-1 rounded-[6px] font-semibold bg-white text-[#0D9488] border border-[#DCE2EA]">FORCE</button>
+          <button class="px-2.5 py-1 text-[#667085] hover:text-[#101828]">TREE</button>
+          <button class="px-2.5 py-1 text-[#667085] hover:text-[#101828]">RADIAL</button>
+        </div>
+
+        <div class="h-4 w-[1px] bg-[#DCE2EA]"></div>
+
+        <!-- Mandatory Interaction State: Toggle ON -->
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] text-[#667085] font-medium">Physics</span>
+          <div class="w-9 h-5 bg-[#0D9488] rounded-full relative cursor-pointer flex items-center px-0.5 transition-colors">
+            <div class="w-4 h-4 bg-white rounded-full translate-x-4 transition-transform"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEFT PRIMARY MODULE: GRAPH CANVAS (8 cols, full remaining height) -->
+    <section class="col-span-8 bg-white rounded-[12px] border border-[#DCE2EA] flex flex-col overflow-hidden relative" style="height: calc(100% - 56px - 16px);">
+      <!-- Module Title Row (13px/600 with hairline under it) -->
+      <div class="h-[42px] px-4 border-b border-[#DCE2EA] flex items-center justify-between bg-white z-10 shrink-0">
+        <div class="flex items-center gap-3">
+          <h2 class="text-[13px] font-semibold text-[#101828] tracking-tight">TOPOLOGY GRAPH CANVAS</h2>
+          <span class="text-[11px] font-mono text-[#667085]">1,284 nodes · 3,917 arcs</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+          <span class="text-[11px] font-mono text-[#16A34A] font-medium">Deterministic Layout Stable</span>
+          <span class="text-[#DCE2EA]">|</span>
+          <span class="text-[11px] font-mono text-[#667085]">Damping: 0.85</span>
+        </div>
+      </div>
+
+      <!-- Graph Canvas Body with SVG topology -->
+      <div class="flex-1 relative bg-white overflow-hidden" style="background-image: radial-gradient(#CBD5E1 1px, transparent 1px); background-size: 24px 24px;">
+        
+        <!-- Top Left Cluster Info Pill -->
+        <div class="absolute top-3 left-3 z-10 bg-white/90 border border-[#DCE2EA] rounded-[8px] px-2.5 py-1 text-[11px] font-mono text-[#667085] flex items-center gap-2">
+          <span class="text-[#101828] font-medium">CLUSTER:</span>
+          <span>localhost:9241</span>
+          <span class="text-[#16A34A] font-semibold">ONLINE (0 lag)</span>
+        </div>
+
+        <!-- Canvas Corner Zoom Pill -->
+        <div class="absolute top-3 right-3 z-10 bg-white border border-[#DCE2EA] rounded-[8px] p-0.5 flex items-center text-[11px] font-mono">
+          <button class="px-2 py-0.5 text-[#667085] hover:text-[#101828] font-bold">+</button>
+          <span class="px-2 py-0.5 text-[#101828] font-medium border-x border-[#DCE2EA]">100%</span>
+          <button class="px-2 py-0.5 text-[#667085] hover:text-[#101828] font-bold">−</button>
+          <button class="px-2 py-0.5 text-[#667085] hover:text-[#101828] border-l border-[#DCE2EA]">FIT</button>
+        </div>
+
+        <!-- SVG Knowledge Graph Topology -->
+        <svg class="w-full h-full" viewBox="0 0 940 590">
+          <defs>
+            <!-- Marker for directed teal edge -->
+            <marker id="arrow-teal" viewBox="0 0 10 10" refX="16" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0D9488" />
+            </marker>
+            <marker id="arrow-warn" viewBox="0 0 10 10" refX="16" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
+            </marker>
+            <marker id="arrow-dim" viewBox="0 0 10 10" refX="14" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#CBD5E1" />
+            </marker>
+          </defs>
+
+          <!-- TIER 3: ~100 micro dots (opacity 30%) -->
+          <g opacity="0.35" fill="#94A3B8">
+            <circle cx="45" cy="50" r="2.5"/><circle cx="95" cy="80" r="2.5"/><circle cx="150" cy="40" r="2.5"/><circle cx="210" cy="90" r="2.5"/>
+            <circle cx="280" cy="55" r="2.5"/><circle cx="340" cy="35" r="2.5"/><circle cx="410" cy="70" r="2.5"/><circle cx="480" cy="45" r="2.5"/>
+            <circle cx="560" cy="65" r="2.5"/><circle cx="630" cy="40" r="2.5"/><circle cx="700" cy="85" r="2.5"/><circle cx="770" cy="50" r="2.5"/>
+            <circle cx="830" cy="75" r="2.5"/><circle cx="890" cy="45" r="2.5"/><circle cx="60" cy="140" r="2.5"/><circle cx="120" cy="170" r="2.5"/>
+            <circle cx="850" cy="150" r="2.5"/><circle cx="910" cy="190" r="2.5"/><circle cx="40" cy="240" r="2.5"/><circle cx="95" cy="290" r="2.5"/>
+            <circle cx="870" cy="260" r="2.5"/><circle cx="920" cy="320" r="2.5"/><circle cx="50" cy="380" r="2.5"/><circle cx="110" cy="430" r="2.5"/>
+            <circle cx="840" cy="390" r="2.5"/><circle cx="900" cy="440" r="2.5"/><circle cx="65" cy="490" r="2.5"/><circle cx="130" cy="530" r="2.5"/>
+            <circle cx="190" cy="500" r="2.5"/><circle cx="250" cy="540" r="2.5"/><circle cx="320" cy="510" r="2.5"/><circle cx="390" cy="550" r="2.5"/>
+            <circle cx="460" cy="520" r="2.5"/><circle cx="530" cy="560" r="2.5"/><circle cx="600" cy="515" r="2.5"/><circle cx="670" cy="545" r="2.5"/>
+            <circle cx="740" cy="505" r="2.5"/><circle cx="810" cy="535" r="2.5"/><circle cx="880" cy="510" r="2.5"/><circle cx="160" cy="230" r="2.5"/>
+            <circle cx="230" cy="190" r="2.5"/><circle cx="310" cy="210" r="2.5"/><circle cx="720" cy="200" r="2.5"/><circle cx="790" cy="230" r="2.5"/>
+            <circle cx="820" cy="300" r="2.5"/><circle cx="760" cy="350" r="2.5"/><circle cx="170" cy="370" r="2.5"/><circle cx="240" cy="420" r="2.5"/>
+            <circle cx="680" cy="430" r="2.5"/><circle cx="740" cy="470" r="2.5"/><circle cx="380" cy="180" r="2.5"/><circle cx="590" cy="190" r="2.5"/>
+          </g>
+
+          <!-- TIER 2: ~50 dots (8px) + Hairline non-neighbor edges (35% opacity) -->
+          <g stroke="#DCE2EA" stroke-width="1" opacity="0.6">
+            <line x1="120" y1="170" x2="210" y2="240" />
+            <line x1="210" y1="240" x2="330" y2="190" />
+            <line x1="330" y1="190" x2="410" y2="150" />
+            <line x1="410" y1="150" x2="550" y2="170" />
+            <line x1="550" y1="170" x2="680" y2="210" />
+            <line x1="680" y1="210" x2="780" y2="280" />
+            <line x1="140" y1="360" x2="230" y2="440" />
+            <line x1="230" y1="440" x2="370" y2="470" />
+            <line x1="370" y1="470" x2="520" y2="490" />
+            <line x1="520" y1="490" x2="640" y2="460" />
+            <line x1="640" y1="460" x2="720" y2="390" />
+            <line x1="210" y1="240" x2="140" y2="360" />
+            <line x1="680" y1="210" x2="720" y2="390" />
+            <line x1="330" y1="190" x2="230" y2="440" />
+            <line x1="550" y1="170" x2="520" y2="490" />
+          </g>
+
+          <g fill="#94A3B8" opacity="0.55">
+            <circle cx="210" cy="240" r="4"/><circle cx="330" cy="190" r="4"/><circle cx="410" cy="150" r="4"/><circle cx="550" cy="170" r="4"/>
+            <circle cx="680" cy="210" r="4"/><circle cx="780" cy="280" r="4"/><circle cx="140" cy="360" r="4"/><circle cx="230" cy="440" r="4"/>
+            <circle cx="370" cy="470" r="4"/><circle cx="520" cy="490" r="4"/><circle cx="640" cy="460" r="4"/><circle cx="720" cy="390" r="4"/>
+            <circle cx="170" cy="130" r="4"/><circle cx="280" cy="140" r="4"/><circle cx="470" cy="120" r="4"/><circle cx="620" cy="140" r="4"/>
+            <circle cx="730" cy="160" r="4"/><circle cx="120" cy="280" r="4"/><circle cx="190" cy="330" r="4"/><circle cx="820" cy="220" r="4"/>
+            <circle cx="800" cy="360" r="4"/><circle cx="690" cy="330" r="4"/><circle cx="290" cy="490" r="4"/><circle cx="440" cy="520" r="4"/>
+            <circle cx="590" cy="520" r="4"/><circle cx="770" cy="450" r="4"/>
+          </g>
+
+          <!-- TIER 1: Non-neighbor Context Nodes (Distant, muted) -->
+          <!-- ast-parser-stream P2 -->
+          <g opacity="0.6">
+            <rect x="250" y="160" width="130" height="26" rx="6" fill="#F8FAFC" stroke="#DCE2EA" stroke-width="1"/>
+            <text x="315" y="177" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#667085">ast-parser-stream P2</text>
+          </g>
+
+          <!-- duckdb-index P1 -->
+          <g opacity="0.6">
+            <rect x="580" y="150" width="110" height="26" rx="6" fill="#F8FAFC" stroke="#DCE2EA" stroke-width="1"/>
+            <text x="635" y="167" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#667085">duckdb-index P1</text>
+          </g>
+
+          <!-- query-planner P1 -->
+          <g opacity="0.6">
+            <rect x="70" y="235" width="115" height="26" rx="6" fill="#F8FAFC" stroke="#DCE2EA" stroke-width="1"/>
+            <text x="127" y="252" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#667085">query-planner P1</text>
+          </g>
+
+          <!-- merkle-root P5 -->
+          <g opacity="0.6">
+            <rect x="690" y="360" width="115" height="26" rx="6" fill="#F8FAFC" stroke="#DCE2EA" stroke-width="1"/>
+            <text x="747" y="377" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#667085">merkle-root P5</text>
+          </g>
+
+          <!-- lease-arbiter P5 -->
+          <g opacity="0.6">
+            <rect x="80" y="365" width="115" height="26" rx="6" fill="#F8FAFC" stroke="#DCE2EA" stroke-width="1"/>
+            <text x="137" y="382" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#667085">lease-arbiter P5</text>
+          </g>
+
+          <!-- wal-checkpoint P5 -->
+          <g opacity="0.6">
+            <rect x="230" y="475" width="125" height="26" rx="6" fill="#F8FAFC" stroke="#DCE2EA" stroke-width="1"/>
+            <text x="292" y="492" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#667085">wal-checkpoint P5</text>
+          </g>
+
+          <!-- telemetry-sink P7 -->
+          <g opacity="0.6">
+            <rect x="580" y="445" width="125" height="26" rx="6" fill="#F8FAFC" stroke="#DCE2EA" stroke-width="1"/>
+            <text x="642" y="462" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#667085">telemetry-sink P7</text>
+          </g>
+
+          <!-- NEIGHBOR EDGES (1.5px Teal / Orange for contradiction) -->
+          <!-- Center is heuristics-catalog at (460, 310) -->
+
+          <!-- Edge 1: heuristics-catalog -> retrieval-core (depends_on) -->
+          <line x1="410" y1="305" x2="275" y2="255" stroke="#0D9488" stroke-width="1.8" marker-end="url(#arrow-teal)" />
+          <rect x="310" y="270" width="70" height="18" rx="4" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+          <text x="345" y="282" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0D9488">depends_on</text>
+
+          <!-- Edge 2: heuristics-catalog -> heuristics-v1 (supersedes) -->
+          <line x1="510" y1="300" x2="570" y2="255" stroke="#0D9488" stroke-width="1.8" stroke-dasharray="3 3" marker-end="url(#arrow-teal)" />
+          <rect x="515" y="265" width="66" height="18" rx="4" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+          <text x="548" y="277" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0D9488">supersedes</text>
+
+          <!-- Edge 3: heuristics-catalog -> vector-indexer-p3 (indexes_by) -->
+          <line x1="460" y1="295" x2="455" y2="215" stroke="#0D9488" stroke-width="1.8" marker-end="url(#arrow-teal)" />
+          <rect x="425" y="240" width="64" height="18" rx="4" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+          <text x="457" y="252" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0D9488">indexes_by</text>
+
+          <!-- Edge 4: heuristics-catalog -> store-mutex (governs) -->
+          <line x1="445" y1="328" x2="385" y2="395" stroke="#0D9488" stroke-width="1.8" marker-end="url(#arrow-teal)" />
+          <rect x="385" y="350" width="50" height="18" rx="4" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+          <text x="410" y="362" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0D9488">governs</text>
+
+          <!-- Edge 5: heuristics-catalog -> schema-contract-04 (contradicts, WARN color) -->
+          <line x1="485" y1="328" x2="550" y2="395" stroke="#D97706" stroke-width="1.8" stroke-dasharray="4 2" marker-end="url(#arrow-warn)" />
+          <rect x="495" y="355" width="64" height="18" rx="4" fill="#FEF3C7" stroke="#FDE68A" stroke-width="1"/>
+          <text x="527" y="367" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#D97706">contradicts</text>
+
+          <!-- ACTIVE NEIGHBOR NODES -->
+          
+          <!-- CRITICAL FIX 1: HOVERED NODE ('retrieval-core') with 1px teal border + light teal tint -->
+          <g>
+            <rect x="180" y="235" width="145" height="32" rx="8" fill="#F0FDFA" stroke="#0D9488" stroke-width="1.2"/>
+            <circle cx="196" cy="251" r="3.5" fill="#0D9488"/>
+            <text x="210" y="255" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="600" fill="#0F766E">retrieval-core</text>
+            <text x="312" y="255" font-family="'JetBrains Mono', monospace" font-size="10" fill="#667085">P1</text>
+          </g>
+
+          <!-- vector-indexer-p3 P3 -->
+          <g>
+            <rect x="385" y="185" width="155" height="30" rx="8" fill="white" stroke="#DCE2EA" stroke-width="1.2"/>
+            <circle cx="400" cy="200" r="3.5" fill="#0D9488"/>
+            <text x="412" y="204" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="#101828">vector-indexer-p3</text>
+            <text x="527" y="204" font-family="'JetBrains Mono', monospace" font-size="10" fill="#667085">P3</text>
+          </g>
+
+          <!-- heuristics-v1 P2·DEPR -->
+          <g>
+            <rect x="540" y="235" width="145" height="30" rx="8" fill="white" stroke="#DCE2EA" stroke-width="1.2"/>
+            <circle cx="554" cy="250" r="3.5" fill="#D97706"/>
+            <text x="566" y="254" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="#101828">heuristics-v1</text>
+            <text x="648" y="254" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#D97706">DEPR</text>
+          </g>
+
+          <!-- store-mutex P1 -->
+          <g>
+            <rect x="315" y="405" width="125" height="30" rx="8" fill="white" stroke="#DCE2EA" stroke-width="1.2"/>
+            <circle cx="330" cy="420" r="3.5" fill="#0D9488"/>
+            <text x="342" y="424" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="#101828">store-mutex</text>
+            <text x="425" y="424" font-family="'JetBrains Mono', monospace" font-size="10" fill="#667085">P1</text>
+          </g>
+
+          <!-- schema-contract-04 P4 -->
+          <g>
+            <rect x="500" y="405" width="155" height="30" rx="8" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.2"/>
+            <circle cx="515" cy="420" r="3.5" fill="#D97706"/>
+            <text x="527" y="424" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="#92400E">schema-contract-04</text>
+            <text x="640" y="424" font-family="'JetBrains Mono', monospace" font-size="10" fill="#B45309">P4</text>
+          </g>
+
+          <!-- PRIMARY SELECTED NODE: heuristics-catalog (2px Teal border + Teal Label) -->
+          <g>
+            <!-- Highlight halo -->
+            <rect x="370" y="295" width="190" height="36" rx="10" fill="#CCFBF1" opacity="0.6"/>
+            <!-- Solid node card -->
+            <rect x="372" y="297" width="186" height="32" rx="9" fill="white" stroke="#0D9488" stroke-width="2"/>
+            <circle cx="390" cy="313" r="4" fill="#0D9488"/>
+            <text x="403" y="318" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" fill="#0D9488">heuristics-catalog</text>
+            <rect x="525" y="303" width="26" height="18" rx="4" fill="#CCFBF1"/>
+            <text x="538" y="316" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#0D9488">P2</text>
+          </g>
+        </svg>
+
+        <!-- Bottom Mini Legend Row (inside module bottom) -->
+        <div class="absolute bottom-2 left-2 right-2 bg-white/95 border border-[#DCE2EA] rounded-[8px] px-3 py-1.5 flex items-center justify-between z-10 text-[11px] font-mono text-[#667085]">
+          <div class="flex items-center gap-4">
+            <span class="text-[#101828] font-semibold">PARTITIONS:</span>
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#0D9488]"></span> P1 412</div>
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#0D9488]"></span> P2 388</div>
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span> P3 204</div>
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#D97706]"></span> P4 161</div>
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span> P5 119</div>
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span> P6 84</div>
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#94A3B8]"></span> P7 46</div>
+          </div>
+          <div class="flex items-center gap-2 text-[11px]">
+            <span class="text-[#101828] font-medium">Selection:</span>
+            <span class="text-[#0D9488] font-semibold">heuristics-catalog (deg: 5)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT STACK: 4 COLS (INSPECTOR top, EVIDENCE bottom) -->
+    <div class="col-span-4 flex flex-col gap-4 overflow-hidden" style="height: calc(100% - 56px - 16px);">
+
+      <!-- MODULE 1: INSPECTOR (half height, ~360px) -->
+      <section class="flex-1 bg-white rounded-[12px] border border-[#DCE2EA] flex flex-col overflow-hidden">
+        <!-- Title row (13px/600 with hairline under it) -->
+        <div class="h-[42px] px-4 border-b border-[#DCE2EA] flex items-center justify-between shrink-0 bg-white">
+          <div class="flex items-center gap-2">
+            <h2 class="text-[13px] font-semibold text-[#101828] tracking-tight">INSPECTOR</h2>
+            <span class="text-[11px] font-mono text-[#667085]">NODE #9f2c1ab4</span>
+          </div>
+          <!-- Verified chip -->
+          <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-[6px] bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A] text-[10px] font-mono font-bold tracking-tight">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+            <span>VERIFIED 5/5</span>
+          </div>
+        </div>
+
+        <!-- Inspector Content -->
+        <div class="flex-1 p-3.5 flex flex-col justify-between overflow-hidden text-[12px]">
+          <!-- Node Header & Chips -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="text-[14px] font-semibold text-[#101828] font-mono tracking-tight">heuristics-catalog</h3>
+              <span class="px-2 py-0.5 rounded-[6px] bg-[#CCFBF1] text-[#0D9488] border border-[#99F6E4] font-mono text-[10px] font-bold">
+                P2 · active
+              </span>
+            </div>
+            <p class="text-[11px] text-[#667085] leading-snug mb-2.5">
+              Centralized heuristic registry and AST pattern evaluator across partitioned subgraphs.
+            </p>
+
+            <!-- KV Rows (kind leaf · version 3) -->
+            <div class="grid grid-cols-2 gap-2 p-2 bg-[#EEF1F5] rounded-[8px] border border-[#DCE2EA] font-mono text-[11px] mb-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[#667085]">kind</span>
+                <span class="text-[#101828] font-semibold">leaf</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[#667085]">version</span>
+                <span class="text-[#101828] font-semibold">3</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Convergence Scores & KPI -->
+          <div class="border-t border-[#DCE2EA] pt-2.5">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] font-semibold text-[#101828] uppercase tracking-wide">Convergence Scores</span>
+              <span class="font-mono text-[11px] font-bold text-[#0D9488]">conf 0.912</span>
+            </div>
+            <div class="space-y-1.5 font-mono text-[10px]">
+              <div>
+                <div class="flex justify-between text-[#667085] mb-0.5">
+                  <span>Precision (P)</span>
+                  <span class="text-[#101828] font-medium">0.828</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#EEF1F5] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#0D9488] rounded-full" style="width: 82.8%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[#667085] mb-0.5">
+                  <span>Entropy (M)</span>
+                  <span class="text-[#101828] font-medium">0.341</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#EEF1F5] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#667085] rounded-full" style="width: 34.1%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[#667085] mb-0.5">
+                  <span>Eigen (E)</span>
+                  <span class="text-[#101828] font-medium">0.898</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#EEF1F5] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#0D9488] rounded-full" style="width: 89.8%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Relations -->
+          <div class="border-t border-[#DCE2EA] pt-2">
+            <span class="text-[11px] font-semibold text-[#101828] uppercase tracking-wide block mb-1.5">Relations (Active)</span>
+            <div class="space-y-1 font-mono text-[11px]">
+              <div class="flex items-center justify-between p-1.5 bg-[#F0FDFA] border border-[#99F6E4] rounded-[6px]">
+                <span class="text-[#0D9488] font-medium">depends_on</span>
+                <span class="text-[#101828] font-semibold">retrieval-core</span>
+              </div>
+              <div class="flex items-center justify-between p-1.5 bg-[#EEF1F5] border border-[#DCE2EA] rounded-[6px]">
+                <span class="text-[#667085] font-medium">supersedes</span>
+                <span class="text-[#101828] font-semibold">heuristics-v1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE 2: EVIDENCE + NEIGHBORS (half height, ~360px) -->
+      <section class="flex-1 bg-white rounded-[12px] border border-[#DCE2EA] flex flex-col overflow-hidden">
+        <!-- Title row (13px/600 with hairline under it) -->
+        <div class="h-[42px] px-4 border-b border-[#DCE2EA] flex items-center justify-between shrink-0 bg-white">
+          <h2 class="text-[13px] font-semibold text-[#101828] tracking-tight">EVIDENCE + NEIGHBORS</h2>
+          <span class="text-[11px] font-mono text-[#667085]">2 proofs · 5 arcs</span>
+        </div>
+
+        <!-- Evidence & 5 Neighbor Rows (exactly 5 rows) -->
+        <div class="flex-1 p-3 flex flex-col justify-between overflow-hidden text-[11px]">
+          <!-- Evidence Proof Chips -->
+          <div class="flex items-center gap-2 mb-2">
+            <div class="flex-1 p-1.5 rounded-[6px] bg-[#F8FAFC] border border-[#DCE2EA] font-mono flex items-center justify-between">
+              <span class="text-[#101828] font-medium">ev-0081</span>
+              <span class="text-[#16A34A] font-bold">0.94</span>
+            </div>
+            <div class="flex-1 p-1.5 rounded-[6px] bg-[#F8FAFC] border border-[#DCE2EA] font-mono flex items-center justify-between">
+              <span class="text-[#101828] font-medium">ev-0082</span>
+              <span class="text-[#16A34A] font-bold">0.91</span>
+            </div>
+          </div>
+
+          <!-- Neighbor Rows (Dense 38px rows, with MANDATORY HOVER & SELECTED interaction states) -->
+          <div class="flex-1 flex flex-col justify-between">
+            <!-- Row 1: SELECTED STATE (Mandatory: 3px teal left bar, light tint) -->
+            <div class="h-[38px] px-2.5 bg-[#F0FDFA] border-l-[3px] border-l-[#0D9488] border-y border-r border-[#DCE2EA] rounded-r-[6px] flex items-center justify-between font-mono">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+                <span class="text-[#0D9488] font-bold text-[12px]">retrieval-core</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[#667085]">wt 0.94</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-[#CCFBF1] text-[#0D9488] font-semibold text-[10px]">depends_on</span>
+              </div>
+            </div>
+
+            <!-- Row 2: HOVERED STATE (Mandatory: light gray wash #EEF1F5) -->
+            <div class="h-[38px] px-2.5 bg-[#EEF1F5] border border-[#DCE2EA] rounded-[6px] flex items-center justify-between font-mono">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+                <span class="text-[#101828] font-semibold text-[12px]">vector-indexer-p3</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[#667085]">wt 0.76</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-white text-[#667085] border border-[#DCE2EA] text-[10px]">indexes_by</span>
+              </div>
+            </div>
+
+            <!-- Row 3: Standard Row -->
+            <div class="h-[38px] px-2.5 bg-white border border-[#DCE2EA] rounded-[6px] flex items-center justify-between font-mono">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#94A3B8]"></span>
+                <span class="text-[#101828] font-medium text-[12px]">store-mutex</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[#667085]">wt 0.88</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-white text-[#667085] border border-[#DCE2EA] text-[10px]">governs</span>
+              </div>
+            </div>
+
+            <!-- Row 4: Contradiction Status Row (warn) -->
+            <div class="h-[38px] px-2.5 bg-white border border-[#FDE68A] rounded-[6px] flex items-center justify-between font-mono">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
+                <span class="text-[#D97706] font-semibold text-[12px]">schema-contract-04</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-[#FEF3C7] text-[#D97706] text-[10px] font-bold">triage</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-white text-[#D97706] border border-[#FDE68A] text-[10px]">contradicts</span>
+              </div>
+            </div>
+
+            <!-- Row 5: Deprecated Row -->
+            <div class="h-[38px] px-2.5 bg-white border border-[#DCE2EA] rounded-[6px] flex items-center justify-between font-mono">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#94A3B8]"></span>
+                <span class="text-[#667085] line-through text-[12px]">heuristics-v1</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[#667085]">v1.2</span>
+                <span class="px-1.5 py-0.5 rounded-[4px] bg-white text-[#667085] border border-[#DCE2EA] text-[10px]">supersedes</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons inside module -->
+          <div class="pt-2 border-t border-[#DCE2EA] flex items-center justify-between">
+            <span class="text-[10px] font-mono text-[#667085]">Provenance: SHA-256 HMAC</span>
+            <button class="px-3 py-1 bg-[#0D9488] text-white font-medium text-[11px] rounded-[6px] hover:bg-[#0F766E] transition-colors">
+              Trace Lineage
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- CRITICAL FIX 2: BOTTOM STATUS BAR SIT FLUSH AT BOTTOM EDGE WITH ZERO EMPTY BAND -->
+  <footer class="h-[28px] min-h-[28px] bg-white border-t border-[#DCE2EA] px-4 flex items-center justify-between text-[11px] font-mono text-[#667085] z-20 shrink-0">
+    <!-- Left telemetry -->
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+        <span class="text-[#101828] font-semibold">11/11 CHECKS PASS</span>
+      </div>
+      <span class="text-[#DCE2EA]">·</span>
+      <span>SCHEMA v5</span>
+      <span class="text-[#DCE2EA]">·</span>
+      <span>WAL MODE: ZERO DRIFT</span>
+      <span class="text-[#DCE2EA]">·</span>
+      <span>LAST EVENT 2026-11-05T11:58:02Z</span>
+    </div>
+
+    <!-- Right cluster info -->
+    <div class="flex items-center gap-4">
+      <span>SHARD: 0x3a (SYNCED)</span>
+      <span class="text-[#DCE2EA]">·</span>
+      <span>HASH: 9f2c1ab4</span>
+      <span class="text-[#DCE2EA]">·</span>
+      <span>RAFT: 3/3 LEASE ACTIVE</span>
+      <span class="text-[#DCE2EA]">·</span>
+      <span class="text-[#101828] font-semibold">1440x900 FIXED VIEWPORT</span>
+    </div>
+  </footer>
+
+</body>
+</html>

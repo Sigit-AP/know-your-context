@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Context - Analytics (Pure White Minimal)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FFFFFF;
+      color: #0A0A0A;
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tracking-micro {
+      letter-spacing: 0.12em;
+    }
+    .tracking-display {
+      letter-spacing: -0.02em;
+    }
+    /* Precise focus ring per spec */
+    .focus-ring-blue {
+      outline: 2px solid #1D4ED8;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-col justify-between bg-white text-[#0A0A0A] select-none">
+
+  <!-- TOP HEADER (48px) -->
+  <header class="h-[48px] min-h-[48px] border-b border-[#111111] px-6 flex items-center justify-between bg-white z-20">
+    <div class="flex items-center gap-10">
+      <span class="text-[13px] font-[650] tracking-[0.14em] text-[#0A0A0A] uppercase">KNOW YOUR CONTEXT</span>
+      
+      <nav class="flex items-center gap-7 text-[12px] h-[48px]">
+        <a href="#" class="text-[#525252] hover:text-[#0A0A0A] transition-colors flex items-center h-full">Overview</a>
+        <a href="#" class="text-[#525252] hover:text-[#0A0A0A] transition-colors flex items-center h-full">Graph</a>
+        <a href="#" class="text-[#525252] hover:text-[#0A0A0A] transition-colors flex items-center h-full">Activity</a>
+        <a href="#" class="text-[#0A0A0A] font-semibold border-b-2 border-[#111111] flex items-center h-full pt-[2px]">Analytics</a>
+        <a href="#" class="text-[#525252] hover:text-[#0A0A0A] transition-colors flex items-center h-full">Health</a>
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 font-mono text-[11px] text-[#15803D]">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#15803D]"></span>
+        <span>RAFT 3/3 SYNCED</span>
+      </div>
+      <span class="text-[#E5E5E5]">|</span>
+      <span class="font-mono text-[12px] text-[#525252]">11:58:02Z</span>
+      <div class="w-6 h-6 rounded-full border border-[#111111] flex items-center justify-center font-mono text-[10px] font-semibold text-[#0A0A0A] bg-white">
+        SA
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN 3-COLUMN CONTENT VIEWPORT (828px) -->
+  <main class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT FACET COLUMN: 220px -->
+    <aside class="w-[220px] min-w-[220px] border-r border-[#E5E5E5] p-5 flex flex-col justify-between bg-white">
+      <div class="flex flex-col gap-6">
+        <!-- Search filter input with mandatory active 2px blue ring with 2px offset -->
+        <div>
+          <div class="text-[10px] font-semibold tracking-micro text-[#525252] uppercase mb-2">SEARCH FACETS</div>
+          <div class="relative">
+            <input 
+              type="text" 
+              value="heuristics" 
+              readonly
+              class="w-full h-8 px-2.5 bg-white border border-[#E5E5E5] font-mono text-[12px] text-[#0A0A0A] focus-ring-blue rounded-[2px]"
+            />
+          </div>
+        </div>
+
+        <!-- Domains facet list -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-semibold tracking-micro text-[#525252] uppercase">DOMAINS</span>
+            <span class="font-mono text-[10px] text-[#A3A3A3]">7 ACTIVE</span>
+          </div>
+          <div class="flex flex-col gap-2 font-mono text-[11px]">
+            <div class="flex items-center justify-between text-[#1D4ED8] font-medium">
+              <span class="flex items-center gap-1.5"><span>✓</span> P1 Core</span>
+              <span>412</span>
+            </div>
+            <div class="flex items-center justify-between text-[#1D4ED8] font-medium">
+              <span class="flex items-center gap-1.5"><span>✓</span> P2 Retrieval</span>
+              <span>388</span>
+            </div>
+            <div class="flex items-center justify-between text-[#525252]">
+              <span class="pl-4">P3 Ingest</span>
+              <span>204</span>
+            </div>
+            <div class="flex items-center justify-between text-[#525252]">
+              <span class="pl-4">P4 Ops</span>
+              <span>161</span>
+            </div>
+            <div class="flex items-center justify-between text-[#525252]">
+              <span class="pl-4">P5 Aux</span>
+              <span>119</span>
+            </div>
+            <div class="flex items-center justify-between text-[#525252]">
+              <span class="pl-4">P6 Consensus</span>
+              <span>84</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status filter -->
+        <div>
+          <div class="text-[10px] font-semibold tracking-micro text-[#525252] uppercase mb-2">STATUS FILTER</div>
+          <div class="flex flex-col gap-2 font-mono text-[11px]">
+            <div class="flex items-center justify-between text-[#15803D]">
+              <span class="flex items-center gap-1.5"><span class="text-[12px]">·</span> Healthy Invariant</span>
+              <span>11/11</span>
+            </div>
+            <div class="flex items-center justify-between text-[#B45309]">
+              <span class="flex items-center gap-1.5"><span class="text-[9px]">▲</span> Warnings</span>
+              <span>2</span>
+            </div>
+            <div class="flex items-center justify-between text-[#B91C1C]">
+              <span class="flex items-center gap-1.5"><span class="text-[9px]">■</span> Errors</span>
+              <span>0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mandatory link: Show all 50 in blue text -->
+      <div class="pt-4 border-t border-[#E5E5E5]">
+        <a href="#" class="text-[11px] font-medium text-[#1D4ED8] hover:underline flex items-center justify-between">
+          <span>Show all 50</span>
+          <span>→</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- CENTER MAIN ZONE: 880px (1440 - 220 - 340) -->
+    <section class="flex-1 flex flex-col justify-between px-7 py-5 overflow-hidden">
+      
+      <!-- TOP NUMERALS (44px DISPLAY) -->
+      <div class="grid grid-cols-3 gap-6 pb-4 border-b border-[#E5E5E5]">
+        <div>
+          <div class="text-[10px] font-semibold tracking-micro text-[#525252] uppercase mb-1">KNOWLEDGE GRAPH TOPOLOGY</div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-[44px] font-bold tracking-display leading-none text-[#0A0A0A]">1,284</span>
+            <span class="font-mono text-[11px] text-[#15803D] font-medium">+14 TODAY</span>
+          </div>
+          <div class="font-mono text-[10px] text-[#A3A3A3] mt-1">NODES · ACTIVE DIRECTORY</div>
+        </div>
+
+        <div>
+          <div class="text-[10px] font-semibold tracking-micro text-[#525252] uppercase mb-1">DIRECTED RELATIONSHIPS</div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-[44px] font-bold tracking-display leading-none text-[#0A0A0A]">3,917</span>
+            <span class="font-mono text-[11px] text-[#525252]">3.05 DEG/NODE</span>
+          </div>
+          <div class="font-mono text-[10px] text-[#A3A3A3] mt-1">EDGES · MERKLE LINKED</div>
+        </div>
+
+        <div>
+          <div class="text-[10px] font-semibold tracking-micro text-[#525252] uppercase mb-1">LOCAL INGESTION CADENCE</div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-[44px] font-bold tracking-display leading-none text-[#0A0A0A]">214</span>
+            <span class="font-mono text-[11px] text-[#525252]">42/HR PEAK</span>
+          </div>
+          <div class="font-mono text-[10px] text-[#A3A3A3] mt-1">EVENTS TODAY · WAL FLUSHED</div>
+        </div>
+      </div>
+
+      <!-- CHART ZONE: EVENTS PER DAY (14 vertical thin bars) -->
+      <div class="py-3 border-b border-[#E5E5E5]">
+        <!-- Dedicated header line above bars to avoid crowding -->
+        <div class="flex items-center justify-between mb-3 text-[11px]">
+          <div class="flex items-center gap-3">
+            <span class="text-[11px] font-semibold tracking-micro text-[#0A0A0A] uppercase">EVENTS PER DAY</span>
+            <span class="text-[#A3A3A3] font-mono text-[10px]">14-DAY CONTINUOUS WINDOW · MONOTONIC ASCENT</span>
+          </div>
+          <div class="flex items-center gap-4 font-mono text-[10px]">
+            <span class="text-[#525252]">P90 CADENCE: 198 OPS/DAY</span>
+            <span class="text-[#15803D] font-medium">DETERMINISTIC PASS · 100%</span>
+          </div>
+        </div>
+
+        <!-- 14 vertical thin 2px black bars with proper vertical clearance -->
+        <div class="relative h-[92px] w-full flex items-end justify-between px-3 pt-6 border-b border-[#E5E5E5]">
+          <!-- P90 Target Reference Line -->
+          <div class="absolute left-0 right-0 top-[34px] border-b border-dashed border-[#E5E5E5] z-0"></div>
+          <span class="absolute right-0 top-[22px] font-mono text-[9px] text-[#A3A3A3]">TARGET P90 (150)</span>
+
+          <!-- Bars D-13 to TODAY (values rising 120 -> 214) -->
+          <!-- 1: 120 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#A3A3A3]">120</span>
+            <div class="w-[2px] h-[36px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-13</span>
+          </div>
+          <!-- 2: 128 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#A3A3A3]">128</span>
+            <div class="w-[2px] h-[39px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-12</span>
+          </div>
+          <!-- 3: 135 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#A3A3A3]">135</span>
+            <div class="w-[2px] h-[42px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-11</span>
+          </div>
+          <!-- 4: 142 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#A3A3A3]">142</span>
+            <div class="w-[2px] h-[45px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-10</span>
+          </div>
+          <!-- 5: 150 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">150</span>
+            <div class="w-[2px] h-[48px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-09</span>
+          </div>
+          <!-- 6: 158 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">158</span>
+            <div class="w-[2px] h-[51px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-08</span>
+          </div>
+          <!-- 7: 164 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">164</span>
+            <div class="w-[2px] h-[54px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-07</span>
+          </div>
+          <!-- 8: 172 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">172</span>
+            <div class="w-[2px] h-[57px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-06</span>
+          </div>
+          <!-- 9: 180 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">180</span>
+            <div class="w-[2px] h-[60px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-05</span>
+          </div>
+          <!-- 10: 189 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">189</span>
+            <div class="w-[2px] h-[64px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-04</span>
+          </div>
+          <!-- 11: 195 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">195</span>
+            <div class="w-[2px] h-[67px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-03</span>
+          </div>
+          <!-- 12: 202 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">202</span>
+            <div class="w-[2px] h-[70px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-02</span>
+          </div>
+          <!-- 13: 208 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[9px] text-[#525252]">208</span>
+            <div class="w-[2px] h-[73px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">D-01</span>
+          </div>
+          <!-- 14: TODAY 214 -->
+          <div class="flex flex-col items-center gap-1.5 z-10">
+            <span class="font-mono text-[10px] font-bold text-[#0A0A0A]">214</span>
+            <div class="w-[2px] h-[76px] bg-[#0A0A0A]"></div>
+            <span class="font-mono text-[9px] font-bold text-[#0A0A0A]">TODAY</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TWO-COLUMN SPLIT: TOP NODES (6 rows) & DOMAIN DISTRIBUTION (5 rows) -->
+      <div class="grid grid-cols-2 gap-8 py-3 border-b border-[#E5E5E5]">
+        
+        <!-- LEFT: TOP NODES (6 rows, 1 selected with 3px black left bar + 600 weight) -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-semibold tracking-micro text-[#0A0A0A] uppercase">TOP NODES</span>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">CENTRALITY · DIRECTED</span>
+          </div>
+          <div class="flex flex-col font-mono text-[11px]">
+            <!-- Row 1: SELECTED STATE (3px black left bar + 600 weight) -->
+            <div class="flex items-center justify-between py-1.5 pl-2.5 pr-2 border-l-[3px] border-[#0A0A0A] font-semibold text-[#0A0A0A]">
+              <span>heuristics-catalog</span>
+              <div class="flex items-center gap-4">
+                <span>0.828</span>
+                <span class="text-[#525252] font-normal w-12 text-right">6 arcs</span>
+              </div>
+            </div>
+            <!-- Row 2 -->
+            <div class="flex items-center justify-between py-1.5 pl-3 pr-2 text-[#0A0A0A]">
+              <span class="font-medium">retrieval-core</span>
+              <div class="flex items-center gap-4">
+                <span>0.794</span>
+                <span class="text-[#525252] w-12 text-right">6 arcs</span>
+              </div>
+            </div>
+            <!-- Row 3 -->
+            <div class="flex items-center justify-between py-1.5 pl-3 pr-2 text-[#0A0A0A]">
+              <span class="font-medium">store-mutex</span>
+              <div class="flex items-center gap-4">
+                <span>0.741</span>
+                <span class="text-[#525252] w-12 text-right">5 arcs</span>
+              </div>
+            </div>
+            <!-- Row 4 -->
+            <div class="flex items-center justify-between py-1.5 pl-3 pr-2 text-[#0A0A0A]">
+              <span class="font-medium">schema-contract-04</span>
+              <div class="flex items-center gap-4">
+                <span>0.698</span>
+                <span class="text-[#525252] w-12 text-right">4 arcs</span>
+              </div>
+            </div>
+            <!-- Row 5 -->
+            <div class="flex items-center justify-between py-1.5 pl-3 pr-2 text-[#0A0A0A]">
+              <span class="font-medium">vector-indexer-p3</span>
+              <div class="flex items-center gap-4">
+                <span>0.641</span>
+                <span class="text-[#525252] w-12 text-right">4 arcs</span>
+              </div>
+            </div>
+            <!-- Row 6 -->
+            <div class="flex items-center justify-between py-1.5 pl-3 pr-2 text-[#0A0A0A]">
+              <span class="font-medium">lease-arbiter</span>
+              <div class="flex items-center gap-4">
+                <span>0.589</span>
+                <span class="text-[#525252] w-12 text-right">3 arcs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: DOMAIN DISTRIBUTION (5 thin bars P1..P5 with mono counts) -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-semibold tracking-micro text-[#0A0A0A] uppercase">DOMAIN DISTRIBUTION</span>
+            <span class="font-mono text-[9px] text-[#A3A3A3]">1,284 TOTAL NODES</span>
+          </div>
+          <div class="flex flex-col gap-2.5 font-mono text-[11px]">
+            <div>
+              <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="text-[#0A0A0A]">P1 · Core Runtime</span>
+                <span class="text-[#525252]">412 (32.1%)</span>
+              </div>
+              <div class="w-full h-[2px] bg-[#E5E5E5]">
+                <div class="h-full bg-[#0A0A0A] w-[32%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="text-[#0A0A0A]">P2 · Ingest & Retrieval</span>
+                <span class="text-[#525252]">388 (30.2%)</span>
+              </div>
+              <div class="w-full h-[2px] bg-[#E5E5E5]">
+                <div class="h-full bg-[#0A0A0A] w-[30%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="text-[#0A0A0A]">P3 · Vector Space & AST</span>
+                <span class="text-[#525252]">204 (15.9%)</span>
+              </div>
+              <div class="w-full h-[2px] bg-[#E5E5E5]">
+                <div class="h-full bg-[#0A0A0A] w-[16%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="text-[#0A0A0A]">P4 · Schema & Invariants</span>
+                <span class="text-[#525252]">161 (12.5%)</span>
+              </div>
+              <div class="w-full h-[2px] bg-[#E5E5E5]">
+                <div class="h-full bg-[#0A0A0A] w-[13%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="text-[#0A0A0A]">P5 · Consensus & Raft</span>
+                <span class="text-[#525252]">119 (9.3%)</span>
+              </div>
+              <div class="w-full h-[2px] bg-[#E5E5E5]">
+                <div class="h-full bg-[#0A0A0A] w-[9%]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CRITICAL FIX 1: RECENT EVENTS ZONE AT THE BOTTOM OF THE MAIN COLUMN -->
+      <div class="pt-2">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-semibold tracking-micro text-[#525252] uppercase">RECENT EVENTS · TAIL CONTINUITY STREAM</span>
+          <span class="font-mono text-[9px] text-[#A3A3A3]">5 MOST RECENT COMMITTED MUTATIONS</span>
+        </div>
+
+        <div class="flex flex-col font-mono text-[11px]">
+          <!-- Event 1 (HOVERED STATE: light gray wash #F5F5F5) -->
+          <div class="flex items-center justify-between py-1 px-2 bg-[#F5F5F5] transition-colors">
+            <div class="flex items-center gap-4">
+              <span class="text-[#525252]">11:58:02Z</span>
+              <span class="text-[#15803D] font-medium flex items-center gap-1"><span>·</span> INFO</span>
+              <span class="text-[#0A0A0A]">mutate_graph</span>
+              <span class="text-[#525252]">heuristics-catalog</span>
+            </div>
+            <span class="text-[#525252]">9f2c1ab4</span>
+          </div>
+
+          <!-- Event 2 -->
+          <div class="flex items-center justify-between py-1 px-2">
+            <div class="flex items-center gap-4">
+              <span class="text-[#525252]">11:57:48Z</span>
+              <span class="text-[#15803D] font-medium flex items-center gap-1"><span>·</span> INFO</span>
+              <span class="text-[#0A0A0A]">record_outcome</span>
+              <span class="text-[#525252]">vector-cache-tier-04</span>
+            </div>
+            <span class="text-[#525252]">8a1d440f</span>
+          </div>
+
+          <!-- Event 3 -->
+          <div class="flex items-center justify-between py-1 px-2">
+            <div class="flex items-center gap-4">
+              <span class="text-[#525252]">11:57:15Z</span>
+              <span class="text-[#B45309] font-medium flex items-center gap-1"><span>▲</span> WARN</span>
+              <span class="text-[#0A0A0A]">log_event</span>
+              <span class="text-[#525252]">store-mutex [schema skip]</span>
+            </div>
+            <span class="text-[#525252]">77e19cb2</span>
+          </div>
+
+          <!-- Event 4 -->
+          <div class="flex items-center justify-between py-1 px-2">
+            <div class="flex items-center gap-4">
+              <span class="text-[#525252]">11:56:59Z</span>
+              <span class="text-[#15803D] font-medium flex items-center gap-1"><span>·</span> INFO</span>
+              <span class="text-[#0A0A0A]">query</span>
+              <span class="text-[#525252]">duckdb-memory-ast</span>
+            </div>
+            <span class="text-[#525252]">3d81b899</span>
+          </div>
+
+          <!-- Event 5 -->
+          <div class="flex items-center justify-between py-1 px-2">
+            <div class="flex items-center gap-4">
+              <span class="text-[#525252]">11:56:32Z</span>
+              <span class="text-[#15803D] font-medium flex items-center gap-1"><span>·</span> INFO</span>
+              <span class="text-[#0A0A0A]">apply_improvement</span>
+              <span class="text-[#525252]">knn-embedding-space</span>
+            </div>
+            <span class="text-[#525252]">55c2f0a1</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT INSPECTOR/DETAIL COLUMN: 340px separated by 1px black vertical rule -->
+    <aside class="w-[340px] min-w-[340px] border-l border-[#111111] p-6 flex flex-col justify-between bg-white">
+      
+      <div class="flex flex-col gap-6">
+        <!-- HEALTH: 4 rows with 'PASS ·' marks -->
+        <div>
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#E5E5E5]">
+            <span class="text-[11px] font-semibold tracking-micro text-[#0A0A0A] uppercase">HEALTH INVARIANTS</span>
+            <span class="font-mono text-[10px] text-[#15803D] font-semibold">11/11 NOMINAL</span>
+          </div>
+          <div class="flex flex-col gap-2.5 font-mono text-[11px]">
+            <div class="flex items-center justify-between">
+              <span class="text-[#0A0A0A]">store_readable</span>
+              <span class="text-[#15803D] font-medium flex items-center gap-1">PASS <span>·</span></span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#0A0A0A]">chain_integrity</span>
+              <span class="text-[#15803D] font-medium flex items-center gap-1">PASS <span>·</span></span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#0A0A0A]">projection_fresh</span>
+              <span class="text-[#15803D] font-medium flex items-center gap-1">PASS <span>·</span></span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#0A0A0A]">leases_consistent</span>
+              <span class="text-[#15803D] font-medium flex items-center gap-1">PASS <span>·</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RELEARN: as text steps 'IDLE → SCAN → DIFF → SYNC' with IDLE in 600 weight + blue -->
+        <div>
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#E5E5E5]">
+            <span class="text-[11px] font-semibold tracking-micro text-[#0A0A0A] uppercase">RELEARN STATE</span>
+            <span class="font-mono text-[10px] text-[#A3A3A3]">NEXT: 18M</span>
+          </div>
+          <div class="flex items-center gap-2 font-mono text-[11px] mb-2">
+            <span class="font-semibold text-[#1D4ED8]">IDLE</span>
+            <span class="text-[#A3A3A3]">→</span>
+            <span class="text-[#525252]">SCAN</span>
+            <span class="text-[#A3A3A3]">→</span>
+            <span class="text-[#525252]">DIFF</span>
+            <span class="text-[#A3A3A3]">→</span>
+            <span class="text-[#525252]">SYNC</span>
+          </div>
+          <p class="text-[11px] leading-relaxed text-[#525252]">
+            AST topological reconciliation idle. Zero drift detected against local memory journal.
+          </p>
+        </div>
+
+        <!-- STORE kv mono (46.2 MB · schema v5 · WAL) -->
+        <div>
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#E5E5E5]">
+            <span class="text-[11px] font-semibold tracking-micro text-[#0A0A0A] uppercase">STORE SPECIFICATION</span>
+            <span class="font-mono text-[10px] text-[#525252]">LOCAL DB</span>
+          </div>
+          <div class="flex flex-col gap-2 font-mono text-[11px]">
+            <div class="flex items-center justify-between">
+              <span class="text-[#525252]">Storage Volume</span>
+              <span class="text-[#0A0A0A] font-medium">46.2 MB</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#525252]">Contract Version</span>
+              <span class="text-[#0A0A0A] font-medium">schema v5</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#525252]">Journal Mode</span>
+              <span class="text-[#0A0A0A] font-medium">WAL (0 lag)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Cryptographic Proof / Shard Box -->
+      <div class="p-3 border border-[#E5E5E5] font-mono text-[10px] flex flex-col gap-1">
+        <div class="text-[#A3A3A3] tracking-micro uppercase text-[9px]">CRYPTO ANCHOR</div>
+        <div class="text-[#0A0A0A] font-medium">9f2c1ab4e7d38201b88e</div>
+        <div class="text-[#15803D] flex items-center gap-1 mt-0.5">
+          <span>·</span> 100% MERKLE VERIFIED
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- CRITICAL FIX 3: BOTTOM MICRO STRIP SITS FLUSH AT THE BOTTOM EDGE WITH ZERO EMPTY BAND (24px) -->
+  <footer class="h-[24px] min-h-[24px] border-t border-[#111111] px-6 flex items-center justify-between font-mono text-[10px] tracking-micro text-[#525252] uppercase bg-white z-20">
+    <div class="flex items-center gap-3">
+      <span>50 AGENTS</span>
+      <span>·</span>
+      <span>214 EVENTS TODAY</span>
+      <span>·</span>
+      <span>CHAIN VERIFIED</span>
+      <span>·</span>
+      <span>2026-11-05T11:58:02Z</span>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <span>VIEWPORT: 1440X900</span>
+      <span>·</span>
+      <span>PURE WHITE MINIMAL</span>
+      <span>·</span>
+      <span>ZERO CHROMA BASE</span>
+    </div>
+  </footer>
+
+</body>
+</html>

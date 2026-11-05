@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900">
+  <title>Know Your Context - Graph Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#09090B',
+            panel: '#111113',
+            raised: '#18181B',
+            hairline: '#232328',
+            accent: '#8B5CF6',
+            ok: '#4ADE80',
+            warn: '#FACC15',
+            danger: '#F87171',
+            t100: '#F4F4F5',
+            t85: '#D4D4D8',
+            t65: '#A1A1AA',
+            t40: '#52525B',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          borderRadius: {
+            DEFAULT: '6px',
+            sm: '6px',
+            md: '6px',
+            lg: '6px',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #09090B;
+      color: #D4D4D8;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .dot-grid {
+      background-image: radial-gradient(#232328 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+    /* Custom scrollbar if needed */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #232328;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-[900px] w-[1440px] bg-base text-t85">
+
+  <!-- TOP UTILITY BAR (44px) -->
+  <header class="h-[44px] min-h-[44px] max-h-[44px] w-full bg-panel border-b border-hairline px-4 flex items-center justify-between font-mono text-[12px] tracking-tight z-30">
+    <!-- Left: Brand / Mode -->
+    <div class="flex items-center gap-3">
+      <span class="text-t100 font-semibold tracking-wider flex items-center gap-2">
+        <span>KYC</span>
+        <span class="text-accent text-[9px]">▪</span>
+        <span class="text-t65">PROD</span>
+      </span>
+      <span class="text-hairline">|</span>
+      <span class="text-t40 text-[11px]">CLUSTER: LOCAL-FIRST // 0x8F4E</span>
+    </div>
+
+    <!-- Center: Primary Tab Nav -->
+    <nav class="flex items-center h-full gap-7 text-[12px]">
+      <a href="#" class="h-full flex items-center px-1 text-t40 hover:text-t85 transition-colors">OVERVIEW</a>
+      <a href="#" class="h-full flex items-center px-1 text-t100 font-medium border-b-2 border-accent relative">
+        GRAPH
+      </a>
+      <a href="#" class="h-full flex items-center px-1 text-t40 hover:text-t85 transition-colors">ACTIVITY</a>
+      <a href="#" class="h-full flex items-center px-1 text-t40 hover:text-t85 transition-colors">ANALYTICS</a>
+    </nav>
+
+    <!-- Right: Telemetry + Clock -->
+    <div class="flex items-center gap-4 text-[12px]">
+      <div class="flex items-center gap-2 text-t65">
+        <span class="text-t40">STORE</span>
+        <span class="text-t85 font-mono">46.2 MB</span>
+      </div>
+      <span class="text-hairline">|</span>
+      <div class="flex items-center gap-2">
+        <span class="text-t40">UTC</span>
+        <span class="text-t100 font-mono">11:58:02Z</span>
+      </div>
+      <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-raised border border-hairline">
+        <span class="w-1.5 h-1.5 rounded-full bg-ok animate-pulse"></span>
+        <span class="text-ok font-mono text-[11px] font-medium tracking-wide">LIVE</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MIDDLE ZONE (Total height: 900 - 44 top - 200 dock - 26 status = 630px) -->
+  <div class="flex flex-row h-[630px] w-full overflow-hidden">
+
+    <!-- LEFT FACET COLUMN (220px) -->
+    <aside class="w-[220px] min-w-[220px] max-w-[220px] h-full bg-panel border-r border-hairline flex flex-col p-3 gap-4 overflow-y-auto z-20">
+      
+      <!-- FOCUSED Search Input -->
+      <div>
+        <label class="block font-mono text-[10px] text-t40 uppercase tracking-wider mb-1.5 font-medium">NODE SEARCH</label>
+        <div class="relative flex items-center">
+          <input 
+            type="text" 
+            value="heuristics-catalog" 
+            class="w-full h-[32px] bg-raised border border-accent ring-2 ring-accent/30 rounded px-2.5 text-[12px] font-mono text-t100 outline-none placeholder-t40"
+            readonly
+          >
+          <span class="absolute right-2 font-mono text-[10px] text-accent font-semibold px-1 py-0.5 rounded bg-accent/10">⌘K</span>
+        </div>
+      </div>
+
+      <!-- DOMAIN Checklist P1..P7 -->
+      <div class="flex flex-col gap-1.5">
+        <div class="flex items-center justify-between font-mono text-[10px] text-t40 uppercase tracking-wider mb-0.5">
+          <span class="font-medium">DOMAIN</span>
+          <span class="text-accent font-medium">2/7 ACTIVE</span>
+        </div>
+
+        <!-- P1 Checked (Violet) -->
+        <label class="h-[28px] px-2 rounded bg-raised/60 flex items-center justify-between cursor-pointer border border-hairline/60 hover:border-hairline transition-colors">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-accent border border-accent flex items-center justify-center">
+              <svg class="w-2.5 h-2.5 text-t100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <span class="font-mono text-[11px] text-t85">P1 Core Runtime</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">412</span>
+        </label>
+
+        <!-- P2 Checked (Violet) -->
+        <label class="h-[28px] px-2 rounded bg-raised/60 flex items-center justify-between cursor-pointer border border-hairline/60 hover:border-hairline transition-colors">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-accent border border-accent flex items-center justify-center">
+              <svg class="w-2.5 h-2.5 text-t100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <span class="font-mono text-[11px] text-t85">P2 Ingest/AST</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">388</span>
+        </label>
+
+        <!-- P3 Unchecked -->
+        <label class="h-[28px] px-2 rounded hover:bg-raised/40 flex items-center justify-between cursor-pointer border border-transparent transition-colors">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-base border border-hairline"></div>
+            <span class="font-mono text-[11px] text-t65">P3 Vector Space</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">204</span>
+        </label>
+
+        <!-- P4 Unchecked -->
+        <label class="h-[28px] px-2 rounded hover:bg-raised/40 flex items-center justify-between cursor-pointer border border-transparent transition-colors">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-base border border-hairline"></div>
+            <span class="font-mono text-[11px] text-t65">P4 Schema Invariants</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">161</span>
+        </label>
+
+        <!-- P5 Unchecked -->
+        <label class="h-[28px] px-2 rounded hover:bg-raised/40 flex items-center justify-between cursor-pointer border border-transparent transition-colors">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-base border border-hairline"></div>
+            <span class="font-mono text-[11px] text-t65">P5 Consensus Leases</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">119</span>
+        </label>
+
+        <!-- P6 INFERENCE Unchecked (Complete label) -->
+        <label class="h-[28px] px-2 rounded hover:bg-raised/40 flex items-center justify-between cursor-pointer border border-transparent transition-colors">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-base border border-hairline"></div>
+            <span class="font-mono text-[11px] text-t65">P6 INFERENCE</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">84</span>
+        </label>
+
+        <!-- P7 AUDIT Unchecked (Complete label) -->
+        <label class="h-[28px] px-2 rounded hover:bg-raised/40 flex items-center justify-between cursor-pointer border border-transparent transition-colors">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-base border border-hairline"></div>
+            <span class="font-mono text-[11px] text-t65">P7 AUDIT</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">46</span>
+        </label>
+      </div>
+
+      <!-- TOPOLOGY KIND Checklist (leaf / root) -->
+      <div class="flex flex-col gap-1.5 pt-1 border-t border-hairline/60">
+        <label class="block font-mono text-[10px] text-t40 uppercase tracking-wider mb-0.5 font-medium">TOPOLOGY KIND</label>
+        
+        <!-- leaf Checked -->
+        <label class="h-[28px] px-2 rounded bg-raised/60 flex items-center justify-between cursor-pointer border border-hairline/60">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-accent border border-accent flex items-center justify-center">
+              <svg class="w-2.5 h-2.5 text-t100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <span class="font-mono text-[11px] text-t85">leaf</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">920</span>
+        </label>
+
+        <!-- root Unchecked -->
+        <label class="h-[28px] px-2 rounded hover:bg-raised/40 flex items-center justify-between cursor-pointer border border-transparent">
+          <div class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 rounded-[3px] bg-base border border-hairline"></div>
+            <span class="font-mono text-[11px] text-t65">root</span>
+          </div>
+          <span class="font-mono text-[10px] text-t40">494</span>
+        </label>
+      </div>
+
+      <!-- AUTOSCROLL TOGGLE ON (mandatory interaction state) -->
+      <div class="mt-auto pt-2 border-t border-hairline/60 flex items-center justify-between">
+        <div class="flex flex-col">
+          <span class="font-mono text-[10px] text-t40 uppercase tracking-wider font-medium">AUTOSCROLL STREAM</span>
+          <span class="font-mono text-[10px] text-ok">REPLAY 0.14ms</span>
+        </div>
+        <!-- Toggle button ON (violet) -->
+        <div class="w-9 h-5 bg-accent rounded-full p-0.5 flex items-center cursor-pointer transition-colors justify-end">
+          <div class="w-4 h-4 bg-t100 rounded-full"></div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN ZONE: GRAPH CANVAS (1220px x 630px) -->
+    <main class="flex-1 h-full bg-base relative dot-grid overflow-hidden">
+
+      <!-- Canvas Header Overlay -->
+      <div class="absolute top-3 left-4 flex items-center gap-3 z-10 pointer-events-none">
+        <div class="flex items-center gap-2 px-2 py-1 rounded bg-panel/90 border border-hairline font-mono text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-ok"></span>
+          <span class="text-t85">PHYSICS STABLE</span>
+          <span class="text-t40">|</span>
+          <span class="text-t40">LAYOUT: FORCE-DIRECTED</span>
+          <span class="text-t40">|</span>
+          <span class="text-t40">ARCS: 3,917 DIRECTED</span>
+        </div>
+      </div>
+
+      <!-- Zoom & Controls Pill (Right Edge) -->
+      <div class="absolute top-3 right-4 flex flex-col gap-1 z-10 font-mono text-[11px]">
+        <div class="flex items-center bg-panel border border-hairline rounded p-0.5">
+          <button class="w-7 h-7 flex items-center justify-center text-t65 hover:text-t100 hover:bg-raised rounded text-[13px] font-mono leading-none">+</button>
+          <span class="px-2 text-t85 text-[11px] font-mono">100%</span>
+          <button class="w-7 h-7 flex items-center justify-center text-t65 hover:text-t100 hover:bg-raised rounded text-[13px] font-mono leading-none">-</button>
+        </div>
+        <button class="w-full h-6 flex items-center justify-center bg-panel border border-hairline text-t65 hover:text-t100 hover:bg-raised rounded text-[10px] font-mono">
+          FIT
+        </button>
+      </div>
+
+      <!-- SVG GRAPH TOPOLOGY LAYER (Edges & Dots) -->
+      <svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+        
+        <!-- Faint Background Cluster Boundaries -->
+        <polygon points="410,120 720,80 840,240 680,480 340,430" fill="none" stroke="#232328" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>
+        <polygon points="120,200 360,160 420,380 200,490 80,360" fill="none" stroke="#232328" stroke-width="1" stroke-dasharray="3 3" opacity="0.4"/>
+
+        <!-- Inactive Background Edges (~35% opacity) -->
+        <g stroke="#3F3F46" stroke-width="1" opacity="0.35">
+          <line x1="160" y1="230" x2="280" y2="180"/>
+          <line x1="280" y1="180" x2="390" y2="140"/>
+          <line x1="390" y1="140" x2="520" y2="110"/>
+          <line x1="520" y1="110" x2="680" y2="90"/>
+          <line x1="680" y1="90" x2="820" y2="130"/>
+          <line x1="820" y1="130" x2="940" y2="210"/>
+          <line x1="940" y1="210" x2="990" y2="340"/>
+          <line x1="990" y1="340" x2="890" y2="440"/>
+          <line x1="890" y1="440" x2="760" y2="490"/>
+          <line x1="760" y1="490" x2="640" y2="520"/>
+          <line x1="640" y1="520" x2="480" y2="510"/>
+          <line x1="480" y1="510" x2="320" y2="480"/>
+          <line x1="320" y1="480" x2="180" y2="410"/>
+          <line x1="180" y1="410" x2="160" y2="230"/>
+
+          <!-- Cross mesh lines -->
+          <line x1="280" y1="180" x2="320" y2="340"/>
+          <line x1="390" y1="140" x2="440" y2="280"/>
+          <line x1="520" y1="110" x2="610" y2="210"/>
+          <line x1="680" y1="90" x2="720" y2="280"/>
+          <line x1="820" y1="130" x2="780" y2="380"/>
+          <line x1="720" y1="280" x2="620" y2="460"/>
+          <line x1="440" y1="280" x2="510" y2="460"/>
+          <line x1="320" y1="340" x2="480" y2="510"/>
+          <line x1="780" y1="380" x2="640" y2="520"/>
+          <line x1="940" y1="210" x2="720" y2="280"/>
+        </g>
+
+        <!-- ACTIVE NEIGHBOR EDGES from 'heuristics-catalog' (center at x=610, y=310) -->
+        <!-- Center -> retrieval-core (x=410, y=240) [depends_on] -->
+        <line x1="610" y1="310" x2="410" y2="240" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="none"/>
+        <!-- Arrowhead indicator on depends_on -->
+        <circle cx="490" cy="268" r="2.5" fill="#8B5CF6"/>
+
+        <!-- Center -> heuristics-v1 (x=790, y=260) [supersedes] -->
+        <line x1="610" y1="310" x2="790" y2="260" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <circle cx="720" cy="279" r="2.5" fill="#8B5CF6"/>
+
+        <!-- Center -> store-mutex (x=530, y=470) [governs] -->
+        <line x1="610" y1="310" x2="530" y2="470" stroke="#8B5CF6" stroke-width="1.5" stroke-opacity="0.7"/>
+
+        <!-- Center -> schema-contract-04 (x=680, y=460) [contradicts] -->
+        <line x1="610" y1="310" x2="680" y2="460" stroke="#F87171" stroke-width="1.5" stroke-opacity="0.8"/>
+
+        <!-- Center -> vector-indexer-p3 (x=610, y=170) [indexes_by] -->
+        <line x1="610" y1="310" x2="610" y2="170" stroke="#8B5CF6" stroke-width="1.5" stroke-opacity="0.7"/>
+
+        <!-- TIER 2 & TIER 3 BACKGROUND GRAPH DOTS (~150 nodes total) -->
+        <!-- ~50 8px medium dots -->
+        <g fill="#27272A" stroke="#3F3F46" stroke-width="1">
+          <circle cx="110" cy="140" r="4"/><circle cx="160" cy="230" r="4"/><circle cx="210" cy="110" r="4"/><circle cx="250" cy="290" r="4"/>
+          <circle cx="290" cy="90" r="4"/><circle cx="340" cy="230" r="4"/><circle cx="380" cy="380" r="4"/><circle cx="450" cy="160" r="4"/>
+          <circle cx="490" cy="80" r="4"/><circle cx="530" cy="240" r="4"/><circle cx="570" cy="90" r="4"/><circle cx="650" cy="130" r="4"/>
+          <circle cx="700" cy="70" r="4"/><circle cx="730" cy="190" r="4"/><circle cx="760" cy="110" r="4"/><circle cx="830" cy="90" r="4"/>
+          <circle cx="870" cy="180" r="4"/><circle cx="910" cy="110" r="4"/><circle cx="950" cy="240" r="4"/><circle cx="990" cy="160" r="4"/>
+          <circle cx="1020" cy="290" r="4"/><circle cx="1050" cy="140" r="4"/><circle cx="1080" cy="230" r="4"/><circle cx="1120" cy="330" r="4"/>
+          <circle cx="150" cy="360" r="4"/><circle cx="210" cy="460" r="4"/><circle cx="280" cy="410" r="4"/><circle cx="330" cy="520" r="4"/>
+          <circle cx="390" cy="460" r="4"/><circle cx="440" cy="540" r="4"/><circle cx="480" cy="430" r="4"/><circle cx="560" cy="530" r="4"/>
+          <circle cx="600" cy="440" r="4"/><circle cx="640" cy="550" r="4"/><circle cx="730" cy="430" r="4"/><circle cx="770" cy="520" r="4"/>
+          <circle cx="820" cy="440" r="4"/><circle cx="860" cy="510" r="4"/><circle cx="900" cy="390" r="4"/><circle cx="940" cy="480" r="4"/>
+          <circle cx="980" cy="410" r="4"/><circle cx="1040" cy="460" r="4"/><circle cx="1090" cy="390" r="4"/><circle cx="1130" cy="470" r="4"/>
+          <circle cx="80" cy="310" r="4"/><circle cx="1150" cy="210" r="4"/><circle cx="850" cy="310" r="4"/><circle cx="740" cy="340" r="4"/>
+        </g>
+
+        <!-- ~100 micro dots 30% opacity -->
+        <g fill="#52525B" opacity="0.3">
+          <circle cx="70" cy="90" r="2"/><circle cx="90" cy="180" r="2"/><circle cx="130" cy="80" r="2"/><circle cx="140" cy="270" r="2"/>
+          <circle cx="180" cy="170" r="2"/><circle cx="190" cy="60" r="2"/><circle cx="220" cy="220" r="2"/><circle cx="230" cy="340" r="2"/>
+          <circle cx="260" cy="150" r="2"/><circle cx="270" cy="50" r="2"/><circle cx="310" cy="120" r="2"/><circle cx="320" cy="270" r="2"/>
+          <circle cx="350" cy="70" r="2"/><circle cx="360" cy="180" r="2"/><circle cx="400" cy="100" r="2"/><circle cx="420" cy="320" r="2"/>
+          <circle cx="440" cy="60" r="2"/><circle cx="460" cy="220" r="2"/><circle cx="480" cy="130" r="2"/><circle cx="510" cy="180" r="2"/>
+          <circle cx="540" cy="50" r="2"/><circle cx="550" cy="140" r="2"/><circle cx="580" cy="190" r="2"/><circle cx="620" cy="70" r="2"/>
+          <circle cx="630" cy="160" r="2"/><circle cx="660" cy="100" r="2"/><circle cx="670" cy="220" r="2"/><circle cx="710" cy="140" r="2"/>
+          <circle cx="720" cy="50" r="2"/><circle cx="750" cy="160" r="2"/><circle cx="770" cy="80" r="2"/><circle cx="790" cy="200" r="2"/>
+          <circle cx="810" cy="50" r="2"/><circle cx="840" cy="150" r="2"/><circle cx="850" cy="240" r="2"/><circle cx="880" cy="90" r="2"/>
+          <circle cx="890" cy="280" r="2"/><circle cx="920" cy="60" r="2"/><circle cx="930" cy="170" r="2"/><circle cx="960" cy="120" r="2"/>
+          <circle cx="970" cy="290" r="2"/><circle cx="1000" cy="90" r="2"/><circle cx="1010" cy="220" r="2"/><circle cx="1040" cy="190" r="2"/>
+          <circle cx="1060" cy="80" r="2"/><circle cx="1070" cy="330" r="2"/><circle cx="1100" cy="160" r="2"/><circle cx="1110" cy="270" r="2"/>
+          <circle cx="1140" cy="110" r="2"/><circle cx="1160" cy="280" r="2"/><circle cx="60" cy="240" r="2"/><circle cx="80" cy="400" r="2"/>
+          <circle cx="100" cy="480" r="2"/><circle cx="120" cy="330" r="2"/><circle cx="150" cy="440" r="2"/><circle cx="170" cy="520" r="2"/>
+          <circle cx="190" cy="380" r="2"/><circle cx="230" cy="510" r="2"/><circle cx="250" cy="430" r="2"/><circle cx="270" cy="550" r="2"/>
+          <circle cx="300" cy="360" r="2"/><circle cx="310" cy="460" r="2"/><circle cx="350" cy="420" r="2"/><circle cx="360" cy="570" r="2"/>
+          <circle cx="410" cy="390" r="2"/><circle cx="420" cy="500" r="2"/><circle cx="460" cy="460" r="2"/><circle cx="470" cy="570" r="2"/>
+          <circle cx="510" cy="370" r="2"/><circle cx="520" cy="520" r="2"/><circle cx="550" cy="410" r="2"/><circle cx="570" cy="580" r="2"/>
+          <circle cx="590" cy="360" r="2"/><circle cx="610" cy="510" r="2"/><circle cx="660" cy="390" r="2"/><circle cx="670" cy="570" r="2"/>
+          <circle cx="710" cy="370" r="2"/><circle cx="720" cy="500" r="2"/><circle cx="750" cy="470" r="2"/><circle cx="760" cy="560" r="2"/>
+          <circle cx="800" cy="370" r="2"/><circle cx="810" cy="490" r="2"/><circle cx="850" cy="420" r="2"/><circle cx="870" cy="560" r="2"/>
+          <circle cx="910" cy="330" r="2"/><circle cx="920" cy="440" r="2"/><circle cx="960" cy="360" r="2"/><circle cx="970" cy="530" r="2"/>
+          <circle cx="1010" cy="370" r="2"/><circle cx="1030" cy="510" r="2"/><circle cx="1060" cy="390" r="2"/><circle cx="1080" cy="540" r="2"/>
+          <circle cx="1110" cy="420" r="2"/><circle cx="1140" cy="520" r="2"/><circle cx="1170" cy="380" r="2"/><circle cx="1180" cy="460" r="2"/>
+        </g>
+      </svg>
+
+      <!-- 14 MONO-LABELED CHIPS (Raised fill #18181B, hairline border #232328, 11px mono) -->
+      
+      <!-- 1. SELECTED NODE: 'heuristics-catalog' (center) -> Flat 2px violet border + 100% bright label -->
+      <div class="absolute z-20" style="left: 510px; top: 295px;">
+        <div class="px-3 py-1.5 rounded bg-raised border-2 border-accent flex items-center gap-2 cursor-pointer">
+          <span class="w-2 h-2 rounded-full bg-accent"></span>
+          <span class="font-mono text-[11px] font-semibold text-t100">heuristics-catalog</span>
+          <span class="font-mono text-[9px] text-accent bg-accent/15 px-1 py-0.5 rounded font-medium">P2 · ACTIVE</span>
+        </div>
+        <!-- Edge relation tag inline -->
+        <span class="absolute -top-3.5 left-8 font-mono text-[9px] text-t40 bg-base px-1 border border-hairline rounded">focus</span>
+      </div>
+
+      <!-- 2. retrieval-core (left neighbor) -->
+      <div class="absolute z-10" style="left: 310px; top: 228px;">
+        <div class="px-2.5 py-1 rounded bg-raised border border-hairline flex items-center gap-2 cursor-pointer hover:border-t65 transition-colors">
+          <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+          <span class="font-mono text-[11px] text-t85">retrieval-core</span>
+          <span class="font-mono text-[9px] text-t40">P1</span>
+        </div>
+      </div>
+      <!-- Label on edge: depends_on -->
+      <div class="absolute z-10 font-mono text-[9px] text-t40 bg-base/80 px-1 border border-hairline/60 rounded" style="left: 450px; top: 270px;">
+        depends_on (0.94)
+      </div>
+
+      <!-- 3. heuristics-v1 (HOVERED NODE: 1px violet border + wash #18181B + tint) -->
+      <div class="absolute z-10" style="left: 770px; top: 248px;">
+        <div class="px-2.5 py-1 rounded bg-raised border border-accent ring-1 ring-accent/30 flex items-center gap-2 cursor-pointer">
+          <span class="w-1.5 h-1.5 rounded-full bg-warn"></span>
+          <span class="font-mono text-[11px] text-t100">heuristics-v1</span>
+          <span class="font-mono text-[9px] text-warn bg-warn/10 px-1 py-0.5 rounded">P2·DEPR</span>
+        </div>
+      </div>
+      <!-- Label on edge: supersedes -->
+      <div class="absolute z-10 font-mono text-[9px] text-t40 bg-base/80 px-1 border border-hairline/60 rounded" style="left: 690px; top: 285px;">
+        supersedes
+      </div>
+
+      <!-- 4. vector-indexer-p3 (top neighbor) -->
+      <div class="absolute z-10" style="left: 540px; top: 155px;">
+        <div class="px-2.5 py-1 rounded bg-raised border border-hairline flex items-center gap-2 cursor-pointer hover:border-t65 transition-colors">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+          <span class="font-mono text-[11px] text-t85">vector-indexer-p3</span>
+          <span class="font-mono text-[9px] text-t40">P3</span>
+        </div>
+      </div>
+      <div class="absolute z-10 font-mono text-[9px] text-t40 bg-base/80 px-1 border border-hairline/60 rounded" style="left: 580px; top: 245px;">
+        indexes_by
+      </div>
+
+      <!-- 5. store-mutex (bottom-left neighbor) -->
+      <div class="absolute z-10" style="left: 470px; top: 455px;">
+        <div class="px-2.5 py-1 rounded bg-raised border border-hairline flex items-center gap-2 cursor-pointer hover:border-t65 transition-colors">
+          <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+          <span class="font-mono text-[11px] text-t85">store-mutex</span>
+          <span class="font-mono text-[9px] text-t40">P1</span>
+        </div>
+      </div>
+      <div class="absolute z-10 font-mono text-[9px] text-t40 bg-base/80 px-1 border border-hairline/60 rounded" style="left: 535px; top: 385px;">
+        governs
+      </div>
+
+      <!-- 6. schema-contract-04 (bottom-right neighbor - contradiction) -->
+      <div class="absolute z-10" style="left: 650px; top: 450px;">
+        <div class="px-2.5 py-1 rounded bg-raised border border-danger/60 flex items-center gap-2 cursor-pointer hover:border-danger transition-colors">
+          <span class="w-1.5 h-1.5 rounded-full bg-danger"></span>
+          <span class="font-mono text-[11px] text-t85">schema-contract-04</span>
+          <span class="font-mono text-[9px] text-danger">P4</span>
+        </div>
+      </div>
+      <div class="absolute z-10 font-mono text-[9px] text-danger bg-danger/10 px-1 border border-danger/40 rounded" style="left: 625px; top: 385px;">
+        contradicts [rule]
+      </div>
+
+      <!-- 7. ast-parser-stream (upper left) -->
+      <div class="absolute z-10" style="left: 400px; top: 105px;">
+        <div class="px-2 py-0.5 rounded bg-raised/80 border border-hairline flex items-center gap-1.5 cursor-pointer text-t65 hover:text-t85">
+          <span class="font-mono text-[10px]">ast-parser-stream</span>
+        </div>
+      </div>
+
+      <!-- 8. duckdb-index (upper right) -->
+      <div class="absolute z-10" style="left: 750px; top: 135px;">
+        <div class="px-2 py-0.5 rounded bg-raised/80 border border-hairline flex items-center gap-1.5 cursor-pointer text-t65 hover:text-t85">
+          <span class="font-mono text-[10px]">duckdb-index</span>
+        </div>
+      </div>
+
+      <!-- 9. query-planner (far left) -->
+      <div class="absolute z-10" style="left: 220px; top: 155px;">
+        <div class="px-2 py-0.5 rounded bg-raised/80 border border-hairline flex items-center gap-1.5 cursor-pointer text-t65 hover:text-t85">
+          <span class="font-mono text-[10px]">query-planner</span>
+        </div>
+      </div>
+
+      <!-- 10. lease-arbiter (lower far left) -->
+      <div class="absolute z-10" style="left: 260px; top: 410px;">
+        <div class="px-2 py-0.5 rounded bg-raised/80 border border-hairline flex items-center gap-1.5 cursor-pointer text-t65 hover:text-t85">
+          <span class="font-mono text-[10px]">lease-arbiter</span>
+        </div>
+      </div>
+
+      <!-- 11. wal-checkpoint (lower center) -->
+      <div class="absolute z-10" style="left: 380px; top: 500px;">
+        <div class="px-2 py-0.5 rounded bg-raised/80 border border-hairline flex items-center gap-1.5 cursor-pointer text-t65 hover:text-t85">
+          <span class="font-mono text-[10px]">wal-checkpoint</span>
+        </div>
+      </div>
+
+      <!-- 12. eval-loop-async (lower center-right) -->
+      <div class="absolute z-10" style="left: 540px; top: 530px;">
+        <div class="px-2 py-0.5 rounded bg-raised/80 border border-hairline flex items-center gap-1.5 cursor-pointer text-t65 hover:text-t85">
+          <span class="font-mono text-[10px]">eval-loop-async</span>
+        </div>
+      </div>
+
+      <!-- 13. telemetry-sink (lower right) -->
+      <div class="absolute z-10" style="left: 770px; top: 470px;">
+        <div class="px-2 py-0.5 rounded bg-raised/80 border border-hairline flex items-center gap-1.5 cursor-pointer text-t65 hover:text-t85">
+          <span class="font-mono text-[10px]">telemetry-sink</span>
+        </div>
+      </div>
+
+      <!-- 14. merkle-root (far right) -->
+      <div class="absolute z-10" style="left: 860px; top: 390px;">
+        <div class="px-2 py-0.5 rounded bg-raised/80 border border-hairline flex items-center gap-1.5 cursor-pointer text-t65 hover:text-t85">
+          <span class="font-mono text-[10px]">merkle-root</span>
+        </div>
+      </div>
+
+      <!-- Canvas Legend (Bottom-Left inside canvas) -->
+      <div class="absolute bottom-3 left-4 z-10 bg-panel/95 border border-hairline rounded px-3 py-2 flex items-center gap-4 font-mono text-[10px]">
+        <span class="text-t40 uppercase tracking-wider font-medium">PARTITIONS:</span>
+        <div class="flex items-center gap-1.5 text-t85"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> P1 412</div>
+        <div class="flex items-center gap-1.5 text-t85"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> P2 388</div>
+        <div class="flex items-center gap-1.5 text-t65"><span class="w-1.5 h-1.5 rounded-full bg-t40"></span> P3 204</div>
+        <div class="flex items-center gap-1.5 text-t65"><span class="w-1.5 h-1.5 rounded-full bg-t40"></span> P4 161</div>
+        <div class="flex items-center gap-1.5 text-t65"><span class="w-1.5 h-1.5 rounded-full bg-t40"></span> P5 119</div>
+        <div class="flex items-center gap-1.5 text-t65"><span class="w-1.5 h-1.5 rounded-full bg-t40"></span> P6 84</div>
+        <div class="flex items-center gap-1.5 text-t65"><span class="w-1.5 h-1.5 rounded-full bg-t40"></span> P7 46</div>
+        <span class="text-hairline">|</span>
+        <span class="text-t40">TOTAL NODES: <span class="text-t85 font-mono">1,284</span></span>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- HORIZONTAL BOTTOM DOCK: INSPECTOR (200px) -->
+  <section class="h-[200px] min-h-[200px] max-h-[200px] w-full bg-raised border-t border-hairline px-4 py-3 flex flex-row gap-4 z-20">
+    
+    <!-- COL 1: Node Identification & Summary (280px) -->
+    <div class="w-[280px] min-w-[280px] flex flex-col justify-between pr-4 border-r border-hairline">
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="font-mono text-[10px] text-t40 uppercase tracking-wider font-medium">INSPECTOR // TARGET</span>
+          <span class="font-mono text-[10px] text-t40">0x9F2C1AB4</span>
+        </div>
+        <div class="flex items-center gap-2 mb-2">
+          <h2 class="font-mono text-[15px] font-semibold text-t100 tracking-tight">heuristics-catalog</h2>
+          <span class="font-mono text-[10px] text-accent bg-accent/15 px-1.5 py-0.5 rounded font-medium">P2 · ACTIVE</span>
+        </div>
+        <p class="text-[12px] text-t65 leading-relaxed line-clamp-2">
+          Centralized heuristic registry and AST pattern evaluator across partitioned subgraphs. Validates invariant safety against live schema projections.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-hairline/60 font-mono text-[11px]">
+        <span class="text-t40">PARTITION <span class="text-t85">P2 (Ingestion)</span></span>
+        <span class="text-t40">KIND <span class="text-t85">leaf v3</span></span>
+      </div>
+    </div>
+
+    <!-- COL 2: Scores & Telemetry (280px) -->
+    <div class="w-[280px] min-w-[280px] flex flex-col justify-between px-2 pr-4 border-r border-hairline">
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono text-[10px] text-t40 uppercase tracking-wider font-medium">CONVERGENCE SCORES</span>
+          <span class="font-mono text-[10px] text-ok bg-ok/10 px-1 py-0.5 rounded font-medium">PASS</span>
+        </div>
+
+        <div class="flex flex-col gap-2 font-mono text-[11px]">
+          <!-- P: Precision -->
+          <div>
+            <div class="flex justify-between mb-0.5">
+              <span class="text-t65 text-[11px]">Precision (P)</span>
+              <span class="text-t100 font-medium">0.828</span>
+            </div>
+            <div class="w-full h-1.5 bg-panel rounded overflow-hidden">
+              <div class="h-full bg-accent rounded" style="width: 82.8%"></div>
+            </div>
+          </div>
+
+          <!-- M: Mutation Entropy -->
+          <div>
+            <div class="flex justify-between mb-0.5">
+              <span class="text-t65 text-[11px]">Entropy (M)</span>
+              <span class="text-t85 font-medium">0.341</span>
+            </div>
+            <div class="w-full h-1.5 bg-panel rounded overflow-hidden">
+              <div class="h-full bg-t65 rounded" style="width: 34.1%"></div>
+            </div>
+          </div>
+
+          <!-- E: Eigenvector Centrality -->
+          <div>
+            <div class="flex justify-between mb-0.5">
+              <span class="text-t65 text-[11px]">Eigen (E)</span>
+              <span class="text-t100 font-medium">0.898</span>
+            </div>
+            <div class="w-full h-1.5 bg-panel rounded overflow-hidden">
+              <div class="h-full bg-accent rounded" style="width: 89.8%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confidence score footer -->
+      <div class="flex items-center justify-between pt-2 border-t border-hairline/60 font-mono text-[11px]">
+        <span class="text-t40">CONFIDENCE</span>
+        <span class="text-accent font-semibold text-[13px]">0.912</span>
+      </div>
+    </div>
+
+    <!-- COL 3: Relations (Exactly 2 rows as required) (340px) -->
+    <div class="w-[340px] min-w-[340px] flex flex-col justify-between px-2 pr-4 border-r border-hairline font-mono">
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] text-t40 uppercase tracking-wider font-medium">GRAPH RELATIONS (2)</span>
+          <span class="text-[10px] text-t40">ACTIVE EDGES</span>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <!-- Row 1: SELECTED STATE (2px violet left bar + 8% violet wash) -->
+          <div class="h-[36px] px-2.5 rounded bg-accent/[0.08] border-l-2 border-accent border-y border-r border-hairline/40 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-accent text-[11px] font-medium">depends_on</span>
+              <span class="text-t40 text-[10px]">→</span>
+              <span class="text-t100 text-[11px]">retrieval-core</span>
+            </div>
+            <span class="text-t40 text-[10px]">wt 0.94</span>
+          </div>
+
+          <!-- Row 2: HOVERED STATE (wash #18181B) -->
+          <div class="h-[36px] px-2.5 rounded bg-[#18181B] border border-hairline flex items-center justify-between hover:border-hairline transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="text-t85 text-[11px] font-medium">supersedes</span>
+              <span class="text-t40 text-[10px]">→</span>
+              <span class="text-t85 text-[11px]">heuristics-v1</span>
+            </div>
+            <span class="text-warn text-[10px] bg-warn/10 px-1 py-0.5 rounded font-mono">v1.2 depr</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-hairline/60 text-[11px]">
+        <span class="text-t40">CONTRADICTIONS</span>
+        <span class="text-danger text-[10px] bg-danger/10 px-1.5 py-0.5 rounded font-medium">1 ACTIVE WARNING</span>
+      </div>
+    </div>
+
+    <!-- COL 4: Evidence & Trace Lineage (Flexible rest of width) -->
+    <div class="flex-1 flex flex-col justify-between pl-2">
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono text-[10px] text-t40 uppercase tracking-wider font-medium">EVIDENCE & PROVENANCE</span>
+          <span class="font-mono text-[10px] text-ok bg-ok/10 px-1.5 py-0.5 rounded font-medium">VERIFIED 5/5</span>
+        </div>
+
+        <div class="flex flex-col gap-1.5 font-mono text-[11px]">
+          <!-- Evidence 1 -->
+          <div class="px-2.5 py-1.5 rounded bg-panel border border-hairline flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-t85 font-medium">ev-0081</span>
+              <span class="text-t40 text-[10px]">autonomous AST regression test pass</span>
+            </div>
+            <span class="text-ok font-mono text-[10px]">0.94 score</span>
+          </div>
+
+          <!-- Evidence 2 -->
+          <div class="px-2.5 py-1.5 rounded bg-panel border border-hairline flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-t85 font-medium">ev-0082</span>
+              <span class="text-t40 text-[10px]">operator manual attestation signature valid</span>
+            </div>
+            <span class="text-ok font-mono text-[10px]">0.91 score</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FLAT Trace Lineage Button (No gradient, no glow, 10% violet tint, 1px border, text only) -->
+      <div class="pt-2 border-t border-hairline/60 flex items-center justify-between">
+        <span class="font-mono text-[10px] text-t40">PROVENANCE: SHA-256 HMAC (MONOTONIC)</span>
+        <button class="h-[28px] px-4 rounded bg-accent/10 border border-accent text-accent font-mono text-[11px] font-medium tracking-wide hover:bg-accent/20 active:bg-accent/30 transition-colors flex items-center justify-center">
+          Trace Lineage
+        </button>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ONE-LINE MONO STATUS STRIP (26px) -->
+  <footer class="h-[26px] min-h-[26px] max-h-[26px] w-full bg-base border-t border-hairline px-4 flex items-center justify-between font-mono text-[11px] text-t40 z-30 leading-none">
+    <div class="flex items-center gap-3">
+      <span class="flex items-center gap-1.5 text-ok">
+        <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+        <span>DAEMON SYNCHRONIZED</span>
+      </span>
+      <span class="text-hairline">·</span>
+      <span>SEQ 10421</span>
+      <span class="text-hairline">·</span>
+      <span>CHAIN 9f2c1ab4</span>
+      <span class="text-hairline">·</span>
+      <span>50 AGENTS</span>
+      <span class="text-hairline">·</span>
+      <span class="text-ok font-medium">11/11 CHECKS PASS</span>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span>SHARD: 0x3a (SYNCED)</span>
+      <span class="text-hairline">·</span>
+      <span>RAFT: 3/3 LEASE ACTIVE</span>
+      <span class="text-hairline">·</span>
+      <span class="text-t65 font-medium">1440x900 FIXED VIEWPORT</span>
+      <span class="text-hairline">·</span>
+      <span class="text-accent">MODERN OPS MINIMAL</span>
+    </div>
+  </footer>
+
+</body>
+</html>
