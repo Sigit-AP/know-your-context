@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <title>Know Your Soul - Metrics (Neon Ops)</title>
+  <!-- Google Fonts: Space Grotesk, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#05070D',
+            panel: '#0A0E18',
+            raised: '#0E1424',
+            hairline: 'rgba(139, 92, 246, 0.12)',
+            textPrimary: '#E8E6F5',
+            textSecondary: '#8B86A8',
+            accent: '#8B5CF6',
+            statusOk: '#22C55E',
+            statusWarn: '#F59E0B',
+            statusDanger: '#EF4444'
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Dot grid background texture: 2px dots, 22px pitch, very faint */
+    .bg-dot-grid {
+      background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1.5px, transparent 1.5px);
+      background-size: 22px 22px;
+    }
+    /* Pulsing LIVE dot */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .live-pulse {
+      animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="m-0 p-0 w-[1440px] h-[900px] overflow-hidden bg-base text-textPrimary font-sans select-none flex antialiased">
+
+  <!-- LEFT SIDEBAR: 256px wide (fits 232-272px rule) -->
+  <aside class="w-64 h-full bg-panel border-r border-hairline flex flex-col justify-between shrink-0 z-20">
+    <!-- Top Brand & Nav Groups -->
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-12 border-b border-hairline flex items-center px-4 justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded bg-raised border border-hairline flex items-center justify-center font-display font-bold text-accent text-xs">
+            K
+          </div>
+          <span class="font-display font-semibold text-sm tracking-wide text-textPrimary">Know Your Soul</span>
+        </div>
+        <span class="font-mono text-[10px] text-textSecondary px-1.5 py-0.5 rounded bg-raised border border-hairline">v14.2</span>
+      </div>
+
+      <!-- Nav Groups -->
+      <div class="px-3 py-3 space-y-4">
+        <!-- MONITOR -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium">Monitor</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 012.5 1h3A1.5 1.5 0 017 2.5v3A1.5 1.5 0 015.5 7h-3A1.5 1.5 0 011 5.5v-3zm8 0A1.5 1.5 0 0110.5 1h3A1.5 1.5 0 0115 2.5v3A1.5 1.5 0 0113.5 7h-3A1.5 1.5 0 019 5.5v-3zm-8 8A1.5 1.5 0 012.5 9h3A1.5 1.5 0 017 10.5v3A1.5 1.5 0 015.5 15h-3A1.5 1.5 0 011 13.5v-3zm8 0A1.5 1.5 0 0110.5 9h3a1.5 1.5 0 011.5 1.5v3a1.5 1.5 0 01-1.5 1.5h-3A1.5 1.5 0 019 13.5v-3z"/></svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 3a.5.5 0 000 1h11a.5.5 0 000-1h-11zm0 4a.5.5 0 000 1h11a.5.5 0 000-1h-11zm0 4a.5.5 0 000 1h7a.5.5 0 000-1h-7z"/></svg>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 2a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM11 6a2 2 0 100 4 2 2 0 000-4zM4.5 11a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/></svg>
+              <span>Graph Explorer</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- ANALYZE -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium">Analyze</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"/></svg>
+              <span>Search</span>
+            </a>
+            <!-- Active Nav Item -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded bg-accent/10 text-accent font-medium text-xs border border-accent/25">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="currentColor"><path d="M2 11h2v3H2v-3zm5-5h2v8H7V6zm5-4h2v12h-2V2z"/></svg>
+                <span>Metrics</span>
+              </div>
+              <div class="w-1.5 h-1.5 rounded-full bg-accent"></div>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M14 2H2a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1zm-1 10H3V4h10v8z"/></svg>
+              <span>Analytics</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- GOVERN -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium">Govern</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"/></svg>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h10v12H3z"/></svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M4 3h8v2H4V3zm0 4h8v2H4V7zm0 4h5v2H4v-2z"/></svg>
+                <span>Proposals</span>
+              </div>
+              <span class="text-[10px] font-mono text-textSecondary px-1.5 py-0.2 rounded bg-raised border border-hairline">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v3H2V3zm0 5h12v5H2V8z"/></svg>
+                <span>Debt Queue</span>
+              </div>
+              <span class="text-[10px] font-mono text-statusWarn px-1.5 py-0.2 rounded bg-statusWarn/10 border border-statusWarn/20">12</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- SYSTEM -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium">System</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v2H2V4zm0 4h12v2H2V8zm0 4h12v2H2v-2z"/></svg>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 00-2 2v.5a5.5 5.5 0 00-1.8.8l-.4-.4a2 2 0 10-2.8 2.8l.4.4A5.5 5.5 0 001 8.9V9a2 2 0 100 4v.1c.5.7 1.1 1.3 1.8 1.8l-.4.4a2 2 0 102.8 2.8l.4-.4c.7.4 1.3.7 2.1.8V17a2 2 0 104 0v-.5c.7-.2 1.4-.5 2-.8l.4.4a2 2 0 102.8-2.8l-.4-.4c.7-.5 1.3-1.1 1.8-1.8V11a2 2 0 100-4v-.1a5.5 5.5 0 00-1.8-1.8l.4-.4a2 2 0 10-2.8-2.8l-.4.4A5.5 5.5 0 0010 3.5V3a2 2 0 00-2-2z"/></svg>
+              <span>Setup</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Footer / Operator Card -->
+    <div class="p-3 border-t border-hairline bg-panel/80">
+      <div class="flex items-center justify-between p-2 rounded bg-raised border border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded bg-accent/20 border border-accent/30 text-accent font-display font-semibold text-xs flex items-center justify-center">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-textPrimary leading-none">Sigit A.</span>
+            <span class="text-[10px] font-mono text-textSecondary mt-0.5 leading-none">operator</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5" title="Daemon Link: Online">
+          <div class="w-1.5 h-1.5 rounded-full bg-statusOk live-pulse"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTENT (1440 - 256 = 1184px wide, 900px tall) -->
+  <main class="flex-1 h-full flex flex-col bg-base bg-dot-grid overflow-hidden">
+    
+    <!-- TOPBAR: exactly 48px, 1-line strictly inside viewport, max 4 segments right -->
+    <header class="h-12 border-b border-hairline bg-panel/95 flex items-center justify-between px-6 shrink-0 z-10">
+      <!-- Left: Breadcrumb / Screen Title -->
+      <div class="flex items-center gap-2.5">
+        <span class="font-mono text-xs text-textSecondary">KYC</span>
+        <span class="text-xs text-textSecondary">/</span>
+        <h1 class="font-display font-semibold text-sm text-textPrimary">Metrics</h1>
+        <div class="flex items-center gap-1.5 ml-3 px-2 py-0.5 rounded bg-raised border border-hairline">
+          <div class="w-1.5 h-1.5 rounded-full bg-statusOk live-pulse"></div>
+          <span class="font-mono text-[10px] text-textSecondary uppercase">Raft Synced</span>
+        </div>
+      </div>
+
+      <!-- Center: Search field with ⌘K hint -->
+      <div class="w-96 flex items-center justify-between px-3 py-1.5 rounded bg-raised border border-hairline text-xs text-textSecondary hover:border-accent/40 transition-colors">
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-textSecondary" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"/></svg>
+          <span class="font-sans text-xs">Search metrics, benchmarks, queries</span>
+        </div>
+        <kbd class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-panel border border-hairline text-textSecondary">⌘K</kbd>
+      </div>
+
+      <!-- Right: Max 4 segments (Cluster badge, Live indicator, Bell with dot, Avatar) -->
+      <div class="flex items-center gap-3">
+        <span class="font-mono text-xs text-textSecondary px-2 py-0.5 rounded bg-raised border border-hairline">cluster-01</span>
+        <div class="relative w-8 h-8 rounded bg-raised border border-hairline flex items-center justify-center text-textSecondary hover:text-textPrimary transition-colors cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5A3.5 3.5 0 004.5 5v2.293L3.146 8.646A.5.5 0 003.5 9.5h9a.5.5 0 00.354-.854L11.5 7.293V5A3.5 3.5 0 008 1.5zM6.5 11a1.5 1.5 0 003 0h-3z"/></svg>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </div>
+        <div class="w-8 h-8 rounded bg-raised border border-hairline flex items-center justify-center font-display font-semibold text-xs text-textPrimary">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY: structured to fill 1440x900 viewport flush with bottom status bar -->
+    <div class="flex-1 p-5 flex flex-col gap-4 overflow-hidden justify-between">
+      
+      <!-- 1. KPI STRIP OF 4 CARDS (4-layer: label / value / delta / sparkline) -->
+      <section class="grid grid-cols-4 gap-4 shrink-0">
+        
+        <!-- Card 1: QUERIES 24H -->
+        <div class="h-28 bg-panel border border-hairline rounded p-3 flex flex-col justify-between relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[11px] uppercase tracking-wider text-textSecondary font-medium">Queries 24h</span>
+            <div class="w-1.5 h-1.5 rounded-full bg-statusOk"></div>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="font-display font-bold text-2xl text-textPrimary leading-none">3,412</span>
+            <div class="flex items-center gap-1 font-mono text-xs text-statusOk">
+              <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8l4-4 4 4"/></svg>
+              <span>up 8.2%</span>
+            </div>
+          </div>
+          <!-- Sparkline -->
+          <div class="h-7 w-full pt-1">
+            <svg class="w-full h-full" viewBox="0 0 240 24" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#8B5CF6" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                points="0,18 20,16 40,19 60,14 80,15 100,11 120,13 140,8 160,10 180,6 200,9 220,5 240,4" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 2: P50 LATENCY -->
+        <div class="h-28 bg-panel border border-hairline rounded p-3 flex flex-col justify-between relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[11px] uppercase tracking-wider text-textSecondary font-medium">P50 Latency</span>
+            <div class="w-1.5 h-1.5 rounded-full bg-statusOk"></div>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="font-display font-bold text-2xl text-textPrimary leading-none">6.4ms</span>
+            <div class="flex items-center gap-1 font-mono text-xs text-statusOk">
+              <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
+              <span>down 0.4ms</span>
+            </div>
+          </div>
+          <!-- Sparkline -->
+          <div class="h-7 w-full pt-1">
+            <svg class="w-full h-full" viewBox="0 0 240 24" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#8B5CF6" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                points="0,8 20,11 40,10 60,13 80,9 100,12 120,14 140,11 160,15 180,12 200,16 220,14 240,17" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 3: TOKEN SAVING -->
+        <div class="h-28 bg-panel border border-hairline rounded p-3 flex flex-col justify-between relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[11px] uppercase tracking-wider text-textSecondary font-medium">Token Saving</span>
+            <div class="w-1.5 h-1.5 rounded-full bg-accent"></div>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="font-display font-bold text-2xl text-accent leading-none">94.2%</span>
+            <div class="flex items-center gap-1 font-mono text-xs text-statusOk">
+              <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8l4-4 4 4"/></svg>
+              <span>up 0.3pt</span>
+            </div>
+          </div>
+          <!-- Sparkline -->
+          <div class="h-7 w-full pt-1">
+            <svg class="w-full h-full" viewBox="0 0 240 24" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#8B5CF6" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                points="0,17 20,16 40,15 60,15 80,13 100,14 120,11 140,12 160,10 180,9 200,8 220,6 240,5" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 4: CACHE HIT -->
+        <div class="h-28 bg-panel border border-hairline rounded p-3 flex flex-col justify-between relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[11px] uppercase tracking-wider text-textSecondary font-medium">Cache Hit</span>
+            <div class="w-1.5 h-1.5 rounded-full bg-statusOk"></div>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="font-display font-bold text-2xl text-textPrimary leading-none">87.1%</span>
+            <div class="flex items-center gap-1 font-mono text-xs text-statusOk">
+              <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8l4-4 4 4"/></svg>
+              <span>up 1.2pt</span>
+            </div>
+          </div>
+          <!-- Sparkline -->
+          <div class="h-7 w-full pt-1">
+            <svg class="w-full h-full" viewBox="0 0 240 24" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#8B5CF6" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                points="0,20 20,18 40,16 60,19 80,14 100,15 120,12 140,11 160,13 180,8 200,9 220,6 240,5" />
+            </svg>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 2. LARGE CHART PANEL: Query volume, 14 days (stroke-only line chart, no axes clutter, 14 day ticks, accent line, today flagged) -->
+      <section class="h-44 bg-panel border border-hairline rounded p-3.5 flex flex-col justify-between shrink-0">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h2 class="font-display font-semibold text-xs tracking-wide text-textPrimary">Query volume, 14 days</h2>
+            <span class="font-mono text-[10px] text-textSecondary">AST MATCH + DUCKB PARSER EXECUTION</span>
+          </div>
+          <div class="flex items-center gap-4 font-mono text-xs">
+            <div class="flex items-center gap-1.5">
+              <div class="w-2.5 h-0.5 bg-accent"></div>
+              <span class="text-textSecondary text-[11px]">Primary Quorum</span>
+            </div>
+            <span class="text-textPrimary font-semibold text-xs">TODAY: 3,412 OPS</span>
+          </div>
+        </div>
+
+        <!-- Chart Graphic: 14 Day Series, Stroke Only -->
+        <div class="relative w-full h-24 my-1">
+          <!-- Baseline Guides (very subtle) -->
+          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
+            <div class="w-full border-b border-hairline"></div>
+            <div class="w-full border-b border-hairline"></div>
+            <div class="w-full border-b border-hairline"></div>
+          </div>
+
+          <!-- SVG Stroke-Only Line -->
+          <svg class="w-full h-full overflow-visible" viewBox="0 0 1360 80" preserveAspectRatio="none">
+            <!-- 14 data coordinates corresponding to D-13 through Today (at x = ~100 step) -->
+            <!-- x: 20, 120, 220, 320, 420, 520, 620, 720, 820, 920, 1020, 1120, 1220, 1340 -->
+            <polyline fill="none" stroke="#8B5CF6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+              points="20,62 120,58 220,54 320,49 420,52 520,44 620,40 720,46 820,38 920,33 1020,29 1120,32 1220,22 1340,12" />
+
+            <!-- Point markers on vertices -->
+            <circle cx="20" cy="62" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="120" cy="58" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="220" cy="54" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="320" cy="49" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="420" cy="52" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="520" cy="44" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="620" cy="40" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="720" cy="46" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="820" cy="38" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="920" cy="33" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="1020" cy="29" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="1120" cy="32" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+            <circle cx="1220" cy="22" r="3" fill="#0A0E18" stroke="#8B5CF6" stroke-width="1.5" />
+
+            <!-- Today node with vertical flag guideline -->
+            <line x1="1340" y1="12" x2="1340" y2="80" stroke="#8B5CF6" stroke-width="1" stroke-dasharray="2 2" stroke-opacity="0.6" />
+            <circle cx="1340" cy="12" r="5" fill="#8B5CF6" stroke="#E8E6F5" stroke-width="2" />
+          </svg>
+        </div>
+
+        <!-- 14 Day Ticks Row with Today Flagged -->
+        <div class="grid grid-cols-14 text-center font-mono text-[10px] text-textSecondary border-t border-hairline pt-2">
+          <span>D-13</span>
+          <span>D-12</span>
+          <span>D-11</span>
+          <span>D-10</span>
+          <span>D-09</span>
+          <span>D-08</span>
+          <span>D-07</span>
+          <span>D-06</span>
+          <span>D-05</span>
+          <span>D-04</span>
+          <span>D-03</span>
+          <span>D-02</span>
+          <span>D-01</span>
+          <span class="text-accent font-semibold flex items-center justify-center gap-1">
+            <span class="w-1 h-1 rounded-full bg-accent"></span>TODAY
+          </span>
+        </div>
+      </section>
+
+      <!-- 3. BENCHMARK TABLE: exactly 12 visible rows, dense rows 36-38px, columns BENCH | P50 | P95 | TOKENS | SAVING -->
+      <section class="flex-1 bg-panel border border-hairline rounded flex flex-col justify-between overflow-hidden">
+        <!-- Table Header (Micro-labels uppercase) -->
+        <div class="h-8 border-b border-hairline bg-raised/70 px-4 flex items-center font-mono text-[10px] text-textSecondary uppercase tracking-wider shrink-0">
+          <div class="w-72">Bench</div>
+          <div class="w-36 text-right">P50</div>
+          <div class="w-36 text-right">P95</div>
+          <div class="w-40 text-right">Tokens</div>
+          <div class="flex-1 text-right pr-4">Saving</div>
+        </div>
+
+        <!-- Exactly 12 Rows (Height tuned to 36-38px each, perfectly filling the container without clipping) -->
+        <div class="flex-1 flex flex-col justify-between divide-y divide-hairline">
+          
+          <!-- Row 1: Best row accented with electric violet -->
+          <div class="flex items-center px-4 h-[35px] bg-accent/5 hover:bg-accent/10 transition-colors">
+            <div class="w-72 font-mono text-xs text-accent font-medium flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+              <span>q01-direct-index</span>
+            </div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">2.1ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">4.3ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">240</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-accent font-semibold">97.8%</div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q02-edge-neighborhood</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">3.8ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">7.1ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">512</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">94.6%</div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q03-ast-predicate-scan</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">4.2ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">8.6ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">640</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">93.2%</div>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q04-shacl-invariant-gate</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">4.9ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">9.4ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">780</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">91.8%</div>
+          </div>
+
+          <!-- Row 5 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q05-merkle-anchor-proof</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">5.3ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">10.2ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">824</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">91.2%</div>
+          </div>
+
+          <!-- Row 6 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q06-vector-cache-lookup</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">5.8ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">11.0ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">892</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">90.4%</div>
+          </div>
+
+          <!-- Row 7 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q07-multi-domain-join</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">6.4ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">12.8ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">968</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">89.7%</div>
+          </div>
+
+          <!-- Row 8 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q08-subgraph-expansion</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">7.1ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">13.5ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">1,120</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">88.5%</div>
+          </div>
+
+          <!-- Row 9 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q09-schema-contract-audit</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">7.8ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">14.9ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">1,240</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">87.3%</div>
+          </div>
+
+          <!-- Row 10 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q10-pagerank-partition</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">8.4ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">16.2ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">1,390</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">86.1%</div>
+          </div>
+
+          <!-- Row 11 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q11-raft-lease-fencing</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">9.2ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">17.8ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">1,480</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">85.4%</div>
+          </div>
+
+          <!-- Row 12 -->
+          <div class="flex items-center px-4 h-[35px] hover:bg-raised transition-colors">
+            <div class="w-72 font-mono text-xs text-textPrimary">q12-full-dag-topological</div>
+            <div class="w-36 text-right font-mono text-xs text-textPrimary">10.6ms</div>
+            <div class="w-36 text-right font-mono text-xs text-textSecondary">19.4ms</div>
+            <div class="w-40 text-right font-mono text-xs text-textSecondary">1,620</div>
+            <div class="flex-1 text-right pr-4 font-mono text-xs text-textSecondary">84.2%</div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 4. STATUS BAR: One line, sits FLUSH at the very bottom edge of the viewport (no gap) -->
+    <footer class="h-7 bg-panel border-t border-hairline px-6 flex items-center justify-between font-mono text-[10px] text-textSecondary shrink-0 z-10">
+      <div class="flex items-center gap-3">
+        <span class="tracking-wider">24 BENCH CASES</span>
+        <span class="opacity-40">·</span>
+        <span class="tracking-wider">LAST RUN 12 MIN AGO</span>
+        <span class="opacity-40">·</span>
+        <span class="text-statusOk font-semibold tracking-wider">GATE 24/24 PASS</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>ENGINE: DUCKB-AST v14.2</span>
+        <span class="opacity-40">·</span>
+        <div class="flex items-center gap-1.5">
+          <div class="w-1.5 h-1.5 rounded-full bg-statusOk live-pulse"></div>
+          <span class="text-textPrimary">DAG QUORUM HEALTHY</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

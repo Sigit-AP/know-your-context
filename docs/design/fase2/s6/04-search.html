@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Know Your Soul - Search + Query</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #05070D;
+      --panel-bg: #0A0E18;
+      --raised-bg: #0E1424;
+      --hairline: rgba(139, 92, 246, 0.12);
+      --hairline-subtle: rgba(255, 255, 255, 0.05);
+      --text-main: #E8E6F5;
+      --text-muted: #8B86A8;
+      --accent: #8B5CF6;
+      --accent-tint: rgba(139, 92, 246, 0.12);
+      --status-ok: #22C55E;
+      --status-warn: #F59E0B;
+      --status-danger: #EF4444;
+    }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+      user-select: none;
+    }
+    .font-heading { font-family: 'Space Grotesk', sans-serif; }
+    .font-mono-data { font-family: 'JetBrains Mono', monospace; }
+    .font-body { font-family: 'Inter', sans-serif; }
+
+    /* Faint dot grid */
+    .bg-dot-grid {
+      background-image: radial-gradient(rgba(139, 92, 246, 0.15) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    .hairline-border {
+      border: 1px solid var(--hairline);
+    }
+    .hairline-r {
+      border-right: 1px solid var(--hairline);
+    }
+    .hairline-b {
+      border-bottom: 1px solid var(--hairline);
+    }
+    .hairline-t {
+      border-top: 1px solid var(--hairline);
+    }
+    .hairline-l {
+      border-left: 1px solid var(--hairline);
+    }
+
+    /* Pulsing live dot */
+    @keyframes pulse-live {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .live-dot {
+      animation: pulse-live 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Custom highlight */
+    .match-highlight {
+      background-color: rgba(139, 92, 246, 0.28);
+      color: #D8B4FE;
+      padding: 1px 3px;
+      border-radius: 2px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-row overflow-hidden bg-[#05070D]">
+
+  <!-- SIDEBAR (248px) -->
+  <aside class="w-[248px] h-[900px] flex-shrink-0 bg-[#070B14] hairline-r flex flex-col justify-between z-30">
+    <!-- Top Branding & Navigation -->
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-14 px-5 flex items-center justify-between hairline-b bg-[#070B14]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center font-heading font-bold text-xs text-[#8B5CF6]">
+            K
+          </div>
+          <span class="font-heading font-semibold text-sm tracking-tight text-[#E8E6F5]">Know Your Soul</span>
+        </div>
+        <span class="font-mono-data text-[10px] text-[#8B86A8] px-1.5 py-0.5 rounded bg-[#0E1424] border border-[#8B5CF6]/10">v14.2</span>
+      </div>
+
+      <!-- Navigation Groups -->
+      <div class="py-3 px-3 flex flex-col gap-4">
+        
+        <!-- MONITOR -->
+        <div class="flex flex-col gap-0.5">
+          <span class="px-2.5 mb-1 font-mono-data text-[10px] font-semibold tracking-wider text-[#8B86A8] uppercase">Monitor</span>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 3a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm0 7a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4zm7-7a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V3zm0 7a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+            </svg>
+            <span>Overview</span>
+          </a>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v9a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 012 12.5v-9zM4 5h8v1H4V5zm0 3h8v1H4V8zm0 3h5v1H4v-1z"/>
+            </svg>
+            <span>Activity Log</span>
+          </a>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4.5 2a2.5 2.5 0 100 5 2.5 2.5 0 000-5zm7 7a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM3.5 10a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm7-7a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>
+            </svg>
+            <span>Graph Explorer</span>
+          </a>
+        </div>
+
+        <!-- ANALYZE -->
+        <div class="flex flex-col gap-0.5">
+          <span class="px-2.5 mb-1 font-mono-data text-[10px] font-semibold tracking-wider text-[#8B86A8] uppercase">Analyze</span>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center justify-between text-xs font-medium bg-[#8B5CF6]/15 text-[#8B5CF6] border-l-2 border-[#8B5CF6]">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-[#8B5CF6]" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z" clip-rule="evenodd" />
+              </svg>
+              <span class="font-semibold">Search</span>
+            </div>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] live-dot"></span>
+          </a>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M1 11h3v4H1v-4zm5-4h3v8H6V7zm5-4h3v12h-3V3z"/>
+            </svg>
+            <span>Metrics</span>
+          </a>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M14 2H2a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1zm-1 2v4.5l-3-2.25L7 8.5 3 4.5V4h10zM3 12V7l4 4 3-2.25 3 2.25V12H3z"/>
+            </svg>
+            <span>Analytics</span>
+          </a>
+        </div>
+
+        <!-- GOVERN -->
+        <div class="flex flex-col gap-0.5">
+          <span class="px-2.5 mb-1 font-mono-data text-[10px] font-semibold tracking-wider text-[#8B86A8] uppercase">Govern</span>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM2.5 8a5.5 5.5 0 1111 0 5.5 5.5 0 01-11 0z" clip-rule="evenodd" />
+            </svg>
+            <span>Health</span>
+          </a>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M3 2a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5.414A1 1 0 0013.707 4.707l-2.414-2.414A1 1 0 0010.586 2H3zm7 2.414L11.586 6H10V4.414zM4 8h8v1H4V8zm0 2h8v1H4v-1zm0 2h5v1H4v-1z"/>
+            </svg>
+            <span>Audit Ledger</span>
+          </a>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center justify-between text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4 2a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H4zm0 2h8v1H4V4zm0 3h8v1H4V7zm0 3h5v1H4v-1z"/>
+              </svg>
+              <span>Proposals</span>
+            </div>
+            <span class="font-mono-data text-[10px] text-[#8B86A8] px-1.5 py-0.2 rounded bg-[#0E1424]">3</span>
+          </a>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center justify-between text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M2 4a1 1 0 011-1h10a1 1 0 011 1v1H2V4zm0 3h12v5a1 1 0 01-1 1H3a1 1 0 01-1-1V7zm3 2v1h6V9H5z"/>
+              </svg>
+              <span>Debt Queue</span>
+            </div>
+            <span class="font-mono-data text-[10px] text-[#8B86A8] px-1.5 py-0.2 rounded bg-[#0E1424]">12</span>
+          </a>
+        </div>
+
+        <!-- SYSTEM -->
+        <div class="flex flex-col gap-0.5">
+          <span class="px-2.5 mb-1 font-mono-data text-[10px] font-semibold tracking-wider text-[#8B86A8] uppercase">System</span>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3zm2 3h6V4H5v2zm0 3h6V7H5v2zm0 3h4v-2H5v2z" clip-rule="evenodd"/>
+            </svg>
+            <span>System</span>
+          </a>
+          <a href="#" class="h-8 px-2.5 rounded flex items-center gap-2 text-xs font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:bg-[#0E1424]/40 transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.429 1.525a6.5 6.5 0 011.142 0c.036.273.18.52.404.686.224.167.514.23.794.175a6.52 6.52 0 01.808.808c-.055.28.008.57.175.794.167.224.413.368.686.404.053.376.053.766 0 1.142-.273.036-.52.18-.686.404-.167.224-.23.514-.175.794a6.52 6.52 0 01-.808.808c-.28-.055-.57.008-.794.175-.224.167-.368.413-.404.686a6.5 6.5 0 01-1.142 0c-.036-.273-.18-.52-.404-.686a1.056 1.056 0 00-.794-.175 6.52 6.52 0 01-.808-.808c.055-.28-.008-.57-.175-.794a1.056 1.056 0 00-.686-.404 6.5 6.5 0 010-1.142c.273-.036.52-.18.686-.404.167-.224.23-.514.175-.794a6.52 6.52 0 01.808-.808c.28.055.57-.008.794-.175.224-.167.368-.413.404-.686zM8 5.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" clip-rule="evenodd"/>
+            </svg>
+            <span>Setup</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sidebar Bottom User Card -->
+    <div class="h-14 px-3 hairline-t bg-[#070B14] flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded bg-[#0E1424] border border-[#8B5CF6]/20 flex items-center justify-center font-mono-data text-xs text-[#E8E6F5] font-medium">
+          SA
+        </div>
+        <div class="flex flex-col leading-tight">
+          <span class="text-xs font-medium text-[#E8E6F5]">Sigit A.</span>
+          <span class="font-mono-data text-[11px] text-[#8B86A8]">operator</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-[#22C55E]"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT (1192px x 900px) -->
+  <main class="w-[1192px] h-[900px] flex flex-col justify-between overflow-hidden bg-[#05070D] bg-dot-grid relative">
+
+    <!-- TOPBAR (44px) - Strictly One Line -->
+    <header class="h-11 flex-shrink-0 hairline-b bg-[#070B14]/95 px-5 flex items-center justify-between z-20">
+      <!-- Breadcrumb / Title -->
+      <div class="flex items-center gap-2">
+        <span class="font-mono-data text-xs text-[#8B86A8]">KYC //</span>
+        <h1 class="font-heading font-semibold text-sm text-[#E8E6F5] tracking-tight">Search + Query</h1>
+        <span class="ml-2 font-mono-data text-[10px] text-[#22C55E] bg-[#22C55E]/10 border border-[#22C55E]/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#22C55E] live-dot"></span>
+          RAFT SYNCED
+        </span>
+      </div>
+
+      <!-- Center Fast Search Field with ⌘K -->
+      <div class="w-[420px] h-7 px-2.5 rounded bg-[#0A0E18] hairline-border flex items-center justify-between text-xs text-[#8B86A8]">
+        <div class="flex items-center gap-2 flex-1">
+          <svg class="w-3.5 h-3.5 text-[#8B86A8]" viewBox="0 0 16 16" fill="currentColor">
+            <path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z" clip-rule="evenodd" />
+          </svg>
+          <span class="font-mono-data text-xs text-[#E8E6F5]/70 truncate">search nodes, edges, hashes, tags</span>
+        </div>
+        <kbd class="font-mono-data text-[10px] px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] border border-[#8B5CF6]/20">⌘K</kbd>
+      </div>
+
+      <!-- Right Segments: Cluster + Bell + Avatar -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 font-mono-data text-xs text-[#8B86A8] bg-[#0A0E18] px-2 py-1 rounded border border-[#8B5CF6]/10">
+          <span class="text-[#8B86A8]/70">cluster</span>
+          <span class="text-[#E8E6F5]">cluster-01</span>
+        </div>
+        <button class="relative w-7 h-7 rounded bg-[#0A0E18] hairline-border flex items-center justify-center text-[#8B86A8] hover:text-[#E8E6F5] transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 1.5a4.5 4.5 0 00-4.5 4.5v3.293l-.854.853A.5.5 0 003 11h10a.5.5 0 00.354-.854L12.5 9.293V6A4.5 4.5 0 008 1.5zM6.5 12a1.5 1.5 0 003 0h-3z"/>
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#8B5CF6]"></span>
+        </button>
+        <div class="w-7 h-7 rounded bg-[#0E1424] border border-[#8B5CF6]/30 flex items-center justify-center font-mono-data text-xs text-[#E8E6F5]">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Expanded to fill vertical space exactly: 900 - 44 - 28 = 828px) -->
+    <div class="h-[828px] w-full p-4 flex flex-col gap-3 flex-shrink-0">
+
+      <!-- 1. QUERY BAR & SCOPE CHIPS (approx 82px) -->
+      <div class="flex-shrink-0 flex flex-col gap-2.5">
+        <!-- Main Large Query Input -->
+        <div class="w-full h-11 px-3.5 rounded bg-[#0A0E18] hairline-border flex items-center justify-between">
+          <div class="flex items-center gap-3 flex-1">
+            <svg class="w-4 h-4 text-[#8B5CF6]" viewBox="0 0 16 16" fill="currentColor">
+              <path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z" clip-rule="evenodd" />
+            </svg>
+            <span class="font-mono-data text-sm text-[#E8E6F5] tracking-wide font-medium">stale embedding pointers</span>
+            <span class="w-0.5 h-4 bg-[#8B5CF6] live-dot ml-0.5"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-mono-data text-[11px] text-[#8B86A8]">exact AST match</span>
+            <kbd class="font-mono-data text-xs px-2 py-0.5 rounded bg-[#0E1424] text-[#E8E6F5] border border-[#8B5CF6]/30">⌘K</kbd>
+          </div>
+        </div>
+
+        <!-- Scope Filter Chips + Metadata -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <!-- All 17 -->
+            <button class="h-6 px-3 rounded-full bg-[#8B5CF6]/20 border border-[#8B5CF6] text-xs font-mono-data font-medium text-[#E8E6F5] flex items-center gap-1.5">
+              <span>All</span>
+              <span class="text-[#8B5CF6] font-bold">17</span>
+            </button>
+            <!-- Nodes 9 -->
+            <button class="h-6 px-3 rounded-full bg-[#0A0E18] hairline-border text-xs font-mono-data font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:border-[#8B5CF6]/40 flex items-center gap-1.5 transition-colors">
+              <span>Nodes</span>
+              <span class="text-[#E8E6F5]">9</span>
+            </button>
+            <!-- Edges 5 -->
+            <button class="h-6 px-3 rounded-full bg-[#0A0E18] hairline-border text-xs font-mono-data font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:border-[#8B5CF6]/40 flex items-center gap-1.5 transition-colors">
+              <span>Edges</span>
+              <span class="text-[#E8E6F5]">5</span>
+            </button>
+            <!-- Events 3 -->
+            <button class="h-6 px-3 rounded-full bg-[#0A0E18] hairline-border text-xs font-mono-data font-medium text-[#8B86A8] hover:text-[#E8E6F5] hover:border-[#8B5CF6]/40 flex items-center gap-1.5 transition-colors">
+              <span>Events</span>
+              <span class="text-[#E8E6F5]">3</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-4 font-mono-data text-[11px] text-[#8B86A8]">
+            <span class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#22C55E]"></span>
+              PARSER: DETERMINISTIC BLAKE3
+            </span>
+            <span>INDEX: DUCKB_AST_v14</span>
+            <span class="text-[#8B5CF6]">EXEC TIME: 5.8ms</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN SPLIT WORKSPACE: Results Table (Left 780px) + Neighborhood Inspector (Right 364px) -->
+      <!-- Height calculated: 828 - 74 (query bar) = 742px available -->
+      <div class="flex-1 flex gap-3 min-h-0">
+
+        <!-- 2. RESULTS TABLE PANEL (Left 780px) -->
+        <div class="w-[792px] h-full rounded bg-[#0A0E18] hairline-border flex flex-col justify-between overflow-hidden">
+          
+          <!-- Table Header (38px) -->
+          <div class="h-9 px-4 bg-[#070B14] hairline-b flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-heading font-semibold text-xs text-[#E8E6F5] tracking-tight">Search Results</span>
+              <span class="font-mono-data text-[10px] text-[#8B86A8] bg-[#0E1424] px-1.5 py-0.5 rounded border border-[#8B5CF6]/10">TOP 12 OF 17</span>
+            </div>
+            <div class="flex items-center gap-3 font-mono-data text-[11px] text-[#8B86A8]">
+              <span>SORT: RELEVANCE (DESC)</span>
+            </div>
+          </div>
+
+          <!-- Table Header Columns (32px) -->
+          <div class="h-8 px-4 bg-[#0A0E18] hairline-b grid grid-cols-[82px_1fr_90px_80px_90px] items-center font-mono-data text-[10px] font-semibold text-[#8B86A8] tracking-wider uppercase flex-shrink-0">
+            <div>TYPE</div>
+            <div>NAME</div>
+            <div class="text-center">DOMAIN</div>
+            <div class="text-right pr-2">SCORE</div>
+            <div class="text-right">UPDATED</div>
+          </div>
+
+          <!-- Exact 12 Rows (Each exactly 52px to fill 12*52 = 624px cleanly) -->
+          <div class="flex-1 flex flex-col divide-y divide-[#8B5CF6]/10 font-mono-data text-xs overflow-hidden">
+            
+            <!-- ROW 1 (Active Selected Row: stale-pointer-guard) -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center bg-[#8B5CF6]/15 border-l-2 border-[#8B5CF6] transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#8B5CF6]/30 text-[#D8B4FE] border border-[#8B5CF6]/40 uppercase tracking-wide">NODE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  <span class="match-highlight">stale</span>-pointer-guard
+                </span>
+                <span class="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] flex-shrink-0"></span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#E8E6F5] text-[11px] border border-[#8B5CF6]/15">P4</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.98</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">2h ago</div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#8B5CF6]/20 text-[#C4B5FD] border border-[#8B5CF6]/25 uppercase tracking-wide">NODE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  embedding-refresh-job
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P3</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.94</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">2h ago</div>
+            </div>
+
+            <!-- ROW 3 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#0E1424] text-[#8B86A8] border border-[#8B5CF6]/20 uppercase tracking-wide">EDGE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  rel_pointer_invalidates_<span class="match-highlight">stale</span>
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P4</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.91</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">3h ago</div>
+            </div>
+
+            <!-- ROW 4 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#0E1424] text-[#8B86A8] border border-[#8B5CF6]/20 uppercase tracking-wide">EDGE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  depends_on_vector_cache
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P5</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.89</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">4h ago</div>
+            </div>
+
+            <!-- ROW 5 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#8B5CF6]/20 text-[#C4B5FD] border border-[#8B5CF6]/25 uppercase tracking-wide">NODE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  vector-cache-evictor
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P3</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.86</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">5h ago</div>
+            </div>
+
+            <!-- ROW 6 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30 uppercase tracking-wide">EVENT</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  evt_reindex_warn_<span class="match-highlight">stale</span>_hash
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P4</span>
+              </div>
+              <div class="text-right pr-2 text-[#F59E0B] font-medium">0.83</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">6h ago</div>
+            </div>
+
+            <!-- ROW 7 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#8B5CF6]/20 text-[#C4B5FD] border border-[#8B5CF6]/25 uppercase tracking-wide">NODE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  knn-subspace-merkle
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P1</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.81</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">8h ago</div>
+            </div>
+
+            <!-- ROW 8 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#0E1424] text-[#8B86A8] border border-[#8B5CF6]/20 uppercase tracking-wide">EDGE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  cites_schema_contract_04
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P2</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.78</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">11h ago</div>
+            </div>
+
+            <!-- ROW 9 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#8B5CF6]/20 text-[#C4B5FD] border border-[#8B5CF6]/25 uppercase tracking-wide">NODE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  <span class="match-highlight">stale</span>-citation-scanner
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P4</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.75</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">14h ago</div>
+            </div>
+
+            <!-- ROW 10 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30 uppercase tracking-wide">EVENT</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  evt_memory_lease_fail_p4
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P5</span>
+              </div>
+              <div class="text-right pr-2 text-[#F59E0B] font-medium">0.71</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">18h ago</div>
+            </div>
+
+            <!-- ROW 11 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#8B5CF6]/20 text-[#C4B5FD] border border-[#8B5CF6]/25 uppercase tracking-wide">NODE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  heuristics-runtime-v4
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P2</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.68</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">1d ago</div>
+            </div>
+
+            <!-- ROW 12 -->
+            <div class="h-[52px] px-4 grid grid-cols-[82px_1fr_90px_80px_90px] items-center hover:bg-[#0E1424]/40 transition-colors">
+              <div>
+                <span class="font-mono-data text-[10px] px-2 py-0.5 rounded font-medium bg-[#0E1424] text-[#8B86A8] border border-[#8B5CF6]/20 uppercase tracking-wide">EDGE</span>
+              </div>
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-[#E8E6F5] font-medium tracking-tight truncate">
+                  governs_storage_mutex_lock
+                </span>
+              </div>
+              <div class="text-center">
+                <span class="px-1.5 py-0.5 rounded bg-[#0E1424] text-[#8B86A8] text-[11px] border border-[#8B5CF6]/10">P6</span>
+              </div>
+              <div class="text-right pr-2 text-[#22C55E] font-medium">0.64</div>
+              <div class="text-right text-[#8B86A8] text-[11px]">1d ago</div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Micro Status Strip of Table -->
+          <div class="h-7 px-4 bg-[#070B14] hairline-t flex items-center justify-between text-[11px] font-mono-data text-[#8B86A8] flex-shrink-0">
+            <span class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]"></span>
+              SELECTED: stale-pointer-guard (SHARD: 0x4a1c)
+            </span>
+            <span>SHACL CONSTRAINTS: 11/11 PASS</span>
+          </div>
+        </div>
+
+        <!-- 3. RIGHT SIDE PANEL: 'NEIGHBORHOOD' (366px) -->
+        <div class="w-[366px] h-full rounded bg-[#0A0E18] hairline-border flex flex-col justify-between overflow-hidden">
+          
+          <!-- Panel Header -->
+          <div class="h-9 px-4 bg-[#070B14] hairline-b flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-heading font-semibold text-xs text-[#E8E6F5] tracking-tight">Neighborhood</span>
+              <span class="font-mono-data text-[10px] text-[#8B5CF6] px-1.5 py-0.5 rounded bg-[#8B5CF6]/10 border border-[#8B5CF6]/30">INSPECTOR</span>
+            </div>
+            <span class="font-mono-data text-[10px] text-[#22C55E]">STABLE</span>
+          </div>
+
+          <!-- Panel Scrollable Content Body -->
+          <div class="p-3.5 flex flex-col gap-3.5 flex-1 overflow-hidden">
+            
+            <!-- Target ID Card -->
+            <div class="p-3 rounded bg-[#0E1424] hairline-border flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <span class="font-mono-data text-[10px] text-[#8B86A8] uppercase tracking-wider">Target Node Identity</span>
+                <span class="font-mono-data text-[10px] text-[#8B5CF6] font-medium">DOMAIN P4</span>
+              </div>
+              <span class="font-mono-data text-xs font-semibold text-[#E8E6F5] tracking-tight">stale-pointer-guard</span>
+              <div class="flex items-center justify-between mt-1 text-[11px] font-mono-data text-[#8B86A8]">
+                <span>HASH: 0x9f2c1ab4</span>
+                <span class="text-[#22C55E]">CONVERGED</span>
+              </div>
+            </div>
+
+            <!-- Connected Edges (4 edge rows) -->
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between font-mono-data text-[10px] text-[#8B86A8] uppercase tracking-wider">
+                <span>Connected Edges (4)</span>
+                <span>DEGREE: 4</span>
+              </div>
+
+              <div class="flex flex-col gap-1.5 font-mono-data text-xs">
+                <!-- Edge 1 -->
+                <div class="h-10 px-2.5 rounded bg-[#070B14] border border-[#8B5CF6]/15 flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#8B5CF6]/20 text-[#D8B4FE] border border-[#8B5CF6]/30">invalidates</span>
+                    <span class="text-[#E8E6F5] text-[11px] truncate">vector-cache-evictor</span>
+                  </div>
+                  <span class="text-[#22C55E] text-[11px] font-medium ml-2">0.96</span>
+                </div>
+
+                <!-- Edge 2 -->
+                <div class="h-10 px-2.5 rounded bg-[#070B14] border border-[#8B5CF6]/15 flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#8B5CF6]/20 text-[#D8B4FE] border border-[#8B5CF6]/30">depends_on</span>
+                    <span class="text-[#E8E6F5] text-[11px] truncate">knn-subspace-merkle</span>
+                  </div>
+                  <span class="text-[#22C55E] text-[11px] font-medium ml-2">0.92</span>
+                </div>
+
+                <!-- Edge 3 -->
+                <div class="h-10 px-2.5 rounded bg-[#070B14] border border-[#8B5CF6]/15 flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">contradicts</span>
+                    <span class="text-[#E8E6F5] text-[11px] truncate">p4-schema-invariants</span>
+                  </div>
+                  <span class="text-[#F59E0B] text-[11px] font-medium ml-2">WARN</span>
+                </div>
+
+                <!-- Edge 4 -->
+                <div class="h-10 px-2.5 rounded bg-[#070B14] border border-[#8B5CF6]/15 flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#8B5CF6]/20 text-[#D8B4FE] border border-[#8B5CF6]/30">governs</span>
+                    <span class="text-[#E8E6F5] text-[11px] truncate">store-mutex-fencing</span>
+                  </div>
+                  <span class="text-[#8B86A8] text-[11px] ml-2">LOCK</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sparkline 'queries 7d' -->
+            <div class="p-3 rounded bg-[#0E1424] hairline-border flex flex-col gap-2">
+              <div class="flex items-center justify-between font-mono-data">
+                <span class="text-[10px] text-[#8B86A8] uppercase tracking-wider">Queries 7d</span>
+                <span class="text-xs font-semibold text-[#E8E6F5]">3,412 <span class="text-[#22C55E] text-[10px] font-normal">+8.2%</span></span>
+              </div>
+              
+              <!-- Clean SVG Sparkline in electric violet (#8B5CF6) -->
+              <div class="h-12 w-full flex items-center">
+                <svg class="w-full h-full overflow-visible" viewBox="0 0 320 48" fill="none">
+                  <path d="M 0 38 Q 25 35 50 30 T 100 24 T 150 28 T 200 18 T 250 12 T 320 6" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="320" cy="6" r="3" fill="#8B5CF6"/>
+                  <!-- Baseline rule -->
+                  <line x1="0" y1="42" x2="320" y2="42" stroke="rgba(139,92,246,0.15)" stroke-dasharray="2 2"/>
+                </svg>
+              </div>
+
+              <div class="flex items-center justify-between font-mono-data text-[10px] text-[#8B86A8]">
+                <span>D-7: 382/d</span>
+                <span>PEAK: 624/d</span>
+                <span>NOW: 512/d</span>
+              </div>
+            </div>
+
+            <!-- Convergence Telemetry Strip -->
+            <div class="p-2.5 rounded bg-[#070B14] border border-[#8B5CF6]/15 flex flex-col gap-1.5 font-mono-data text-[11px]">
+              <div class="flex justify-between">
+                <span class="text-[#8B86A8]">Precision score</span>
+                <span class="text-[#E8E6F5] font-medium">P 0.828</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-[#0E1424] overflow-hidden">
+                <div class="h-full bg-[#8B5CF6] rounded-full" style="width: 82.8%"></div>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-[#8B86A8]">Eigen convergence</span>
+                <span class="text-[#22C55E] font-medium">E 0.898</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action Buttons in Neighborhood -->
+          <div class="h-12 px-3.5 bg-[#070B14] hairline-t flex items-center gap-2 flex-shrink-0">
+            <button class="flex-1 h-8 rounded bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-heading font-medium text-xs flex items-center justify-center gap-1.5 transition-colors">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4.5 2a2.5 2.5 0 100 5 2.5 2.5 0 000-5zm7 7a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/>
+              </svg>
+              <span>Trace Lineage</span>
+            </button>
+            <button class="h-8 px-3 rounded bg-[#0E1424] hairline-border hover:border-[#8B5CF6]/40 text-[#E8E6F5] font-mono-data text-xs flex items-center gap-1.5 transition-colors">
+              <svg class="w-3 h-3 text-[#8B86A8]" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4 2a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H4zm0 2h8v8H4V4z"/>
+              </svg>
+              <span>Copy URI</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 4. FOOTER HINT BAR (28px) - Flush at bottom edge -->
+    <footer class="h-7 w-full flex-shrink-0 bg-[#070B14] hairline-t px-5 flex items-center justify-between font-mono-data text-[11px] text-[#8B86A8] z-30">
+      <div class="flex items-center gap-3">
+        <span class="text-[#E8E6F5] font-medium">↑↓ NAVIGATE</span>
+        <span class="text-[#8B86A8]/40">·</span>
+        <span class="text-[#E8E6F5] font-medium">↵ OPEN</span>
+        <span class="text-[#8B86A8]/40">·</span>
+        <span class="text-[#E8E6F5] font-medium">ESC CLOSE</span>
+        <span class="text-[#8B86A8]/40">·</span>
+        <span class="text-[#8B5CF6] font-semibold">17 RESULTS IN 6MS</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>DAG ENGINE: v14.2</span>
+        <span class="text-[#8B86A8]/40">·</span>
+        <span>MERKLE: 0x9f8a2c3b1</span>
+        <span class="text-[#8B86A8]/40">·</span>
+        <span class="flex items-center gap-1 text-[#22C55E]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#22C55E] live-dot"></span>
+          ONLINE
+        </span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

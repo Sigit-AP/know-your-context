@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Setup Lifecycle (Neon Ops)</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#05070D',
+            panel: '#0A0E18',
+            raised: '#0E1424',
+            hairline: 'rgba(139, 92, 246, 0.12)',
+            textPrimary: '#E8E6F5',
+            textSecondary: '#8B86A8',
+            accent: '#8B5CF6',
+            statusOk: '#22C55E',
+            statusWarn: '#F59E0B',
+            statusDanger: '#EF4444'
+          },
+          fontFamily: {
+            headline: ['"Space Grotesk"', 'sans-serif'],
+            body: ['"Inter"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Reset & exact viewport bounds */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #05070D;
+      color: #E8E6F5;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    /* Subtle dot grid texture on canvas */
+    .bg-dot-grid {
+      background-image: radial-gradient(rgba(139, 92, 246, 0.14) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    /* Live pulsing indicator */
+    @keyframes neon-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .live-pulse {
+      animation: neon-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .border-neon {
+      border-color: rgba(139, 92, 246, 0.14);
+    }
+    .border-neon-subtle {
+      border-color: rgba(139, 92, 246, 0.08);
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-base">
+
+  <!-- LEFT SIDEBAR (248px width) -->
+  <aside class="w-[248px] h-[900px] flex flex-col justify-between bg-base border-r border-neon flex-shrink-0 z-20">
+    <div class="flex flex-col">
+      <!-- Sidebar Brand Header -->
+      <div class="h-12 px-4 flex items-center justify-between border-b border-neon">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded bg-[#0E1424] border border-accent/40 flex items-center justify-center text-accent font-headline font-bold text-xs">
+            K
+          </div>
+          <span class="font-headline font-semibold text-xs text-textPrimary tracking-wide">Know Your Soul</span>
+        </div>
+        <span class="font-mono text-[10px] text-textSecondary px-1.5 py-0.5 rounded bg-panel border border-neon">v14.2</span>
+      </div>
+
+      <!-- Navigation Menu Groups -->
+      <nav class="px-2.5 py-3 space-y-4">
+        <!-- 01 // MONITOR -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-mono tracking-wider text-textSecondary/70 uppercase">
+            01 // MONITOR
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">dashboard</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">list_alt</span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">hub</span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 02 // ANALYZE -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-mono tracking-wider text-textSecondary/70 uppercase">
+            02 // ANALYZE
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">search</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">insights</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">analytics</span>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 03 // GOVERN -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-mono tracking-wider text-textSecondary/70 uppercase">
+            03 // GOVERN
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">monitor_heart</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">history_edu</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[15px]">how_to_vote</span>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] text-textSecondary bg-panel px-1.5 py-0.2 rounded border border-neon">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[15px]">pending_actions</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] text-textSecondary bg-panel px-1.5 py-0.2 rounded border border-neon">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 04 // SYSTEM -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-mono tracking-wider text-textSecondary/70 uppercase">
+            04 // SYSTEM
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="material-symbols-outlined text-[15px]">dns</span>
+              <span>System</span>
+            </a>
+            <!-- ACTIVE SCREEN: Setup -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs bg-accent/10 text-accent font-medium border border-accent/20">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[15px] text-accent">build_circle</span>
+                <span>Setup</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer: Operator Info -->
+    <div class="p-3 border-t border-neon">
+      <div class="flex items-center justify-between p-2 rounded bg-panel border border-neon">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded bg-raised border border-accent/30 flex items-center justify-center font-mono text-[11px] font-semibold text-textPrimary">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-textPrimary leading-none">Sigit A.</span>
+            <span class="text-[10px] font-mono text-textSecondary leading-tight mt-0.5">operator</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk live-pulse"></span>
+          <span class="text-[10px] font-mono text-statusOk tracking-wider">ONLINE</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT (1192px width, 900px height) -->
+  <main class="w-[1192px] h-[900px] flex flex-col justify-between overflow-hidden bg-base relative">
+
+    <!-- TOPBAR (h-12 / 48px) -->
+    <header class="h-12 px-6 flex items-center justify-between border-b border-neon bg-base/95 backdrop-blur-sm flex-shrink-0 z-10">
+      <!-- Left: Breadcrumb / Screen Title -->
+      <div class="flex items-center gap-3">
+        <span class="font-mono text-xs text-textSecondary">kyc: // system /</span>
+        <span class="font-headline font-semibold text-sm text-textPrimary tracking-wide">Setup Lifecycle</span>
+        <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-accent/10 border border-accent/30 text-accent text-[11px] font-mono">
+          <span class="material-symbols-outlined text-[12px]">verified</span>
+          <span>PIPELINE ARMED</span>
+        </div>
+      </div>
+
+      <!-- Center: Search Input with Cmd+K -->
+      <div class="w-[380px] h-7 px-3 flex items-center justify-between rounded bg-panel border border-neon text-textSecondary text-xs">
+        <div class="flex items-center gap-2 overflow-hidden">
+          <span class="material-symbols-outlined text-sm text-textSecondary">search</span>
+          <span class="font-mono text-[11px] text-textSecondary/80 truncate">filter artifacts, hashes, steps...</span>
+        </div>
+        <kbd class="font-mono text-[10px] px-1 py-0.2 rounded bg-raised border border-neon text-textSecondary">⌘K</kbd>
+      </div>
+
+      <!-- Right: System Indicators & Actions (One line) -->
+      <div class="flex items-center gap-3.5">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-panel border border-neon font-mono text-[11px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk live-pulse"></span>
+          <span class="text-textSecondary">RAFT QUORUM</span>
+          <span class="text-statusOk font-semibold">3/3</span>
+        </div>
+        <button class="relative w-7 h-7 rounded bg-panel border border-neon flex items-center justify-center text-textSecondary hover:text-textPrimary transition-colors">
+          <span class="material-symbols-outlined text-sm">notifications</span>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </button>
+        <div class="w-7 h-7 rounded bg-raised border border-accent/40 flex items-center justify-center font-mono text-[11px] text-textPrimary">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (fills remaining vertical space minus footer and status bar) -->
+    <div class="flex-1 p-6 flex flex-col justify-between overflow-hidden bg-dot-grid">
+
+      <!-- TOP SECTION: Stage Header & 4-Step Stepper -->
+      <div class="space-y-4 flex-shrink-0">
+        <!-- Title & Subtitle row with KPI metrics -->
+        <div class="flex items-end justify-between border-b border-neon pb-3">
+          <div>
+            <div class="font-mono text-[11px] text-accent tracking-wider uppercase mb-1">
+              01 // LIFECYCLE WIZARD • STAGE VERIFICATION
+            </div>
+            <h1 class="font-headline font-bold text-2xl text-textPrimary tracking-tight">
+              Setup Lifecycle
+            </h1>
+          </div>
+          <div class="flex items-center gap-6 font-mono text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-textSecondary uppercase">CURRENT PHASE</span>
+              <span class="px-2 py-0.5 rounded bg-accent/15 border border-accent/30 text-accent font-semibold">3 OF 4</span>
+            </div>
+            <div class="h-3 w-px bg-neon-subtle"></div>
+            <div class="flex items-center gap-2">
+              <span class="text-textSecondary uppercase">TIME ELAPSED</span>
+              <span class="text-textPrimary font-mono">1m 18s</span>
+            </div>
+            <div class="h-3 w-px bg-neon-subtle"></div>
+            <div class="flex items-center gap-2">
+              <span class="text-textSecondary uppercase">TARGET SHARD</span>
+              <span class="text-textPrimary font-mono">0x3a</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4-STEP WIZARD STEPPER -->
+        <div class="p-3.5 rounded bg-panel border border-neon flex items-center justify-between">
+          <!-- Step 1: Done -->
+          <div class="flex items-center gap-3">
+            <div class="w-7 h-7 rounded-full bg-statusOk/15 border border-statusOk/50 flex items-center justify-center text-statusOk font-mono text-xs">
+              <span class="material-symbols-outlined text-sm">check</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-headline font-semibold text-xs text-textPrimary">1 Source</span>
+                <span class="text-[9px] font-mono text-statusOk bg-statusOk/10 px-1 py-0.2 rounded border border-statusOk/20">DONE</span>
+              </div>
+              <div class="text-[10px] font-mono text-textSecondary mt-0.5">github corpus mapped</div>
+            </div>
+          </div>
+
+          <!-- Connector 1-2 -->
+          <div class="flex-1 h-px bg-statusOk/40 mx-4"></div>
+
+          <!-- Step 2: Done -->
+          <div class="flex items-center gap-3">
+            <div class="w-7 h-7 rounded-full bg-statusOk/15 border border-statusOk/50 flex items-center justify-center text-statusOk font-mono text-xs">
+              <span class="material-symbols-outlined text-sm">check</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-headline font-semibold text-xs text-textPrimary">2 Import</span>
+                <span class="text-[9px] font-mono text-statusOk bg-statusOk/10 px-1 py-0.2 rounded border border-statusOk/20">DONE</span>
+              </div>
+              <div class="text-[10px] font-mono text-textSecondary mt-0.5">128 AST files ingested</div>
+            </div>
+          </div>
+
+          <!-- Connector 2-3 -->
+          <div class="flex-1 h-px bg-accent/50 mx-4"></div>
+
+          <!-- Step 3: Active (Step 3 of 4) -->
+          <div class="flex items-center gap-3">
+            <div class="w-7 h-7 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center text-accent font-headline font-bold text-xs shadow-[0_0_12px_rgba(139,92,246,0.35)]">
+              3
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-headline font-semibold text-xs text-textPrimary">3 Verify</span>
+                <span class="text-[9px] font-mono text-accent bg-accent/20 px-1.5 py-0.2 rounded border border-accent/40 font-medium">ACTIVE</span>
+              </div>
+              <div class="text-[10px] font-mono text-textSecondary mt-0.5">8 of 8 manifest check</div>
+            </div>
+          </div>
+
+          <!-- Connector 3-4 -->
+          <div class="flex-1 h-px bg-neon-subtle mx-4"></div>
+
+          <!-- Step 4: Upcoming / Muted -->
+          <div class="flex items-center gap-3 opacity-60">
+            <div class="w-7 h-7 rounded-full bg-raised border border-neon flex items-center justify-center text-textSecondary font-mono text-xs">
+              4
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-headline font-medium text-xs text-textSecondary">4 Activate</span>
+                <span class="text-[9px] font-mono text-textSecondary bg-panel px-1 py-0.2 rounded border border-neon">PENDING</span>
+              </div>
+              <div class="text-[10px] font-mono text-textSecondary/70 mt-0.5">hot-swap daemon bind</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT GRID: Manifest Table (Left 730px) + Live Intake Summary (Right 414px) -->
+      <div class="grid grid-cols-12 gap-5 my-3 flex-1 min-h-0">
+
+        <!-- LEFT PANEL: Verify Artifacts Table (8 columns wide) -->
+        <div class="col-span-8 flex flex-col justify-between rounded bg-panel border border-neon p-4 overflow-hidden">
+          <!-- Panel Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-neon flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-accent">02 //</span>
+              <h2 class="font-headline font-semibold text-sm text-textPrimary">Verify Artifacts</h2>
+              <span class="text-xs text-textSecondary font-mono">• Package integrity verification ledger</span>
+            </div>
+            <div class="flex items-center gap-2 font-mono text-[11px]">
+              <span class="text-textSecondary uppercase">MERKLE LEAF:</span>
+              <span class="px-2 py-0.5 rounded bg-raised border border-neon text-accent">0x9f8a2c3b</span>
+            </div>
+          </div>
+
+          <!-- 8-Row Manifest Table (Dense 36px rows) -->
+          <div class="flex-1 flex flex-col justify-between py-1">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-neon text-[10px] font-mono uppercase tracking-wider text-textSecondary/80 h-7">
+                  <th class="w-8 pl-2">#</th>
+                  <th class="w-48">ARTIFACT</th>
+                  <th class="w-24">SIZE</th>
+                  <th class="w-36">SHA256</th>
+                  <th class="text-right pr-2">STATUS</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-neon-subtle font-mono text-xs">
+                <!-- Row 1: graph.json -->
+                <tr class="h-[36px] hover:bg-raised/50 transition-colors">
+                  <td class="pl-2 text-textSecondary text-[11px]">01</td>
+                  <td class="font-medium text-textPrimary flex items-center gap-2 pt-2">
+                    <span class="material-symbols-outlined text-[14px] text-accent">data_object</span>
+                    <span>graph.json</span>
+                  </td>
+                  <td class="text-textSecondary">2.4 MB</td>
+                  <td class="text-textPrimary tracking-wide">9f2c1ab4</td>
+                  <td class="text-right pr-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-statusOk/10 border border-statusOk/30 text-statusOk text-[10px] font-medium">
+                      <span class="material-symbols-outlined text-[10px]">check</span>
+                      <span>OK</span>
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- Row 2: nodes.idx -->
+                <tr class="h-[36px] hover:bg-raised/50 transition-colors">
+                  <td class="pl-2 text-textSecondary text-[11px]">02</td>
+                  <td class="font-medium text-textPrimary flex items-center gap-2 pt-2">
+                    <span class="material-symbols-outlined text-[14px] text-accent">code_blocks</span>
+                    <span>nodes.idx</span>
+                  </td>
+                  <td class="text-textSecondary">1.8 MB</td>
+                  <td class="text-textPrimary tracking-wide">8a1d440f</td>
+                  <td class="text-right pr-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-statusOk/10 border border-statusOk/30 text-statusOk text-[10px] font-medium">
+                      <span class="material-symbols-outlined text-[10px]">check</span>
+                      <span>OK</span>
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- Row 3: embeddings.bin -->
+                <tr class="h-[36px] hover:bg-raised/50 transition-colors">
+                  <td class="pl-2 text-textSecondary text-[11px]">03</td>
+                  <td class="font-medium text-textPrimary flex items-center gap-2 pt-2">
+                    <span class="material-symbols-outlined text-[14px] text-accent">view_in_ar</span>
+                    <span>embeddings.bin</span>
+                  </td>
+                  <td class="text-textSecondary">28.4 MB</td>
+                  <td class="text-textPrimary tracking-wide">77e19cb2</td>
+                  <td class="text-right pr-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-statusOk/10 border border-statusOk/30 text-statusOk text-[10px] font-medium">
+                      <span class="material-symbols-outlined text-[10px]">check</span>
+                      <span>OK</span>
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- Row 4: manifest.yaml -->
+                <tr class="h-[36px] hover:bg-raised/50 transition-colors">
+                  <td class="pl-2 text-textSecondary text-[11px]">04</td>
+                  <td class="font-medium text-textPrimary flex items-center gap-2 pt-2">
+                    <span class="material-symbols-outlined text-[14px] text-accent">description</span>
+                    <span>manifest.yaml</span>
+                  </td>
+                  <td class="text-textSecondary">14.2 KB</td>
+                  <td class="text-textPrimary tracking-wide">3d81b899</td>
+                  <td class="text-right pr-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-statusOk/10 border border-statusOk/30 text-statusOk text-[10px] font-medium">
+                      <span class="material-symbols-outlined text-[10px]">check</span>
+                      <span>OK</span>
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- Row 5: audit.log -->
+                <tr class="h-[36px] hover:bg-raised/50 transition-colors">
+                  <td class="pl-2 text-textSecondary text-[11px]">05</td>
+                  <td class="font-medium text-textPrimary flex items-center gap-2 pt-2">
+                    <span class="material-symbols-outlined text-[14px] text-accent">terminal</span>
+                    <span>audit.log</span>
+                  </td>
+                  <td class="text-textSecondary">512 KB</td>
+                  <td class="text-textPrimary tracking-wide">55c2f0a1</td>
+                  <td class="text-right pr-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-statusOk/10 border border-statusOk/30 text-statusOk text-[10px] font-medium">
+                      <span class="material-symbols-outlined text-[10px]">check</span>
+                      <span>OK</span>
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- Row 6: store.db -->
+                <tr class="h-[36px] hover:bg-raised/50 transition-colors">
+                  <td class="pl-2 text-textSecondary text-[11px]">06</td>
+                  <td class="font-medium text-textPrimary flex items-center gap-2 pt-2">
+                    <span class="material-symbols-outlined text-[14px] text-accent">database</span>
+                    <span>store.db</span>
+                  </td>
+                  <td class="text-textSecondary">46.2 MB</td>
+                  <td class="text-textPrimary tracking-wide">a012e841</td>
+                  <td class="text-right pr-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-statusOk/10 border border-statusOk/30 text-statusOk text-[10px] font-medium">
+                      <span class="material-symbols-outlined text-[10px]">check</span>
+                      <span>OK</span>
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- Row 7: config.toml (PENDING ACCENT ROW) -->
+                <tr class="h-[36px] bg-accent/10 border-l-2 border-accent hover:bg-accent/15 transition-colors">
+                  <td class="pl-2 text-accent text-[11px] font-bold">&gt;&gt;</td>
+                  <td class="font-semibold text-textPrimary flex items-center gap-2 pt-2">
+                    <span class="material-symbols-outlined text-[14px] text-accent">tune</span>
+                    <span class="text-accent">config.toml</span>
+                  </td>
+                  <td class="text-accent/90">4.8 KB</td>
+                  <td class="text-accent font-semibold tracking-wide">c190bb42</td>
+                  <td class="text-right pr-2">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-accent/25 border border-accent/50 text-accent text-[10px] font-bold">
+                      <span class="w-1.5 h-1.5 rounded-full bg-accent live-pulse"></span>
+                      <span>PENDING</span>
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- Row 8: keys.json -->
+                <tr class="h-[36px] hover:bg-raised/50 transition-colors">
+                  <td class="pl-2 text-textSecondary text-[11px]">08</td>
+                  <td class="font-medium text-textPrimary flex items-center gap-2 pt-2">
+                    <span class="material-symbols-outlined text-[14px] text-accent">vpn_key</span>
+                    <span>keys.json</span>
+                  </td>
+                  <td class="text-textSecondary">2.1 KB</td>
+                  <td class="text-textPrimary tracking-wide">e4479901</td>
+                  <td class="text-right pr-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-statusOk/10 border border-statusOk/30 text-statusOk text-[10px] font-medium">
+                      <span class="material-symbols-outlined text-[10px]">check</span>
+                      <span>OK</span>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom Micro Integrity Legend -->
+          <div class="pt-2.5 border-t border-neon flex items-center justify-between text-[11px] font-mono flex-shrink-0">
+            <div class="flex items-center gap-2 text-textSecondary">
+              <span class="text-statusOk">●</span>
+              <span>7 OF 8 VALIDATED</span>
+              <span class="text-textSecondary/40">|</span>
+              <span class="text-accent">1 IN FLIGHT VALIDATION LEASE</span>
+            </div>
+            <div class="text-textSecondary">
+              HASH ALGORITHM: <span class="text-textPrimary font-semibold">BLAKE3-256</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: Corpus Intake Summary (4 columns wide) -->
+        <div class="col-span-4 flex flex-col justify-between rounded bg-panel border border-neon p-4 overflow-hidden">
+          <!-- Summary Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-neon flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-accent">03 //</span>
+              <h2 class="font-headline font-semibold text-sm text-textPrimary">Corpus Intake Status</h2>
+            </div>
+            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-statusOk/15 border border-statusOk/30 text-statusOk font-mono text-[10px] font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk live-pulse"></span>
+              <span>LIVE</span>
+            </div>
+          </div>
+
+          <!-- Summary Body Details -->
+          <div class="space-y-3.5 my-1 flex-1 flex flex-col justify-between">
+            <!-- Source Repo (one line mono) -->
+            <div>
+              <span class="text-[10px] font-mono text-textSecondary uppercase tracking-wider block mb-1">
+                SOURCE REPOSITORY
+              </span>
+              <div class="p-2 rounded bg-raised border border-neon font-mono text-xs text-textPrimary flex items-center justify-between">
+                <div class="flex items-center gap-2 truncate">
+                  <span class="material-symbols-outlined text-sm text-accent">terminal</span>
+                  <span class="truncate text-accent font-medium">github.com/sigit-ap/kys-corpus</span>
+                </div>
+                <span class="text-[10px] text-textSecondary font-mono px-1.5 py-0.2 rounded bg-panel">main</span>
+              </div>
+            </div>
+
+            <!-- KPI Grid: Files 128 / Errors 0 -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-3 rounded bg-raised border border-neon flex flex-col justify-between">
+                <span class="text-[10px] font-mono text-textSecondary uppercase">FILES</span>
+                <div class="mt-1 flex items-baseline gap-1.5">
+                  <span class="font-headline text-3xl font-bold text-textPrimary">128</span>
+                  <span class="text-[10px] font-mono text-statusOk">PARSED</span>
+                </div>
+                <div class="mt-1 text-[10px] font-mono text-textSecondary">
+                  100% AST complete
+                </div>
+              </div>
+
+              <div class="p-3 rounded bg-raised border border-neon flex flex-col justify-between">
+                <span class="text-[10px] font-mono text-textSecondary uppercase">ERRORS</span>
+                <div class="mt-1 flex items-baseline gap-1.5">
+                  <span class="font-headline text-3xl font-bold text-statusOk">0</span>
+                  <span class="text-[10px] font-mono text-statusOk">CLEAN PASS</span>
+                </div>
+                <div class="mt-1 text-[10px] font-mono text-textSecondary">
+                  Zero schema fault
+                </div>
+              </div>
+            </div>
+
+            <!-- Estimated Activation & Progress bar -->
+            <div class="p-3 rounded bg-raised border border-neon">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-mono text-textSecondary uppercase">ESTIMATED ACTIVATION</span>
+                <span class="font-mono text-xs font-semibold text-accent">ETA 40s</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-panel overflow-hidden border border-neon">
+                <div class="h-full bg-accent rounded-full" style="width: 87.5%;"></div>
+              </div>
+              <div class="flex items-center justify-between mt-1.5 font-mono text-[10px] text-textSecondary">
+                <span>7 of 8 verified</span>
+                <span class="text-accent font-medium">87.5% complete</span>
+              </div>
+            </div>
+
+            <!-- Security Audit Stamp -->
+            <div class="p-2.5 rounded bg-raised border border-neon-subtle text-[11px] font-mono text-textSecondary space-y-1">
+              <div class="flex items-center gap-1.5 text-textPrimary font-medium">
+                <span class="material-symbols-outlined text-xs text-statusOk">lock</span>
+                <span>Deterministic Tree Validated</span>
+              </div>
+              <p class="text-[10px] text-textSecondary leading-normal">
+                Consensus epoch #10429 confirmed by 3 Raft members. No blocking signatures failed.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER ACTION BAR (fully visible, right-aligned primary CTA) -->
+      <div class="p-3 rounded bg-panel border border-neon flex items-center justify-between flex-shrink-0">
+        <div>
+          <!-- Ghost Cancel Button -->
+          <button class="px-3.5 py-1.5 rounded font-mono text-xs text-textSecondary hover:text-textPrimary hover:bg-raised border border-transparent hover:border-neon transition-colors">
+            Cancel
+          </button>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Ghost Back Button -->
+          <button class="px-4 py-1.5 rounded font-mono text-xs text-textSecondary hover:text-textPrimary hover:bg-raised border border-neon transition-colors flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            <span>Back</span>
+          </button>
+          <!-- Primary Activate Button (accent violet) -->
+          <button class="px-5 py-1.5 rounded bg-accent text-white font-headline font-semibold text-xs hover:bg-accent/90 transition-all shadow-[0_0_16px_rgba(139,92,246,0.4)] flex items-center gap-2">
+            <span>Activate</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FLUSH BOTTOM STATUS BAR (h-6 / 24px sitting flush against viewport bottom) -->
+    <footer class="h-6 px-6 bg-panel border-t border-neon flex items-center justify-between font-mono text-[10px] text-textSecondary flex-shrink-0 z-10">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk live-pulse"></span>
+          <span class="text-textPrimary uppercase">STORE ENGINE ONLINE</span>
+        </div>
+        <span class="text-textSecondary/40">•</span>
+        <span>SHARD: <span class="text-textPrimary">0x3a</span></span>
+        <span class="text-textSecondary/40">•</span>
+        <span>MERKLE: <span class="text-accent">0x9f8a2c3b</span></span>
+        <span class="text-textSecondary/40">•</span>
+        <span>RAFT QUORUM 3/3 SYNCED</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span>LATENCY P50: <span class="text-textPrimary">0.14ms</span></span>
+        <span class="text-textSecondary/40">•</span>
+        <span>DAG ENGINE: <span class="text-textPrimary">v14.2</span></span>
+        <span class="text-textSecondary/40">•</span>
+        <span>VIEWPORT: <span class="text-textPrimary">1440x900 FIXED</span></span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

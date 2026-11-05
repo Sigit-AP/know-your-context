@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Know Your Soul - Setup Lifecycle (Terminal Brutalist)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            term: {
+              black: '#000000',
+              panel: '#050805',
+              border: '#1A2E1A',
+              borderBright: '#264526',
+              accent: '#33FF66',
+              accentDim: 'rgba(51, 255, 102, 0.12)',
+              accentGlow: 'rgba(51, 255, 102, 0.25)',
+              text: '#C9F7D4',
+              secondary: '#5F8F68',
+              muted: '#3B593F',
+              warn: '#FFD23F',
+              danger: '#FF4D4D',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', monospace !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    /* CRT Scanline and subtle screen effect */
+    body {
+      background-color: #000000;
+      color: #C9F7D4;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+    .legend-title {
+      position: relative;
+      top: -11px;
+      margin-left: 12px;
+      padding: 0 8px;
+      background-color: #050805;
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #33FF66;
+    }
+    /* Custom scrollbars if any, though viewport is locked */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000000;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1A2E1A;
+    }
+  </style>
+</head>
+<body class="h-[900px] w-[1440px] max-h-[900px] max-w-[1440px] flex flex-row overflow-hidden bg-black select-none border border-term-border">
+
+  <!-- ==================== LEFT SIDEBAR (248px) ==================== -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-term-border bg-black shrink-0 z-30">
+    <!-- Brand / Header -->
+    <div>
+      <div class="h-[46px] px-4 flex items-center justify-between border-b border-term-border bg-black">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 border border-term-accent text-term-accent flex items-center justify-center text-xs font-bold leading-none bg-term-panel">
+            K
+          </div>
+          <span class="text-xs font-bold tracking-wider text-term-text uppercase">Know Your Soul</span>
+        </div>
+        <span class="text-[10px] text-term-secondary font-mono">v14.2</span>
+      </div>
+
+      <!-- Navigation Hierarchy -->
+      <div class="px-2.5 py-3 space-y-4">
+        <!-- 01 // MONITOR -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-bold tracking-widest text-term-secondary uppercase">
+            01 // MONITOR
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 02 // ANALYZE -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-bold tracking-widest text-term-secondary uppercase">
+            02 // ANALYZE
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 03 // GOVERN -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-bold tracking-widest text-term-secondary uppercase">
+            03 // GOVERN
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-term-muted">::</span>
+                <span>Proposals</span>
+              </div>
+              <span class="text-[10px] text-term-secondary">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-term-muted">::</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="text-[10px] text-term-secondary">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 04 // SYSTEM -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-bold tracking-widest text-term-secondary uppercase">
+            04 // SYSTEM
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-term-secondary hover:text-term-text hover:bg-term-panel rounded-[2px] transition-colors">
+              <span class="text-[10px] text-term-muted">::</span>
+              <span>System</span>
+            </a>
+            <!-- Active Setup Item -->
+            <a href="#" class="flex items-center justify-between px-2 py-1.5 text-xs text-term-accent bg-term-accentDim border border-term-accent/30 rounded-[2px] font-medium">
+              <div class="flex items-center gap-2">
+                <span class="text-term-accent font-bold">&gt;</span>
+                <span class="font-semibold">Setup</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-term-accent animate-pulse"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Bottom: User Card -->
+    <div class="p-3 border-t border-term-border bg-black">
+      <div class="flex items-center justify-between p-2 border border-term-border bg-term-panel rounded-[2px]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 border border-term-secondary bg-black flex items-center justify-center text-[11px] font-bold text-term-text">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold text-term-text leading-tight">Sigit A.</span>
+            <span class="text-[10px] text-term-secondary leading-tight">operator</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-term-accent"></span>
+          <span class="text-[9px] uppercase tracking-wider text-term-accent font-bold">ONLINE</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN COLUMN (1192px) ==================== -->
+  <main class="flex-1 h-full flex flex-col justify-between overflow-hidden bg-black">
+    
+    <!-- TOPBAR: Prompt Line Style (kyc://setup-lifecycle _) -->
+    <header class="h-[46px] px-4 flex items-center justify-between border-b border-term-border bg-black shrink-0">
+      <!-- Left: Prompt Command Path -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 text-xs font-mono">
+          <span class="text-term-accent font-bold">kyc://setup-lifecycle</span>
+          <span class="inline-block w-2 h-3.5 bg-term-accent animate-pulse"></span>
+        </div>
+        <div class="h-3.5 w-px bg-term-border"></div>
+        <div class="flex items-center gap-2 text-[11px] text-term-secondary">
+          <span class="px-1.5 py-0.5 border border-term-border bg-term-panel text-term-secondary">CLUSTER: cluster-01</span>
+          <span class="px-1.5 py-0.5 border border-term-border bg-term-panel text-term-secondary">NODE: node-01.local</span>
+          <span class="px-1.5 py-0.5 border border-term-border bg-term-panel text-term-accent">BOOTSTRAP: WIZARD</span>
+        </div>
+      </div>
+
+      <!-- Center: Search Input with ⌘K -->
+      <div class="flex items-center">
+        <div class="relative w-[340px]">
+          <input 
+            type="text" 
+            readonly 
+            placeholder="filter artifacts, hashes, steps..." 
+            class="w-full h-7 pl-3 pr-8 bg-term-panel border border-term-border text-xs text-term-text placeholder-term-muted focus:outline-none cursor-default"
+          />
+          <div class="absolute right-2 top-1.5 text-[10px] text-term-muted border border-term-border px-1 leading-none">⌘K</div>
+        </div>
+      </div>
+
+      <!-- Right: Status Segments & System Triggers -->
+      <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-1.5 px-2 py-1 border border-term-border bg-term-panel text-[11px] text-term-accent">
+          <span class="w-1.5 h-1.5 rounded-full bg-term-accent"></span>
+          <span class="tracking-wider font-semibold">RAFT QUORUM 3/3</span>
+        </div>
+        <!-- Bell with indicator -->
+        <button class="relative w-7 h-7 flex items-center justify-center border border-term-border bg-term-panel text-term-secondary hover:text-term-accent">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-term-warn rounded-full"></span>
+        </button>
+        <!-- Avatar Badge -->
+        <div class="w-7 h-7 border border-term-border bg-term-panel text-xs text-term-text font-bold flex items-center justify-center">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT WORKSPACE: Fixed layout designed specifically for 1440x900 viewport -->
+    <div class="flex-1 p-4 flex flex-col gap-3.5 overflow-hidden">
+
+      <!-- 1. STEPPER SECTION (Across Content Top) -->
+      <section class="border border-term-border bg-term-panel px-4 py-3 shrink-0 relative">
+        <div class="legend-title">01 // EXECUTION PIPELINE STEPPER</div>
+        
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-6">
+            <!-- Step Counter Badge -->
+            <div class="flex items-center gap-2 border-r border-term-border pr-5">
+              <span class="text-[10px] uppercase tracking-wider text-term-secondary">CURRENT PHASE</span>
+              <span class="px-2 py-0.5 border border-term-accent bg-term-accentDim text-term-accent text-xs font-bold">
+                Step 3 of 4
+              </span>
+            </div>
+
+            <!-- Stepper Items -->
+            <div class="flex items-center gap-8">
+              <!-- Step 1: Done -->
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 border border-term-accent bg-term-accentDim flex items-center justify-center text-[11px] font-bold text-term-accent">
+                  ✓
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-term-text">1 Source</span>
+                  <span class="text-[9px] text-term-secondary">CORPUS LINKED</span>
+                </div>
+              </div>
+
+              <!-- Connecting Line -->
+              <div class="w-8 h-px bg-term-accent"></div>
+
+              <!-- Step 2: Done -->
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 border border-term-accent bg-term-accentDim flex items-center justify-center text-[11px] font-bold text-term-accent">
+                  ✓
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-term-text">2 Import</span>
+                  <span class="text-[9px] text-term-secondary">128 FILES READ</span>
+                </div>
+              </div>
+
+              <!-- Connecting Line -->
+              <div class="w-8 h-px bg-term-accent"></div>
+
+              <!-- Step 3: ACTIVE (Phosphor Green accent) -->
+              <div class="flex items-center gap-2.5 px-2.5 py-1 border border-term-accent bg-term-accentDim">
+                <div class="w-5 h-5 bg-term-accent text-black flex items-center justify-center text-[11px] font-extrabold animate-pulse">
+                  3
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-term-accent">3 Verify</span>
+                  <span class="text-[9px] text-term-accent tracking-wider font-semibold">CHECKSUM VALIDATION</span>
+                </div>
+              </div>
+
+              <!-- Connecting Line -->
+              <div class="w-8 h-px bg-term-border"></div>
+
+              <!-- Step 4: Upcoming (Muted) -->
+              <div class="flex items-center gap-2 opacity-50">
+                <div class="w-5 h-5 border border-term-border text-term-muted flex items-center justify-center text-[11px] font-bold">
+                  4
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-medium text-term-muted">4 Activate</span>
+                  <span class="text-[9px] text-term-muted">INGESTION GATE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step Stats on Right of Stepper -->
+          <div class="flex items-center gap-4 text-xs font-mono">
+            <div class="text-right">
+              <div class="text-[10px] text-term-secondary uppercase">ELAPSED TIME</div>
+              <div class="text-xs font-bold text-term-text">00:01:24.81</div>
+            </div>
+            <div class="h-6 w-px bg-term-border"></div>
+            <div class="text-right">
+              <div class="text-[10px] text-term-secondary uppercase">SYSTEM INTEGRITY</div>
+              <div class="text-xs font-bold text-term-accent">NOMINAL 100%</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 & 3. WORKSPACE GRID: Manifest Table (Left) + Right Summary Panel -->
+      <div class="flex-1 grid grid-cols-12 gap-3.5 min-h-0">
+        
+        <!-- MAIN PANEL: Verify artifacts (8 cols) -->
+        <section class="col-span-8 border border-term-border bg-term-panel flex flex-col justify-between overflow-hidden relative">
+          <div class="legend-title">02 // VERIFY ARTIFACTS — REPOSITORY INVENTORY &amp; DIGEST VALIDATION</div>
+
+          <!-- Table Container (Flush, Exact 8 Rows) -->
+          <div class="flex-1 flex flex-col justify-between p-3 pt-0">
+            <div class="w-full">
+              <!-- Table Header -->
+              <div class="grid grid-cols-12 gap-2 pb-2 mb-1 border-b border-term-border text-[10px] font-bold text-term-secondary uppercase tracking-wider">
+                <div class="col-span-1 text-center">#</div>
+                <div class="col-span-4">ARTIFACT</div>
+                <div class="col-span-2">SIZE</div>
+                <div class="col-span-3">SHA256 CHECKSUM</div>
+                <div class="col-span-2 text-right">STATUS</div>
+              </div>
+
+              <!-- 8 Visible Manifest Rows (Dense rows: 38px each) -->
+              <div class="divide-y divide-term-border/40">
+                <!-- Row 1: graph.json -->
+                <div class="grid grid-cols-12 gap-2 py-2 items-center text-xs hover:bg-black/60 transition-colors">
+                  <div class="col-span-1 text-center text-term-muted font-mono">01</div>
+                  <div class="col-span-4 font-mono font-medium text-term-text flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-term-accent"></span>
+                    <span>graph.json</span>
+                  </div>
+                  <div class="col-span-2 font-mono text-term-secondary">2.4 MB</div>
+                  <div class="col-span-3 font-mono text-term-text tracking-wider">9f2c1ab4</div>
+                  <div class="col-span-2 text-right">
+                    <span class="inline-block px-2 py-0.5 border border-term-border bg-term-panel text-term-accent text-[10px] font-bold tracking-wider">
+                      OK
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Row 2: nodes.idx -->
+                <div class="grid grid-cols-12 gap-2 py-2 items-center text-xs hover:bg-black/60 transition-colors">
+                  <div class="col-span-1 text-center text-term-muted font-mono">02</div>
+                  <div class="col-span-4 font-mono font-medium text-term-text flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-term-accent"></span>
+                    <span>nodes.idx</span>
+                  </div>
+                  <div class="col-span-2 font-mono text-term-secondary">1.8 MB</div>
+                  <div class="col-span-3 font-mono text-term-text tracking-wider">8a1d440f</div>
+                  <div class="col-span-2 text-right">
+                    <span class="inline-block px-2 py-0.5 border border-term-border bg-term-panel text-term-accent text-[10px] font-bold tracking-wider">
+                      OK
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Row 3: embeddings.bin -->
+                <div class="grid grid-cols-12 gap-2 py-2 items-center text-xs hover:bg-black/60 transition-colors">
+                  <div class="col-span-1 text-center text-term-muted font-mono">03</div>
+                  <div class="col-span-4 font-mono font-medium text-term-text flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-term-accent"></span>
+                    <span>embeddings.bin</span>
+                  </div>
+                  <div class="col-span-2 font-mono text-term-secondary">48.6 MB</div>
+                  <div class="col-span-3 font-mono text-term-text tracking-wider">77e19cb2</div>
+                  <div class="col-span-2 text-right">
+                    <span class="inline-block px-2 py-0.5 border border-term-border bg-term-panel text-term-accent text-[10px] font-bold tracking-wider">
+                      OK
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Row 4: manifest.yaml -->
+                <div class="grid grid-cols-12 gap-2 py-2 items-center text-xs hover:bg-black/60 transition-colors">
+                  <div class="col-span-1 text-center text-term-muted font-mono">04</div>
+                  <div class="col-span-4 font-mono font-medium text-term-text flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-term-accent"></span>
+                    <span>manifest.yaml</span>
+                  </div>
+                  <div class="col-span-2 font-mono text-term-secondary">14.2 KB</div>
+                  <div class="col-span-3 font-mono text-term-text tracking-wider">3d81b899</div>
+                  <div class="col-span-2 text-right">
+                    <span class="inline-block px-2 py-0.5 border border-term-border bg-term-panel text-term-accent text-[10px] font-bold tracking-wider">
+                      OK
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Row 5: audit.log -->
+                <div class="grid grid-cols-12 gap-2 py-2 items-center text-xs hover:bg-black/60 transition-colors">
+                  <div class="col-span-1 text-center text-term-muted font-mono">05</div>
+                  <div class="col-span-4 font-mono font-medium text-term-text flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-term-accent"></span>
+                    <span>audit.log</span>
+                  </div>
+                  <div class="col-span-2 font-mono text-term-secondary">512.0 KB</div>
+                  <div class="col-span-3 font-mono text-term-text tracking-wider">55c2f0a1</div>
+                  <div class="col-span-2 text-right">
+                    <span class="inline-block px-2 py-0.5 border border-term-border bg-term-panel text-term-accent text-[10px] font-bold tracking-wider">
+                      OK
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Row 6: store.db -->
+                <div class="grid grid-cols-12 gap-2 py-2 items-center text-xs hover:bg-black/60 transition-colors">
+                  <div class="col-span-1 text-center text-term-muted font-mono">06</div>
+                  <div class="col-span-4 font-mono font-medium text-term-text flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-term-accent"></span>
+                    <span>store.db</span>
+                  </div>
+                  <div class="col-span-2 font-mono text-term-secondary">84.2 MB</div>
+                  <div class="col-span-3 font-mono text-term-text tracking-wider">a012e841</div>
+                  <div class="col-span-2 text-right">
+                    <span class="inline-block px-2 py-0.5 border border-term-border bg-term-panel text-term-accent text-[10px] font-bold tracking-wider">
+                      OK
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Row 7: config.toml (ONE ROW PENDING ACCENT) -->
+                <div class="grid grid-cols-12 gap-2 py-2 items-center text-xs bg-term-accentDim/60 border border-term-accent/40 px-1 -mx-1">
+                  <div class="col-span-1 text-center text-term-accent font-mono font-bold">&gt;&gt;</div>
+                  <div class="col-span-4 font-mono font-bold text-term-accent flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-term-accent animate-ping"></span>
+                    <span>config.toml</span>
+                  </div>
+                  <div class="col-span-2 font-mono text-term-text font-semibold">4.8 KB</div>
+                  <div class="col-span-3 font-mono text-term-accent font-semibold tracking-wider">c190bb42</div>
+                  <div class="col-span-2 text-right">
+                    <span class="inline-block px-2 py-0.5 border border-term-accent bg-term-accent text-black text-[10px] font-extrabold tracking-wider animate-pulse">
+                      PENDING
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Row 8: keys.json -->
+                <div class="grid grid-cols-12 gap-2 py-2 items-center text-xs hover:bg-black/60 transition-colors">
+                  <div class="col-span-1 text-center text-term-muted font-mono">08</div>
+                  <div class="col-span-4 font-mono font-medium text-term-text flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-term-accent"></span>
+                    <span>keys.json</span>
+                  </div>
+                  <div class="col-span-2 font-mono text-term-secondary">1.2 KB</div>
+                  <div class="col-span-3 font-mono text-term-text tracking-wider">e4479901</div>
+                  <div class="col-span-2 text-right">
+                    <span class="inline-block px-2 py-0.5 border border-term-border bg-term-panel text-term-accent text-[10px] font-bold tracking-wider">
+                      OK
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table Sub-Bar: Verification Progress -->
+            <div class="mt-2 pt-2 border-t border-term-border flex items-center justify-between text-[11px] text-term-secondary font-mono">
+              <div class="flex items-center gap-3">
+                <span class="text-term-accent font-semibold">PROGRESS: 7/8 VERIFIED (87.5%)</span>
+                <span>•</span>
+                <span>CIPHER: BLAKE3/SHA256 DETERMINISTIC</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-term-muted">RE-VERIFY [F5]</span>
+                <span class="px-1.5 py-0.2 border border-term-border bg-black text-term-text">ALL SIGNATURES MATCH</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT PANEL: Live Summary Panel (4 cols) -->
+        <section class="col-span-4 border border-term-border bg-term-panel flex flex-col justify-between p-3 pt-0 relative overflow-hidden">
+          <div class="legend-title">03 // INGESTION SUMMARY (LIVE)</div>
+
+          <div class="space-y-3.5">
+            <!-- Source Card -->
+            <div class="border border-term-border bg-black p-3 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-term-secondary uppercase tracking-wider">SOURCE REPOSITORY</span>
+                <span class="text-[10px] text-term-accent font-mono">GIT-HTTPS</span>
+              </div>
+              <div class="text-xs font-mono font-bold text-term-accent truncate">
+                github.com/sigit-ap/kys-corpus
+              </div>
+              <div class="text-[10px] text-term-secondary flex items-center justify-between pt-1 border-t border-term-border/40">
+                <span>BRANCH: <span class="text-term-text">main</span></span>
+                <span>COMMIT: <span class="text-term-text">9f2c1ab4</span></span>
+              </div>
+            </div>
+
+            <!-- Live Metrics Strip (Files 128, Errors 0, ETA 40s) -->
+            <div class="grid grid-cols-3 gap-2">
+              <!-- Files -->
+              <div class="border border-term-border bg-black p-2.5 flex flex-col">
+                <span class="text-[10px] text-term-secondary uppercase tracking-tight">TOTAL FILES</span>
+                <span class="text-base font-bold text-term-text mt-0.5">128</span>
+                <span class="text-[9px] text-term-accent mt-0.5">PARSED OK</span>
+              </div>
+              <!-- Errors -->
+              <div class="border border-term-border bg-black p-2.5 flex flex-col">
+                <span class="text-[10px] text-term-secondary uppercase tracking-tight">ERRORS</span>
+                <span class="text-base font-bold text-term-text mt-0.5">0</span>
+                <span class="text-[9px] text-term-secondary mt-0.5">ZERO FAULT</span>
+              </div>
+              <!-- ETA -->
+              <div class="border border-term-border bg-black p-2.5 flex flex-col">
+                <span class="text-[10px] text-term-secondary uppercase tracking-tight">ETA</span>
+                <span class="text-base font-bold text-term-warn mt-0.5">40s</span>
+                <span class="text-[9px] text-term-warn/80 mt-0.5">COMPACTION</span>
+              </div>
+            </div>
+
+            <!-- Detailed Ingestion Spec List -->
+            <div class="border border-term-border bg-black p-3 space-y-2 text-xs">
+              <div class="text-[10px] font-bold text-term-secondary uppercase tracking-wider pb-1 border-b border-term-border/40">
+                SUBSYSTEM PARAMETERS
+              </div>
+              <div class="flex items-center justify-between font-mono text-[11px]">
+                <span class="text-term-secondary">DAG ENGINE</span>
+                <span class="text-term-text">Deterministic AST v14.2</span>
+              </div>
+              <div class="flex items-center justify-between font-mono text-[11px]">
+                <span class="text-term-secondary">STORAGE ENGINE</span>
+                <span class="text-term-text">DuckDB + SQLite WAL</span>
+              </div>
+              <div class="flex items-center justify-between font-mono text-[11px]">
+                <span class="text-term-secondary">SHARD ROUTING</span>
+                <span class="text-term-text">Shard 0x3a (Primary)</span>
+              </div>
+              <div class="flex items-center justify-between font-mono text-[11px]">
+                <span class="text-term-secondary">VECTOR COMPACT</span>
+                <span class="text-term-warn">40s remaining (ETA)</span>
+              </div>
+              <div class="flex items-center justify-between font-mono text-[11px]">
+                <span class="text-term-secondary">QUORUM PROTOCOL</span>
+                <span class="text-term-accent">Raft Lease Valid</span>
+              </div>
+            </div>
+
+            <!-- Terminal Diagnostic Mini Log -->
+            <div class="border border-term-border bg-black p-2.5 font-mono text-[10px] space-y-1 text-term-secondary">
+              <div class="text-term-muted">// RECENT STDOUT LOG</div>
+              <div class="text-term-text">&gt; verifying block 0x9f8a... OK</div>
+              <div class="text-term-text">&gt; index Merkle tree root built in 14ms</div>
+              <div class="text-term-accent">&gt; awaiting config.toml lease ack...</div>
+            </div>
+          </div>
+
+          <!-- Bottom Notice -->
+          <div class="pt-2 border-t border-term-border/60 flex items-center justify-between text-[10px] text-term-secondary font-mono">
+            <span>DISPATCH LOCK: ARMED</span>
+            <span class="text-term-accent font-semibold">AUTO-RETRY: OFF</span>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- 4. FOOTER ACTION BAR (Fully Visible, High-Contrast) -->
+      <footer class="h-[46px] border border-term-border bg-term-panel px-4 flex items-center justify-between shrink-0">
+        <!-- Left: Ghost Cancel -->
+        <div>
+          <button class="h-8 px-4 border border-term-border hover:border-term-danger text-xs font-mono text-term-secondary hover:text-term-danger bg-black transition-colors rounded-[2px] flex items-center gap-2">
+            <span class="text-term-muted">✕</span>
+            <span>Cancel</span>
+          </button>
+        </div>
+
+        <!-- Right: Ghost Back + Primary Activate -->
+        <div class="flex items-center gap-3">
+          <button class="h-8 px-4 border border-term-border hover:border-term-text text-xs font-mono text-term-text bg-black transition-colors rounded-[2px] flex items-center gap-2">
+            <span>&lt; Back</span>
+          </button>
+
+          <button class="h-8 px-5 border border-term-accent bg-term-accent hover:bg-term-accent/90 text-black text-xs font-mono font-bold tracking-wider uppercase transition-colors rounded-[2px] flex items-center gap-2 shadow-none cursor-pointer">
+            <span>Activate</span>
+            <span class="font-extrabold">&gt;</span>
+          </button>
+        </div>
+      </footer>
+
+    </div>
+
+    <!-- TERMINAL FOOTER / STATUS STRIP (Flush at bottom edge of 900px viewport) -->
+    <div class="h-[24px] px-4 border-t border-term-border bg-black flex items-center justify-between text-[10px] font-mono text-term-secondary shrink-0 z-20">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-term-accent"></span>
+          <span class="text-term-accent font-semibold uppercase">SETUP LIFECYCLE ONLINE</span>
+        </div>
+        <span>•</span>
+        <span>MERKLE ROOT: 0x9f8a2c3b1</span>
+        <span>•</span>
+        <span>DAG ENGINE: DETERMINISTIC AST v14.2</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span>SYNC: 100% QUORUM</span>
+        <span>•</span>
+        <span>LATENCY: 0.14ms</span>
+        <span>•</span>
+        <span class="text-term-text">VIEWPORT: 1440x900 FIXED</span>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

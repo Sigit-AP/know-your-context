@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900">
+  <title>Know Your Soul - Metrics (Paper Dark)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#141110',
+            panel: '#1A1713',
+            raised: '#211D17',
+            hairline: 'rgba(217, 164, 65, 0.10)',
+            hairlineBright: 'rgba(217, 164, 65, 0.22)',
+            paper: '#EDE4D3',
+            secondary: '#A3947D',
+            accent: '#D9A441',
+            accentSoft: 'rgba(217, 164, 65, 0.12)',
+            statusOk: '#7FB069',
+            statusWarn: '#E0A458',
+            statusDanger: '#D16666',
+          },
+          fontFamily: {
+            serif: ['Fraunces', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #141110;
+      color: #EDE4D3;
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    .double-rule {
+      position: relative;
+    }
+    .double-rule::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 1px;
+      background: rgba(217, 164, 65, 0.18);
+      box-shadow: 0 3px 0 0 rgba(217, 164, 65, 0.18);
+    }
+  </style>
+</head>
+<body class="font-sans antialiased flex h-[900px] w-[1440px] bg-base text-paper border-box">
+
+  <!-- LEFT SIDEBAR (240px wide, exactly matches Paper Dark shell) -->
+  <aside class="w-[240px] flex-shrink-0 h-[900px] bg-panel border-r border-hairline flex flex-col justify-between select-none">
+    <div class="flex flex-col">
+      <!-- Workspace Brand header -->
+      <div class="px-5 pt-4 pb-3 border-b border-hairline flex items-center justify-between">
+        <div>
+          <div class="font-serif text-[15px] font-semibold text-paper tracking-wide leading-none">Know Your Soul</div>
+          <div class="font-mono text-[10px] text-secondary tracking-widest uppercase mt-1">CLUSTER 01 · V14.2</div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-accent opacity-80"></div>
+      </div>
+
+      <!-- Navigation Hierarchy -->
+      <div class="px-3 py-3 space-y-4">
+        <!-- Group I: MONITOR -->
+        <div>
+          <div class="px-2 text-[10px] font-mono tracking-wider text-secondary uppercase mb-1 flex items-center gap-1.5">
+            <span>I //</span> <span>MONITOR</span>
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/></svg>
+              <span>Graph Explorer</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Group II: ANALYZE -->
+        <div>
+          <div class="px-2 text-[10px] font-mono tracking-wider text-secondary uppercase mb-1 flex items-center gap-1.5">
+            <span>II //</span> <span>ANALYZE</span>
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1 rounded bg-accentSoft text-accent font-medium text-[12px] border border-hairline">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                <span>Metrics</span>
+              </div>
+              <div class="w-1.5 h-1.5 rounded-full bg-accent"></div>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"/></svg>
+              <span>Analytics</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Group III: GOVERN -->
+        <div>
+          <div class="px-2 text-[10px] font-mono tracking-wider text-secondary uppercase mb-1 flex items-center gap-1.5">
+            <span>III //</span> <span>GOVERN</span>
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] text-secondary bg-raised px-1.5 py-0.2 rounded border border-hairline">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] text-secondary bg-raised px-1.5 py-0.2 rounded border border-hairline">12</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Group IV: SYSTEM -->
+        <div>
+          <div class="px-2 text-[10px] font-mono tracking-wider text-secondary uppercase mb-1 flex items-center gap-1.5">
+            <span>IV //</span> <span>SYSTEM</span>
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25z"/></svg>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1 rounded text-secondary hover:text-paper hover:bg-raised transition-colors text-[12px]">
+              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.559.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>Setup</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile Card -->
+    <div class="p-3 border-t border-hairline bg-base">
+      <div class="flex items-center gap-2.5 px-2 py-1.5 rounded bg-raised border border-hairline">
+        <div class="w-6 h-6 rounded bg-accentSoft border border-hairline flex items-center justify-center font-mono text-[10px] text-accent font-semibold">SA</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[12px] font-medium text-paper leading-none">Sigit A.</div>
+          <div class="text-[10px] text-secondary font-mono leading-none mt-1">operator</div>
+        </div>
+        <div class="w-1.5 h-1.5 rounded-full bg-statusOk"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT (1200px wide, exactly 900px high) -->
+  <main class="flex-1 flex flex-col h-[900px] bg-base min-w-0">
+
+    <!-- TOPBAR (44px, stays strictly on ONE line) -->
+    <header class="h-[44px] flex-shrink-0 bg-panel border-b border-hairline px-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="font-mono text-[11px] text-secondary tracking-wider">KYS // Console //</span>
+        <span class="font-serif text-[15px] font-semibold text-paper">Metrics</span>
+        <span class="font-mono text-[10px] text-accent bg-accentSoft px-2 py-0.5 rounded border border-hairline">CLUSTER-01</span>
+      </div>
+
+      <!-- Search field with ⌘K -->
+      <div class="w-[380px] relative">
+        <div class="h-7 w-full bg-base border border-hairline rounded px-2.5 flex items-center justify-between text-secondary">
+          <div class="flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            <span class="font-mono text-[11px]">search nodes, edges, hashes, tags</span>
+          </div>
+          <span class="font-mono text-[10px] bg-panel px-1.5 py-0.5 rounded border border-hairline text-secondary">⌘K</span>
+        </div>
+      </div>
+
+      <!-- Right controls (max 4 segments: status pill, bell with dot, avatar) -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-raised border border-hairline">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span class="font-mono text-[10px] tracking-wider text-statusOk font-medium uppercase">RAFT QUORUM SYNCED</span>
+        </div>
+        <div class="relative cursor-pointer p-1 text-secondary hover:text-paper">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-accent rounded-full"></span>
+        </div>
+        <div class="w-6 h-6 rounded bg-raised border border-hairline flex items-center justify-center font-mono text-[10px] text-paper">SA</div>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA (fills viewport down to flush status bar) -->
+    <div class="flex-1 px-6 pt-4 pb-2 flex flex-col justify-between overflow-hidden">
+
+      <!-- PAGE TITLE WITH SIGNATURE DOUBLE RULE & METADATA -->
+      <div class="flex-shrink-0 mb-3.5">
+        <div class="flex items-baseline justify-between">
+          <div class="flex items-baseline gap-2.5 double-rule pb-2">
+            <span class="font-mono text-[11px] text-accent font-semibold tracking-wider">II.II // TELEMETRY ENGINE</span>
+            <h1 class="font-serif text-[22px] font-semibold text-paper tracking-normal">Metrics & Performance Benchmarks</h1>
+          </div>
+          <div class="flex items-center gap-4 font-mono text-[11px] text-secondary pb-1">
+            <span>INDEX: <span class="text-paper">48,203 EDGES</span> · <span class="text-paper">12,847 NODES</span></span>
+            <span>MERKLE <span class="text-accent">0x9f8a2c3b</span></span>
+            <span>SAMPLE: <span class="text-paper">14D ROLLING</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: 4-LAYER KPI STRIP (4 cards) -->
+      <div class="flex-shrink-0 grid grid-cols-4 gap-3 mb-3">
+        <!-- Card 1: Queries 24h -->
+        <div class="bg-panel border border-hairline rounded p-3 flex flex-col justify-between h-[84px] relative">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] tracking-wider text-secondary uppercase">01 // QUERIES 24H</span>
+            <span class="font-mono text-[10px] text-statusOk flex items-center gap-1 font-medium">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/></svg>
+              up 8.2%
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="font-serif text-[26px] font-bold text-paper leading-none">3,412</span>
+            <!-- Sparkline 1 -->
+            <svg class="w-24 h-6 text-accent overflow-visible" viewBox="0 0 96 24" fill="none">
+              <path d="M2 18 L16 16 L30 19 L44 14 L58 15 L72 10 L84 11 L94 4" stroke="#D9A441" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="94" cy="4" r="2" fill="#D9A441"/>
+            </svg>
+          </div>
+          <div class="flex items-center justify-between font-mono text-[9px] text-secondary border-t border-hairline pt-1">
+            <span>vs 3,154 prev</span>
+            <span>PEAK 512/H</span>
+          </div>
+        </div>
+
+        <!-- Card 2: P50 Latency -->
+        <div class="bg-panel border border-hairline rounded p-3 flex flex-col justify-between h-[84px] relative">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] tracking-wider text-secondary uppercase">02 // P50 LATENCY</span>
+            <span class="font-mono text-[10px] text-statusOk flex items-center gap-1 font-medium">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 4.5l-15 15m0 0h11.25m-11.25 0V8.25"/></svg>
+              down 0.4ms
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="font-serif text-[26px] font-bold text-paper leading-none">6.4<span class="font-mono text-[14px] text-secondary font-normal ml-0.5">ms</span></span>
+            <!-- Sparkline 2 -->
+            <svg class="w-24 h-6 text-accent overflow-visible" viewBox="0 0 96 24" fill="none">
+              <path d="M2 7 L16 9 L30 6 L44 12 L58 10 L72 15 L84 14 L94 18" stroke="#D9A441" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="94" cy="18" r="2" fill="#D9A441"/>
+            </svg>
+          </div>
+          <div class="flex items-center justify-between font-mono text-[9px] text-secondary border-t border-hairline pt-1">
+            <span>TARGET &lt; 10ms</span>
+            <span>P95: 14.8ms</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Token Saving -->
+        <div class="bg-panel border border-hairline rounded p-3 flex flex-col justify-between h-[84px] relative">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] tracking-wider text-secondary uppercase">03 // TOKEN SAVING</span>
+            <span class="font-mono text-[10px] text-statusOk flex items-center gap-1 font-medium">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/></svg>
+              up 0.3pt
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="font-serif text-[26px] font-bold text-paper leading-none">94.2<span class="font-mono text-[14px] text-secondary font-normal ml-0.5">%</span></span>
+            <!-- Sparkline 3 -->
+            <svg class="w-24 h-6 text-accent overflow-visible" viewBox="0 0 96 24" fill="none">
+              <path d="M2 17 L16 15 L30 16 L44 12 L58 11 L72 9 L84 6 L94 4" stroke="#D9A441" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="94" cy="4" r="2" fill="#D9A441"/>
+            </svg>
+          </div>
+          <div class="flex items-center justify-between font-mono text-[9px] text-secondary border-t border-hairline pt-1">
+            <span>DELTA BUDGET: +14.2k</span>
+            <span>REDUNDANCY 0.08%</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Cache Hit -->
+        <div class="bg-panel border border-hairline rounded p-3 flex flex-col justify-between h-[84px] relative">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] tracking-wider text-secondary uppercase">04 // CACHE HIT</span>
+            <span class="font-mono text-[10px] text-statusOk flex items-center gap-1 font-medium">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/></svg>
+              up 1.2pt
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="font-serif text-[26px] font-bold text-paper leading-none">87.1<span class="font-mono text-[14px] text-secondary font-normal ml-0.5">%</span></span>
+            <!-- Sparkline 4 -->
+            <svg class="w-24 h-6 text-accent overflow-visible" viewBox="0 0 96 24" fill="none">
+              <path d="M2 19 L16 16 L30 18 L44 13 L58 12 L72 10 L84 8 L94 5" stroke="#D9A441" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="94" cy="5" r="2" fill="#D9A441"/>
+            </svg>
+          </div>
+          <div class="flex items-center justify-between font-mono text-[9px] text-secondary border-t border-hairline pt-1">
+            <span>DUCKDB AST INDEX</span>
+            <span>EVICTIONS: 0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: LARGE CHART PANEL "Query volume, 14 days" (stroke-only line chart, no axes clutter, 14 day ticks, accent line, today flagged) -->
+      <div class="flex-shrink-0 bg-panel border border-hairline rounded p-3.5 mb-3 flex flex-col justify-between h-[156px]">
+        <!-- Panel Header -->
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[10px] text-accent uppercase font-medium">SECTION I //</span>
+            <h2 class="font-serif text-[14px] font-semibold text-paper">Query volume, 14 days</h2>
+          </div>
+          <div class="flex items-center gap-4 font-mono text-[10px] text-secondary">
+            <span>WINDOW: <span class="text-paper">NOV 01 – NOV 14, 2026</span></span>
+            <span>TOTAL: <span class="text-paper">41,890 QUERIES</span></span>
+            <span>P90 CADENCE: <span class="text-accent">3,240/DAY</span></span>
+          </div>
+        </div>
+
+        <!-- Stroke-only SVG Chart with exactly 14 day ticks -->
+        <div class="relative w-full h-[96px] mt-1">
+          <!-- Subtle horizontal reference hairline -->
+          <div class="absolute inset-x-0 top-1/2 border-b border-hairline border-dashed pointer-events-none"></div>
+
+          <svg class="w-full h-full overflow-visible" viewBox="0 0 1140 80" fill="none" preserveAspectRatio="none">
+            <!-- 14 vertical subtle guideline ticks in background -->
+            <line x1="20" y1="10" x2="20" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="104" y1="10" x2="104" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="188" y1="10" x2="188" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="272" y1="10" x2="272" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="356" y1="10" x2="356" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="440" y1="10" x2="440" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="524" y1="10" x2="524" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="608" y1="10" x2="608" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="692" y1="10" x2="692" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="776" y1="10" x2="776" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="860" y1="10" x2="860" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="944" y1="10" x2="944" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="1028" y1="10" x2="1028" y2="70" stroke="rgba(217, 164, 65, 0.06)" stroke-width="1"/>
+            <line x1="1112" y1="10" x2="1112" y2="70" stroke="rgba(217, 164, 65, 0.25)" stroke-width="1" stroke-dasharray="2 2"/>
+
+            <!-- Stroke-only line chart in accent old gold (#D9A441) -->
+            <path d="M 20 62 L 104 54 L 188 58 L 272 46 L 356 49 L 440 38 L 524 42 L 608 34 L 692 31 L 776 28 L 860 32 L 944 24 L 1028 20 L 1112 11" 
+                  stroke="#D9A441" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round"
+                  fill="none"/>
+
+            <!-- Data points -->
+            <circle cx="20" cy="62" r="2.5" fill="#1A1713" stroke="#D9A441" stroke-width="1.5"/>
+            <circle cx="104" cy="54" r="2" fill="#D9A441"/>
+            <circle cx="188" cy="58" r="2" fill="#D9A441"/>
+            <circle cx="272" cy="46" r="2" fill="#D9A441"/>
+            <circle cx="356" cy="49" r="2" fill="#D9A441"/>
+            <circle cx="440" cy="38" r="2" fill="#D9A441"/>
+            <circle cx="524" cy="42" r="2" fill="#D9A441"/>
+            <circle cx="608" cy="34" r="2" fill="#D9A441"/>
+            <circle cx="692" cy="31" r="2" fill="#D9A441"/>
+            <circle cx="776" cy="28" r="2" fill="#D9A441"/>
+            <circle cx="860" cy="32" r="2" fill="#D9A441"/>
+            <circle cx="944" cy="24" r="2" fill="#D9A441"/>
+            <circle cx="1028" cy="20" r="2" fill="#D9A441"/>
+
+            <!-- TODAY FLAGGED POINT (accent pulsed marker) -->
+            <circle cx="1112" cy="11" r="4.5" fill="#D9A441"/>
+            <circle cx="1112" cy="11" r="7.5" stroke="#D9A441" stroke-width="1" stroke-opacity="0.5"/>
+          </svg>
+
+          <!-- TODAY Flag Badge positioned over last tick -->
+          <div class="absolute right-0 top-0 -mt-1 font-mono text-[9px] bg-accent text-base font-semibold px-1.5 py-0.2 rounded tracking-wide shadow-none uppercase">
+            TODAY · 3,412
+          </div>
+        </div>
+
+        <!-- 14 Day Ticks Axis Labels (Clean, no clutter) -->
+        <div class="grid grid-cols-14 text-center font-mono text-[9px] text-secondary pt-1 border-t border-hairline mt-1">
+          <span>D-13</span>
+          <span>D-12</span>
+          <span>D-11</span>
+          <span>D-10</span>
+          <span>D-09</span>
+          <span>D-08</span>
+          <span>D-07</span>
+          <span>D-06</span>
+          <span>D-05</span>
+          <span>D-04</span>
+          <span>D-03</span>
+          <span>D-02</span>
+          <span>D-01</span>
+          <span class="text-accent font-semibold">TODAY</span>
+        </div>
+      </div>
+
+      <!-- SECTION 3: BENCHMARK TABLE (EXACTLY 12 VISIBLE ROWS, comfortable rows, no void, fills available height) -->
+      <div class="flex-1 bg-panel border border-hairline rounded flex flex-col justify-between overflow-hidden min-h-[410px]">
+        <!-- Table Header & Section Title -->
+        <div class="flex-shrink-0 px-4 py-2 border-b border-hairline flex items-center justify-between bg-raised">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[10px] text-accent uppercase font-medium">SECTION II //</span>
+            <span class="font-serif text-[13px] font-semibold text-paper">Operational Benchmark Latency & Token Efficiency</span>
+          </div>
+          <div class="flex items-center gap-3 font-mono text-[10px] text-secondary">
+            <span>FILTER: <span class="text-paper">ACTIVE KERNEL (12/24)</span></span>
+            <span>SORT: <span class="text-paper">SAVING (DESC)</span></span>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="flex-1 flex flex-col justify-between">
+          <table class="w-full text-left border-collapse table-fixed h-full">
+            <thead>
+              <tr class="border-b border-hairline text-[10px] font-mono uppercase text-secondary bg-panel h-[26px]">
+                <th class="w-[52px] px-4 font-normal">#</th>
+                <th class="w-[320px] px-2 font-normal">BENCH</th>
+                <th class="w-[140px] px-2 font-normal text-right">P50</th>
+                <th class="w-[140px] px-2 font-normal text-right">P95</th>
+                <th class="w-[160px] px-2 font-normal text-right">TOKENS</th>
+                <th class="w-[180px] px-4 font-normal text-right">SAVING</th>
+                <th class="w-[148px] px-4 font-normal text-right">VERIFICATION</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-hairline font-mono text-[11px]">
+              
+              <!-- ROW 1 (BEST ROW - ACCENTED per spec: "only the best row accented") -->
+              <tr class="bg-accentSoft/30 hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">01</td>
+                <td class="px-2 font-semibold text-accent truncate">q07-multi-domain</td>
+                <td class="px-2 text-right text-paper">4.12ms</td>
+                <td class="px-2 text-right text-secondary">7.82ms</td>
+                <td class="px-2 text-right text-paper">482</td>
+                <td class="px-4 text-right font-semibold text-accent">98.4% ★</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 2 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">02</td>
+                <td class="px-2 text-paper truncate">q01-ast-exact-match</td>
+                <td class="px-2 text-right text-paper">3.84ms</td>
+                <td class="px-2 text-right text-secondary">6.10ms</td>
+                <td class="px-2 text-right text-paper">512</td>
+                <td class="px-4 text-right text-secondary">97.6%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 3 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">03</td>
+                <td class="px-2 text-paper truncate">q14-provenance-traverse</td>
+                <td class="px-2 text-right text-paper">5.20ms</td>
+                <td class="px-2 text-right text-secondary">8.95ms</td>
+                <td class="px-2 text-right text-paper">640</td>
+                <td class="px-4 text-right text-secondary">96.8%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 4 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">04</td>
+                <td class="px-2 text-paper truncate">q03-vector-knn-cosine</td>
+                <td class="px-2 text-right text-paper">6.70ms</td>
+                <td class="px-2 text-right text-secondary">10.12ms</td>
+                <td class="px-2 text-right text-paper">780</td>
+                <td class="px-4 text-right text-secondary">95.4%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 5 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">05</td>
+                <td class="px-2 text-paper truncate">q18-cyclic-invariant-eval</td>
+                <td class="px-2 text-right text-paper">6.12ms</td>
+                <td class="px-2 text-right text-secondary">9.40ms</td>
+                <td class="px-2 text-right text-paper">824</td>
+                <td class="px-4 text-right text-secondary">94.9%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 6 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">06</td>
+                <td class="px-2 text-paper truncate">q09-schema-mutation-fence</td>
+                <td class="px-2 text-right text-paper">7.45ms</td>
+                <td class="px-2 text-right text-secondary">11.80ms</td>
+                <td class="px-2 text-right text-paper">910</td>
+                <td class="px-4 text-right text-secondary">94.1%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 7 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">07</td>
+                <td class="px-2 text-paper truncate">q02-subgraph-expansion</td>
+                <td class="px-2 text-right text-paper">6.40ms</td>
+                <td class="px-2 text-right text-secondary">12.45ms</td>
+                <td class="px-2 text-right text-paper">968</td>
+                <td class="px-4 text-right text-secondary">93.8%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 8 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">08</td>
+                <td class="px-2 text-paper truncate">q11-merkle-monotonic-verify</td>
+                <td class="px-2 text-right text-paper">5.80ms</td>
+                <td class="px-2 text-right text-secondary">8.20ms</td>
+                <td class="px-2 text-right text-paper">1040</td>
+                <td class="px-4 text-right text-secondary">92.7%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 9 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">09</td>
+                <td class="px-2 text-paper truncate">q21-jsonld-ontology-align</td>
+                <td class="px-2 text-right text-paper">8.12ms</td>
+                <td class="px-2 text-right text-secondary">13.50ms</td>
+                <td class="px-2 text-right text-paper">1180</td>
+                <td class="px-4 text-right text-secondary">91.5%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 10 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">10</td>
+                <td class="px-2 text-paper truncate">q05-duckdb-wal-compaction</td>
+                <td class="px-2 text-right text-paper">7.90ms</td>
+                <td class="px-2 text-right text-secondary">14.10ms</td>
+                <td class="px-2 text-right text-paper">1250</td>
+                <td class="px-4 text-right text-secondary">89.8%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 11 -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">11</td>
+                <td class="px-2 text-paper truncate">q16-stale-pointer-sweep</td>
+                <td class="px-2 text-right text-paper">9.20ms</td>
+                <td class="px-2 text-right text-secondary">15.40ms</td>
+                <td class="px-2 text-right text-paper">1410</td>
+                <td class="px-4 text-right text-secondary">88.4%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+              <!-- ROW 12 (EXACTLY 12 ROWS TOTAL) -->
+              <tr class="hover:bg-raised transition-colors h-[28px]">
+                <td class="px-4 text-secondary text-[10px]">12</td>
+                <td class="px-2 text-paper truncate">q24-cross-partition-rebalance</td>
+                <td class="px-2 text-right text-paper">10.40ms</td>
+                <td class="px-2 text-right text-secondary">16.80ms</td>
+                <td class="px-2 text-right text-paper">1620</td>
+                <td class="px-4 text-right text-secondary">86.2%</td>
+                <td class="px-4 text-right"><span class="text-statusOk text-[10px]">SHACL_PASS</span></td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STATUS BAR (FLUSH AT VERY BOTTOM EDGE OF VIEWPORT - EXACTLY ONE LINE) -->
+    <!-- Content: 24 BENCH CASES · LAST RUN 12 MIN AGO · GATE 24/24 PASS -->
+    <footer class="h-[28px] flex-shrink-0 bg-panel border-t border-hairline px-6 flex items-center justify-between font-mono text-[10px] select-none text-secondary">
+      <div class="flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+        <span class="text-paper font-medium">24 BENCH CASES</span>
+        <span>·</span>
+        <span>LAST RUN 12 MIN AGO</span>
+        <span>·</span>
+        <span class="text-statusOk font-semibold">GATE 24/24 PASS</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>DAG ENGINE: <span class="text-paper">v14.2 DETERMINISTIC</span></span>
+        <span>SHARD: <span class="text-paper">0x3a</span></span>
+        <span class="text-statusOk flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk inline-block"></span>
+          ONLINE
+        </span>
+      </div>
+    </footer>
+
+  </main>
+</body>
+</html>

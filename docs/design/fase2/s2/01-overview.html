@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            base: '#000000',
+            panel: '#050805',
+            border: '#1A2E1A',
+            accent: '#33FF66',
+            'text-primary': '#C9F7D4',
+            'text-secondary': '#5F8F68',
+            warn: '#FFD23F',
+            danger: '#FF4D4D',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', monospace !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background-color: #000000;
+      color: #C9F7D4;
+    }
+    /* CRT subtle terminal feel with crisp vector execution */
+    .fieldset-panel {
+      position: relative;
+      border: 1px solid #1A2E1A;
+      background: #050805;
+      border-radius: 1px;
+    }
+    .fieldset-legend {
+      position: absolute;
+      top: -9px;
+      left: 12px;
+      background: #000000;
+      padding: 0 6px;
+      font-size: 10px;
+      line-height: 14px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #33FF66;
+      border: 1px solid #1A2E1A;
+      border-bottom: none;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .prompt-cursor::after {
+      content: "_";
+      animation: blink 1s step-end infinite;
+      color: #33FF66;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex bg-[#000000] text-[#C9F7D4] select-none text-[12px] leading-tight">
+
+  <!-- LEFT SIDEBAR (240px) -->
+  <aside class="w-[240px] h-[900px] shrink-0 border-r border-[#1A2E1A] bg-[#000000] flex flex-col justify-between p-3 z-20">
+    <div class="flex flex-col gap-4">
+      <!-- App Header -->
+      <div class="flex items-center justify-between px-2 pt-1 pb-2 border-b border-[#1A2E1A]">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-[#33FF66] flex items-center justify-center text-black font-bold text-[9px] leading-none">K</div>
+          <span class="font-bold text-[13px] tracking-tight text-[#C9F7D4]">Know Your Soul</span>
+        </div>
+        <span class="text-[9px] text-[#5F8F68] border border-[#1A2E1A] px-1 py-0.5">v14.2</span>
+      </div>
+
+      <!-- Nav Groups -->
+      <div class="flex flex-col gap-3">
+        <!-- MONITOR -->
+        <div class="flex flex-col gap-1">
+          <div class="text-[9px] font-semibold text-[#5F8F68] px-2 uppercase tracking-wider">MONITOR</div>
+          <nav class="flex flex-col gap-0.5">
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-[2px] bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 font-medium">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] text-[#33FF66]">&gt;</span>
+                Overview
+              </span>
+              <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+            </a>
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Activity Log
+              </span>
+            </a>
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Graph Explorer
+              </span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- ANALYZE -->
+        <div class="flex flex-col gap-1">
+          <div class="text-[9px] font-semibold text-[#5F8F68] px-2 uppercase tracking-wider">ANALYZE</div>
+          <nav class="flex flex-col gap-0.5">
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Search
+              </span>
+            </a>
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Metrics
+              </span>
+            </a>
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Analytics
+              </span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- GOVERN -->
+        <div class="flex flex-col gap-1">
+          <div class="text-[9px] font-semibold text-[#5F8F68] px-2 uppercase tracking-wider">GOVERN</div>
+          <nav class="flex flex-col gap-0.5">
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Health
+              </span>
+            </a>
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Audit Ledger
+              </span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Proposals
+              </span>
+              <span class="px-1 py-0.2 bg-[#1A2E1A] text-[#C9F7D4] text-[9px] rounded-[1px]">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Debt Queue
+              </span>
+              <span class="px-1 py-0.2 bg-[#1A2E1A] text-[#C9F7D4] text-[9px] rounded-[1px]">12</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- SYSTEM -->
+        <div class="flex flex-col gap-1">
+          <div class="text-[9px] font-semibold text-[#5F8F68] px-2 uppercase tracking-wider">SYSTEM</div>
+          <nav class="flex flex-col gap-0.5">
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                System
+              </span>
+            </a>
+            <a href="#" class="flex items-center px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] rounded-[1px] transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] opacity-40">::</span>
+                Setup
+              </span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Footer / Operator Card -->
+    <div class="p-2 border border-[#1A2E1A] bg-[#050805] rounded-[2px] flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 border border-[#33FF66]/40 bg-[#33FF66]/10 text-[#33FF66] font-bold text-[10px] flex items-center justify-center">SA</div>
+        <div class="flex flex-col">
+          <span class="text-[11px] font-semibold text-[#C9F7D4] leading-tight">Sigit A.</span>
+          <span class="text-[9px] text-[#5F8F68] leading-tight">operator</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CANVAS (1200px x 900px) -->
+  <main class="w-[1200px] h-[900px] flex flex-col justify-between bg-[#000000]">
+
+    <!-- TOPBAR (44px) styled like a prompt line -->
+    <header class="h-[44px] shrink-0 border-b border-[#1A2E1A] px-4 flex items-center justify-between bg-[#000000] z-10">
+      <!-- Breadcrumb / Prompt Line -->
+      <div class="flex items-center gap-2 text-[12px]">
+        <span class="text-[#5F8F68]">kyc://</span>
+        <span class="text-[#C9F7D4] font-semibold">overview</span>
+        <span class="prompt-cursor text-[#33FF66]"></span>
+        <span class="ml-3 text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1.5 py-0.5 bg-[#050805]">cluster-01</span>
+      </div>
+
+      <!-- Search Field with Cmd+K -->
+      <div class="w-[360px] h-[28px] border border-[#1A2E1A] bg-[#050805] px-2.5 flex items-center justify-between rounded-[1px]">
+        <div class="flex items-center gap-2 text-[11px] text-[#5F8F68]">
+          <span class="text-[#33FF66]">&gt;</span>
+          <span>search nodes, edges, hashes...</span>
+        </div>
+        <span class="text-[9px] text-[#5F8F68] border border-[#1A2E1A] px-1 py-0.5 rounded-[1px]">⌘K</span>
+      </div>
+
+      <!-- Topbar Actions (Right side only: bell with dot + avatar) -->
+      <div class="flex items-center gap-3">
+        <div class="relative p-1 text-[#5F8F68] hover:text-[#C9F7D4] cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+        </div>
+        <div class="w-6 h-6 border border-[#1A2E1A] bg-[#050805] text-[#C9F7D4] font-medium text-[10px] flex items-center justify-center">SA</div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (fills precisely between topbar 44px and status bar 32px => 824px height) -->
+    <div class="h-[824px] px-4 py-3 flex flex-col justify-between gap-3 overflow-hidden">
+
+      <!-- 1. ALERT BANNER (~44px) -->
+      <div class="h-[44px] shrink-0 border border-[#33FF66]/30 bg-[#33FF66]/5 pl-3 pr-3 flex items-center justify-between rounded-[1px] relative overflow-hidden">
+        <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-[#33FF66]"></div>
+        <div class="flex items-center gap-2.5">
+          <span class="text-[#33FF66] font-bold text-[12px]">[!]</span>
+          <span class="text-[#C9F7D4] text-[11px] font-medium tracking-wide">2 stale edges detected in domain P4 — last verify 2h ago</span>
+        </div>
+        <button class="h-[26px] px-3 border border-[#33FF66] text-[#33FF66] text-[10px] font-semibold uppercase tracking-wider bg-transparent hover:bg-[#33FF66]/10 transition-colors">
+          Review
+        </button>
+      </div>
+
+      <!-- 2. KPI STRIP (4 cards in a row, each 4-layer: label / big number / delta vs baseline in muted gray / small stroke-only sparkline) -->
+      <div class="h-[102px] shrink-0 grid grid-cols-4 gap-3">
+        <!-- KPI 1 -->
+        <div class="fieldset-panel p-2.5 flex flex-col justify-between">
+          <div class="fieldset-legend">NODES</div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-[24px] font-bold text-[#C9F7D4] leading-none tracking-tight">12,847</span>
+            <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+          </div>
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-[#5F8F68]">+312 vs last week</span>
+            <!-- Sparkline SVG -->
+            <svg class="w-20 h-5" viewBox="0 0 80 20" fill="none">
+              <polyline points="0,15 15,14 30,11 45,13 60,7 80,4" stroke="#33FF66" stroke-width="1.2" stroke-linecap="square" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="fieldset-panel p-2.5 flex flex-col justify-between">
+          <div class="fieldset-legend">EDGES</div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-[24px] font-bold text-[#C9F7D4] leading-none tracking-tight">48,203</span>
+            <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+          </div>
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-[#5F8F68]">+1,204 vs last week</span>
+            <svg class="w-20 h-5" viewBox="0 0 80 20" fill="none">
+              <polyline points="0,16 18,15 35,12 52,10 65,6 80,3" stroke="#33FF66" stroke-width="1.2" stroke-linecap="square" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI 3 -->
+        <div class="fieldset-panel p-2.5 flex flex-col justify-between">
+          <div class="fieldset-legend">QUERIES 24H</div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-[24px] font-bold text-[#C9F7D4] leading-none tracking-tight">3,412</span>
+            <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+          </div>
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-[#5F8F68]">up 8.2% vs baseline</span>
+            <svg class="w-20 h-5" viewBox="0 0 80 20" fill="none">
+              <polyline points="0,14 16,16 32,13 48,11 64,8 80,5" stroke="#33FF66" stroke-width="1.2" stroke-linecap="square" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI 4 -->
+        <div class="fieldset-panel p-2.5 flex flex-col justify-between">
+          <div class="fieldset-legend">LATENCY P50</div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-[24px] font-bold text-[#C9F7D4] leading-none tracking-tight">6.4ms</span>
+            <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+          </div>
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-[#5F8F68]">down 0.4ms target &lt; 10ms</span>
+            <svg class="w-20 h-5" viewBox="0 0 80 20" fill="none">
+              <polyline points="0,6 20,8 40,11 55,9 70,14 80,12" stroke="#33FF66" stroke-width="1.2" stroke-linecap="square" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TWO-COLUMN ROW: LEFT 'Learning Loop' / RIGHT 'Recent Activity' (260px) -->
+      <div class="h-[260px] shrink-0 grid grid-cols-12 gap-3">
+        <!-- LEFT: Learning Loop (5 cols) -->
+        <div class="col-span-5 fieldset-panel p-3 flex flex-col justify-between">
+          <div class="fieldset-legend">Learning Loop</div>
+          
+          <div class="flex items-center justify-between pt-1 pb-1 border-b border-[#1A2E1A]">
+            <span class="text-[10px] text-[#5F8F68] font-semibold">CONVERGENCE TELEMETRY</span>
+            <span class="text-[9px] px-1.5 py-0.5 border border-[#33FF66]/30 text-[#33FF66] bg-[#33FF66]/5">ONLINE // v14.2</span>
+          </div>
+
+          <!-- Progress Bars -->
+          <div class="flex flex-col gap-3 py-1">
+            <!-- P: Precision Score -->
+            <div class="flex flex-col gap-1">
+              <div class="flex justify-between text-[11px]">
+                <span class="text-[#5F8F68]">Precision score</span>
+                <span class="font-bold text-[#33FF66]">P 0.828</span>
+              </div>
+              <div class="w-full h-1.5 bg-[#000000] border border-[#1A2E1A]">
+                <div class="h-full bg-[#33FF66]" style="width: 82.8%"></div>
+              </div>
+            </div>
+
+            <!-- M: Mutation Entropy -->
+            <div class="flex flex-col gap-1">
+              <div class="flex justify-between text-[11px]">
+                <span class="text-[#5F8F68]">Mutation entropy</span>
+                <span class="font-bold text-[#33FF66]">M 0.341</span>
+              </div>
+              <div class="w-full h-1.5 bg-[#000000] border border-[#1A2E1A]">
+                <div class="h-full bg-[#33FF66]" style="width: 34.1%"></div>
+              </div>
+            </div>
+
+            <!-- E: Eigen Convergence -->
+            <div class="flex flex-col gap-1">
+              <div class="flex justify-between text-[11px]">
+                <span class="text-[#5F8F68]">Eigen convergence</span>
+                <span class="font-bold text-[#33FF66]">E 0.898</span>
+              </div>
+              <div class="w-full h-1.5 bg-[#000000] border border-[#1A2E1A]">
+                <div class="h-full bg-[#33FF66]" style="width: 89.8%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footnote Line -->
+          <div class="pt-2 border-t border-[#1A2E1A] flex items-center justify-between text-[10px]">
+            <span class="text-[#5F8F68]">Last relearn 2h ago · v14</span>
+            <span class="text-[#33FF66] font-semibold">CONVERGED</span>
+          </div>
+        </div>
+
+        <!-- RIGHT: Recent Activity (7 cols, exactly 6 rows, dense) -->
+        <div class="col-span-7 fieldset-panel p-3 flex flex-col justify-between">
+          <div class="fieldset-legend">Recent Activity</div>
+
+          <div class="flex items-center justify-between pt-1 pb-1 border-b border-[#1A2E1A] text-[9px] uppercase tracking-wider text-[#5F8F68]">
+            <div class="w-20">TIMESTAMP</div>
+            <div class="w-20">AGENT</div>
+            <div class="flex-1 px-2">ACTION / DETAIL</div>
+            <div class="w-20 text-right">HASH</div>
+          </div>
+
+          <div class="flex flex-col divide-y divide-[#1A2E1A]/60 text-[11px]">
+            <!-- Row 1 -->
+            <div class="h-[31px] flex items-center justify-between">
+              <span class="w-20 text-[#5F8F68]">14:32:07Z</span>
+              <span class="w-20 text-[#33FF66] font-medium">sub-139</span>
+              <span class="flex-1 px-2 text-[#C9F7D4] whitespace-nowrap overflow-hidden">Compacted vector embedding cache tier</span>
+              <span class="w-20 text-right text-[#5F8F68]">0x4a1c</span>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="h-[31px] flex items-center justify-between">
+              <span class="w-20 text-[#5F8F68]">14:30:19Z</span>
+              <span class="w-20 text-[#C9F7D4]">operator</span>
+              <span class="flex-1 px-2 text-[#C9F7D4] whitespace-nowrap overflow-hidden">Verified Merkle root consistency proof</span>
+              <span class="w-20 text-right text-[#5F8F68]">0x9f2c</span>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="h-[31px] flex items-center justify-between">
+              <span class="w-20 text-[#5F8F68]">14:28:44Z</span>
+              <span class="w-20 text-[#33FF66] font-medium">sub-141</span>
+              <span class="flex-1 px-2 text-[#C9F7D4] whitespace-nowrap overflow-hidden">Attached semantic ontology edges</span>
+              <span class="w-20 text-right text-[#5F8F68]">0x3e11</span>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="h-[31px] flex items-center justify-between">
+              <span class="w-20 text-[#5F8F68]">14:25:01Z</span>
+              <span class="w-20 text-[#33FF66] font-medium">agent-2</span>
+              <span class="flex-1 px-2 text-[#C9F7D4] whitespace-nowrap overflow-hidden">Pruned unreferenced orphan leaves</span>
+              <span class="w-20 text-right text-[#5F8F68]">0x7b90</span>
+            </div>
+
+            <!-- Row 5 -->
+            <div class="h-[31px] flex items-center justify-between">
+              <span class="w-20 text-[#5F8F68]">14:21:15Z</span>
+              <span class="w-20 text-[#33FF66] font-medium">sub-139</span>
+              <span class="flex-1 px-2 text-[#C9F7D4] whitespace-nowrap overflow-hidden">Executed DuckDB AST index sweep</span>
+              <span class="w-20 text-right text-[#5F8F68]">0x8f2c</span>
+            </div>
+
+            <!-- Row 6 -->
+            <div class="h-[31px] flex items-center justify-between">
+              <span class="w-20 text-[#5F8F68]">14:18:52Z</span>
+              <span class="w-20 text-[#C9F7D4]">operator</span>
+              <span class="flex-1 px-2 text-[#C9F7D4] whitespace-nowrap overflow-hidden">Re-indexed symbol schema contracts</span>
+              <span class="w-20 text-right text-[#5F8F68]">0xa18e</span>
+            </div>
+          </div>
+
+          <div class="pt-1.5 border-t border-[#1A2E1A] flex items-center justify-between text-[10px] text-[#5F8F68]">
+            <span>6 AUDITED OPS SHOWN</span>
+            <span class="text-[#33FF66] hover:underline cursor-pointer">FULL LOG &gt;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. PANEL 'Domain Health' (7 rows P1..P7, dense rows filling down) -->
+      <div class="h-[370px] shrink-0 fieldset-panel p-3 flex flex-col justify-between">
+        <div class="fieldset-legend">Domain Health</div>
+
+        <!-- Table Header (Uppercase only) -->
+        <div class="h-[28px] shrink-0 border-b border-[#1A2E1A] flex items-center text-[9px] uppercase tracking-wider text-[#5F8F68] font-semibold px-2">
+          <div class="w-16">DOMAIN</div>
+          <div class="flex-1">PARTITION NAME</div>
+          <div class="w-28 text-center">STATUS</div>
+          <div class="w-44 text-center">ACTIVITY (14D)</div>
+          <div class="w-28 text-right">NODES</div>
+        </div>
+
+        <!-- Table Rows (7 rows, each ~42px, filling the panel smoothly) -->
+        <div class="flex-1 flex flex-col justify-between divide-y divide-[#1A2E1A]/60 py-0.5">
+          <!-- Row P1 -->
+          <div class="flex items-center px-2 text-[11px] h-[44px]">
+            <div class="w-16 font-bold text-[#33FF66]">P1</div>
+            <div class="flex-1 text-[#C9F7D4] font-medium">Core Runtime Execution &amp; Store</div>
+            <div class="w-28 flex justify-center">
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66]/40 text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">OK</span>
+            </div>
+            <div class="w-44 flex justify-center items-center">
+              <svg class="w-32 h-4" viewBox="0 0 128 16" fill="none">
+                <polyline points="0,12 20,11 40,8 60,10 80,7 100,5 128,4" stroke="#33FF66" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="w-28 text-right font-mono text-[#C9F7D4]">3,842</div>
+          </div>
+
+          <!-- Row P2 -->
+          <div class="flex items-center px-2 text-[11px] h-[44px]">
+            <div class="w-16 font-bold text-[#33FF66]">P2</div>
+            <div class="flex-1 text-[#C9F7D4] font-medium">Heuristics &amp; Ingestion Catalog</div>
+            <div class="w-28 flex justify-center">
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66]/40 text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">OK</span>
+            </div>
+            <div class="w-44 flex justify-center items-center">
+              <svg class="w-32 h-4" viewBox="0 0 128 16" fill="none">
+                <polyline points="0,14 25,12 50,11 75,9 100,6 128,5" stroke="#33FF66" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="w-28 text-right font-mono text-[#C9F7D4]">2,118</div>
+          </div>
+
+          <!-- Row P3 -->
+          <div class="flex items-center px-2 text-[11px] h-[44px]">
+            <div class="w-16 font-bold text-[#33FF66]">P3</div>
+            <div class="flex-1 text-[#C9F7D4] font-medium">Vector Space &amp; KNN Embeddings</div>
+            <div class="w-28 flex justify-center">
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66]/40 text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">OK</span>
+            </div>
+            <div class="w-44 flex justify-center items-center">
+              <svg class="w-32 h-4" viewBox="0 0 128 16" fill="none">
+                <polyline points="0,11 25,10 50,12 75,9 100,10 128,7" stroke="#33FF66" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="w-28 text-right font-mono text-[#C9F7D4]">1,940</div>
+          </div>
+
+          <!-- Row P4 (WARN) -->
+          <div class="flex items-center px-2 text-[11px] h-[44px] bg-[#FFD23F]/5 border-l-2 border-[#FFD23F]">
+            <div class="w-16 font-bold text-[#FFD23F]">P4</div>
+            <div class="flex-1 text-[#C9F7D4] font-medium">JSON-LD Schema &amp; Invariants</div>
+            <div class="w-28 flex justify-center">
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#FFD23F]/50 text-[#FFD23F] bg-[#FFD23F]/10 rounded-[1px]">WARN</span>
+            </div>
+            <div class="w-44 flex justify-center items-center">
+              <svg class="w-32 h-4" viewBox="0 0 128 16" fill="none">
+                <polyline points="0,6 25,7 50,9 75,11 100,13 128,15" stroke="#FFD23F" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="w-28 text-right font-mono text-[#FFD23F]">1,656</div>
+          </div>
+
+          <!-- Row P5 -->
+          <div class="flex items-center px-2 text-[11px] h-[44px]">
+            <div class="w-16 font-bold text-[#33FF66]">P5</div>
+            <div class="flex-1 text-[#C9F7D4] font-medium">Consensus, Leases &amp; Fencing</div>
+            <div class="w-28 flex justify-center">
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66]/40 text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">OK</span>
+            </div>
+            <div class="w-44 flex justify-center items-center">
+              <svg class="w-32 h-4" viewBox="0 0 128 16" fill="none">
+                <polyline points="0,15 25,13 50,11 75,8 100,6 128,4" stroke="#33FF66" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="w-28 text-right font-mono text-[#C9F7D4]">1,112</div>
+          </div>
+
+          <!-- Row P6 -->
+          <div class="flex items-center px-2 text-[11px] h-[44px]">
+            <div class="w-16 font-bold text-[#33FF66]">P6</div>
+            <div class="flex-1 text-[#C9F7D4] font-medium">Inference Subsumption &amp; Mapping</div>
+            <div class="w-28 flex justify-center">
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66]/40 text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">OK</span>
+            </div>
+            <div class="w-44 flex justify-center items-center">
+              <svg class="w-32 h-4" viewBox="0 0 128 16" fill="none">
+                <polyline points="0,14 25,13 50,10 75,9 100,7 128,4" stroke="#33FF66" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="w-28 text-right font-mono text-[#C9F7D4]">1,280</div>
+          </div>
+
+          <!-- Row P7 -->
+          <div class="flex items-center px-2 text-[11px] h-[44px]">
+            <div class="w-16 font-bold text-[#33FF66]">P7</div>
+            <div class="flex-1 text-[#C9F7D4] font-medium">Evaluation &amp; Feedback Loop</div>
+            <div class="w-28 flex justify-center">
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66]/40 text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">OK</span>
+            </div>
+            <div class="w-44 flex justify-center items-center">
+              <svg class="w-32 h-4" viewBox="0 0 128 16" fill="none">
+                <polyline points="0,13 25,12 50,11 75,9 100,7 128,5" stroke="#33FF66" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="w-28 text-right font-mono text-[#C9F7D4]">869</div>
+          </div>
+        </div>
+
+        <!-- Panel Footer -->
+        <div class="h-[22px] shrink-0 border-t border-[#1A2E1A] flex items-center justify-between text-[10px] text-[#5F8F68] px-2">
+          <span>7 PARTITIONS ACTIVE · SHARD_KEY: MD5_RANGE</span>
+          <span>SHACL CORE INVARIANTS: PASS (11/11)</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 5. STATUS BAR (FLUSH AT BOTTOM EDGE, 32px, mono, uppercase, small) -->
+    <footer class="h-[32px] shrink-0 border-t border-[#1A2E1A] px-4 flex items-center justify-between bg-[#000000] text-[10px] uppercase font-mono tracking-wider text-[#5F8F68] z-10">
+      <div class="flex items-center gap-3">
+        <span class="text-[#C9F7D4]">12,847 NODES</span>
+        <span>·</span>
+        <span class="text-[#C9F7D4]">48,203 EDGES</span>
+        <span>·</span>
+        <span>LAST RELEARN 2H AGO</span>
+        <span>·</span>
+        <span>V14</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span>RAFT QUORUM SYNCED</span>
+        <span>·</span>
+        <span>P50: 6.4ms</span>
+        <div class="flex items-center gap-1.5 text-[#33FF66]">
+          <span class="w-2 h-2 rounded-full bg-[#33FF66]"></span>
+          <span class="text-[9px] font-bold">ONLINE</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

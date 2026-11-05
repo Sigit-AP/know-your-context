@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Soul - Activity Log (Terminal Brutalist)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    body {
+      background-color: #000000;
+      color: #C9F7D4;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Custom scrollbar just in case, but no scrolling desired */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000000;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1A2E1A;
+    }
+    .legend-border {
+      position: relative;
+      border: 1px solid #1A2E1A;
+    }
+    .legend-title {
+      position: absolute;
+      top: -9px;
+      left: 14px;
+      background: #000000;
+      padding: 0 6px;
+      font-size: 10px;
+      line-height: 14px;
+      color: #5F8F68;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body class="flex flex-col bg-black text-[#C9F7D4] select-none text-[12px] leading-tight">
+
+  <!-- TOPBAR: styled like prompt line kyc://activity-log _ -->
+  <header class="h-[42px] min-h-[42px] border-b border-[#1A2E1A] bg-[#000000] px-4 flex items-center justify-between text-[12px] z-20">
+    <!-- Left: Prompt line breadcrumb -->
+    <div class="flex items-center gap-2">
+      <span class="text-[#5F8F68]">kyc://</span>
+      <span class="text-[#33FF66] font-semibold">activity-log</span>
+      <span class="inline-block w-2 h-3.5 bg-[#33FF66] animate-pulse ml-0.5"></span>
+      <span class="ml-3 px-1.5 py-0.5 text-[10px] bg-[#050805] border border-[#1A2E1A] text-[#5F8F68] rounded-[2px]">cluster-01</span>
+    </div>
+
+    <!-- Center: Search with ⌘K -->
+    <div class="flex items-center w-[460px] h-[28px] bg-[#050805] border border-[#1A2E1A] rounded-[2px] px-2.5 text-[11px] text-[#5F8F68]">
+      <span class="text-[#33FF66] mr-2">&gt;</span>
+      <span class="flex-1 text-[#5F8F68]">search nodes, edges, hashes, logs</span>
+      <kbd class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 py-0.2 rounded-[2px] bg-[#000000]">⌘K</kbd>
+    </div>
+
+    <!-- Right: Bell + Avatar (Max 4 segments) -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5 text-[11px] text-[#5F8F68] px-2 py-0.5 border border-[#1A2E1A] bg-[#050805] rounded-[2px]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+        <span>RAFT SYNCED</span>
+      </div>
+      <!-- Bell with red/amber dot -->
+      <div class="relative cursor-pointer p-1 text-[#5F8F68] hover:text-[#C9F7D4]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-[#FFD23F] rounded-full"></span>
+      </div>
+      <!-- Avatar -->
+      <div class="w-6 h-6 rounded-[2px] bg-[#050805] border border-[#1A2E1A] flex items-center justify-center text-[10px] font-bold text-[#33FF66]">
+        SA
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN BODY: Sidebar (240px) + Main Content (1200px) -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- SIDEBAR: 240px width with hairline right border -->
+    <aside class="w-[240px] min-w-[240px] border-r border-[#1A2E1A] bg-[#000000] flex flex-col justify-between p-3 select-none">
+      <div class="space-y-4">
+        <!-- Logo & version -->
+        <div class="flex items-center justify-between pb-2 border-b border-[#1A2E1A]">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 border border-[#33FF66] bg-[#050805] flex items-center justify-center text-[10px] font-bold text-[#33FF66]">
+              K
+            </div>
+            <span class="font-bold tracking-tight text-[12px] text-[#C9F7D4]">Know Your Soul</span>
+          </div>
+          <span class="text-[9px] text-[#5F8F68] border border-[#1A2E1A] px-1 py-0.5 rounded-[2px]">v14.2</span>
+        </div>
+
+        <!-- NAV GROUPS -->
+        <div class="space-y-3.5 text-[11px]">
+          <!-- MONITOR -->
+          <div>
+            <div class="text-[9px] text-[#5F8F68] font-bold tracking-wider mb-1 px-2 uppercase">MONITOR</div>
+            <div class="space-y-0.5">
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px] transition-colors">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Overview</span>
+              </a>
+              <!-- ACTIVE ITEM: Activity Log -->
+              <a href="#" class="flex items-center justify-between px-2 py-1 bg-[#33FF66]/10 border border-[#33FF66]/40 text-[#33FF66] font-semibold rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#33FF66]">&gt;</span> Activity Log</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px] transition-colors">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Graph Explorer</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ANALYZE -->
+          <div>
+            <div class="text-[9px] text-[#5F8F68] font-bold tracking-wider mb-1 px-2 uppercase">ANALYZE</div>
+            <div class="space-y-0.5">
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Search</span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Metrics</span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Analytics</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- GOVERN -->
+          <div>
+            <div class="text-[9px] text-[#5F8F68] font-bold tracking-wider mb-1 px-2 uppercase">GOVERN</div>
+            <div class="space-y-0.5">
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Health</span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Audit Ledger</span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Proposals</span>
+                <span class="text-[9px] px-1 bg-[#050805] border border-[#1A2E1A] text-[#5F8F68]">3</span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Debt Queue</span>
+                <span class="text-[9px] px-1 bg-[#050805] border border-[#1A2E1A] text-[#5F8F68]">12</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- SYSTEM -->
+          <div>
+            <div class="text-[9px] text-[#5F8F68] font-bold tracking-wider mb-1 px-2 uppercase">SYSTEM</div>
+            <div class="space-y-0.5">
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> System</span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1 text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                <span class="flex items-center gap-2"><span class="text-[#1A2E1A]">::</span> Setup</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR FOOTER: user card Sigit A. + operator -->
+      <div class="pt-2 border-t border-[#1A2E1A] flex items-center justify-between bg-[#050805] p-2 border border-[#1A2E1A] rounded-[2px]">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 border border-[#1A2E1A] bg-[#000000] flex items-center justify-center text-[10px] text-[#33FF66] font-bold">
+            SA
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold text-[#C9F7D4] leading-none">Sigit A.</div>
+            <div class="text-[9px] text-[#5F8F68] leading-none mt-1">operator</div>
+          </div>
+        </div>
+        <div class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></div>
+      </div>
+    </aside>
+
+    <!-- CONTENT AREA -->
+    <main class="flex-1 flex flex-col justify-between bg-[#000000] p-3 overflow-hidden">
+
+      <!-- TOOLBAR ROW: Ghost search field + pill filters + export -->
+      <div class="h-[34px] min-h-[34px] flex items-center justify-between gap-3 mb-2 text-[11px]">
+        <!-- Ghost search field -->
+        <div class="flex items-center flex-1 max-w-[340px] h-[30px] bg-[#050805] border border-[#1A2E1A] rounded-[2px] px-2.5">
+          <span class="text-[#5F8F68] mr-2 text-[12px]">⌕</span>
+          <input type="text" placeholder="Filter events..." class="bg-transparent border-none outline-none text-[#C9F7D4] placeholder-[#5F8F68] w-full text-[11px]" readonly value="">
+        </div>
+
+        <!-- Filter Pills & Ghost Export Button -->
+        <div class="flex items-center gap-2">
+          <button class="h-[30px] px-2.5 bg-[#050805] border border-[#1A2E1A] rounded-[2px] text-[#C9F7D4] hover:border-[#33FF66]/40 flex items-center gap-1.5">
+            <span class="text-[#5F8F68]">Level</span>
+            <span class="text-[9px] text-[#33FF66]">▾</span>
+          </button>
+          <button class="h-[30px] px-2.5 bg-[#050805] border border-[#1A2E1A] rounded-[2px] text-[#C9F7D4] hover:border-[#33FF66]/40 flex items-center gap-1.5">
+            <span class="text-[#5F8F68]">Agent</span>
+            <span class="text-[9px] text-[#33FF66]">▾</span>
+          </button>
+          <button class="h-[30px] px-2.5 bg-[#050805] border border-[#1A2E1A] rounded-[2px] text-[#C9F7D4] hover:border-[#33FF66]/40 flex items-center gap-1.5">
+            <span class="text-[#5F8F68]">Domain</span>
+            <span class="text-[9px] text-[#33FF66]">▾</span>
+          </button>
+          <button class="h-[30px] px-2.5 bg-[#050805] border border-[#1A2E1A] rounded-[2px] text-[#C9F7D4] hover:border-[#33FF66]/40 flex items-center gap-1.5 tracking-wider">
+            <span class="text-[#5F8F68]">NOV 1 – NOV 5, 2026</span>
+            <span class="text-[9px] text-[#33FF66]">▾</span>
+          </button>
+
+          <!-- Ghost button 'Export' -->
+          <button class="h-[30px] px-3 bg-transparent border border-[#1A2E1A] hover:border-[#33FF66] text-[#C9F7D4] rounded-[2px] flex items-center gap-1.5 transition-colors">
+            <svg class="w-3.5 h-3.5 text-[#5F8F68]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DENSE TABLE PANEL WITH LEGEND -->
+      <div class="flex-1 legend-border bg-[#050805] rounded-[2px] flex flex-col justify-between overflow-hidden">
+        <span class="legend-title">AUDITED_OPS_STREAM // 18 ENTRIES VISIBLE</span>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <!-- TABLE HEADER: 32px height -->
+          <div class="h-[32px] min-h-[32px] bg-[#000000] border-b border-[#1A2E1A] px-3 flex items-center text-[10px] text-[#5F8F68] font-semibold uppercase tracking-wider">
+            <div class="w-[95px] min-w-[95px]">TIME</div>
+            <div class="w-[75px] min-w-[75px]">LEVEL</div>
+            <div class="w-[105px] min-w-[105px]">AGENT</div>
+            <div class="w-[140px] min-w-[140px]">ACTION</div>
+            <div class="flex-1 pr-3">DETAIL</div>
+            <div class="w-[85px] min-w-[85px] text-right">HASH</div>
+          </div>
+
+          <!-- TABLE ROWS: Exactly 18 visible rows, dense rows 37px -->
+          <div class="flex flex-col flex-1 divide-y divide-[#1A2E1A]/60 text-[11px]">
+
+            <!-- ROW 1 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:32:07Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-139</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">apply proposal</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Proposal p-2041 applied to domain P4</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">9f2c1ab4</div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:30:19Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">operator</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">import file</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Ingested AST schema graph bundle into shard 2</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">8a1d440f</div>
+            </div>
+
+            <!-- ROW 3 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:28:44Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-141</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">evaluate</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Computed topological convergence metrics across P1..P7</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">77e19cb2</div>
+            </div>
+
+            <!-- ROW 4 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:25:01Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#FFD23F]/10 text-[#FFD23F] border border-[#FFD23F]/40 rounded-[2px]">WARN</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">system</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">propose</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Stale citation threshold exceeded for vector cache tier</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">3d81b899</div>
+            </div>
+
+            <!-- ROW 5 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:21:15Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-139</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">apply proposal</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Merged AST symbol index into partition P2</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">55c2f0a1</div>
+            </div>
+
+            <!-- ROW 6 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:18:52Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">operator</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">evaluate</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Verified Raft monotonic log continuity to sequence 10423</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">a012e841</div>
+            </div>
+
+            <!-- ROW 7 (HARD RULE: ERROR ROW: red tint + 2px red left border, 'REINDEX FAILED — stale embedding pointers' must not wrap) -->
+            <div class="h-[37px] flex items-center px-3 bg-[#FF4D4D]/10 border-l-2 border-[#FF4D4D] hover:bg-[#FF4D4D]/15 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#FF4D4D] font-medium">14:15:30Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#FF4D4D]/20 text-[#FF4D4D] border border-[#FF4D4D]/50 rounded-[2px]">ERROR</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-141</div>
+              <div class="w-[140px] min-w-[140px] text-[#FF4D4D] font-medium">rollback</div>
+              <div class="flex-1 text-[#FF4D4D] font-medium whitespace-nowrap overflow-hidden pr-3">REINDEX FAILED — stale embedding pointers</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#FF4D4D] font-mono">c190bb42</div>
+            </div>
+
+            <!-- ROW 8 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:12:08Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">system</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">evaluate</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Asserted 11 SHACL core invariant constraints cleanly</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">e4479901</div>
+            </div>
+
+            <!-- ROW 9 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:09:44Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-139</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">import file</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Loaded JSON-LD ontology definitions for domain P6</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">43dcb102</div>
+            </div>
+
+            <!-- ROW 10 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:05:22Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#FFD23F]/10 text-[#FFD23F] border border-[#FFD23F]/40 rounded-[2px]">WARN</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-141</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">propose</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Detected 2 orphan reference nodes in schema table</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">78fe23a9</div>
+            </div>
+
+            <!-- ROW 11 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">14:02:11Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">operator</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">apply proposal</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Applied fencing lease renewal on cluster storage root</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">69bca711</div>
+            </div>
+
+            <!-- ROW 12 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">13:58:39Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-139</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">evaluate</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Completed DuckDB vector table compaction step 4</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">12e094fa</div>
+            </div>
+
+            <!-- ROW 13 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">13:55:04Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">system</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">import file</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Synchronized IPC broadcast socket to loopback port 8741</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">b82ef455</div>
+            </div>
+
+            <!-- ROW 14 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">13:51:28Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-141</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">evaluate</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Measured cluster P50 query latency at 6.4ms baseline</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">4e112d7c</div>
+            </div>
+
+            <!-- ROW 15 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">13:48:10Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#FFD23F]/10 text-[#FFD23F] border border-[#FFD23F]/40 rounded-[2px]">WARN</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-139</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">propose</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Unindexed semantic tag flagged for vacuum maintenance</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">33190ab7</div>
+            </div>
+
+            <!-- ROW 16 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">13:44:55Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">operator</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">apply proposal</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Pruned unreferenced orphan leaves from knowledge DAG</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">44bc19f0</div>
+            </div>
+
+            <!-- ROW 17 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">13:40:12Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">system</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">evaluate</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Validated Merkle root monotonic chain integrity 100%</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">8f2c00a1</div>
+            </div>
+
+            <!-- ROW 18 -->
+            <div class="h-[37px] flex items-center px-3 hover:bg-[#1A2E1A]/20 transition-colors">
+              <div class="w-[95px] min-w-[95px] text-[#5F8F68]">13:36:40Z</div>
+              <div class="w-[75px] min-w-[75px]">
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-[#33FF66]/10 text-[#33FF66] border border-[#33FF66]/30 rounded-[2px]">INFO</span>
+              </div>
+              <div class="w-[105px] min-w-[105px] text-[#C9F7D4]">sub-141</div>
+              <div class="w-[140px] min-w-[140px] text-[#5F8F68]">import file</div>
+              <div class="flex-1 text-[#C9F7D4] truncate pr-3">Exported frozen runtime manifest digest BLAKE3 batch</div>
+              <div class="w-[85px] min-w-[85px] text-right text-[#5F8F68] font-mono">4a01c482</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- PAGINATION ROW: left '1-18 of 3,452', right: chip '18 / page ▾' + prev/next 32px buttons -->
+        <div class="h-[34px] min-h-[34px] bg-[#000000] border-t border-[#1A2E1A] px-3 flex items-center justify-between text-[11px] text-[#5F8F68]">
+          <div>1-18 of 3,452</div>
+          <div class="flex items-center gap-2">
+            <button class="h-[24px] px-2 bg-[#050805] border border-[#1A2E1A] text-[#C9F7D4] rounded-[2px] flex items-center gap-1 hover:border-[#33FF66]/40 text-[10px]">
+              <span>18 / page</span>
+              <span class="text-[#33FF66] text-[8px]">▾</span>
+            </button>
+            <div class="flex items-center gap-1">
+              <button class="w-[32px] h-[24px] flex items-center justify-center border border-[#1A2E1A] bg-[#050805] text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                &lt;
+              </button>
+              <button class="w-[32px] h-[24px] flex items-center justify-center border border-[#1A2E1A] bg-[#050805] text-[#5F8F68] hover:text-[#C9F7D4] rounded-[2px]">
+                &gt;
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- STATUS BAR: FLUSH AT THE VERY BOTTOM EDGE -->
+  <footer class="h-[26px] min-h-[26px] bg-[#000000] border-t border-[#1A2E1A] px-4 flex items-center justify-between text-[10px] text-[#5F8F68] font-mono z-30">
+    <div class="flex items-center gap-3">
+      <span class="text-[#33FF66] font-semibold">3,452 EVENTS</span>
+      <span>·</span>
+      <span>2 AGENTS LIVE</span>
+      <span>·</span>
+      <span class="flex items-center gap-1.5">
+        <span>STREAM CONNECTED</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66] inline-block"></span>
+      </span>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <span>RAFT QUORUM SYNCED</span>
+      <span>·</span>
+      <span>LATENCY P50 6.4ms</span>
+      <span>·</span>
+      <span class="text-[#33FF66]">ONLINE</span>
+    </div>
+  </footer>
+
+</body>
+</html>

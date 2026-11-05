@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+<title>Search + Query - Know Your Soul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        base: '#000000',
+        panel: '#050805',
+        panelRaised: '#080E08',
+        borderLine: '#1A2E1A',
+        borderMuted: '#102010',
+        accent: '#33FF66',
+        textPrimary: '#C9F7D4',
+        textSecondary: '#5F8F68',
+        textMuted: '#3D6345',
+        statusWarn: '#FFD23F',
+        statusDanger: '#FF4D4D',
+      },
+      fontFamily: {
+        mono: ['"JetBrains Mono"', 'monospace'],
+      }
+    }
+  }
+}
+</script>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+}
+html, body {
+  width: 1440px;
+  height: 900px;
+  max-width: 1440px;
+  max-height: 900px;
+  overflow: hidden;
+  background-color: #000000;
+  color: #C9F7D4;
+}
+/* Legend style panel headers */
+.fieldset-box {
+  position: relative;
+  border: 1px solid #1A2E1A;
+  background-color: #050805;
+  border-radius: 0px;
+}
+.fieldset-legend {
+  position: absolute;
+  top: -9px;
+  left: 14px;
+  padding: 0 6px;
+  background-color: #050805;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5F8F68;
+  line-height: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* CRT scanline subtlety */
+.scanline-bg {
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.01));
+  background-size: 100% 2px, 3px 100%;
+}
+.match-highlight {
+  background-color: rgba(51, 255, 102, 0.18);
+  color: #33FF66;
+  padding: 0 2px;
+  border-bottom: 1px solid #33FF66;
+}
+</style>
+</head>
+<body class="w-[1440px] h-[900px] flex bg-base text-textPrimary select-none">
+
+  <!-- LEFT SIDEBAR: 248px width, Terminal Brutalist -->
+  <aside class="w-[248px] h-[900px] flex-shrink-0 bg-base border-r border-borderLine flex flex-col justify-between p-3.5 z-20">
+    <div>
+      <!-- Brand Line -->
+      <div class="flex items-center justify-between pb-3.5 border-b border-borderLine mb-3.5">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 bg-borderLine border border-accent flex items-center justify-center text-accent text-xs font-bold leading-none">
+            K
+          </div>
+          <span class="text-xs font-bold tracking-wider text-textPrimary uppercase">Know Your Soul</span>
+        </div>
+        <span class="text-[10px] text-textSecondary font-mono px-1 py-0.5 border border-borderLine bg-panel">v14.2</span>
+      </div>
+
+      <!-- Nav Sections -->
+      <div class="space-y-3.5">
+        <!-- MONITOR -->
+        <div>
+          <div class="text-[10px] font-bold tracking-widest text-textSecondary uppercase px-2 mb-1 flex items-center gap-1.5">
+            <span class="text-textMuted font-mono">01 //</span> MONITOR
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>Graph Explorer</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- ANALYZE -->
+        <div>
+          <div class="text-[10px] font-bold tracking-widest text-textSecondary uppercase px-2 mb-1 flex items-center gap-1.5">
+            <span class="text-textMuted font-mono">02 //</span> ANALYZE
+          </div>
+          <nav class="space-y-0.5">
+            <!-- Active Search Tab -->
+            <a href="#" class="flex items-center justify-between px-2 py-1 text-xs text-accent bg-[#0A1A0C] border-l-2 border-accent font-semibold">
+              <div class="flex items-center gap-2">
+                <span class="text-accent">&gt;</span>
+                <span>Search</span>
+              </div>
+              <span class="w-1.5 h-1.5 bg-accent rounded-full inline-block"></span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>Analytics</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- GOVERN -->
+        <div>
+          <div class="text-[10px] font-bold tracking-widest text-textSecondary uppercase px-2 mb-1 flex items-center gap-1.5">
+            <span class="text-textMuted font-mono">03 //</span> GOVERN
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <div class="flex items-center gap-2">
+                <span class="text-textMuted">::</span>
+                <span>Proposals</span>
+              </div>
+              <span class="text-[10px] px-1 bg-panel border border-borderLine text-textSecondary font-mono">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <div class="flex items-center gap-2">
+                <span class="text-textMuted">::</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="text-[10px] px-1 bg-panel border border-borderLine text-textSecondary font-mono">12</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- SYSTEM -->
+        <div>
+          <div class="text-[10px] font-bold tracking-widest text-textSecondary uppercase px-2 mb-1 flex items-center gap-1.5">
+            <span class="text-textMuted font-mono">04 //</span> SYSTEM
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2 py-1 text-xs text-textSecondary hover:text-textPrimary hover:bg-panel transition-none">
+              <span class="text-textMuted">::</span>
+              <span>Setup</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Card at bottom -->
+    <div class="p-2 border border-borderLine bg-panel flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 bg-borderLine border border-borderLine flex items-center justify-center text-[10px] font-bold text-accent">
+          SA
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs font-semibold text-textPrimary leading-tight">Sigit A.</span>
+          <span class="text-[10px] text-textSecondary leading-tight font-mono">operator</span>
+        </div>
+      </div>
+      <span class="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER (1192px x 900px) -->
+  <main class="w-[1192px] h-[900px] flex-shrink-0 flex flex-col justify-between bg-base">
+
+    <!-- 1. TOPBAR: One line prompt style 'kyc://search-query _' -->
+    <header class="h-[42px] px-4 border-b border-borderLine flex items-center justify-between bg-panel flex-shrink-0">
+      <!-- Breadcrumb prompt -->
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-textSecondary font-mono">kyc://</span>
+        <span class="text-textPrimary font-semibold">search-query</span>
+        <span class="inline-block w-2 h-3.5 bg-accent ml-0.5 animate-pulse"></span>
+        <span class="text-textMuted mx-2">|</span>
+        <span class="text-[10px] text-textSecondary font-mono px-1.5 py-0.5 border border-borderLine bg-base">cluster-01</span>
+        <span class="text-[10px] text-textSecondary font-mono px-1.5 py-0.5 border border-borderLine bg-base">12,847 NODES</span>
+      </div>
+
+      <!-- Center Query / Status Indicator -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 text-[11px] text-textSecondary font-mono">
+          <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+          <span>INDEX: SYNCED (0.4ms)</span>
+        </div>
+      </div>
+
+      <!-- Right controls (max 4 segments: bell with dot, avatar, raft) -->
+      <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-1.5 px-2 py-0.5 border border-borderLine text-[11px] text-accent font-mono bg-base">
+          <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+          <span>RAFT QUORUM 3/3</span>
+        </div>
+        <!-- Bell with status dot -->
+        <button class="relative w-7 h-7 flex items-center justify-center border border-borderLine bg-base text-textSecondary hover:text-textPrimary hover:border-accent">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-1 h-1 bg-statusWarn rounded-full"></span>
+        </button>
+        <!-- User monogram -->
+        <div class="w-7 h-7 border border-borderLine bg-panel flex items-center justify-center text-xs font-semibold text-textPrimary">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. SEARCH BAR & SCOPE CHIPS (Integrated Header Section) -->
+    <section class="px-4 pt-3.5 pb-2.5 border-b border-borderLine bg-base flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <!-- Large query input bar -->
+        <div class="flex-1 h-[42px] bg-panel border border-accent flex items-center px-3.5 gap-2.5">
+          <span class="text-accent text-sm font-bold font-mono">&gt;</span>
+          <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" value="stale embedding pointers" readonly class="flex-1 bg-transparent border-none outline-none text-sm text-textPrimary font-mono font-medium tracking-tight">
+          <div class="flex items-center gap-1.5 text-textSecondary text-[11px] font-mono">
+            <span class="text-accent">17 MATCHES</span>
+            <span class="px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary text-[10px]">⌘K</span>
+            <button class="px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary hover:text-textPrimary text-[10px]">ESC</button>
+          </div>
+        </div>
+
+        <!-- Mode selector / Fast toggle -->
+        <div class="flex items-center border border-borderLine bg-panel h-[42px] px-2 gap-2 text-xs font-mono">
+          <span class="text-textSecondary text-[10px] uppercase">INDEX:</span>
+          <span class="text-accent text-[11px] font-semibold">DUCKDB + AST</span>
+          <span class="text-textMuted">|</span>
+          <span class="text-textSecondary text-[10px]">LATENCY:</span>
+          <span class="text-textPrimary text-[11px]">6.2ms</span>
+        </div>
+      </div>
+
+      <!-- Scope chips with counts directly under query bar -->
+      <div class="flex items-center gap-2 mt-2.5 text-xs font-mono">
+        <span class="text-[10px] uppercase text-textSecondary tracking-wider mr-1">SCOPE:</span>
+        <button class="px-2.5 py-1 border border-accent bg-[#0B1E0E] text-accent text-xs font-semibold flex items-center gap-1.5">
+          <span>All</span>
+          <span class="text-[10px] px-1 bg-accent text-base font-bold">17</span>
+        </button>
+        <button class="px-2.5 py-1 border border-borderLine bg-panel text-textSecondary hover:text-textPrimary hover:border-textSecondary text-xs flex items-center gap-1.5">
+          <span>Nodes</span>
+          <span class="text-[10px] px-1 border border-borderLine text-textPrimary bg-base font-mono">9</span>
+        </button>
+        <button class="px-2.5 py-1 border border-borderLine bg-panel text-textSecondary hover:text-textPrimary hover:border-textSecondary text-xs flex items-center gap-1.5">
+          <span>Edges</span>
+          <span class="text-[10px] px-1 border border-borderLine text-textPrimary bg-base font-mono">5</span>
+        </button>
+        <button class="px-2.5 py-1 border border-borderLine bg-panel text-textSecondary hover:text-textPrimary hover:border-textSecondary text-xs flex items-center gap-1.5">
+          <span>Events</span>
+          <span class="text-[10px] px-1 border border-borderLine text-textPrimary bg-base font-mono">3</span>
+        </button>
+
+        <div class="ml-auto flex items-center gap-3 text-[11px] text-textSecondary font-mono">
+          <span>SORT: <span class="text-textPrimary font-semibold">RELEVANCE (DESC)</span></span>
+          <span class="text-textMuted">·</span>
+          <span>SHARD: <span class="text-textPrimary">ALL_PARTITIONS</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MAIN WORKSPACE: 2-COLUMN SPLIT (Results Table 760px + Neighborhood Panel 400px) -->
+    <!-- Exactly sized to fill viewport down to flush footer -->
+    <div class="flex-1 px-4 py-3 flex gap-3 overflow-hidden bg-base">
+
+      <!-- LEFT: RESULTS TABLE (Exactly 12 visible rows, row height ~38px) -->
+      <div class="w-[752px] h-full fieldset-box flex flex-col justify-between">
+        <div class="fieldset-legend">
+          <span class="text-accent font-bold">[!]</span>
+          <span>QUERY RESULTS // 17 FOUND · SHOWING 12</span>
+        </div>
+
+        <!-- Table Header (Uppercase, single line) -->
+        <div class="pt-2 px-3 pb-1.5 border-b border-borderLine bg-panel flex items-center text-[10px] uppercase font-bold text-textSecondary tracking-wider">
+          <div class="w-[68px] flex-shrink-0">TYPE</div>
+          <div class="w-[364px] flex-shrink-0">NAME</div>
+          <div class="w-[72px] flex-shrink-0 text-center">DOMAIN</div>
+          <div class="w-[100px] flex-shrink-0 text-right pr-3">SCORE</div>
+          <div class="w-[110px] flex-shrink-0 text-right pr-2">UPDATED</div>
+        </div>
+
+        <!-- Table Body: Exactly 12 Rows, dense 37-38px, matched 'stale' highlighted, no ellipsis -->
+        <div class="flex-1 flex flex-col justify-between text-xs font-mono">
+          
+          <!-- ROW 1 (ACTIVE / SELECTED -> TARGET FOR RIGHT NEIGHBORHOOD PANEL) -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderLine bg-[#0D2211] border-l-2 border-l-accent text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-accent bg-base text-accent font-bold uppercase">NODE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs font-medium text-textPrimary flex items-center gap-1.5">
+              <span class="match-highlight">stale</span>-pointer-guard
+              <span class="text-[10px] text-accent font-bold">●</span>
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary font-semibold">P4</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-accent font-bold">0.982</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">2h ago</div>
+          </div>
+
+          <!-- ROW 2 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary font-bold uppercase">NODE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              embedding-refresh-job
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P3</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.941</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">14m ago</div>
+          </div>
+
+          <!-- ROW 3 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-statusWarn bg-base text-statusWarn font-bold uppercase">EDGE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              <span class="match-highlight">stale</span>-citation-edge
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P4</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.925</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">2h ago</div>
+          </div>
+
+          <!-- ROW 4 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-statusDanger bg-base text-statusDanger font-bold uppercase">EVENT</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              reindex-failed-<span class="match-highlight">stale</span>-pointers
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P1</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.892</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">3h ago</div>
+          </div>
+
+          <!-- ROW 5 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary font-bold uppercase">NODE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              vector-cache-evictor
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P3</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.874</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">4h ago</div>
+          </div>
+
+          <!-- ROW 6 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary font-bold uppercase">NODE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              <span class="match-highlight">stale</span>-index-rebalancer
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P5</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.860</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">6h ago</div>
+          </div>
+
+          <!-- ROW 7 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-statusWarn bg-base text-statusWarn font-bold uppercase">EDGE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              references-unindexed-vector
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P3</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.835</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">1d ago</div>
+          </div>
+
+          <!-- ROW 8 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary font-bold uppercase">NODE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              schema-eval-validator
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P4</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.812</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">1d ago</div>
+          </div>
+
+          <!-- ROW 9 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-statusDanger bg-base text-statusDanger font-bold uppercase">EVENT</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              audit-flag-<span class="match-highlight">stale</span>-citation
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P2</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.789</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">2d ago</div>
+          </div>
+
+          <!-- ROW 10 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-statusWarn bg-base text-statusWarn font-bold uppercase">EDGE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              depends-on-unverified-leaf
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P5</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.764</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">2d ago</div>
+          </div>
+
+          <!-- ROW 11 -->
+          <div class="h-[38px] px-3 flex items-center border-b border-borderMuted bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary font-bold uppercase">NODE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              knn-indexer-worker-02
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P3</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.748</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">3d ago</div>
+          </div>
+
+          <!-- ROW 12 (EXACTLY 12TH ROW) -->
+          <div class="h-[38px] px-3 flex items-center bg-panel hover:bg-[#071108] text-textPrimary cursor-pointer">
+            <div class="w-[68px] flex-shrink-0">
+              <span class="text-[9px] px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary font-bold uppercase">NODE</span>
+            </div>
+            <div class="w-[364px] flex-shrink-0 text-xs text-textPrimary">
+              heuristics-partition-probe
+            </div>
+            <div class="w-[72px] flex-shrink-0 text-center text-textSecondary">P2</div>
+            <div class="w-[100px] flex-shrink-0 text-right pr-3 text-textPrimary">0.710</div>
+            <div class="w-[110px] flex-shrink-0 text-right pr-2 text-textSecondary">5d ago</div>
+          </div>
+
+        </div>
+
+        <!-- Table pagination / status hairline at table bottom -->
+        <div class="h-7 px-3 border-t border-borderLine bg-panel flex items-center justify-between text-[11px] text-textSecondary font-mono flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span>ROWS 1-12 OF 17</span>
+            <span class="text-textMuted">·</span>
+            <span class="text-accent">MATCH FILTER: ACTIVE</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] text-textSecondary">PAGE 1/2</span>
+            <button class="px-1.5 py-0.5 border border-borderLine bg-base text-textSecondary hover:text-textPrimary text-[10px]">[NEXT &gt;]</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: NEIGHBORHOOD PANEL (For 'stale-pointer-guard') -->
+      <div class="w-[404px] h-full fieldset-box flex flex-col justify-between p-3.5">
+        <div class="fieldset-legend">
+          <span class="text-accent">::</span>
+          <span>NEIGHBORHOOD // INSPECTOR</span>
+        </div>
+
+        <div class="space-y-3.5">
+          <!-- Target Node Header Identity -->
+          <div class="pt-1.5 pb-2.5 border-b border-borderLine">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] uppercase font-bold text-accent tracking-wider font-mono">NODE IDENTIFIER</span>
+              <span class="text-[10px] px-1.5 py-0.5 border border-statusWarn text-statusWarn bg-base font-mono">2 STALE EDGES</span>
+            </div>
+            <div class="text-sm font-bold text-textPrimary font-mono mt-1 flex items-center gap-2">
+              <span>stale-pointer-guard</span>
+            </div>
+            <div class="flex items-center gap-2 mt-1.5 text-[11px] text-textSecondary font-mono">
+              <span>DOMAIN: <span class="text-textPrimary font-semibold">P4 (JSON-LD)</span></span>
+              <span class="text-textMuted">|</span>
+              <span>DEGREE: <span class="text-textPrimary">4</span></span>
+              <span class="text-textMuted">|</span>
+              <span>SCORE: <span class="text-accent font-semibold">0.982</span></span>
+            </div>
+          </div>
+
+          <!-- 4 EDGE ROWS (Relation chip + Target) -->
+          <div>
+            <div class="text-[10px] font-bold text-textSecondary uppercase tracking-wider mb-2 flex items-center justify-between font-mono">
+              <span>CONNECTED EDGES (4 ACTIVE)</span>
+              <span class="text-textMuted font-mono">SHARD 0x3a</span>
+            </div>
+
+            <div class="space-y-1.5 text-xs font-mono">
+              <!-- Edge 1 -->
+              <div class="p-2 border border-borderLine bg-base flex items-center justify-between hover:border-accent">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] px-1.5 py-0.5 border border-statusWarn text-statusWarn font-bold uppercase">contradicts</span>
+                  <span class="text-textPrimary text-xs font-medium">p4-domain</span>
+                </div>
+                <span class="text-[10px] text-statusWarn font-mono">WARN</span>
+              </div>
+
+              <!-- Edge 2 -->
+              <div class="p-2 border border-borderLine bg-base flex items-center justify-between hover:border-accent">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] px-1.5 py-0.5 border border-accent text-accent font-bold uppercase">depends_on</span>
+                  <span class="text-textPrimary text-xs font-medium">scoring-engine</span>
+                </div>
+                <span class="text-[10px] text-textSecondary font-mono">0.94</span>
+              </div>
+
+              <!-- Edge 3 -->
+              <div class="p-2 border border-borderLine bg-base flex items-center justify-between hover:border-accent">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] px-1.5 py-0.5 border border-borderLine text-textSecondary font-bold uppercase">cites</span>
+                  <span class="text-textPrimary text-xs font-medium">retrieval-cache</span>
+                </div>
+                <span class="text-[10px] text-textSecondary font-mono">0.82</span>
+              </div>
+
+              <!-- Edge 4 -->
+              <div class="p-2 border border-borderLine bg-base flex items-center justify-between hover:border-accent">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] px-1.5 py-0.5 border border-borderLine text-textSecondary font-bold uppercase">governs</span>
+                  <span class="text-textPrimary text-xs font-medium">store-mutex</span>
+                </div>
+                <span class="text-[10px] text-textSecondary font-mono">LOCK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SPARKLINE: QUERIES 7D -->
+          <div class="p-2.5 border border-borderLine bg-base">
+            <div class="flex items-center justify-between text-[10px] text-textSecondary font-mono uppercase mb-1.5">
+              <span>QUERIES 7D</span>
+              <span class="text-accent font-bold">3,412 TOTAL (+8.2%)</span>
+            </div>
+            
+            <!-- SVG Monochromatic phosphor sparkline with exact SVG polyline -->
+            <div class="h-12 w-full flex items-end">
+              <svg class="w-full h-10 overflow-visible" viewBox="0 0 350 40" fill="none" preserveAspectRatio="none">
+                <!-- Grid guide lines -->
+                <line x1="0" y1="10" x2="350" y2="10" stroke="#1A2E1A" stroke-dasharray="2 2" stroke-width="1"/>
+                <line x1="0" y1="25" x2="350" y2="25" stroke="#1A2E1A" stroke-dasharray="2 2" stroke-width="1"/>
+                <!-- Phosphor green sparkline trend -->
+                <polyline
+                  points="0,32 30,28 60,34 90,22 120,24 150,16 180,18 210,12 240,20 270,14 300,8 330,10 350,6"
+                  fill="none"
+                  stroke="#33FF66"
+                  stroke-width="1.8"
+                  stroke-linecap="square"
+                />
+                <!-- Current point dot -->
+                <circle cx="350" cy="6" r="2.5" fill="#33FF66" />
+              </svg>
+            </div>
+
+            <div class="flex items-center justify-between text-[9px] text-textMuted font-mono mt-1 border-t border-borderMuted pt-1">
+              <span>D-7: 382</span>
+              <span>D-4: 490</span>
+              <span>D-1: 541</span>
+              <span class="text-accent font-bold">TODAY: 618</span>
+            </div>
+          </div>
+
+          <!-- Fast Spec Provenance / Metas -->
+          <div class="p-2 border border-borderLine bg-panel text-[11px] font-mono space-y-1">
+            <div class="flex justify-between text-textSecondary">
+              <span>IMMUTABLE ROOT:</span>
+              <span class="text-textPrimary font-semibold">0x9f2c1ab4</span>
+            </div>
+            <div class="flex justify-between text-textSecondary">
+              <span>SHACL INTEGRITY:</span>
+              <span class="text-accent font-semibold">PASS (11/11)</span>
+            </div>
+            <div class="flex justify-between text-textSecondary">
+              <span>MUTATION STATUS:</span>
+              <span class="text-statusWarn font-semibold">FLAGGED_AUDIT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action buttons inside right panel -->
+        <div class="flex items-center gap-2 pt-2 border-t border-borderLine">
+          <button class="flex-1 py-1.5 bg-accent text-base font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#2CE55A]">
+            <span>TRACE LINEAGE</span>
+          </button>
+          <button class="px-3 py-1.5 border border-borderLine bg-panel text-textPrimary hover:border-accent text-xs font-mono uppercase tracking-wider">
+            COPY URI
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 4. FOOTER STATUS BAR (FLUSH TO BOTTOM EDGE, Exactly one line mono) -->
+    <!-- '↑↓ NAVIGATE · ↵ OPEN · ESC CLOSE · 17 RESULTS IN 6MS' -->
+    <footer class="h-7 px-4 border-t border-borderLine bg-panel flex items-center justify-between text-[11px] font-mono text-textSecondary flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <span class="text-accent font-bold">↑↓ NAVIGATE</span>
+        <span class="text-textMuted">·</span>
+        <span class="text-accent font-bold">↵ OPEN</span>
+        <span class="text-textMuted">·</span>
+        <span class="text-textPrimary">ESC CLOSE</span>
+        <span class="text-textMuted">·</span>
+        <span class="text-accent font-semibold">17 RESULTS IN 6MS</span>
+      </div>
+
+      <div class="flex items-center gap-4 text-[10px]">
+        <span>ENGINE: <span class="text-textPrimary font-semibold">v14.2 DETERMINISTIC</span></span>
+        <span class="text-textMuted">|</span>
+        <span>MERKLE: <span class="text-textPrimary">0x9f8a2c3b1</span></span>
+        <span class="text-textMuted">|</span>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+          <span class="text-accent font-semibold">TERMINAL ONLINE</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

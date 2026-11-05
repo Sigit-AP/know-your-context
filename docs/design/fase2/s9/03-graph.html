@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Graph Explorer (Monochrome Type)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            base: '#FFFFFF',
+            panel: '#FAFAFA',
+            borderDark: '#0A0A0A',
+            borderHairline: '#D4D4D4',
+            textMain: '#0A0A0A',
+            textMuted: '#525252',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      width: 1440px;
+      height: 900px;
+      min-width: 1440px;
+      max-width: 1440px;
+      min-height: 900px;
+      max-height: 900px;
+      overflow: hidden;
+      user-select: none;
+      background-color: #FFFFFF;
+      color: #0A0A0A;
+      font-family: 'Inter', sans-serif;
+    }
+    .dot-grid {
+      background-size: 24px 24px;
+      background-image: radial-gradient(circle, #A3A3A3 1px, transparent 1px);
+    }
+    .micro-caps {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-[900px] w-[1440px] text-textMain bg-white antialiased">
+
+  <!-- TOP SHELL / APP CONTAINER -->
+  <div class="flex flex-1 h-[874px] overflow-hidden">
+    
+    <!-- LEFT SIDEBAR (Width 256px) -->
+    <aside class="w-64 w-[256px] min-w-[256px] max-w-[256px] h-full bg-panel border-r-2 border-borderDark flex flex-col justify-between shrink-0 z-20">
+      <div class="flex flex-col">
+        <!-- Brand Header -->
+        <div class="h-12 px-4 border-b border-borderDark flex items-center justify-between bg-white">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-5 h-5 bg-borderDark text-white text-[11px] font-bold font-mono">K</span>
+            <span class="font-bold text-xs tracking-wider uppercase">Know Your Soul</span>
+          </div>
+          <span class="font-mono text-[10px] px-1.5 py-0.5 border border-borderDark text-textMain font-medium">v14.2</span>
+        </div>
+
+        <!-- Navigation Groups -->
+        <div class="p-3 space-y-4">
+          <!-- MONITOR -->
+          <div>
+            <div class="micro-caps text-textMuted px-2 mb-1.5">Monitor</div>
+            <nav class="space-y-0.5">
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>Overview</span>
+              </a>
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>Activity Log</span>
+              </a>
+              <!-- ACTIVE ITEM: SOLID BLACK INVERSION -->
+              <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-xs bg-borderDark text-white font-semibold">
+                <div class="flex items-center">
+                  <span class="w-1.5 h-1.5 bg-white mr-2"></span>
+                  <span>Graph Explorer</span>
+                </div>
+                <span class="text-[9px] font-mono tracking-widest uppercase">LIVE</span>
+              </a>
+            </nav>
+          </div>
+
+          <!-- ANALYZE -->
+          <div>
+            <div class="micro-caps text-textMuted px-2 mb-1.5">Analyze</div>
+            <nav class="space-y-0.5">
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>Search</span>
+              </a>
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>Metrics</span>
+              </a>
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>Analytics</span>
+              </a>
+            </nav>
+          </div>
+
+          <!-- GOVERN -->
+          <div>
+            <div class="micro-caps text-textMuted px-2 mb-1.5">Govern</div>
+            <nav class="space-y-0.5">
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>Health</span>
+              </a>
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>Audit Ledger</span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <div class="flex items-center">
+                  <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                  <span>Proposals</span>
+                </div>
+                <span class="font-mono text-[10px] border border-borderDark px-1 py-0.2 bg-white text-textMain">3</span>
+              </a>
+              <a href="#" class="flex items-center justify-between px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <div class="flex items-center">
+                  <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                  <span>Debt Queue</span>
+                </div>
+                <span class="font-mono text-[10px] border border-borderDark px-1 py-0.2 bg-white text-textMain">12</span>
+              </a>
+            </nav>
+          </div>
+
+          <!-- SYSTEM -->
+          <div>
+            <div class="micro-caps text-textMuted px-2 mb-1.5">System</div>
+            <nav class="space-y-0.5">
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>System</span>
+              </a>
+              <a href="#" class="flex items-center px-2 py-1.5 text-xs text-textMuted hover:text-textMain hover:bg-white transition-colors">
+                <span class="font-mono text-[10px] text-textMuted mr-2">::</span>
+                <span>Setup</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Card Footer -->
+      <div class="p-3 border-t border-borderDark bg-white flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 bg-borderDark text-white flex items-center justify-center font-mono text-[11px] font-bold">
+            SA
+          </div>
+          <div class="leading-tight">
+            <div class="text-xs font-semibold">Sigit A.</div>
+            <div class="font-mono text-[10px] text-textMuted">operator</div>
+          </div>
+        </div>
+        <span class="w-2 h-2 bg-borderDark inline-block"></span>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE COLUMN -->
+    <main class="flex-1 flex flex-col min-w-0 bg-white">
+      
+      <!-- TOPBAR (Thin single line, height 48px) -->
+      <header class="h-12 border-b-2 border-borderDark px-5 flex items-center justify-between bg-white shrink-0">
+        <!-- Breadcrumbs left -->
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs text-textMuted tracking-wider">KYS //</span>
+          <span class="font-mono text-xs font-semibold text-textMain tracking-wide">Graph</span>
+          <span class="text-textMuted text-xs font-mono">/</span>
+          <span class="font-mono text-xs font-semibold text-textMain bg-panel px-2 py-0.5 border border-borderDark">heuristics-catalog</span>
+          <span class="font-mono text-[10px] text-textMuted border border-borderHairline px-1.5 py-0.5 ml-1">cluster-01</span>
+        </div>
+
+        <!-- Center Search Field with ⌘K -->
+        <div class="w-96 relative">
+          <div class="w-full flex items-center border border-borderDark bg-panel px-2.5 py-1 text-xs font-mono">
+            <span class="text-textMuted mr-2">&gt;</span>
+            <input type="text" value="search nodes, edges, hashes, tags" class="w-full bg-transparent text-textMain focus:outline-none placeholder-textMuted text-xs font-mono" readonly>
+            <kbd class="border border-borderDark bg-white px-1.5 py-0.2 text-[10px] font-mono text-textMuted ml-2">⌘K</kbd>
+          </div>
+        </div>
+
+        <!-- Right segments: Cluster Status, Notifications, Avatar -->
+        <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-1.5 border border-borderDark px-2.5 py-1 bg-white text-xs font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-borderDark"></span>
+            <span class="font-semibold text-[11px]">● OK</span>
+            <span class="text-textMuted text-[10px] ml-1">1,284 NODES</span>
+          </div>
+          <button class="w-7 h-7 border border-borderDark flex items-center justify-center hover:bg-panel transition-colors" title="Notifications">
+            <svg class="w-3.5 h-3.5 text-textMain" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </button>
+          <div class="w-7 h-7 bg-panel border border-borderDark flex items-center justify-center font-mono text-[10px] font-bold">
+            SA
+          </div>
+        </div>
+      </header>
+
+      <!-- GRAPH WORKSPACE CONTAINER (Canvas ~72%, Inspector ~28%) -->
+      <div class="flex-1 flex overflow-hidden">
+        
+        <!-- GRAPH CANVAS (72% width) -->
+        <section class="flex-1 relative dot-grid bg-white flex flex-col justify-between overflow-hidden border-r-2 border-borderDark">
+          
+          <!-- Viewport Mode Bar / HUD (Top left of canvas) -->
+          <div class="absolute top-4 left-4 z-10 flex items-center gap-2">
+            <div class="bg-white border border-borderDark px-2.5 py-1 text-[11px] font-mono flex items-center gap-2">
+              <span class="text-textMuted">VIEW:</span>
+              <span class="font-bold text-textMain">FORCE-DIRECTED (BARNES-HUT)</span>
+              <span class="text-borderHairline">|</span>
+              <span class="text-textMuted">PHYSICS:</span>
+              <span class="font-semibold text-textMain">● STABLE</span>
+            </div>
+            <div class="bg-white border border-borderHairline px-2 py-1 text-[11px] font-mono text-textMuted">
+              SCALE: 100%
+            </div>
+          </div>
+
+          <!-- Vertical Segmented Zoom Controls (Top right edge of canvas) -->
+          <div class="absolute top-4 right-4 z-10 bg-white border-2 border-borderDark flex flex-col divide-y divide-borderDark">
+            <button class="w-7 h-7 flex items-center justify-center text-xs font-bold hover:bg-panel transition-colors" title="Zoom in">+</button>
+            <button class="w-7 h-7 flex items-center justify-center text-xs font-bold hover:bg-panel transition-colors" title="Zoom out">–</button>
+            <button class="w-7 h-7 flex items-center justify-center text-[10px] font-mono font-bold hover:bg-panel transition-colors" title="Fit to screen">FIT</button>
+          </div>
+
+          <!-- GRAPH SVG VISUALIZATION LAYER -->
+          <div class="w-full h-full relative">
+            <svg class="w-full h-full" viewBox="0 0 850 780" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <!-- Arrow Markers -->
+                <marker id="arrow-solid" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#0A0A0A" />
+                </marker>
+                <marker id="arrow-dim" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#737373" />
+                </marker>
+              </defs>
+
+              <!-- ================= EDGES LAYER ================= -->
+              <!-- Context / Dim Edges (1px) -->
+              <g stroke="#A3A3A3" stroke-width="1.2">
+                <!-- projection to schema-eval -->
+                <line x1="380" y1="120" x2="520" y2="160" stroke-dasharray="3 3" />
+                <!-- schema-eval to scoring-engine -->
+                <line x1="520" y1="160" x2="650" y2="230" />
+                <!-- retrieval to projection -->
+                <line x1="260" y1="190" x2="380" y2="120" stroke-dasharray="3 3" />
+                <!-- audit-ledger to cli-adapter -->
+                <line x1="260" y1="560" x2="320" y2="670" />
+                <!-- cli-adapter to vector-cache -->
+                <line x1="320" y1="670" x2="470" y2="670" />
+                <!-- vector-cache to raft-fencing -->
+                <line x1="470" y1="670" x2="600" y2="610" stroke-dasharray="3 3" />
+                <!-- store-mutex to raft-fencing -->
+                <line x1="700" y1="460" x2="600" y2="610" />
+                <!-- p4-domain to audit-ledger -->
+                <line x1="300" y1="390" x2="260" y2="560" />
+              </g>
+
+              <!-- Active Edges Connected to Selected Node (2px Solid/Dash) -->
+              <!-- 1. depends_on -> scoring-engine -->
+              <line x1="480" y1="360" x2="650" y2="230" stroke="#0A0A0A" stroke-width="2.5" marker-end="url(#arrow-solid)" />
+              
+              <!-- 2. contradicts -> p4-domain -->
+              <line x1="480" y1="360" x2="300" y2="390" stroke="#0A0A0A" stroke-width="2.5" marker-end="url(#arrow-solid)" />
+              
+              <!-- 3. cites -> retrieval -->
+              <line x1="480" y1="360" x2="260" y2="190" stroke="#0A0A0A" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrow-solid)" />
+
+              <!-- 4. governs -> store-mutex -->
+              <line x1="480" y1="360" x2="700" y2="460" stroke="#0A0A0A" stroke-width="2.5" marker-end="url(#arrow-solid)" />
+
+              <!-- 5. invokes -> query-planner -->
+              <line x1="480" y1="360" x2="480" y2="530" stroke="#0A0A0A" stroke-width="2" marker-end="url(#arrow-solid)" />
+
+              <!-- ================= EDGE MIDPOINT LABELS ================= -->
+              <!-- Label: depends_on (midpoint ~565, 295) -->
+              <g transform="translate(535, 280)">
+                <rect x="0" y="0" width="76" height="18" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.5" />
+                <text x="38" y="12" fill="#0A0A0A" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" text-anchor="middle">depends_on</text>
+              </g>
+
+              <!-- Label: contradicts (midpoint ~385, 368) -->
+              <g transform="translate(340, 365)">
+                <rect x="0" y="0" width="80" height="18" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="1.5" />
+                <text x="40" y="12" fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" text-anchor="middle">contradicts</text>
+              </g>
+
+              <!-- Label: cites (midpoint ~360, 265) -->
+              <g transform="translate(340, 260)">
+                <rect x="0" y="0" width="48" height="18" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1" stroke-dasharray="2 2" />
+                <text x="24" y="12" fill="#0A0A0A" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" text-anchor="middle">cites</text>
+              </g>
+
+              <!-- Label: governs (midpoint ~580, 400) -->
+              <g transform="translate(560, 395)">
+                <rect x="0" y="0" width="56" height="18" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.5" />
+                <text x="28" y="12" fill="#0A0A0A" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" text-anchor="middle">governs</text>
+              </g>
+
+              <!-- Label: invokes (midpoint ~480, 440) -->
+              <g transform="translate(456, 435)">
+                <rect x="0" y="0" width="52" height="17" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1" />
+                <text x="26" y="12" fill="#0A0A0A" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" text-anchor="middle">invokes</text>
+              </g>
+
+              <!-- ================= NODES LAYER (~12 Discs) ================= -->
+              
+              <!-- 1. projection (x: 380, y: 120) -->
+              <g transform="translate(380, 120)">
+                <circle r="12" fill="#FFFFFF" stroke="#737373" stroke-width="1.5" />
+                <circle r="4" fill="#737373" />
+                <rect x="-42" y="18" width="84" height="18" fill="#FAFAFA" stroke="#D4D4D4" stroke-width="1" />
+                <text x="0" y="30" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" fill="#525252">projection</text>
+              </g>
+
+              <!-- 2. schema-eval (x: 520, y: 160) -->
+              <g transform="translate(520, 160)">
+                <circle r="16" fill="#FAFAFA" stroke="#0A0A0A" stroke-width="1.5" />
+                <circle r="6" fill="#0A0A0A" />
+                <rect x="-48" y="22" width="96" height="18" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1" />
+                <text x="0" y="34" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" text-anchor="middle" fill="#0A0A0A">schema-eval</text>
+              </g>
+
+              <!-- 3. scoring-engine (x: 650, y: 230) -->
+              <g transform="translate(650, 230)">
+                <circle r="18" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="2" />
+                <circle r="8" fill="#0A0A0A" />
+                <rect x="-55" y="24" width="110" height="20" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.5" />
+                <text x="0" y="38" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" text-anchor="middle" fill="#0A0A0A">scoring-engine</text>
+              </g>
+
+              <!-- 4. retrieval (x: 260, y: 190) -->
+              <g transform="translate(260, 190)">
+                <circle r="16" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.5" />
+                <circle r="6" fill="#0A0A0A" />
+                <rect x="-38" y="22" width="76" height="18" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1" />
+                <text x="0" y="34" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" text-anchor="middle" fill="#0A0A0A">retrieval</text>
+              </g>
+
+              <!-- 5. p4-domain (x: 300, y: 390) -->
+              <g transform="translate(300, 390)">
+                <circle r="18" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="2" />
+                <circle r="7" fill="#0A0A0A" />
+                <rect x="-42" y="24" width="84" height="20" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.5" />
+                <text x="0" y="38" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" text-anchor="middle" fill="#0A0A0A">p4-domain</text>
+              </g>
+
+              <!-- 6. query-planner (x: 480, y: 530) -->
+              <g transform="translate(480, 530)">
+                <circle r="14" fill="#FFFFFF" stroke="#737373" stroke-width="1.5" />
+                <circle r="5" fill="#737373" />
+                <rect x="-52" y="20" width="104" height="18" fill="#FAFAFA" stroke="#D4D4D4" stroke-width="1" />
+                <text x="0" y="32" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" fill="#525252">query-planner</text>
+              </g>
+
+              <!-- 7. store-mutex (x: 700, y: 460) -->
+              <g transform="translate(700, 460)">
+                <circle r="16" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.5" />
+                <circle r="6" fill="#0A0A0A" />
+                <rect x="-46" y="22" width="92" height="18" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1" />
+                <text x="0" y="34" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" text-anchor="middle" fill="#0A0A0A">store-mutex</text>
+              </g>
+
+              <!-- 8. audit-ledger (x: 260, y: 560) -->
+              <g transform="translate(260, 560)">
+                <circle r="14" fill="#FFFFFF" stroke="#737373" stroke-width="1.5" />
+                <circle r="4" fill="#737373" />
+                <rect x="-48" y="20" width="96" height="18" fill="#FAFAFA" stroke="#D4D4D4" stroke-width="1" />
+                <text x="0" y="32" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" fill="#525252">audit-ledger</text>
+              </g>
+
+              <!-- 9. cli-adapter (x: 320, y: 670) -->
+              <g transform="translate(320, 670)">
+                <circle r="12" fill="#FFFFFF" stroke="#A3A3A3" stroke-width="1.5" />
+                <circle r="4" fill="#A3A3A3" />
+                <rect x="-42" y="18" width="84" height="18" fill="#FAFAFA" stroke="#D4D4D4" stroke-width="1" />
+                <text x="0" y="30" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" fill="#525252">cli-adapter</text>
+              </g>
+
+              <!-- 10. vector-cache (x: 470, y: 670) -->
+              <g transform="translate(470, 670)">
+                <circle r="12" fill="#FFFFFF" stroke="#A3A3A3" stroke-width="1.5" />
+                <circle r="4" fill="#A3A3A3" />
+                <rect x="-46" y="18" width="92" height="18" fill="#FAFAFA" stroke="#D4D4D4" stroke-width="1" />
+                <text x="0" y="30" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" fill="#525252">vector-cache</text>
+              </g>
+
+              <!-- 11. raft-fencing (x: 600, y: 610) -->
+              <g transform="translate(600, 610)">
+                <circle r="14" fill="#FFFFFF" stroke="#737373" stroke-width="1.5" />
+                <circle r="4" fill="#737373" />
+                <rect x="-46" y="20" width="92" height="18" fill="#FAFAFA" stroke="#D4D4D4" stroke-width="1" />
+                <text x="0" y="32" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" fill="#525252">raft-fencing</text>
+              </g>
+
+              <!-- 12. heuristics-catalog (SELECTED PRIMARY NODE - x: 480, y: 360) -->
+              <g transform="translate(480, 360)">
+                <!-- Halo ring indicating selection -->
+                <circle r="34" fill="none" stroke="#0A0A0A" stroke-width="1" stroke-dasharray="3 3" />
+                <!-- Outer disc -->
+                <circle r="24" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3" />
+                <!-- Solid black center core -->
+                <circle r="14" fill="#0A0A0A" />
+                <circle r="4" fill="#FFFFFF" />
+                
+                <!-- Primary Inverted Label Box -->
+                <rect x="-78" y="34" width="156" height="26" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="2" />
+                <text x="0" y="51" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" text-anchor="middle" fill="#FFFFFF">heuristics-catalog</text>
+                
+                <!-- Micro domain indicator tag -->
+                <rect x="-24" y="62" width="48" height="14" fill="#FAFAFA" stroke="#0A0A0A" stroke-width="1" />
+                <text x="0" y="72" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" text-anchor="middle" fill="#0A0A0A">DOMAIN P5</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- FLOATING LEGEND BAR (Bottom of Canvas) -->
+          <div class="absolute bottom-4 left-4 z-10 bg-white border-2 border-borderDark px-4 py-2 flex items-center gap-5 shadow-none text-xs font-mono">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-borderDark inline-block"></span>
+              <span class="font-semibold text-[11px]">● selected</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full border border-borderDark bg-panel inline-block"></span>
+              <span class="text-textMuted text-[11px]">● domain</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full border border-borderHairline bg-white inline-block"></span>
+              <span class="text-textMuted text-[11px]">○ external</span>
+            </div>
+            <span class="text-borderHairline">|</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-4 h-0.5 bg-borderDark inline-block"></span>
+              <span class="font-semibold text-[11px]">― depends_on</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-4 h-0.5 border-t border-dashed border-borderDark inline-block"></span>
+              <span class="text-textMuted text-[11px]">- - cites</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1 bg-borderDark text-white text-[9px] font-bold">INV</span>
+              <span class="text-textMain text-[11px]">contradicts</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT INSPECTOR PANEL (~28% width / exactly 360px) -->
+        <aside class="w-[360px] min-w-[360px] max-w-[360px] h-full bg-panel flex flex-col justify-between shrink-0 overflow-hidden">
+          
+          <div class="flex flex-col h-full overflow-hidden">
+            <!-- Inspector Header Section -->
+            <div class="p-4 border-b border-borderDark bg-white shrink-0">
+              <div class="flex items-center justify-between mb-2">
+                <div class="micro-caps text-textMuted">Node Inspector</div>
+                <div class="font-mono text-xs font-bold bg-borderDark text-white px-2 py-0.5">
+                  DOMAIN P5
+                </div>
+              </div>
+              <h2 class="font-mono text-lg font-bold tracking-tight text-textMain truncate">
+                heuristics-catalog
+              </h2>
+              <p class="text-xs text-textMuted mt-1 leading-relaxed">
+                Central heuristic registry & AST pattern evaluator across partitions.
+              </p>
+            </div>
+
+            <!-- Telemetry Metrics Section -->
+            <div class="p-4 border-b border-borderDark bg-panel shrink-0">
+              <div class="micro-caps text-textMuted mb-3">Convergence Telemetry</div>
+              
+              <div class="space-y-3 font-mono">
+                <!-- Metric 1: Precision -->
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-textMuted font-sans">Precision Score</span>
+                    <span class="font-bold text-textMain">P 0.828</span>
+                  </div>
+                  <div class="w-full h-2 bg-white border border-borderDark">
+                    <div class="h-full bg-borderDark" style="width: 82.8%"></div>
+                  </div>
+                </div>
+
+                <!-- Metric 2: Mutation Entropy -->
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-textMuted font-sans">Mutation Entropy</span>
+                    <span class="font-bold text-textMain">M 0.341</span>
+                  </div>
+                  <div class="w-full h-2 bg-white border border-borderDark">
+                    <div class="h-full bg-borderDark" style="width: 34.1%"></div>
+                  </div>
+                </div>
+
+                <!-- Metric 3: Eigen Convergence -->
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-textMuted font-sans">Eigen Convergence</span>
+                    <span class="font-bold text-textMain">E 0.898</span>
+                  </div>
+                  <div class="w-full h-2 bg-white border border-borderDark">
+                    <div class="h-full bg-borderDark" style="width: 89.8%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Connected Edges List Section -->
+            <div class="p-4 border-b border-borderDark bg-white flex-1 overflow-hidden flex flex-col min-h-0">
+              <div class="flex items-center justify-between mb-3 shrink-0">
+                <div class="micro-caps text-textMuted">Connected Edges (4)</div>
+                <span class="font-mono text-[10px] text-textMuted">SHARD 0x3a</span>
+              </div>
+
+              <div class="space-y-2 overflow-y-auto flex-1 pr-1 font-mono">
+                <!-- Edge 1 -->
+                <div class="p-2 border border-borderDark bg-panel flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="px-1.5 py-0.5 border border-borderDark bg-white text-[10px] font-bold">depends_on</span>
+                    <span class="text-xs font-semibold truncate text-textMain">scoring-engine</span>
+                  </div>
+                  <span class="text-[11px] font-mono text-textMuted shrink-0 ml-2">0.94</span>
+                </div>
+
+                <!-- Edge 2: Contradicts (Inverted tag) -->
+                <div class="p-2 border border-borderDark bg-panel flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="px-1.5 py-0.5 bg-borderDark text-white text-[10px] font-bold">contradicts</span>
+                    <span class="text-xs font-semibold truncate text-textMain">p4-domain</span>
+                  </div>
+                  <span class="text-[10px] font-mono px-1 border border-borderDark bg-white text-textMain shrink-0 ml-2">◐ WARN</span>
+                </div>
+
+                <!-- Edge 3 -->
+                <div class="p-2 border border-borderDark bg-panel flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="px-1.5 py-0.5 border border-dashed border-borderDark bg-white text-[10px] font-bold">cites</span>
+                    <span class="text-xs font-semibold truncate text-textMain">retrieval</span>
+                  </div>
+                  <span class="text-[11px] font-mono text-textMuted shrink-0 ml-2">0.82</span>
+                </div>
+
+                <!-- Edge 4 -->
+                <div class="p-2 border border-borderDark bg-panel flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="px-1.5 py-0.5 border border-borderDark bg-white text-[10px] font-bold">governs</span>
+                    <span class="text-xs font-semibold truncate text-textMain">store-mutex</span>
+                  </div>
+                  <span class="text-[10px] font-mono px-1 border border-borderHairline text-textMuted shrink-0 ml-2">LOCK</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Provenance & Shard Specs -->
+            <div class="p-4 border-b border-borderDark bg-panel shrink-0 font-mono text-[11px]">
+              <div class="micro-caps text-textMuted mb-2">Spec Provenance</div>
+              <div class="grid grid-cols-2 gap-2 text-textMuted">
+                <div>
+                  <span class="block text-[9px] uppercase tracking-wider">Partition</span>
+                  <span class="font-bold text-textMain">P5 Vector Space</span>
+                </div>
+                <div>
+                  <span class="block text-[9px] uppercase tracking-wider">Immutable Root</span>
+                  <span class="font-bold text-textMain">0x9f2c1ab4</span>
+                </div>
+                <div>
+                  <span class="block text-[9px] uppercase tracking-wider">Last Eval</span>
+                  <span class="text-textMain">14:32:07Z</span>
+                </div>
+                <div>
+                  <span class="block text-[9px] uppercase tracking-wider">Mutation Status</span>
+                  <span class="font-bold text-textMain">● CONVERGED</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons Footer (Fully visible, styled per Monochrome Type) -->
+            <div class="p-4 bg-white flex flex-col gap-2 shrink-0">
+              <!-- Primary: Solid Black Inversion -->
+              <button class="w-full py-2.5 bg-borderDark hover:bg-black text-white font-semibold text-xs tracking-wider flex items-center justify-center gap-2 border-2 border-borderDark transition-transform active:translate-y-0.5">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>TRACE LINEAGE</span>
+              </button>
+
+              <!-- Ghost / Secondary: Border and Hover -->
+              <button class="w-full py-2 bg-white hover:bg-panel text-textMain font-semibold text-xs tracking-wider flex items-center justify-center gap-2 border border-borderDark transition-colors">
+                <svg class="w-3.5 h-3.5 text-textMain" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span>COPY URI</span>
+              </button>
+            </div>
+
+          </div>
+        </aside>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- BOTTOM STATUS BAR (FLUSH AT VERY BOTTOM, EXACT HEIGHT 26px) -->
+  <footer class="h-[26px] bg-white border-t-2 border-borderDark px-4 flex items-center justify-between text-[11px] font-mono shrink-0 z-30">
+    <!-- Left telemetry -->
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1.5 font-bold">
+        <span class="w-2 h-2 bg-borderDark inline-block"></span>
+        <span>GRAPH RUNTIME: ● NOMINAL</span>
+      </div>
+      <span class="text-borderHairline">·</span>
+      <div>
+        <span class="font-bold text-textMain">12,847</span> <span class="text-textMuted">NODES</span>
+      </div>
+      <div>
+        <span class="font-bold text-textMain">48,203</span> <span class="text-textMuted">EDGES</span>
+      </div>
+      <span class="text-borderHairline">·</span>
+      <div>
+        <span class="text-textMuted">MERKLE:</span> <span class="text-textMain font-semibold">0x9f8a2c3b1</span>
+      </div>
+      <span class="text-borderHairline">·</span>
+      <div>
+        <span class="text-textMuted">DAG ENGINE:</span> <span class="text-textMain">v14.2</span>
+      </div>
+    </div>
+
+    <!-- Right cluster & sync indicators -->
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1">
+        <span class="font-semibold text-textMain">● RAFT QUORUM SYNCED</span>
+      </div>
+      <span class="text-borderHairline">·</span>
+      <div>
+        <span class="text-textMuted">LATENCY P50</span> <span class="font-bold text-textMain">6.4ms</span>
+      </div>
+      <span class="text-borderHairline">·</span>
+      <div class="flex items-center gap-1 font-bold text-textMain">
+        <span class="w-1.5 h-1.5 bg-borderDark inline-block"></span>
+        <span>ONLINE</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

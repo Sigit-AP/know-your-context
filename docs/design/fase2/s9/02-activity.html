@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Know Your Soul - Activity Log (Monochrome Type)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FFFFFF;
+      color: #0A0A0A;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+      user-select: none;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Structural custom borders and rules */
+    .border-structure {
+      border-color: #0A0A0A;
+    }
+    .border-hairline {
+      border-color: #D4D4D4;
+    }
+    .bg-panel {
+      background-color: #FAFAFA;
+    }
+    /* Custom scrollbar suppression for fixed 1440x900 view */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-white text-[#0A0A0A]">
+
+  <!-- SIDEBAR: 256px wide, hairline right border #0A0A0A / #D4D4D4 -->
+  <aside class="w-[256px] h-full flex flex-col justify-between border-r border-[#0A0A0A] bg-[#FAFAFA] flex-shrink-0 z-20">
+    <div class="flex flex-col">
+      <!-- Header / Logo -->
+      <div class="h-[49px] px-4 flex items-center justify-between border-b border-[#0A0A0A] bg-white">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs">K</div>
+          <span class="font-bold text-[13px] tracking-tight uppercase">Know Your Soul</span>
+        </div>
+        <span class="font-mono-code text-[10px] px-1.5 py-0.5 border border-[#0A0A0A] text-[#0A0A0A]">v14.2</span>
+      </div>
+
+      <!-- Navigation Groups -->
+      <div class="p-3 space-y-4">
+        <!-- MONITOR Group -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-bold tracking-[0.14em] uppercase text-[#525252]">Monitor</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>Overview</span>
+            </a>
+            <!-- Active Nav Item: Solid Black Fill with White Text -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-[12px] font-semibold bg-[#0A0A0A] text-white">
+              <div class="flex items-center gap-2.5">
+                <span class="w-1.5 h-1.5 bg-white"></span>
+                <span>Activity Log</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- ANALYZE Group -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-bold tracking-[0.14em] uppercase text-[#525252]">Analyze</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GOVERN Group -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-bold tracking-[0.14em] uppercase text-[#525252]">Govern</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="text-[10px] font-mono-code opacity-60">::</span>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono-code text-[10px] px-1.5 py-0.2 border border-[#D4D4D4] bg-white text-[#0A0A0A]">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="text-[10px] font-mono-code opacity-60">::</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono-code text-[10px] px-1.5 py-0.2 border border-[#D4D4D4] bg-white text-[#0A0A0A]">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- SYSTEM Group -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-bold tracking-[0.14em] uppercase text-[#525252]">System</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[12px] font-medium text-[#525252] hover:text-[#0A0A0A] hover:bg-[#EBEBEB] transition-colors">
+              <span class="text-[10px] font-mono-code opacity-60">::</span>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Card at bottom of sidebar -->
+    <div class="h-[52px] px-3.5 border-t border-[#0A0A0A] bg-white flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs">
+          SA
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[12px] font-bold leading-tight text-[#0A0A0A]">Sigit A.</span>
+          <span class="font-mono-code text-[10px] text-[#525252] leading-tight">operator</span>
+        </div>
+      </div>
+      <div class="w-2 h-2 bg-[#0A0A0A]"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER: Exactly (1440 - 256) = 1184px wide, 900px high -->
+  <main class="w-[1184px] h-[900px] flex flex-col justify-between overflow-hidden bg-white">
+
+    <!-- Topbar: Exactly 49px high, single line, breadcrumb left, search center, bell/avatar right -->
+    <header class="h-[49px] px-6 border-b border-[#0A0A0A] flex items-center justify-between flex-shrink-0 bg-white">
+      <div class="flex items-center gap-2.5">
+        <span class="font-mono-code text-xs text-[#525252]">KYS //</span>
+        <h1 class="text-sm font-bold tracking-tight uppercase text-[#0A0A0A]">Activity Log</h1>
+        <span class="font-mono-code text-[10px] px-1.5 py-0.5 border border-[#0A0A0A] text-[#0A0A0A] ml-1">cluster-01</span>
+      </div>
+
+      <!-- Center Search -->
+      <div class="w-[440px] h-[30px] border border-[#0A0A0A] bg-[#FAFAFA] px-2.5 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-xs font-mono-code text-[#525252]">
+          <span>&gt;</span>
+          <input type="text" placeholder="search nodes, edges, hashes, logs" class="bg-transparent border-none outline-none text-[#0A0A0A] font-mono-code text-xs w-[320px] placeholder-[#737373]">
+        </div>
+        <span class="font-mono-code text-[10px] px-1 border border-[#D4D4D4] text-[#525252]">⌘K</span>
+      </div>
+
+      <!-- Right items: max 4 segments, one line -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 px-2 py-0.5 border border-[#0A0A0A] font-mono-code text-[11px] text-[#0A0A0A]">
+          <span>●</span>
+          <span>RAFT SYNCED</span>
+        </div>
+        <button class="relative p-1 border border-[#0A0A0A] hover:bg-[#FAFAFA] flex items-center justify-center w-7 h-7">
+          <svg class="w-3.5 h-3.5 text-[#0A0A0A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-[#0A0A0A]"></span>
+        </button>
+        <div class="w-7 h-7 bg-[#0A0A0A] text-white flex items-center justify-center font-bold text-xs">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- Toolbar Row: 41px high -->
+    <section class="h-[41px] px-6 border-b border-[#0A0A0A] flex items-center justify-between bg-[#FAFAFA] flex-shrink-0">
+      <!-- Search Input Left -->
+      <div class="w-[300px] h-[28px] border border-[#D4D4D4] bg-white px-2.5 flex items-center gap-2 text-xs">
+        <svg class="w-3.5 h-3.5 text-[#525252]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" placeholder="Filter events..." class="bg-transparent border-none outline-none text-[#0A0A0A] text-xs w-full placeholder-[#737373] font-normal">
+      </div>
+
+      <!-- Pill Filters Right -->
+      <div class="flex items-center gap-2">
+        <div class="h-[28px] px-2.5 border border-[#0A0A0A] bg-white flex items-center gap-1.5 text-xs font-medium cursor-pointer hover:bg-[#F2F2F2]">
+          <span>Level</span>
+          <span class="text-[9px]">▾</span>
+        </div>
+        <div class="h-[28px] px-2.5 border border-[#0A0A0A] bg-white flex items-center gap-1.5 text-xs font-medium cursor-pointer hover:bg-[#F2F2F2]">
+          <span>Agent</span>
+          <span class="text-[9px]">▾</span>
+        </div>
+        <div class="h-[28px] px-2.5 border border-[#0A0A0A] bg-white flex items-center gap-1.5 text-xs font-medium cursor-pointer hover:bg-[#F2F2F2]">
+          <span>Domain</span>
+          <span class="text-[9px]">▾</span>
+        </div>
+        <div class="h-[28px] px-2.5 border border-[#0A0A0A] bg-white flex items-center gap-1.5 text-xs font-mono-code text-[11px] font-medium cursor-pointer hover:bg-[#F2F2F2]">
+          <span>NOV 1 – NOV 5, 2026</span>
+          <span class="text-[9px]">▾</span>
+        </div>
+        <button class="h-[28px] px-3 border border-[#0A0A0A] bg-white text-[#0A0A0A] text-xs font-semibold flex items-center gap-1.5 hover:bg-[#0A0A0A] hover:text-white transition-colors">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          <span>Export</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Table Container: Header + Exactly 18 visible rows, perfectly measured to sit flush with pagination & status bar -->
+    <div class="flex-1 flex flex-col min-h-0 bg-white border-b border-[#0A0A0A]">
+      <!-- Table Header: 31px high -->
+      <div class="h-[31px] px-6 border-b border-[#0A0A0A] bg-[#FAFAFA] flex items-center text-[10px] font-bold tracking-[0.14em] uppercase text-[#525252] flex-shrink-0">
+        <div class="w-[100px] flex-shrink-0">TIME</div>
+        <div class="w-[90px] flex-shrink-0">LEVEL</div>
+        <div class="w-[110px] flex-shrink-0">AGENT</div>
+        <div class="w-[150px] flex-shrink-0">ACTION</div>
+        <div class="flex-1 min-w-0 pr-4">DETAIL</div>
+        <div class="w-[100px] text-right flex-shrink-0">HASH</div>
+      </div>
+
+      <!-- 18 Table Rows: Each exactly 40px high = 720px total, zero vertical scrolling, perfectly fits viewport -->
+      <div class="flex-1 flex flex-col divide-y divide-[#D4D4D4] font-normal text-[12px]">
+
+        <!-- Row 1 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:32:07Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-139</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">apply proposal</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Proposal p-2041 applied to domain P4</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">9f2c1ab4</div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:30:19Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">operator</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">import file</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Ingested AST schema graph bundle into shard 2</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">8a1d440f</div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:28:44Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-141</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">evaluate</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Computed topological convergence metrics across P1..P7</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">77e19cb2</div>
+        </div>
+
+        <!-- Row 4 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:25:01Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-[#FAFAFA] text-[#0A0A0A]">
+              ◐ WARN
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">system</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">propose</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Stale citation threshold exceeded for vector cache tier</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">3d81b899</div>
+        </div>
+
+        <!-- Row 5 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:21:15Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-139</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">apply proposal</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Merged AST symbol index into partition P2</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">55c2f0a1</div>
+        </div>
+
+        <!-- Row 6 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:18:52Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">operator</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">evaluate</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Verified Raft monotonic log continuity to sequence 10423</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">a012e841</div>
+        </div>
+
+        <!-- Row 7: ERROR ROW (Full-width subtle red tint + 2px red left border, single line, no wrap) -->
+        <div class="h-[40px] px-6 flex items-center bg-[#FFF5F5] border-l-[3px] border-[#DC2626]">
+          <div class="w-[100px] font-mono-code text-[11px] font-bold text-[#DC2626] flex-shrink-0">14:15:30Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#DC2626] text-[9px] font-bold tracking-[0.08em] uppercase bg-[#FEE2E2] text-[#DC2626]">
+              ■ FAIL
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-bold text-[#DC2626] flex-shrink-0">sub-141</div>
+          <div class="w-[150px] font-mono-code text-[11px] font-bold text-[#DC2626] flex-shrink-0">rollback</div>
+          <div class="flex-1 min-w-0 font-semibold text-[#DC2626] truncate pr-4">REINDEX FAILED — stale embedding pointers</div>
+          <div class="w-[100px] font-mono-code text-[11px] font-bold text-[#DC2626] text-right flex-shrink-0">c190bb42</div>
+        </div>
+
+        <!-- Row 8 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:12:08Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">system</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">evaluate</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Asserted 11 SHACL core invariant constraints cleanly</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">e4479901</div>
+        </div>
+
+        <!-- Row 9 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:09:44Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-139</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">import file</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Loaded JSON-LD ontology definitions for domain P6</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">43dcb102</div>
+        </div>
+
+        <!-- Row 10 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:05:22Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-[#FAFAFA] text-[#0A0A0A]">
+              ◐ WARN
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-141</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">propose</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Detected 2 orphan reference nodes in schema table</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">78fe23a9</div>
+        </div>
+
+        <!-- Row 11 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">14:02:11Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">operator</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">apply proposal</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Applied fencing lease renewal on cluster storage root</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">69bca711</div>
+        </div>
+
+        <!-- Row 12 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">13:58:39Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-139</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">evaluate</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Completed DuckDB vector table compaction step 4</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">12e094fa</div>
+        </div>
+
+        <!-- Row 13 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">13:55:04Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">system</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">import file</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Synchronized IPC broadcast socket to loopback port 8741</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">b82ef455</div>
+        </div>
+
+        <!-- Row 14 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">13:51:28Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-141</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">evaluate</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Measured cluster P50 query latency at 6.4ms baseline</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">4e112d7c</div>
+        </div>
+
+        <!-- Row 15 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">13:48:10Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-[#FAFAFA] text-[#0A0A0A]">
+              ◐ WARN
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-139</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">propose</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Unindexed semantic tag flagged for vacuum maintenance</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">33190ab7</div>
+        </div>
+
+        <!-- Row 16 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">13:44:55Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">operator</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">apply proposal</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Pruned unreferenced orphan leaves from knowledge DAG</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">44bc19f0</div>
+        </div>
+
+        <!-- Row 17 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">13:40:12Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">system</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">evaluate</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Validated Merkle root monotonic chain integrity 100%</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">8f2c00a1</div>
+        </div>
+
+        <!-- Row 18 -->
+        <div class="h-[40px] px-6 flex items-center hover:bg-[#FAFAFA] transition-colors">
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">13:36:40Z</div>
+          <div class="w-[90px] flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0A0A0A] text-[9px] font-bold tracking-[0.08em] uppercase bg-white text-[#0A0A0A]">
+              ● OK
+            </span>
+          </div>
+          <div class="w-[110px] font-mono-code text-[11px] font-semibold text-[#0A0A0A] flex-shrink-0">sub-141</div>
+          <div class="w-[150px] font-mono-code text-[11px] text-[#525252] flex-shrink-0">import file</div>
+          <div class="flex-1 min-w-0 text-[#0A0A0A] truncate pr-4">Exported frozen runtime manifest digest BLAKE3 batch</div>
+          <div class="w-[100px] font-mono-code text-[11px] text-[#525252] text-right flex-shrink-0">4a01c482</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Pagination Row: Exactly 39px high -->
+    <div class="h-[39px] px-6 border-b border-[#0A0A0A] bg-[#FAFAFA] flex items-center justify-between flex-shrink-0">
+      <div class="font-mono-code text-xs text-[#525252]">
+        1-18 of 3,452
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="h-[26px] px-2 border border-[#0A0A0A] bg-white flex items-center gap-1 font-mono-code text-[11px] font-semibold">
+          <span>18 / page</span>
+          <span class="text-[9px]">▾</span>
+        </div>
+        <div class="flex items-center">
+          <button class="w-[28px] h-[26px] border border-[#0A0A0A] border-r-0 bg-white hover:bg-[#F2F2F2] flex items-center justify-center text-[#525252] hover:text-[#0A0A0A]">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <button class="w-[28px] h-[26px] border border-[#0A0A0A] bg-white hover:bg-[#F2F2F2] flex items-center justify-center text-[#525252] hover:text-[#0A0A0A]">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar: Flush at the very bottom edge, 30px high, exactly one line mono -->
+    <footer class="h-[30px] px-6 bg-white flex items-center justify-between font-mono-code text-[11px] text-[#525252] flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <span class="font-bold text-[#0A0A0A]">3,452 EVENTS</span>
+        <span>·</span>
+        <span>2 AGENTS LIVE</span>
+        <span>·</span>
+        <div class="flex items-center gap-1.5">
+          <span>STREAM CONNECTED</span>
+          <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>RAFT QUORUM SYNCED</span>
+        <span>·</span>
+        <span>LATENCY P50 6.4ms</span>
+        <span>·</span>
+        <div class="flex items-center gap-1 text-[#0A0A0A] font-semibold">
+          <span>ONLINE</span>
+          <span class="w-1.5 h-1.5 bg-[#16A34A]"></span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+</body>
+</html>

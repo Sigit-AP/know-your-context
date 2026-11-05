@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Soul - Health (Paper Dark)</title>
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#141110',
+            panel: '#1A1713',
+            raised: '#211D17',
+            hairline: 'rgba(217, 164, 65, 0.10)',
+            hairlineBright: 'rgba(217, 164, 65, 0.22)',
+            textPrimary: '#EDE4D3',
+            textSecondary: '#A3947D',
+            accent: '#D9A441',
+            statusOk: '#7FB069',
+            statusWarn: '#E0A458',
+            statusDanger: '#D16666'
+          },
+          fontFamily: {
+            serif: ['Fraunces', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    html, body {
+      width: 1440px;
+      height: 900px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #141110;
+      color: #EDE4D3;
+      font-family: 'Inter', sans-serif;
+    }
+    .double-rule {
+      position: relative;
+      height: 4px;
+    }
+    .double-rule::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: rgba(217, 164, 65, 0.28);
+    }
+    .double-rule::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: rgba(217, 164, 65, 0.14);
+    }
+    /* Custom scrollbars if any, but layout fits 1440x900 flush */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-base select-none">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between bg-base border-r border-hairline flex-shrink-0 z-30">
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="px-5 pt-4 pb-3 flex items-center justify-between border-b border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded bg-raised border border-accent/30 flex items-center justify-center text-accent font-serif font-bold text-xs tracking-wider">
+            Ψ
+          </div>
+          <div>
+            <div class="font-serif font-semibold text-[13px] text-textPrimary tracking-wide leading-none">Know Your Soul</div>
+            <div class="font-mono text-[9px] text-textSecondary uppercase tracking-widest mt-1">Cluster 01 · v14.2</div>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-statusOk/80"></div>
+      </div>
+
+      <!-- Navigation Groups -->
+      <nav class="px-3 pt-3 space-y-4">
+        <!-- Group I: MONITOR -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[9.5px] uppercase tracking-widest text-textSecondary/70 flex items-center gap-1.5">
+            <span class="text-accent/60 font-serif">I</span> // MONITOR
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="8" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="12" cy="12" r="2"/><path d="M6 7.5l4-2.5M6 8.5l4 2.5"/></svg>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group II: ANALYZE -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[9.5px] uppercase tracking-widest text-textSecondary/70 flex items-center gap-1.5">
+            <span class="text-accent/60 font-serif">II</span> // ANALYZE
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 13h12M4 10v3M8 6v7M12 3v10"/></svg>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12l4-5 3 3 5-7"/></svg>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group III: GOVERN -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[9.5px] uppercase tracking-widest text-textSecondary/70 flex items-center gap-1.5">
+            <span class="text-accent/60 font-serif">III</span> // GOVERN
+          </div>
+          <div class="space-y-0.5">
+            <!-- Active Nav Item -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] font-medium bg-accent/10 text-accent border-l-2 border-accent">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5h3l2-4 2 7 2-4h3"/></svg>
+                <span>Health</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-statusWarn animate-pulse"></span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h10v12H3zM6 5h4M6 8h4M6 11h2"/></svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10v10H3zM6 7l2 2 4-4"/></svg>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] text-textSecondary/70 bg-raised px-1.5 py-0.2 rounded border border-hairline">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] text-statusWarn bg-statusWarn/10 px-1.5 py-0.2 rounded border border-statusWarn/30">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group IV: SYSTEM -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[9.5px] uppercase tracking-widest text-textSecondary/70 flex items-center gap-1.5">
+            <span class="text-accent/60 font-serif">IV</span> // SYSTEM
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7l2 2-2 2M9 11h2"/></svg>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[12px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"/></svg>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- User Card Footer -->
+    <div class="p-3 border-t border-hairline">
+      <div class="p-2.5 rounded bg-panel border border-hairline flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded bg-raised border border-hairline flex items-center justify-center font-mono text-xs font-semibold text-accent">
+            SA
+          </div>
+          <div class="leading-tight">
+            <div class="text-[12px] font-medium text-textPrimary">Sigit A.</div>
+            <div class="font-mono text-[10px] text-textSecondary">operator</div>
+          </div>
+        </div>
+        <div class="w-1.5 h-1.5 rounded-full bg-statusOk"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN WORKSPACE (1192px) -->
+  <main class="w-[1192px] h-full flex flex-col justify-between overflow-hidden bg-base">
+    
+    <!-- TOPBAR (44px) on ONE line -->
+    <header class="h-[44px] px-6 border-b border-hairline flex items-center justify-between flex-shrink-0 bg-base z-20">
+      <!-- Breadcrumb / Context Left -->
+      <div class="flex items-center gap-2.5 text-[12px] leading-none">
+        <span class="font-mono text-[10px] text-textSecondary uppercase tracking-wider">KYS // Console</span>
+        <span class="text-hairlineBright font-mono">/</span>
+        <span class="font-serif font-semibold text-textPrimary text-[13px]">Health</span>
+        <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-raised border border-hairline text-accent">CLUSTER-01</span>
+      </div>
+
+      <!-- Search field center -->
+      <div class="w-[420px] h-[28px] bg-panel rounded border border-hairline px-3 flex items-center justify-between text-[11px] text-textSecondary focus-within:border-accent/50">
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-textSecondary/70" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+          <span class="text-textSecondary/80">search checks, invariants, diagnostics...</span>
+        </div>
+        <kbd class="font-mono text-[9px] px-1 py-0.2 rounded bg-raised text-textSecondary border border-hairline">⌘K</kbd>
+      </div>
+
+      <!-- Right items: max 4 segments on ONE line -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-panel border border-hairline font-mono text-[10px] text-statusOk">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>RAFT QUORUM SYNCED</span>
+        </div>
+        <button class="relative w-7 h-7 rounded bg-panel border border-hairline flex items-center justify-center text-textSecondary hover:text-textPrimary transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2a3 3 0 00-3 3v2.5L3.5 10v1h9v-1L11 7.5V5a3 3 0 00-3-3zM6.5 13a1.5 1.5 0 003 0"/></svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-statusWarn"></span>
+        </button>
+        <div class="w-7 h-7 rounded bg-raised border border-hairline flex items-center justify-center font-mono text-[10px] font-semibold text-textPrimary">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (fills remaining vertical space flush) -->
+    <div class="flex-1 px-6 pt-3.5 pb-0 flex flex-col justify-between overflow-hidden">
+      
+      <!-- Section Header with Roman Numeral & Signature Double Rule -->
+      <div class="flex-shrink-0 mb-2.5">
+        <div class="flex items-baseline justify-between mb-1.5">
+          <div class="flex items-baseline gap-2.5">
+            <span class="font-mono text-[11px] uppercase tracking-widest text-accent font-semibold">III.I // GOVERNANCE ENGINE</span>
+            <h1 class="font-serif text-[21px] font-bold text-textPrimary tracking-tight">System Health &amp; Invariant Verification</h1>
+          </div>
+          <div class="flex items-center gap-4 font-mono text-[10px] text-textSecondary">
+            <span>INDEX: <strong class="text-textPrimary font-medium">48,203 EDGES · 12,847 NODES</strong></span>
+            <span class="text-hairlineBright">·</span>
+            <span>MERKLE: <strong class="text-accent font-medium">0x9f8a2c3b</strong></span>
+            <span class="text-hairlineBright">·</span>
+            <span>CADENCE: <strong class="text-textPrimary font-medium">15s DETERMINISTIC</strong></span>
+          </div>
+        </div>
+        <div class="double-rule"></div>
+      </div>
+
+      <!-- 1. BANNER: Amber tint, 3px amber left bar, one line -->
+      <div class="flex-shrink-0 h-[38px] px-3.5 rounded bg-[#E0A458]/10 border border-[#E0A458]/25 border-l-[3px] border-l-[#E0A458] flex items-center justify-between mb-2.5">
+        <div class="flex items-center gap-2.5">
+          <svg class="w-4 h-4 text-statusWarn flex-shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 2.5L14 13.5H2L8 2.5zM8 6.5v3.5M8 11.5v.5"/></svg>
+          <span class="text-[12px] font-medium text-textPrimary tracking-tight">1 of 9 checks failing — re-index required for embedding store</span>
+          <span class="font-mono text-[10px] text-textSecondary bg-base/50 px-2 py-0.5 rounded border border-hairline">INVARIANT: SHACL_RULE_#04</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-[10px] text-textSecondary">TRIGGERED 18M AGO</span>
+          <button class="px-2.5 py-1 rounded bg-transparent border border-statusWarn/50 hover:bg-statusWarn/15 text-statusWarn font-mono text-[10.5px] font-medium tracking-wide transition-colors">
+            Run re-index
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. CHECKS TABLE: Exactly 10 visible rows, comfortable 56-65px padding balance, flush layout -->
+      <div class="flex-1 flex flex-col bg-panel rounded border border-hairline overflow-hidden mb-2.5">
+        <!-- Table Header (Uppercase, one line) -->
+        <div class="h-[28px] px-4 bg-raised/70 border-b border-hairline flex items-center justify-between font-mono text-[9.5px] uppercase tracking-wider text-textSecondary font-semibold flex-shrink-0">
+          <div class="w-[320px]">CHECK</div>
+          <div class="w-[170px]">STATUS</div>
+          <div class="w-[200px]">TARGET / SUBSYSTEM</div>
+          <div class="w-[180px]">LAST RUN</div>
+          <div class="w-[120px]">DURATION</div>
+          <div class="w-[80px] text-right">ACTION</div>
+        </div>
+
+        <!-- 10 Rows exactly (each ~34px, comfortable craft lines) -->
+        <div class="flex-1 flex flex-col justify-between divide-y divide-hairline">
+          
+          <!-- Row 1: store integrity -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">01</span>
+              <span>store integrity</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">fs::check_fd (DuckDB WAL)</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">842ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+          <!-- Row 2: embedding freshness (THE FAIL ROW: red tint + 2px red left border) -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] bg-[#D16666]/10 border-l-2 border-l-[#D16666] hover:bg-[#D16666]/15 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-statusDanger font-bold">02</span>
+              <span class="text-[#F3AEAE] font-semibold">embedding freshness</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusDanger/15 text-statusDanger border border-statusDanger/40 font-mono text-[10px] font-bold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l6 6M9 3l-6 6"/></svg>
+                FAIL
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-[#F3AEAE]">knn_vector_cosine (Shard 04)</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-statusDanger font-bold">1,420ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-statusDanger hover:underline font-bold">RE-INDEX</button>
+            </div>
+          </div>
+
+          <!-- Row 3: audit chain -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">03</span>
+              <span>audit chain</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">sha256_merkle_verify</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">612ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+          <!-- Row 4: wal replay -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">04</span>
+              <span>wal replay</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">sqlite3_wal_seq_829</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">298ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+          <!-- Row 5: projection watermark -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">05</span>
+              <span>projection watermark</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">dag_watermark_lag (0 lag)</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">145ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+          <!-- Row 6: socket permissions -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">06</span>
+              <span>socket permissions</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">ipc::/var/run/kyc.sock</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">32ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+          <!-- Row 7: backup recency -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">07</span>
+              <span>backup recency</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">snap_20261104_12 (T-42m)</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">480ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+          <!-- Row 8: schema version -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">08</span>
+              <span>schema version</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">v5_clean_migration (1-&gt;5)</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">110ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+          <!-- Row 9: quarantine scan -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">09</span>
+              <span>quarantine scan</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">zero_corrupt_subgraphs</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">522ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+          <!-- Row 10: lease quorum consensus -->
+          <div class="flex items-center justify-between px-4 py-1 text-[11.5px] hover:bg-raised/40 transition-colors">
+            <div class="w-[320px] flex items-center gap-2.5 font-medium text-textPrimary">
+              <span class="font-mono text-[10px] text-textSecondary/70">10</span>
+              <span>lease quorum consensus</span>
+            </div>
+            <div class="w-[170px]">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk border border-statusOk/30 font-mono text-[10px] font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+                OK
+              </span>
+            </div>
+            <div class="w-[200px] font-mono text-[10.5px] text-textSecondary">raft_lease_monotone (3/3)</div>
+            <div class="w-[180px] font-mono text-[10.5px] text-textSecondary">12 min ago</div>
+            <div class="w-[120px] font-mono text-[10.5px] text-textPrimary">88ms</div>
+            <div class="w-[80px] text-right">
+              <button class="font-mono text-[9.5px] text-accent/80 hover:text-accent">VERIFY</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- LOWER SPLIT: Findings (Below-Left) & Actions (Below-Right) -->
+      <div class="h-[148px] flex gap-3 flex-shrink-0 mb-2.5">
+        
+        <!-- 3. Panel 'Findings' below-left: 3 rows, complete text, count -->
+        <div class="flex-1 bg-panel rounded border border-hairline p-3 flex flex-col justify-between">
+          <div class="flex items-center justify-between border-b border-hairline pb-1.5 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-serif font-bold text-[13px] text-textPrimary tracking-tight">Active Invariant Findings</span>
+              <span class="font-mono text-[10px] text-statusWarn bg-statusWarn/10 px-1.5 py-0.2 rounded border border-statusWarn/25">3 DETECTED</span>
+            </div>
+            <span class="font-mono text-[9.5px] text-textSecondary">EVALUATED AT 14:32:07Z</span>
+          </div>
+
+          <!-- 3 Rows: severity chip, one-line finding text complete, mono count -->
+          <div class="space-y-1.5 pt-1">
+            <!-- Finding 1 -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-raised border border-hairline">
+              <div class="flex items-center gap-2.5">
+                <span class="px-1.5 py-0.5 rounded bg-statusDanger/15 text-statusDanger font-mono text-[9.5px] font-bold border border-statusDanger/30 uppercase">CRITICAL</span>
+                <span class="text-[11.5px] text-textPrimary font-medium">Stale embedding pointers detected in 41 nodes across vector cache partition</span>
+              </div>
+              <span class="font-mono text-[11px] text-statusDanger font-semibold">41 NODES</span>
+            </div>
+
+            <!-- Finding 2 -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-raised border border-hairline">
+              <div class="flex items-center gap-2.5">
+                <span class="px-1.5 py-0.5 rounded bg-statusWarn/15 text-statusWarn font-mono text-[9.5px] font-bold border border-statusWarn/30 uppercase">WARNING</span>
+                <span class="text-[11.5px] text-textPrimary font-medium">Unindexed semantic tag flags pending vacuum maintenance in partition P4</span>
+              </div>
+              <span class="font-mono text-[11px] text-statusWarn font-semibold">12 TAGS</span>
+            </div>
+
+            <!-- Finding 3 -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-raised border border-hairline">
+              <div class="flex items-center gap-2.5">
+                <span class="px-1.5 py-0.5 rounded bg-textSecondary/20 text-textSecondary font-mono text-[9.5px] font-bold border border-hairline uppercase">NOTICE</span>
+                <span class="text-[11.5px] text-textPrimary font-medium">Sub-optimal Merkle proof branch density detected on shard 0x3a</span>
+              </div>
+              <span class="font-mono text-[11px] text-textSecondary font-semibold">2 BRANCHES</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Panel 'Actions' below-right: 3 stacked buttons/list rows -->
+        <div class="w-[360px] bg-panel rounded border border-hairline p-3 flex flex-col justify-between flex-shrink-0">
+          <div class="flex items-center justify-between border-b border-hairline pb-1.5 flex-shrink-0">
+            <span class="font-serif font-bold text-[13px] text-textPrimary tracking-tight">Remediation Actions</span>
+            <span class="font-mono text-[9.5px] text-accent uppercase tracking-wider">OPERATOR GATE ACTIVE</span>
+          </div>
+
+          <!-- 3 stacked buttons/list rows: Run re-index (primary), Verify audit chain (ghost), Export health JSON (ghost) -->
+          <div class="space-y-1.5 pt-1">
+            <!-- Action 1 (Primary) -->
+            <button class="w-full h-[32px] px-3 rounded bg-accent hover:bg-accent/90 text-base font-semibold text-[11.5px] flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-2 font-mono">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 8A6 6 0 112.5 5.5M2 2v4h4"/></svg>
+                <span>Run re-index</span>
+              </div>
+              <span class="font-mono text-[10px] uppercase tracking-wider bg-base/20 px-1.5 py-0.5 rounded">PRIMARY</span>
+            </button>
+
+            <!-- Action 2 (Ghost) -->
+            <button class="w-full h-[32px] px-3 rounded bg-transparent hover:bg-raised border border-hairline hover:border-hairlineBright text-textPrimary text-[11.5px] flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-2 font-mono">
+                <svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 2h10v12H3zM6 5h4M6 8h4M6 11h2"/></svg>
+                <span>Verify audit chain</span>
+              </div>
+              <span class="font-mono text-[10px] text-textSecondary">SHA-256 HMAC</span>
+            </button>
+
+            <!-- Action 3 (Ghost) -->
+            <button class="w-full h-[32px] px-3 rounded bg-transparent hover:bg-raised border border-hairline hover:border-hairlineBright text-textPrimary text-[11.5px] flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-2 font-mono">
+                <svg class="w-3.5 h-3.5 text-textSecondary" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10v4h12v-4M8 2v9M4 7l4 4 4-4"/></svg>
+                <span>Export health JSON</span>
+              </div>
+              <span class="font-mono text-[10px] text-textSecondary">DIAGNOSTICS V14</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- BOTTOM FLUSH STATUS BAR (24px) -->
+    <footer class="h-[24px] px-6 bg-base border-t border-hairline flex items-center justify-between font-mono text-[10px] text-textSecondary flex-shrink-0 z-20">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>10 CHECK CASES RECORDED</span>
+        </span>
+        <span class="text-hairlineBright">·</span>
+        <span>LAST SWEEP 12 MIN AGO</span>
+        <span class="text-hairlineBright">·</span>
+        <span class="text-statusWarn font-medium">GATE 9/10 PASS</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>ENGINE: <strong class="text-textPrimary font-normal">v14.2 DETERMINISTIC</strong></span>
+        <span class="text-hairlineBright">·</span>
+        <span>SHARD: <strong class="text-textPrimary font-normal">0x3a</strong></span>
+        <span class="text-hairlineBright">·</span>
+        <span class="text-statusOk">● MONITORING ONLINE</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

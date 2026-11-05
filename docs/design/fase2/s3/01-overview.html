@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Soul - Overview (Swiss Grid)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace'],
+          },
+          colors: {
+            swissBase: '#FAFAF8',
+            swissCard: '#FFFFFF',
+            hairline: '#E4E4E0',
+            swissText: '#111111',
+            swissSecondary: '#6B6B66',
+            swissRed: '#E03131',
+            statusOk: '#2F9E6E',
+            statusWarn: '#B8860B',
+            statusDanger: '#C92A2A',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #FAFAF8;
+      color: #111111;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono-data {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .kpi-numeral {
+      font-size: 42px;
+      line-height: 1;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-row select-none bg-swissBase text-swissText overflow-hidden">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-hairline bg-swissCard flex-shrink-0 z-20">
+    <!-- Sidebar Header & Nav -->
+    <div class="flex flex-col">
+      <!-- Brand & Version -->
+      <div class="h-12 border-b border-hairline px-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 bg-swissRed text-white flex items-center justify-center font-bold text-[11px] rounded-[2px] leading-none">K</div>
+          <span class="font-bold text-[13px] tracking-tight text-swissText">Know Your Soul</span>
+        </div>
+        <span class="font-mono-data text-[10px] text-swissSecondary bg-swissBase px-1.5 py-0.5 border border-hairline rounded-[2px]">v14.2</span>
+      </div>
+
+      <!-- Navigation groups -->
+      <div class="px-2 py-3 space-y-4">
+        <!-- Group: MONITOR -->
+        <div>
+          <div class="px-2.5 mb-1 text-[10px] font-semibold text-swissSecondary tracking-wider uppercase font-mono-data">MONITOR</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] bg-[#E03131]/10 text-swissRed font-medium text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-swissRed flex-shrink-0"></span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group: ANALYZE -->
+        <div>
+          <div class="px-2.5 mb-1 text-[10px] font-semibold text-swissSecondary tracking-wider uppercase font-mono-data">ANALYZE</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group: GOVERN -->
+        <div>
+          <div class="px-2.5 mb-1 text-[10px] font-semibold text-swissSecondary tracking-wider uppercase font-mono-data">GOVERN</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>Audit Ledger</span>
+            </a>
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px] cursor-pointer">
+              <div class="flex items-center gap-2.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono-data text-[10px] px-1 py-0.2 bg-swissBase border border-hairline rounded text-swissSecondary">3</span>
+            </div>
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px] cursor-pointer">
+              <div class="flex items-center gap-2.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono-data text-[10px] px-1 py-0.2 bg-swissBase border border-hairline rounded text-swissSecondary">12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group: SYSTEM -->
+        <div>
+          <div class="px-2.5 mb-1 text-[10px] font-semibold text-swissSecondary tracking-wider uppercase font-mono-data">SYSTEM</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-swissSecondary hover:text-swissText hover:bg-swissBase text-[13px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-transparent flex-shrink-0"></span>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Footer / Operator Card -->
+    <div class="p-3 border-t border-hairline bg-swissCard">
+      <div class="flex items-center gap-2.5 px-2 py-1.5 rounded border border-hairline bg-swissBase">
+        <div class="w-7 h-7 rounded-[3px] bg-swissText text-white flex items-center justify-center font-mono-data text-[11px] font-bold">SA</div>
+        <div class="flex flex-col min-w-0">
+          <div class="text-[12px] font-semibold leading-tight text-swissText truncate">Sigit A.</div>
+          <div class="text-[10px] font-mono-data text-swissSecondary leading-tight">operator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER (1192px width, 900px height) -->
+  <main class="w-[1192px] h-[900px] flex flex-col justify-between flex-grow overflow-hidden bg-swissBase">
+
+    <!-- TOPBAR (48px) -->
+    <header class="h-12 w-full border-b border-hairline bg-swissCard px-6 flex items-center justify-between flex-shrink-0 z-10">
+      <!-- Breadcrumb / Title -->
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] font-mono-data uppercase tracking-wider text-swissSecondary">kyc //</span>
+        <h1 class="text-[14px] font-semibold text-swissText">Overview</h1>
+        <span class="font-mono-data text-[10px] px-1.5 py-0.5 rounded-[2px] bg-swissBase border border-hairline text-swissSecondary ml-2">cluster-01</span>
+      </div>
+
+      <!-- Search Field (Center) -->
+      <div class="w-[360px] relative">
+        <div class="flex items-center h-7 px-2.5 bg-swissBase border border-hairline rounded-[4px] text-[12px] text-swissSecondary justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-swissSecondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+            </svg>
+            <span class="font-mono-data text-[11px]">search nodes, edges, hashes</span>
+          </div>
+          <kbd class="font-mono-data text-[10px] px-1 py-0.5 bg-white border border-hairline rounded text-swissSecondary shadow-none">⌘K</kbd>
+        </div>
+      </div>
+
+      <!-- Right Chrome (Bell + Avatar) -->
+      <div class="flex items-center gap-3">
+        <button class="relative w-7 h-7 flex items-center justify-center border border-hairline rounded-[4px] bg-swissCard hover:bg-swissBase text-swissSecondary">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-swissRed rounded-full"></span>
+        </button>
+        <div class="w-7 h-7 rounded-[4px] bg-swissText text-white flex items-center justify-center font-mono-data text-[11px] font-bold">SA</div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Fills vertical space without scrolling, 824px available) -->
+    <div class="flex flex-col justify-between flex-grow p-5 space-y-3.5 overflow-hidden">
+
+      <!-- 1. ALERT BANNER (~44px) -->
+      <div class="h-[44px] flex items-center justify-between px-3.5 bg-white border border-hairline rounded-[4px] border-l-[3px] border-l-swissRed flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="inline-flex items-center gap-1 font-mono-data text-[11px] font-semibold text-statusWarn px-1.5 py-0.5 rounded-[2px] bg-[#B8860B]/10 border border-[#B8860B]/20 uppercase">
+            <svg class="w-3 h-3 text-statusWarn" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            WARN
+          </span>
+          <span class="text-[13px] font-medium text-swissText">2 stale edges detected in domain P4 — last verify 2h ago</span>
+        </div>
+        <button class="px-3 py-1 text-[12px] font-medium font-mono-data uppercase tracking-wider text-swissRed hover:bg-[#E03131]/10 rounded-[4px] border border-swissRed/30 transition-colors">
+          Review
+        </button>
+      </div>
+
+      <!-- 2. KPI STRIP (4 cards in a row, height ~102px) -->
+      <div class="grid grid-cols-4 gap-3.5 flex-shrink-0">
+        <!-- KPI 1: NODES -->
+        <div class="h-[102px] bg-swissCard border border-hairline rounded-[4px] p-3 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-data text-[10px] tracking-wider uppercase font-semibold text-swissSecondary">01 // NODES</span>
+            <span class="font-mono-data text-[10px] text-statusOk flex items-center gap-1 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="kpi-numeral text-swissText font-mono-data">12,847</span>
+            <!-- Sparkline (stroke only) -->
+            <svg class="w-16 h-6 stroke-swissText fill-none stroke-[1.5]" viewBox="0 0 64 24">
+              <polyline points="2,18 14,14 26,19 38,11 50,13 62,4" />
+            </svg>
+          </div>
+          <div class="text-[11px] font-mono-data text-swissSecondary flex items-center gap-1">
+            <span class="text-statusOk font-medium">+312</span> vs last week
+          </div>
+        </div>
+
+        <!-- KPI 2: EDGES -->
+        <div class="h-[102px] bg-swissCard border border-hairline rounded-[4px] p-3 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-data text-[10px] tracking-wider uppercase font-semibold text-swissSecondary">02 // EDGES</span>
+            <span class="font-mono-data text-[10px] text-statusOk flex items-center gap-1 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="kpi-numeral text-swissText font-mono-data">48,203</span>
+            <svg class="w-16 h-6 stroke-swissText fill-none stroke-[1.5]" viewBox="0 0 64 24">
+              <polyline points="2,20 14,17 26,15 38,12 50,6 62,2" />
+            </svg>
+          </div>
+          <div class="text-[11px] font-mono-data text-swissSecondary flex items-center gap-1">
+            <span class="text-statusOk font-medium">+1,204</span> vs last week
+          </div>
+        </div>
+
+        <!-- KPI 3: QUERIES 24H -->
+        <div class="h-[102px] bg-swissCard border border-hairline rounded-[4px] p-3 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-data text-[10px] tracking-wider uppercase font-semibold text-swissSecondary">03 // QUERIES 24H</span>
+            <span class="font-mono-data text-[10px] text-statusOk flex items-center gap-1 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="kpi-numeral text-swissText font-mono-data">3,412</span>
+            <svg class="w-16 h-6 stroke-swissText fill-none stroke-[1.5]" viewBox="0 0 64 24">
+              <polyline points="2,14 14,16 26,10 38,14 50,7 62,5" />
+            </svg>
+          </div>
+          <div class="text-[11px] font-mono-data text-swissSecondary flex items-center gap-1">
+            <span class="text-statusOk font-medium">up 8.2%</span> vs baseline
+          </div>
+        </div>
+
+        <!-- KPI 4: LATENCY P50 -->
+        <div class="h-[102px] bg-swissCard border border-hairline rounded-[4px] p-3 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-data text-[10px] tracking-wider uppercase font-semibold text-swissSecondary">04 // LATENCY P50</span>
+            <span class="font-mono-data text-[10px] text-statusOk flex items-center gap-1 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <div class="flex items-baseline">
+              <span class="kpi-numeral text-swissText font-mono-data">6.4</span>
+              <span class="font-mono-data text-sm font-semibold text-swissSecondary ml-0.5">ms</span>
+            </div>
+            <svg class="w-16 h-6 stroke-swissText fill-none stroke-[1.5]" viewBox="0 0 64 24">
+              <polyline points="2,8 14,12 26,6 38,15 50,10 62,16" />
+            </svg>
+          </div>
+          <div class="text-[11px] font-mono-data text-swissSecondary flex items-center gap-1">
+            <span class="text-statusOk font-medium">down 0.4ms</span> target &lt; 10ms
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TWO-COLUMN ROW (Learning Loop & Recent Activity, height ~215px) -->
+      <div class="grid grid-cols-12 gap-3.5 flex-shrink-0 h-[215px]">
+        <!-- LEFT PANEL: Learning Loop (5 cols) -->
+        <div class="col-span-5 bg-swissCard border border-hairline rounded-[4px] p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2.5 border-b border-hairline">
+              <div class="flex items-center gap-2">
+                <span class="font-mono-data text-[11px] font-semibold uppercase tracking-wider text-swissSecondary">SECTION 01</span>
+                <span class="w-1 h-1 rounded-full bg-hairline"></span>
+                <h3 class="text-[13px] font-semibold text-swissText">Learning Loop</h3>
+              </div>
+              <span class="font-mono-data text-[10px] px-1.5 py-0.5 bg-swissBase border border-hairline rounded text-statusOk font-medium">ONLINE // v14.2</span>
+            </div>
+
+            <!-- Telemetry Metrics & Bars -->
+            <div class="mt-3.5 space-y-3">
+              <!-- Bar P -->
+              <div>
+                <div class="flex justify-between text-[11px] font-mono-data mb-1">
+                  <span class="text-swissSecondary">Precision score</span>
+                  <span class="font-semibold text-swissText">P 0.828</span>
+                </div>
+                <div class="w-full h-2 bg-swissBase border border-hairline rounded-[2px] overflow-hidden p-[1px]">
+                  <div class="h-full bg-swissText rounded-[1px]" style="width: 82.8%"></div>
+                </div>
+              </div>
+
+              <!-- Bar M -->
+              <div>
+                <div class="flex justify-between text-[11px] font-mono-data mb-1">
+                  <span class="text-swissSecondary">Mutation entropy</span>
+                  <span class="font-semibold text-swissText">M 0.341</span>
+                </div>
+                <div class="w-full h-2 bg-swissBase border border-hairline rounded-[2px] overflow-hidden p-[1px]">
+                  <div class="h-full bg-swissText rounded-[1px]" style="width: 34.1%"></div>
+                </div>
+              </div>
+
+              <!-- Bar E -->
+              <div>
+                <div class="flex justify-between text-[11px] font-mono-data mb-1">
+                  <span class="text-swissSecondary">Eigen convergence</span>
+                  <span class="font-semibold text-swissText">E 0.898</span>
+                </div>
+                <div class="w-full h-2 bg-swissBase border border-hairline rounded-[2px] overflow-hidden p-[1px]">
+                  <div class="h-full bg-swissText rounded-[1px]" style="width: 89.8%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Meta Line -->
+          <div class="pt-2 border-t border-hairline flex items-center justify-between text-[10px] font-mono-data text-swissSecondary">
+            <span>Last relearn 2h ago · v14</span>
+            <span class="text-statusOk font-medium">CONVERGED</span>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: Recent Activity (7 cols, 6 rows without wrapping) -->
+        <div class="col-span-7 bg-swissCard border border-hairline rounded-[4px] p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-2 border-b border-hairline">
+            <div class="flex items-center gap-2">
+              <span class="font-mono-data text-[11px] font-semibold uppercase tracking-wider text-swissSecondary">SECTION 02</span>
+              <span class="w-1 h-1 rounded-full bg-hairline"></span>
+              <h3 class="text-[13px] font-semibold text-swissText">Recent Activity</h3>
+            </div>
+            <span class="font-mono-data text-[10px] text-swissSecondary uppercase">6 AUDITED OPS SHOWN</span>
+          </div>
+
+          <!-- 6 Activity Rows (tight, perfectly formatted, no ellipses) -->
+          <div class="divide-y divide-hairline text-[11px] font-mono-data my-auto">
+            <div class="py-1.5 flex items-center justify-between leading-none">
+              <span class="text-swissSecondary w-[74px]">14:32:07Z</span>
+              <span class="text-swissText font-medium w-[80px]">sub-139</span>
+              <span class="text-swissText flex-grow truncate px-2 font-sans text-[12px]">Compacted vector embedding cache tier</span>
+              <span class="text-swissSecondary text-[10px] w-[58px] text-right">0x4a1c</span>
+            </div>
+            <div class="py-1.5 flex items-center justify-between leading-none">
+              <span class="text-swissSecondary w-[74px]">14:30:19Z</span>
+              <span class="text-swissText font-medium w-[80px]">operator</span>
+              <span class="text-swissText flex-grow truncate px-2 font-sans text-[12px]">Verified Merkle root consistency proof</span>
+              <span class="text-swissSecondary text-[10px] w-[58px] text-right">0x9f2c</span>
+            </div>
+            <div class="py-1.5 flex items-center justify-between leading-none">
+              <span class="text-swissSecondary w-[74px]">14:28:44Z</span>
+              <span class="text-swissText font-medium w-[80px]">sub-141</span>
+              <span class="text-swissText flex-grow truncate px-2 font-sans text-[12px]">Attached semantic ontology edges</span>
+              <span class="text-swissSecondary text-[10px] w-[58px] text-right">0x3e11</span>
+            </div>
+            <div class="py-1.5 flex items-center justify-between leading-none">
+              <span class="text-swissSecondary w-[74px]">14:25:01Z</span>
+              <span class="text-swissText font-medium w-[80px]">agent-2</span>
+              <span class="text-swissText flex-grow truncate px-2 font-sans text-[12px]">Pruned unreferenced orphan leaves</span>
+              <span class="text-swissSecondary text-[10px] w-[58px] text-right">0x7b90</span>
+            </div>
+            <div class="py-1.5 flex items-center justify-between leading-none">
+              <span class="text-swissSecondary w-[74px]">14:21:15Z</span>
+              <span class="text-swissText font-medium w-[80px]">sub-139</span>
+              <span class="text-swissText flex-grow truncate px-2 font-sans text-[12px]">Executed DuckDB AST index sweep</span>
+              <span class="text-swissSecondary text-[10px] w-[58px] text-right">0x8f2c</span>
+            </div>
+            <div class="py-1.5 flex items-center justify-between leading-none">
+              <span class="text-swissSecondary w-[74px]">14:18:52Z</span>
+              <span class="text-swissText font-medium w-[80px]">operator</span>
+              <span class="text-swissText flex-grow truncate px-2 font-sans text-[12px]">Re-indexed symbol schema contracts</span>
+              <span class="text-swissSecondary text-[10px] w-[58px] text-right">0xa18e</span>
+            </div>
+          </div>
+
+          <div class="pt-1.5 border-t border-hairline flex items-center justify-between text-[10px] font-mono-data text-swissSecondary">
+            <span>MUTATION ENGINE: DETERMINISTIC</span>
+            <span class="text-swissRed hover:underline cursor-pointer">FULL AUDIT LOG &rarr;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. PANEL 'DOMAIN HEALTH' (7 rows P1..P7, height ~390px, perfectly fills viewport) -->
+      <div class="bg-swissCard border border-hairline rounded-[4px] p-3.5 flex flex-col justify-between flex-grow">
+        <!-- Section Header -->
+        <div class="flex items-center justify-between pb-2 border-b-2 border-swissText">
+          <div class="flex items-center gap-2">
+            <span class="font-mono-data text-[11px] font-semibold uppercase tracking-wider text-swissSecondary">SECTION 03</span>
+            <span class="w-1 h-1 rounded-full bg-hairline"></span>
+            <h3 class="text-[13px] font-semibold text-swissText">Domain Health</h3>
+            <span class="text-[11px] font-mono-data text-swissSecondary ml-2">(7 PARTITIONS ACTIVE)</span>
+          </div>
+          <div class="flex items-center gap-4 font-mono-data text-[10px] text-swissSecondary">
+            <span>SHARD_KEY: MD5_RANGE [0x0000..0xFFFF]</span>
+            <span class="text-statusOk">SHACL INVARIANTS: PASS (11/11)</span>
+          </div>
+        </div>
+
+        <!-- Table Header (Uppercase) -->
+        <div class="grid grid-cols-12 px-3 py-1.5 text-[10px] font-mono-data font-semibold text-swissSecondary uppercase tracking-wider border-b border-hairline bg-swissBase/50">
+          <div class="col-span-1">PARTITION</div>
+          <div class="col-span-5">DOMAIN NAME</div>
+          <div class="col-span-2 text-center">STATUS</div>
+          <div class="col-span-2 text-center">14D ACTIVITY</div>
+          <div class="col-span-2 text-right">ACTIVE NODES</div>
+        </div>
+
+        <!-- Table Rows P1..P7 (Clean Swiss Grid styling, comfortable height) -->
+        <div class="divide-y divide-hairline flex flex-col justify-between flex-grow my-0.5">
+          <!-- P1 -->
+          <div class="grid grid-cols-12 px-3 items-center hover:bg-swissBase/60 transition-colors py-2">
+            <div class="col-span-1 font-mono-data text-[12px] font-semibold text-swissText">P1</div>
+            <div class="col-span-5 text-[12px] font-medium text-swissText">Core Runtime Execution &amp; Store</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="inline-flex items-center gap-1 font-mono-data text-[10px] font-medium text-statusOk bg-statusOk/10 border border-statusOk/20 px-2 py-0.5 rounded-[2px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-24 h-4 stroke-swissText fill-none stroke-[1.2]" viewBox="0 0 96 16">
+                <polyline points="0,10 16,7 32,11 48,6 64,8 80,4 96,6"/>
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono-data text-[12px] text-right font-medium text-swissText">3,842</div>
+          </div>
+
+          <!-- P2 -->
+          <div class="grid grid-cols-12 px-3 items-center hover:bg-swissBase/60 transition-colors py-2">
+            <div class="col-span-1 font-mono-data text-[12px] font-semibold text-swissText">P2</div>
+            <div class="col-span-5 text-[12px] font-medium text-swissText">Heuristics &amp; Ingestion Catalog</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="inline-flex items-center gap-1 font-mono-data text-[10px] font-medium text-statusOk bg-statusOk/10 border border-statusOk/20 px-2 py-0.5 rounded-[2px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-24 h-4 stroke-swissText fill-none stroke-[1.2]" viewBox="0 0 96 16">
+                <polyline points="0,12 16,11 32,8 48,9 64,5 80,6 96,3"/>
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono-data text-[12px] text-right font-medium text-swissText">2,118</div>
+          </div>
+
+          <!-- P3 -->
+          <div class="grid grid-cols-12 px-3 items-center hover:bg-swissBase/60 transition-colors py-2">
+            <div class="col-span-1 font-mono-data text-[12px] font-semibold text-swissText">P3</div>
+            <div class="col-span-5 text-[12px] font-medium text-swissText">Vector Space &amp; KNN Embeddings</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="inline-flex items-center gap-1 font-mono-data text-[10px] font-medium text-statusOk bg-statusOk/10 border border-statusOk/20 px-2 py-0.5 rounded-[2px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-24 h-4 stroke-swissText fill-none stroke-[1.2]" viewBox="0 0 96 16">
+                <polyline points="0,7 16,8 32,6 48,11 64,8 80,6 96,7"/>
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono-data text-[12px] text-right font-medium text-swissText">1,940</div>
+          </div>
+
+          <!-- P4 (WARN) -->
+          <div class="grid grid-cols-12 px-3 items-center bg-[#B8860B]/5 hover:bg-[#B8860B]/10 transition-colors py-2 border-l-2 border-l-statusWarn">
+            <div class="col-span-1 font-mono-data text-[12px] font-semibold text-statusWarn">P4</div>
+            <div class="col-span-5 text-[12px] font-medium text-swissText flex items-center gap-2">
+              <span>JSON-LD Schema &amp; Invariants</span>
+              <span class="text-[10px] font-mono-data text-statusWarn bg-[#B8860B]/10 px-1 py-0.2 rounded">2 STALE EDGES</span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <span class="inline-flex items-center gap-1 font-mono-data text-[10px] font-semibold text-statusWarn bg-[#B8860B]/15 border border-[#B8860B]/30 px-2 py-0.5 rounded-[2px]">
+                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                WARN
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-24 h-4 stroke-statusWarn fill-none stroke-[1.2]" viewBox="0 0 96 16">
+                <polyline points="0,5 16,7 32,9 48,11 64,12 80,14 96,15"/>
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono-data text-[12px] text-right font-medium text-swissText">1,656</div>
+          </div>
+
+          <!-- P5 -->
+          <div class="grid grid-cols-12 px-3 items-center hover:bg-swissBase/60 transition-colors py-2">
+            <div class="col-span-1 font-mono-data text-[12px] font-semibold text-swissText">P5</div>
+            <div class="col-span-5 text-[12px] font-medium text-swissText">Consensus, Leases &amp; Fencing</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="inline-flex items-center gap-1 font-mono-data text-[10px] font-medium text-statusOk bg-statusOk/10 border border-statusOk/20 px-2 py-0.5 rounded-[2px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-24 h-4 stroke-swissText fill-none stroke-[1.2]" viewBox="0 0 96 16">
+                <polyline points="0,11 16,10 32,10 48,8 64,6 80,7 96,4"/>
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono-data text-[12px] text-right font-medium text-swissText">1,112</div>
+          </div>
+
+          <!-- P6 -->
+          <div class="grid grid-cols-12 px-3 items-center hover:bg-swissBase/60 transition-colors py-2">
+            <div class="col-span-1 font-mono-data text-[12px] font-semibold text-swissText">P6</div>
+            <div class="col-span-5 text-[12px] font-medium text-swissText">Inference Subsumption &amp; Mapping</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="inline-flex items-center gap-1 font-mono-data text-[10px] font-medium text-statusOk bg-statusOk/10 border border-statusOk/20 px-2 py-0.5 rounded-[2px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-24 h-4 stroke-swissText fill-none stroke-[1.2]" viewBox="0 0 96 16">
+                <polyline points="0,14 16,12 32,13 48,9 64,8 80,5 96,6"/>
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono-data text-[12px] text-right font-medium text-swissText">1,280</div>
+          </div>
+
+          <!-- P7 -->
+          <div class="grid grid-cols-12 px-3 items-center hover:bg-swissBase/60 transition-colors py-2">
+            <div class="col-span-1 font-mono-data text-[12px] font-semibold text-swissText">P7</div>
+            <div class="col-span-5 text-[12px] font-medium text-swissText">Evaluation &amp; Feedback Loop</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="inline-flex items-center gap-1 font-mono-data text-[10px] font-medium text-statusOk bg-statusOk/10 border border-statusOk/20 px-2 py-0.5 rounded-[2px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span> OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-24 h-4 stroke-swissText fill-none stroke-[1.2]" viewBox="0 0 96 16">
+                <polyline points="0,13 16,11 32,12 48,10 64,7 80,5 96,4"/>
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono-data text-[12px] text-right font-medium text-swissText">869</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. STATUS BAR (FLUSH AT BOTTOM, exactly one line, mono, uppercase, green dot right) -->
+    <footer class="h-6 w-full bg-swissCard border-t border-hairline px-6 flex items-center justify-between text-[11px] font-mono-data uppercase tracking-wider text-swissSecondary flex-shrink-0 z-10">
+      <div class="flex items-center gap-3">
+        <span>12,847 NODES</span>
+        <span>·</span>
+        <span>48,203 EDGES</span>
+        <span>·</span>
+        <span>LAST RELEARN 2H AGO</span>
+        <span>·</span>
+        <span>V14</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>RAFT QUORUM SYNCED</span>
+        <span>·</span>
+        <span>P50: 6.4MS</span>
+        <span>·</span>
+        <div class="flex items-center gap-1.5 text-swissText font-medium">
+          <span>ONLINE</span>
+          <span class="w-2 h-2 rounded-full bg-statusOk"></span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

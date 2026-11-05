@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Activity Log (Neon Ops)</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#05070D',
+            panel: '#0A0E18',
+            raised: '#0E1424',
+            hairline: 'rgba(139, 92, 246, 0.12)',
+            'hairline-subtle': 'rgba(139, 92, 246, 0.08)',
+            textPrimary: '#E8E6F5',
+            secondary: '#8B86A8',
+            accent: '#8B5CF6',
+            statusOk: '#22C55E',
+            statusWarn: '#F59E0B',
+            statusDanger: '#EF4444'
+          },
+          fontFamily: {
+            heading: ['"Space Grotesk"', 'sans-serif'],
+            body: ['"Inter"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom dot grid pattern */
+    .bg-dot-grid {
+      background-image: radial-gradient(rgba(139, 92, 246, 0.18) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+    /* Pulsing Live Dot Animation */
+    @keyframes pulse-live {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .pulse-live {
+      animation: pulse-live 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    /* Scrollbar reset */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] overflow-hidden bg-base text-textPrimary font-body flex select-none m-0 p-0 border-none">
+
+  <!-- LEFT SIDEBAR (Width 256px) -->
+  <aside class="w-[256px] h-[900px] flex-shrink-0 bg-panel border-r border-hairline flex flex-col justify-between z-20">
+    <!-- Top Branding & Navigation -->
+    <div class="flex flex-col">
+      <!-- Sidebar Header -->
+      <div class="h-[52px] px-5 flex items-center justify-between border-b border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded bg-raised border border-accent/30 flex items-center justify-center font-mono font-bold text-xs text-accent">
+            K
+          </div>
+          <span class="font-heading font-semibold text-sm tracking-wide text-textPrimary">Know Your Soul</span>
+        </div>
+        <span class="font-mono text-[10px] text-secondary/80 bg-raised px-1.5 py-0.5 rounded border border-hairline">v14.2</span>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="px-3 py-3 space-y-4">
+        <!-- MONITOR GROUP -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[10px] font-semibold text-secondary tracking-widest uppercase">
+            MONITOR
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                <rect x="14" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-medium text-accent bg-accent/10 border border-accent/20">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                <span>Activity Log</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-accent pulse-live"></span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              <span>Graph Explorer</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- ANALYZE GROUP -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[10px] font-semibold text-secondary tracking-widest uppercase">
+            ANALYZE
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+              </svg>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <circle cx="12" cy="12" r="9" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v9l6 3" />
+              </svg>
+              <span>Analytics</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- GOVERN GROUP -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[10px] font-semibold text-secondary tracking-widest uppercase">
+            GOVERN
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] text-textPrimary bg-raised px-1.5 py-0.2 rounded border border-hairline">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] text-textPrimary bg-raised px-1.5 py-0.2 rounded border border-hairline">12</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- SYSTEM GROUP -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[10px] font-semibold text-secondary tracking-widest uppercase">
+            SYSTEM
+          </div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>Setup</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Bottom User Card -->
+    <div class="p-3 border-t border-hairline bg-panel/60">
+      <div class="flex items-center justify-between px-2.5 py-2 rounded bg-raised border border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded bg-accent/20 border border-accent/40 flex items-center justify-center font-mono font-semibold text-[11px] text-accent">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-textPrimary leading-tight">Sigit A.</span>
+            <span class="font-mono text-[10px] text-secondary leading-tight">operator</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-statusOk"></span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTENT (Width 1184px, Height 900px) -->
+  <main class="w-[1184px] h-[900px] flex-shrink-0 flex flex-col justify-between bg-base relative overflow-hidden">
+    <!-- Subtle Dot Grid Background Pattern on main panel -->
+    <div class="absolute inset-0 bg-dot-grid opacity-30 pointer-events-none z-0"></div>
+
+    <!-- UPPER SECTION (Topbar + Toolbar + Table) -->
+    <div class="flex flex-col flex-1 z-10">
+
+      <!-- TOPBAR (Height 52px, One line) -->
+      <header class="h-[52px] px-6 border-b border-hairline bg-panel/90 flex items-center justify-between flex-shrink-0">
+        <!-- Breadcrumb / Title Left -->
+        <div class="flex items-center gap-2.5">
+          <span class="font-mono text-xs text-secondary">kyc://</span>
+          <h1 class="font-heading font-semibold text-sm text-textPrimary tracking-tight">Activity Log</h1>
+          <span class="font-mono text-[11px] text-accent bg-raised px-2 py-0.5 rounded border border-accent/20 ml-1">cluster-01</span>
+        </div>
+
+        <!-- Center Search with ⌘K -->
+        <div class="w-[420px] relative">
+          <div class="h-8 rounded bg-raised border border-hairline flex items-center px-3 gap-2">
+            <svg class="w-3.5 h-3.5 text-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+            </svg>
+            <input type="text" placeholder="search nodes, edges, hashes" class="bg-transparent border-none outline-none font-mono text-xs text-textPrimary placeholder-secondary w-full" readonly>
+            <span class="font-mono text-[10px] text-secondary bg-panel px-1.5 py-0.5 rounded border border-hairline">⌘K</span>
+          </div>
+        </div>
+
+        <!-- Right Segments (max 4 segments: bell with dot, operator avatar, status pill) -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-statusOk/10 border border-statusOk/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-statusOk pulse-live"></span>
+            <span class="font-mono text-[10px] text-statusOk font-semibold uppercase">RAFT SYNCED</span>
+          </div>
+          <button class="w-8 h-8 rounded bg-raised border border-hairline flex items-center justify-center text-secondary hover:text-textPrimary transition-colors relative">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span class="w-1.5 h-1.5 rounded-full bg-statusWarn absolute top-1.5 right-1.5"></span>
+          </button>
+          <div class="w-8 h-8 rounded bg-accent/15 border border-accent/30 flex items-center justify-center font-mono font-medium text-xs text-accent">
+            SA
+          </div>
+        </div>
+      </header>
+
+      <!-- TOOLBAR ROW (Height 48px) -->
+      <section class="h-[48px] px-6 border-b border-hairline bg-panel/40 flex items-center justify-between flex-shrink-0">
+        <!-- Ghost Search Field Left -->
+        <div class="w-[280px] relative">
+          <div class="h-[32px] rounded bg-panel border border-hairline flex items-center px-3 gap-2">
+            <svg class="w-3.5 h-3.5 text-secondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+            </svg>
+            <input type="text" placeholder="Filter events..." class="bg-transparent border-none outline-none font-mono text-xs text-textPrimary placeholder-secondary w-full" readonly>
+          </div>
+        </div>
+
+        <!-- Right Filter Pills + Export Button -->
+        <div class="flex items-center gap-2">
+          <!-- Level ▾ -->
+          <button class="h-[30px] px-3 rounded bg-raised border border-hairline font-mono text-[11px] text-textPrimary flex items-center gap-1.5 hover:border-accent/40 transition-colors">
+            <span>Level</span>
+            <span class="text-secondary text-[10px]">▾</span>
+          </button>
+          <!-- Agent ▾ -->
+          <button class="h-[30px] px-3 rounded bg-raised border border-hairline font-mono text-[11px] text-textPrimary flex items-center gap-1.5 hover:border-accent/40 transition-colors">
+            <span>Agent</span>
+            <span class="text-secondary text-[10px]">▾</span>
+          </button>
+          <!-- Domain ▾ -->
+          <button class="h-[30px] px-3 rounded bg-raised border border-hairline font-mono text-[11px] text-textPrimary flex items-center gap-1.5 hover:border-accent/40 transition-colors">
+            <span>Domain</span>
+            <span class="text-secondary text-[10px]">▾</span>
+          </button>
+          <!-- Date Filter ▾ -->
+          <button class="h-[30px] px-3 rounded bg-raised border border-hairline font-mono text-[11px] text-textPrimary flex items-center gap-1.5 hover:border-accent/40 transition-colors">
+            <span>NOV 1 – NOV 5, 2026</span>
+            <span class="text-secondary text-[10px]">▾</span>
+          </button>
+          <!-- Export Button -->
+          <button class="h-[30px] px-3.5 rounded bg-panel border border-accent/40 font-mono text-[11px] text-accent flex items-center gap-1.5 hover:bg-accent/10 transition-colors">
+            <svg class="w-3.5 h-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span>Export</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- DENSE TABLE SECTION (Exact 18 Rows) -->
+      <section class="flex flex-col flex-1 bg-panel/30">
+        <!-- Table Header (Height 34px) -->
+        <div class="h-[34px] px-6 border-b border-hairline bg-panel/80 flex items-center font-mono text-[10px] font-semibold text-secondary uppercase tracking-wider flex-shrink-0">
+          <div class="w-[110px] flex-shrink-0">TIME</div>
+          <div class="w-[78px] flex-shrink-0">LEVEL</div>
+          <div class="w-[104px] flex-shrink-0">AGENT</div>
+          <div class="w-[140px] flex-shrink-0">ACTION</div>
+          <div class="flex-1 pr-4">DETAIL</div>
+          <div class="w-[86px] flex-shrink-0 text-right">HASH</div>
+        </div>
+
+        <!-- 18 Visible Rows (Height 37px each -> 666px total) -->
+        <div class="flex flex-col flex-1">
+          <!-- Row 1 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:32:07Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-139</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">apply proposal</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Proposal p-2041 applied to domain P4</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">9f2c1ab4</div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:30:19Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">operator</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">import file</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Ingested AST schema graph bundle into shard 2</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">8a1d440f</div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:28:44Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-141</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">evaluate</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Computed topological convergence metrics across P1..P7</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">77e19cb2</div>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:25:01Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-statusWarn bg-statusWarn/10 border border-statusWarn/25">WARN</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">system</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">propose</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Stale citation threshold exceeded for vector cache tier</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">3d81b899</div>
+          </div>
+
+          <!-- Row 5 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:21:15Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-139</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">apply proposal</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Merged AST symbol index into partition P2</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">55c2f0a1</div>
+          </div>
+
+          <!-- Row 6 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:18:52Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">operator</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">evaluate</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Verified Raft monotonic log continuity to sequence 10423</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">a012e841</div>
+          </div>
+
+          <!-- Row 7: HARD RULE ERROR ROW (Full-width red tint, 2px red left border, text does not wrap) -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs bg-statusDanger/10 border-l-2 border-l-statusDanger">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-statusDanger font-medium">14:15:30Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold text-statusDanger bg-statusDanger/20 border border-statusDanger/40">ERROR</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary font-medium">sub-141</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-statusDanger font-medium">rollback</div>
+            <div class="flex-1 font-body text-xs text-statusDanger font-medium whitespace-nowrap pr-4">REINDEX FAILED — stale embedding pointers</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-statusDanger text-right">c190bb42</div>
+          </div>
+
+          <!-- Row 8 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:12:08Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">system</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">evaluate</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Asserted 11 SHACL core invariant constraints cleanly</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">e4479901</div>
+          </div>
+
+          <!-- Row 9 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:09:44Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-139</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">import file</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Loaded JSON-LD ontology definitions for domain P6</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">43dcb102</div>
+          </div>
+
+          <!-- Row 10 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:05:22Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-statusWarn bg-statusWarn/10 border border-statusWarn/25">WARN</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-141</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">propose</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Detected 2 orphan reference nodes in schema table</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">78fe23a9</div>
+          </div>
+
+          <!-- Row 11 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">14:02:11Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">operator</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">apply proposal</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Applied fencing lease renewal on cluster storage root</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">69bca711</div>
+          </div>
+
+          <!-- Row 12 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">13:58:39Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-139</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">evaluate</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Completed DuckDB vector table compaction step 4</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">12e094fa</div>
+          </div>
+
+          <!-- Row 13 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">13:55:04Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">system</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">import file</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Synchronized IPC broadcast socket to loopback port 8741</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">b82ef455</div>
+          </div>
+
+          <!-- Row 14 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">13:51:28Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-141</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">evaluate</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Measured cluster P50 query latency at 6.4ms baseline</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">4e112d7c</div>
+          </div>
+
+          <!-- Row 15 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">13:48:10Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-statusWarn bg-statusWarn/10 border border-statusWarn/25">WARN</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-139</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">propose</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Unindexed semantic tag flagged for vacuum maintenance</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">33190ab7</div>
+          </div>
+
+          <!-- Row 16 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">13:44:55Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">operator</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">apply proposal</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Pruned unreferenced orphan leaves from knowledge DAG</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">44bc19f0</div>
+          </div>
+
+          <!-- Row 17 -->
+          <div class="h-[37px] px-6 border-b border-hairline-subtle flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">13:40:12Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">system</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">evaluate</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Validated Merkle root monotonic chain integrity 100%</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">8f2c00a1</div>
+          </div>
+
+          <!-- Row 18 (Touches pagination row smoothly) -->
+          <div class="h-[37px] px-6 flex items-center text-xs hover:bg-raised/60 transition-colors">
+            <div class="w-[110px] flex-shrink-0 font-mono text-[11px] text-secondary">13:36:40Z</div>
+            <div class="w-[78px] flex-shrink-0">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium text-accent bg-accent/10 border border-accent/25">INFO</span>
+            </div>
+            <div class="w-[104px] flex-shrink-0 font-mono text-[11px] text-textPrimary">sub-141</div>
+            <div class="w-[140px] flex-shrink-0 font-mono text-[11px] text-secondary">import file</div>
+            <div class="flex-1 font-body text-xs text-textPrimary truncate pr-4">Exported frozen runtime manifest digest BLAKE3 batch</div>
+            <div class="w-[86px] flex-shrink-0 font-mono text-[11px] text-secondary text-right">4a01c482</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGINATION ROW (Height 46px) -->
+      <section class="h-[46px] px-6 border-t border-hairline bg-panel/70 flex items-center justify-between flex-shrink-0">
+        <!-- Left Item Count -->
+        <span class="font-mono text-xs text-secondary">1-18 of 3,452</span>
+
+        <!-- Right Controls -->
+        <div class="flex items-center gap-2.5">
+          <div class="h-[30px] px-2.5 rounded bg-raised border border-hairline font-mono text-xs text-textPrimary flex items-center gap-2">
+            <span>18 / page</span>
+            <span class="text-secondary text-[10px]">▾</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button class="w-[32px] h-[32px] rounded bg-panel border border-hairline flex items-center justify-center text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button class="w-[32px] h-[32px] rounded bg-panel border border-hairline flex items-center justify-center text-secondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- BOTTOM STATUS BAR (Height 24px, Flush to bottom edge, One line mono) -->
+    <footer class="h-[24px] px-6 border-t border-hairline bg-panel flex items-center justify-between font-mono text-[11px] text-secondary flex-shrink-0 z-20">
+      <div class="flex items-center gap-2">
+        <span class="text-textPrimary">3,452 EVENTS</span>
+        <span>·</span>
+        <span>2 AGENTS LIVE</span>
+        <span>·</span>
+        <span class="flex items-center gap-1.5 text-textPrimary">
+          STREAM CONNECTED
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk pulse-live"></span>
+        </span>
+      </div>
+      <div class="flex items-center gap-4 text-[10px] text-secondary">
+        <span>RAFT QUORUM SYNCED</span>
+        <span>·</span>
+        <span>LATENCY P50 6.4ms</span>
+        <span>·</span>
+        <span class="text-statusOk font-semibold">ONLINE</span>
+      </div>
+    </footer>
+  </main>
+
+</body>
+</html>

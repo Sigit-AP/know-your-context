@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Setup Lifecycle (Paper Dark)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#141110',
+            panel: '#1A1713',
+            raised: '#211D17',
+            hairline: 'rgba(217, 164, 65, 0.10)',
+            hairlineBright: 'rgba(217, 164, 65, 0.22)',
+            paper: '#EDE4D3',
+            paperSec: '#A3947D',
+            gold: '#D9A441',
+            goldMuted: 'rgba(217, 164, 65, 0.12)',
+            goldBorder: 'rgba(217, 164, 65, 0.28)',
+            statusOk: '#7FB069',
+            statusOkBg: 'rgba(127, 176, 105, 0.12)',
+            statusWarn: '#E0A458',
+            statusWarnBg: 'rgba(224, 164, 88, 0.12)',
+            statusDanger: '#D16666',
+            statusDangerBg: 'rgba(209, 102, 102, 0.12)',
+          },
+          fontFamily: {
+            serif: ['Fraunces', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Strict viewport sizing & craft reset */
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    html, body {
+      width: 1440px;
+      height: 900px;
+      max-width: 1440px;
+      max-height: 900px;
+      overflow: hidden;
+      background-color: #141110;
+      color: #EDE4D3;
+      font-family: 'Inter', sans-serif;
+    }
+    .double-rule {
+      position: relative;
+      height: 4px;
+      width: 100%;
+    }
+    .double-rule::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(217, 164, 65, 0.24);
+    }
+    .double-rule::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(217, 164, 65, 0.14);
+    }
+    .thin-double-rule-inline {
+      border-top: 1px solid rgba(217, 164, 65, 0.20);
+      border-bottom: 1px solid rgba(217, 164, 65, 0.10);
+      height: 3px;
+    }
+  </style>
+</head>
+<body class="flex flex-row h-[900px] w-[1440px] bg-base text-paper select-none">
+
+  <!-- LEFT SIDEBAR (248px, hairline right) -->
+  <aside class="w-[248px] h-[900px] flex-shrink-0 flex flex-col justify-between bg-panel border-r border-hairline z-20">
+    <!-- Brand & Navigation -->
+    <div class="flex flex-col pt-4 px-3">
+      <!-- Brand Header -->
+      <div class="flex items-center gap-2.5 px-2.5 pb-4 border-b border-hairline">
+        <div class="w-7 h-7 rounded bg-raised border border-goldBorder flex items-center justify-center text-gold font-serif font-bold text-xs tracking-wider">
+          K
+        </div>
+        <div class="flex flex-col">
+          <span class="font-serif font-semibold text-[13px] tracking-tight text-paper leading-tight">Know Your Soul</span>
+          <span class="font-mono text-[10px] text-paperSec tracking-normal leading-tight">CLUSTER 01 // V14.2</span>
+        </div>
+      </div>
+
+      <!-- Navigation Groups -->
+      <nav class="flex flex-col gap-4 mt-3">
+        <!-- GROUP I: MONITOR -->
+        <div class="flex flex-col gap-0.5">
+          <div class="px-2.5 py-1 text-[10px] font-mono text-paperSec uppercase tracking-wider">
+            I // MONITOR
+          </div>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <span>Overview</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Activity Log</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+            <span>Graph Explorer</span>
+          </a>
+        </div>
+
+        <!-- GROUP II: ANALYZE -->
+        <div class="flex flex-col gap-0.5">
+          <div class="px-2.5 py-1 text-[10px] font-mono text-paperSec uppercase tracking-wider">
+            II // ANALYZE
+          </div>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span>Search</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            <span>Metrics</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <span>Analytics</span>
+          </a>
+        </div>
+
+        <!-- GROUP III: GOVERN -->
+        <div class="flex flex-col gap-0.5">
+          <div class="px-2.5 py-1 text-[10px] font-mono text-paperSec uppercase tracking-wider">
+            III // GOVERN
+          </div>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <span>Health</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            <span>Audit Ledger</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+              <span>Proposals</span>
+            </div>
+            <span class="font-mono text-[10px] text-paperSec">3</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Debt Queue</span>
+            </div>
+            <span class="font-mono text-[10px] text-paperSec">12</span>
+          </a>
+        </div>
+
+        <!-- GROUP IV: SYSTEM -->
+        <div class="flex flex-col gap-0.5">
+          <div class="px-2.5 py-1 text-[10px] font-mono text-paperSec uppercase tracking-wider">
+            IV // SYSTEM
+          </div>
+          <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] text-paperSec hover:text-paper hover:bg-raised transition-colors">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <span>System</span>
+          </a>
+          <!-- Active Nav Item -->
+          <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded bg-goldMuted border border-goldBorder text-gold text-[12px] font-medium">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>Setup</span>
+            </div>
+            <div class="w-1.5 h-1.5 rounded-full bg-gold"></div>
+          </a>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer / Operator Card -->
+    <div class="p-3 border-t border-hairline">
+      <div class="flex items-center justify-between p-2 rounded bg-raised border border-hairline">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded bg-panel border border-hairline flex items-center justify-center font-mono text-[11px] font-semibold text-paper">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[12px] font-medium text-paper leading-tight">Sigit A.</span>
+            <span class="text-[10px] font-mono text-paperSec leading-tight">operator</span>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-statusOk" title="online"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER (1192px wide, 900px high) -->
+  <div class="flex-1 h-[900px] flex flex-col justify-between overflow-hidden bg-base">
+
+    <!-- TOPBAR (44px, stays strictly on ONE line) -->
+    <header class="h-11 flex-shrink-0 px-6 flex items-center justify-between border-b border-hairline bg-panel z-10">
+      <!-- Left: Breadcrumb / Section context -->
+      <div class="flex items-center gap-2 font-mono text-xs">
+        <span class="text-paperSec">KYS</span>
+        <span class="text-hairline">/</span>
+        <span class="text-paperSec">System</span>
+        <span class="text-hairline">/</span>
+        <span class="text-gold font-medium">Setup Lifecycle</span>
+        <span class="ml-3 px-2 py-0.5 rounded text-[10px] bg-goldMuted text-gold border border-goldBorder">PIPELINE ARMED</span>
+      </div>
+
+      <!-- Center: Search Field with ⌘K -->
+      <div class="w-[380px] h-7 px-3 rounded bg-raised border border-hairline flex items-center justify-between text-xs text-paperSec">
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-paperSec" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span class="font-sans text-[11px]">Search artifacts, hashes, steps...</span>
+        </div>
+        <kbd class="px-1.5 py-0.2 rounded bg-panel border border-hairline text-[10px] font-mono text-paperSec">⌘K</kbd>
+      </div>
+
+      <!-- Right: Telemetry & Controls (max 4 segments) -->
+      <div class="flex items-center gap-4 text-xs font-mono">
+        <div class="flex items-center gap-1.5 text-paperSec">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span class="text-[11px]">RAFT QUORUM SYNCED</span>
+        </div>
+        <button class="relative text-paperSec hover:text-paper" aria-label="Notifications">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-gold rounded-full"></span>
+        </button>
+        <div class="w-6 h-6 rounded bg-raised border border-goldBorder flex items-center justify-center font-mono text-[10px] text-gold font-medium">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Height calculated to keep status bar flush at bottom) -->
+    <main class="flex-1 px-8 pt-5 pb-4 flex flex-col justify-between overflow-hidden">
+      
+      <!-- TOP SECTION: Roman Numeral, Page Title & Double Rule -->
+      <div class="flex-shrink-0">
+        <div class="flex items-baseline justify-between mb-1">
+          <div>
+            <div class="text-[11px] font-mono text-paperSec tracking-wider uppercase mb-0.5">
+              IV.II // LIFECYCLE WIZARD • STAGE VERIFICATION
+            </div>
+            <h1 class="font-serif text-[28px] font-semibold tracking-tight text-paper leading-none">
+              Setup Lifecycle
+            </h1>
+          </div>
+          <div class="flex items-center gap-6 font-mono text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-paperSec uppercase text-[10px]">CURRENT PHASE</span>
+              <span class="text-gold font-medium">3 OF 4</span>
+            </div>
+            <div class="h-3 w-px bg-hairline"></div>
+            <div class="flex items-center gap-2">
+              <span class="text-paperSec uppercase text-[10px]">TIME ELAPSED</span>
+              <span class="text-paper">1m 18s</span>
+            </div>
+            <div class="h-3 w-px bg-hairline"></div>
+            <div class="flex items-center gap-2">
+              <span class="text-paperSec uppercase text-[10px]">TARGET SHARD</span>
+              <span class="text-paper">0x3a</span>
+            </div>
+          </div>
+        </div>
+        <!-- Signature thin double rule -->
+        <div class="double-rule mt-2 mb-4"></div>
+      </div>
+
+      <!-- STEPPER WIDGET (4 Steps across content top) -->
+      <section class="flex-shrink-0 bg-panel border border-hairline rounded-md p-3.5 mb-4">
+        <div class="grid grid-cols-4 gap-4 relative">
+          <!-- Connector lines behind steps -->
+          <div class="absolute top-[15px] left-[12%] right-[12%] h-[1px] bg-hairline -z-0"></div>
+
+          <!-- Step 1: Done -->
+          <div class="flex items-center gap-3 relative z-10">
+            <div class="w-8 h-8 rounded-full bg-statusOkBg border border-statusOk flex items-center justify-center text-statusOk font-mono text-xs">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono text-xs text-statusOk font-medium">1 Source</span>
+                <span class="text-[10px] font-mono text-statusOk px-1 py-0.2 rounded bg-statusOkBg">DONE</span>
+              </div>
+              <span class="font-mono text-[11px] text-paperSec">github corpus mapped</span>
+            </div>
+          </div>
+
+          <!-- Step 2: Done -->
+          <div class="flex items-center gap-3 relative z-10">
+            <div class="w-8 h-8 rounded-full bg-statusOkBg border border-statusOk flex items-center justify-center text-statusOk font-mono text-xs">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono text-xs text-statusOk font-medium">2 Import</span>
+                <span class="text-[10px] font-mono text-statusOk px-1 py-0.2 rounded bg-statusOkBg">DONE</span>
+              </div>
+              <span class="font-mono text-[11px] text-paperSec">128 AST files ingested</span>
+            </div>
+          </div>
+
+          <!-- Step 3: Active (Accent gold) -->
+          <div class="flex items-center gap-3 relative z-10">
+            <div class="w-8 h-8 rounded-full bg-goldMuted border-2 border-gold flex items-center justify-center text-gold font-mono text-xs font-semibold">
+              3
+            </div>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono text-xs text-gold font-semibold">3 Verify</span>
+                <span class="text-[10px] font-mono text-gold px-1.5 py-0.2 rounded bg-goldMuted border border-goldBorder">ACTIVE</span>
+              </div>
+              <span class="font-mono text-[11px] text-paper">8 of 8 manifest check</span>
+            </div>
+          </div>
+
+          <!-- Step 4: Upcoming (Muted) -->
+          <div class="flex items-center gap-3 relative z-10 opacity-50">
+            <div class="w-8 h-8 rounded-full bg-raised border border-hairline flex items-center justify-center text-paperSec font-mono text-xs">
+              4
+            </div>
+            <div class="flex flex-col">
+              <span class="font-mono text-xs text-paperSec font-medium">4 Activate</span>
+              <span class="font-mono text-[11px] text-paperSec">hot-swap daemon bind</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TWO-COLUMN WORKSPACE: 8-Row Table (Left) + Live Summary Panel (Right) -->
+      <div class="grid grid-cols-12 gap-5 flex-1 items-stretch min-h-0">
+        
+        <!-- LEFT: Manifest Table (Exactly 8 Rows, comfortable padding) -->
+        <div class="col-span-8 bg-panel border border-hairline rounded-md flex flex-col justify-between overflow-hidden">
+          <div>
+            <!-- Header bar of table -->
+            <div class="px-5 py-3 border-b border-hairline flex items-center justify-between bg-raised">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono text-gold font-medium">01 // VERIFY ARTIFACTS</span>
+                <span class="text-xs text-paperSec">Package integrity verification ledger</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-[11px] text-paperSec">
+                <span>MERKLE LEAF:</span>
+                <span class="text-paper px-1.5 py-0.5 rounded bg-panel border border-hairline">0x9f8a2c3b</span>
+              </div>
+            </div>
+
+            <!-- Table Columns -->
+            <div class="grid grid-cols-12 px-5 py-2.5 border-b border-hairline bg-panel text-[11px] font-mono uppercase text-paperSec">
+              <div class="col-span-5">ARTIFACT</div>
+              <div class="col-span-2 text-right">SIZE</div>
+              <div class="col-span-3 text-center">SHA256</div>
+              <div class="col-span-2 text-right">STATUS</div>
+            </div>
+
+            <!-- 8 Visible Rows (No Ellipsis, crisp mono tokens) -->
+            <div class="divide-y divide-hairline font-mono text-xs">
+              <!-- Row 1: graph.json -->
+              <div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-raised transition-colors">
+                <div class="col-span-5 flex items-center gap-2 text-paper">
+                  <svg class="w-3.5 h-3.5 text-paperSec" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  <span class="font-medium">graph.json</span>
+                </div>
+                <div class="col-span-2 text-right text-paperSec">2.4 MB</div>
+                <div class="col-span-3 text-center text-paper font-mono">9f2c1ab4</div>
+                <div class="col-span-2 flex justify-end">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-statusOkBg text-statusOk border border-statusOk/30">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    OK
+                  </span>
+                </div>
+              </div>
+
+              <!-- Row 2: nodes.idx -->
+              <div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-raised transition-colors">
+                <div class="col-span-5 flex items-center gap-2 text-paper">
+                  <svg class="w-3.5 h-3.5 text-paperSec" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span class="font-medium">nodes.idx</span>
+                </div>
+                <div class="col-span-2 text-right text-paperSec">1.8 MB</div>
+                <div class="col-span-3 text-center text-paper font-mono">8a1d440f</div>
+                <div class="col-span-2 flex justify-end">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-statusOkBg text-statusOk border border-statusOk/30">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    OK
+                  </span>
+                </div>
+              </div>
+
+              <!-- Row 3: embeddings.bin -->
+              <div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-raised transition-colors">
+                <div class="col-span-5 flex items-center gap-2 text-paper">
+                  <svg class="w-3.5 h-3.5 text-paperSec" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                  <span class="font-medium">embeddings.bin</span>
+                </div>
+                <div class="col-span-2 text-right text-paperSec">28.4 MB</div>
+                <div class="col-span-3 text-center text-paper font-mono">77e19cb2</div>
+                <div class="col-span-2 flex justify-end">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-statusOkBg text-statusOk border border-statusOk/30">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    OK
+                  </span>
+                </div>
+              </div>
+
+              <!-- Row 4: manifest.yaml -->
+              <div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-raised transition-colors">
+                <div class="col-span-5 flex items-center gap-2 text-paper">
+                  <svg class="w-3.5 h-3.5 text-paperSec" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span class="font-medium">manifest.yaml</span>
+                </div>
+                <div class="col-span-2 text-right text-paperSec">14.2 KB</div>
+                <div class="col-span-3 text-center text-paper font-mono">3d81b899</div>
+                <div class="col-span-2 flex justify-end">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-statusOkBg text-statusOk border border-statusOk/30">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    OK
+                  </span>
+                </div>
+              </div>
+
+              <!-- Row 5: audit.log -->
+              <div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-raised transition-colors">
+                <div class="col-span-5 flex items-center gap-2 text-paper">
+                  <svg class="w-3.5 h-3.5 text-paperSec" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span class="font-medium">audit.log</span>
+                </div>
+                <div class="col-span-2 text-right text-paperSec">512 KB</div>
+                <div class="col-span-3 text-center text-paper font-mono">55c2f0a1</div>
+                <div class="col-span-2 flex justify-end">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-statusOkBg text-statusOk border border-statusOk/30">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    OK
+                  </span>
+                </div>
+              </div>
+
+              <!-- Row 6: store.db -->
+              <div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-raised transition-colors">
+                <div class="col-span-5 flex items-center gap-2 text-paper">
+                  <svg class="w-3.5 h-3.5 text-paperSec" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                  <span class="font-medium">store.db</span>
+                </div>
+                <div class="col-span-2 text-right text-paperSec">46.2 MB</div>
+                <div class="col-span-3 text-center text-paper font-mono">a012e841</div>
+                <div class="col-span-2 flex justify-end">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-statusOkBg text-statusOk border border-statusOk/30">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    OK
+                  </span>
+                </div>
+              </div>
+
+              <!-- Row 7: config.toml (Pending Accent) -->
+              <div class="grid grid-cols-12 px-5 py-3 items-center bg-goldMuted/40 hover:bg-goldMuted transition-colors border-l-2 border-gold">
+                <div class="col-span-5 flex items-center gap-2 text-gold">
+                  <svg class="w-3.5 h-3.5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                  <span class="font-medium">config.toml</span>
+                </div>
+                <div class="col-span-2 text-right text-paperSec">4.8 KB</div>
+                <div class="col-span-3 text-center text-gold font-mono">c190bb42</div>
+                <div class="col-span-2 flex justify-end">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-goldMuted text-gold border border-goldBorder">
+                    <svg class="w-2.5 h-2.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    PENDING
+                  </span>
+                </div>
+              </div>
+
+              <!-- Row 8: keys.json -->
+              <div class="grid grid-cols-12 px-5 py-3 items-center hover:bg-raised transition-colors">
+                <div class="col-span-5 flex items-center gap-2 text-paper">
+                  <svg class="w-3.5 h-3.5 text-paperSec" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                  <span class="font-medium">keys.json</span>
+                </div>
+                <div class="col-span-2 text-right text-paperSec">2.1 KB</div>
+                <div class="col-span-3 text-center text-paper font-mono">e4479901</div>
+                <div class="col-span-2 flex justify-end">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-statusOkBg text-statusOk border border-statusOk/30">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    OK
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom micro-summary row in table panel -->
+          <div class="px-5 py-2.5 bg-raised border-t border-hairline flex items-center justify-between text-[11px] font-mono text-paperSec">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-gold"></span>
+              <span>VERIFICATION: 7 OF 8 VALIDATED</span>
+            </div>
+            <span>BLAKE3 PARALLEL DIGEST MATCH</span>
+          </div>
+        </div>
+
+        <!-- RIGHT: Live Summary Panel -->
+        <div class="col-span-4 bg-panel border border-hairline rounded-md p-5 flex flex-col justify-between">
+          <div class="flex flex-col gap-4">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-hairline pb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono text-gold font-medium">02 // INGESTION SUMMARY</span>
+              </div>
+              <div class="flex items-center gap-1 px-2 py-0.5 rounded bg-statusOkBg text-statusOk font-mono text-[10px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk animate-pulse"></span>
+                <span>LIVE</span>
+              </div>
+            </div>
+
+            <!-- Source Repository -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[10px] font-mono uppercase text-paperSec">SOURCE REPOSITORY</label>
+              <div class="p-2.5 rounded bg-raised border border-hairline font-mono text-xs text-gold flex items-center justify-between">
+                <div class="flex items-center gap-2 truncate">
+                  <svg class="w-3.5 h-3.5 text-paperSec flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span class="truncate">github.com/sigit-ap/kys-corpus</span>
+                </div>
+                <span class="text-[10px] font-mono text-paperSec">GIT-HTTPS</span>
+              </div>
+            </div>
+
+            <!-- Big Metrics Grid (Fraunces serif numerals) -->
+            <div class="grid grid-cols-2 gap-3 pt-1">
+              <!-- Files 128 -->
+              <div class="p-3 rounded bg-raised border border-hairline flex flex-col">
+                <span class="text-[10px] font-mono uppercase text-paperSec mb-1">PARSED FILES</span>
+                <span class="font-serif text-[32px] font-semibold text-paper leading-none">128</span>
+                <span class="text-[11px] font-mono text-statusOk mt-2">100% PARSED</span>
+              </div>
+
+              <!-- Errors 0 -->
+              <div class="p-3 rounded bg-raised border border-hairline flex flex-col">
+                <span class="text-[10px] font-mono uppercase text-paperSec mb-1">TOTAL ERRORS</span>
+                <span class="font-serif text-[32px] font-semibold text-statusOk leading-none">0</span>
+                <span class="text-[11px] font-mono text-statusOk mt-2">ZERO FAULT</span>
+              </div>
+            </div>
+
+            <!-- Progress & ETA 40s -->
+            <div class="p-3.5 rounded bg-raised border border-hairline flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono uppercase text-paperSec">ESTIMATED ACTIVATION</span>
+                <div class="flex items-baseline gap-1 font-mono">
+                  <span class="text-[10px] text-paperSec">ETA</span>
+                  <span class="text-sm font-semibold text-gold">40s</span>
+                </div>
+              </div>
+              <!-- Progress Bar -->
+              <div class="w-full h-1.5 rounded-full bg-base overflow-hidden border border-hairline">
+                <div class="h-full bg-gold rounded-full" style="width: 87.5%;"></div>
+              </div>
+              <div class="flex items-center justify-between text-[10px] font-mono text-paperSec">
+                <span>7 OF 8 VALIDATED</span>
+                <span>87.5% COMPLETE</span>
+              </div>
+            </div>
+
+            <!-- Validation Note / Library stamp feel -->
+            <div class="p-3 rounded bg-base border border-hairline font-mono text-[11px] text-paperSec leading-relaxed flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-gold flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <div>
+                Deterministic hash tree validated against consensus epoch <span class="text-paper">#10429</span>. All non-blocking signatures passed.
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Heartbeat sub-badge -->
+          <div class="pt-3 border-t border-hairline flex items-center justify-between font-mono text-[10px] text-paperSec">
+            <span>DAEMON: KYCD-9042</span>
+            <span class="text-statusOk">IPC CONNECTED</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER ACTION BAR (Ghost Cancel on left; Ghost Back + Solid Gold Activate on right) -->
+      <div class="flex-shrink-0 pt-3 flex items-center justify-between border-t border-hairline mt-3">
+        <!-- Left: Ghost Cancel -->
+        <button class="px-4 py-2 rounded text-xs font-mono text-paperSec hover:text-paper hover:bg-panel transition-colors border border-transparent hover:border-hairline">
+          CANCEL
+        </button>
+
+        <!-- Right: Ghost Back + Primary Activate -->
+        <div class="flex items-center gap-3">
+          <button class="px-4 py-2 rounded text-xs font-mono text-paperSec hover:text-paper hover:bg-panel transition-colors border border-hairline">
+            BACK
+          </button>
+          <button class="px-6 py-2 rounded text-xs font-mono font-semibold bg-gold hover:bg-[#C49132] text-base transition-colors flex items-center gap-2">
+            <span>ACTIVATE</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- STATUS BAR (Flush at 900px bottom edge, single line, full width) -->
+    <footer class="h-6 flex-shrink-0 px-6 flex items-center justify-between border-t border-hairline bg-panel text-[11px] font-mono text-paperSec z-10">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span class="text-paper">STORE ENGINE ONLINE</span>
+        </div>
+        <span class="text-hairline">•</span>
+        <span>SHARD: 0x3a</span>
+        <span class="text-hairline">•</span>
+        <span>MERKLE: 0x9f8a2c3b</span>
+        <span class="text-hairline">•</span>
+        <span>RAFT QUORUM 3/3 SYNCED</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span>LATENCY P50: 6.4ms</span>
+        <span class="text-hairline">•</span>
+        <span class="text-paper">VIEWPORT: 1440x900 FLUSH</span>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

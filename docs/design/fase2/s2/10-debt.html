@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Soul - Debt Queue (Terminal Brutalist)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            base: '#000000',
+            panel: '#050805',
+            panelElevated: '#080E08',
+            borderGreen: '#1A2E1A',
+            borderGreenBright: '#294B29',
+            phosphor: '#33FF66',
+            phosphorDim: 'rgba(51, 255, 102, 0.12)',
+            textPrimary: '#C9F7D4',
+            textSecondary: '#5F8F68',
+            textMuted: '#3D5E44',
+            warn: '#FFD23F',
+            danger: '#FF4D4D',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      border-radius: 0px !important;
+    }
+    html, body {
+      width: 1440px;
+      height: 900px;
+      max-width: 1440px;
+      max-height: 900px;
+      overflow: hidden;
+      background-color: #000000;
+      color: #C9F7D4;
+      font-family: 'JetBrains Mono', monospace;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+    /* CRT Scanline subtle texture */
+    .crt-grid {
+      background-image: linear-gradient(rgba(26, 46, 26, 0.22) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(26, 46, 26, 0.22) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    /* Legend border styling */
+    .terminal-fieldset {
+      position: relative;
+      border: 1px solid #1A2E1A;
+      background-color: #050805;
+    }
+    .fieldset-legend {
+      position: absolute;
+      top: -9px;
+      left: 12px;
+      background-color: #050805;
+      padding: 0 6px;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      color: #5F8F68;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #000000;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #1A2E1A;
+    }
+  </style>
+</head>
+<body class="flex w-[1440px] h-[900px] bg-base text-textPrimary overflow-hidden font-mono antialiased">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-borderGreen bg-base select-none z-30 shrink-0">
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-12 px-4 flex items-center justify-between border-b border-borderGreen bg-base">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-5 h-5 bg-borderGreen text-phosphor text-xs font-bold border border-borderGreenBright">K</span>
+          <span class="text-xs font-bold tracking-wider text-textPrimary uppercase">KNOW YOUR SOUL</span>
+        </div>
+        <span class="text-[10px] px-1.5 py-0.5 border border-borderGreen text-textSecondary bg-panel">v14.2</span>
+      </div>
+
+      <!-- Navigation Tree -->
+      <nav class="p-3 space-y-4 text-xs">
+        <!-- 01 // MONITOR -->
+        <div>
+          <div class="px-2 py-1 text-[10px] uppercase tracking-wider text-textSecondary font-semibold">01 // MONITOR</div>
+          <div class="mt-1 space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 02 // ANALYZE -->
+        <div>
+          <div class="px-2 py-1 text-[10px] uppercase tracking-wider text-textSecondary font-semibold">02 // ANALYZE</div>
+          <div class="mt-1 space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 03 // GOVERN -->
+        <div>
+          <div class="px-2 py-1 text-[10px] uppercase tracking-wider text-textSecondary font-semibold">03 // GOVERN</div>
+          <div class="mt-1 space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-textMuted text-[11px]">::</span>
+                <span>Proposals</span>
+              </div>
+              <span class="text-[10px] text-textSecondary px-1 border border-borderGreen bg-panel">3</span>
+            </a>
+            <!-- Active item: Debt Queue -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1 bg-phosphorDim border-l-2 border-phosphor text-phosphor font-medium">
+              <div class="flex items-center gap-2">
+                <span class="text-phosphor font-bold">&gt;</span>
+                <span class="text-textPrimary">Debt Queue</span>
+              </div>
+              <span class="text-[10px] text-phosphor px-1 bg-base border border-borderGreenBright">14</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 04 // SYSTEM -->
+        <div>
+          <div class="px-2 py-1 text-[10px] uppercase tracking-wider text-textSecondary font-semibold">04 // SYSTEM</div>
+          <div class="mt-1 space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-textMuted text-[11px]">::</span>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- User Card Footer -->
+    <div class="p-3 border-t border-borderGreen bg-base">
+      <div class="flex items-center justify-between px-2 py-1.5 border border-borderGreen bg-panel">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 border border-borderGreenBright bg-base flex items-center justify-center text-[10px] text-phosphor font-bold">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold text-textPrimary leading-tight">Sigit A.</span>
+            <span class="text-[10px] text-textSecondary leading-tight">operator</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-phosphor inline-block"></span>
+          <span class="text-[9px] uppercase tracking-widest text-phosphor">ONLINE</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT (1192px x 900px) -->
+  <main class="flex-1 h-full flex flex-col justify-between bg-base overflow-hidden crt-grid">
+
+    <!-- TOPBAR (44px) - Single Line Prompt Style -->
+    <header class="h-11 px-4 flex items-center justify-between border-b border-borderGreen bg-base shrink-0 z-20">
+      <!-- Breadcrumb / prompt -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center text-xs font-mono font-medium text-phosphor tracking-wide">
+          <span>kyc://debt-queue</span>
+          <span class="ml-1 animate-pulse">_</span>
+        </div>
+        <div class="h-3 w-px bg-borderGreen"></div>
+        <span class="text-[10px] px-1.5 py-0.5 border border-borderGreen text-textSecondary bg-panel">CLUSTER: cluster-01</span>
+        <span class="text-[10px] px-1.5 py-0.5 border border-borderGreen text-textSecondary bg-panel">PARTITIONS: 7/7</span>
+      </div>
+
+      <!-- Search field with cmd-k -->
+      <div class="flex items-center w-96 h-7 px-2.5 border border-borderGreen bg-panel text-xs text-textSecondary">
+        <span class="text-phosphor mr-2 font-mono">&gt;</span>
+        <input type="text" placeholder="filter debt items, nodes, hashes, reasons..." class="w-full bg-transparent text-textPrimary text-xs focus:outline-none placeholder-textMuted font-mono">
+        <span class="text-[10px] text-textMuted border border-borderGreen px-1 bg-base ml-2">⌘K</span>
+      </div>
+
+      <!-- Right items: max 4 segments (Raft status, Bell with dot, Avatar) -->
+      <div class="flex items-center gap-3 text-xs">
+        <div class="flex items-center gap-1.5 px-2 py-0.5 border border-borderGreen text-phosphor bg-panel text-[11px]">
+          <span class="w-1.5 h-1.5 bg-phosphor inline-block"></span>
+          <span>RAFT QUORUM 3/3</span>
+        </div>
+
+        <button class="relative w-7 h-7 flex items-center justify-center border border-borderGreen bg-panel text-textSecondary hover:text-textPrimary hover:border-borderGreenBright" title="Notifications">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-warn"></span>
+        </button>
+
+        <div class="w-7 h-7 border border-borderGreen bg-panel flex items-center justify-center text-[10px] font-bold text-textPrimary">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA: Fieldset panels with legends, dense 14 rows table -->
+    <div class="flex-1 p-4 flex flex-col justify-between overflow-hidden gap-3">
+
+      <!-- TOOLBAR + METRICS STRIP -->
+      <div class="flex items-center justify-between shrink-0">
+        <!-- Filter Toolbar -->
+        <div class="flex items-center gap-2 text-xs">
+          <!-- Search input -->
+          <div class="flex items-center h-8 px-2.5 border border-borderGreen bg-panel w-64">
+            <span class="text-textSecondary mr-2 font-mono text-[11px]">&gt;</span>
+            <input type="text" placeholder="Filter debt..." class="bg-transparent text-textPrimary text-xs focus:outline-none placeholder-textMuted w-full">
+          </div>
+
+          <!-- Pills dropdowns -->
+          <button class="h-8 px-2.5 border border-borderGreen bg-panel text-textSecondary hover:text-textPrimary hover:border-borderGreenBright flex items-center gap-1.5">
+            <span>Severity</span>
+            <span class="text-[10px] text-textMuted">▾</span>
+          </button>
+          <button class="h-8 px-2.5 border border-borderGreen bg-panel text-textSecondary hover:text-textPrimary hover:border-borderGreenBright flex items-center gap-1.5">
+            <span>Domain</span>
+            <span class="text-[10px] text-textMuted">▾</span>
+          </button>
+          <button class="h-8 px-2.5 border border-borderGreen bg-panel text-textSecondary hover:text-textPrimary hover:border-borderGreenBright flex items-center gap-1.5">
+            <span class="text-textPrimary">30D</span>
+            <span class="text-[10px] text-textMuted">▾</span>
+          </button>
+
+          <div class="h-4 w-px bg-borderGreen mx-1"></div>
+
+          <!-- Quick Filters -->
+          <button class="h-8 px-2 border border-borderGreenBright bg-phosphorDim text-phosphor text-[11px]">ALL (14)</button>
+          <button class="h-8 px-2 border border-borderGreen bg-panel text-textSecondary hover:text-textPrimary text-[11px]">HIGH (3)</button>
+          <button class="h-8 px-2 border border-borderGreen bg-panel text-textSecondary hover:text-textPrimary text-[11px]">MED (6)</button>
+          <button class="h-8 px-2 border border-borderGreen bg-panel text-textSecondary hover:text-textPrimary text-[11px]">LOW (5)</button>
+        </div>
+
+        <!-- Right Quick Metric Badges -->
+        <div class="flex items-center gap-2 text-[11px]">
+          <div class="px-2.5 py-1 border border-borderGreen bg-panel flex items-center gap-2">
+            <span class="text-textSecondary">ENTROPY MEAN:</span>
+            <span class="text-phosphor font-bold">0.742</span>
+          </div>
+          <div class="px-2.5 py-1 border border-borderGreen bg-panel flex items-center gap-2">
+            <span class="text-textSecondary">TOKEN BUDGET:</span>
+            <span class="text-textPrimary font-bold">14.2k</span>
+          </div>
+          <div class="px-2.5 py-1 border border-borderGreen bg-panel flex items-center gap-2">
+            <span class="text-textSecondary">BURNDOWN SLA:</span>
+            <span class="text-warn font-bold">4.2d</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN TABLE FIELDSET (Exactly 14 rows, sitting flush, zero ellipsis) -->
+      <div class="terminal-fieldset flex-1 flex flex-col justify-between overflow-hidden">
+        <!-- Panel Title as Legend sitting on border -->
+        <div class="fieldset-legend flex items-center gap-2">
+          <span>QUEUE TABLE // ACCUMULATED KNOWLEDGE DEBT</span>
+          <span class="text-borderGreenBright">::</span>
+          <span class="text-phosphor font-semibold">14 VISIBLE VECTORS</span>
+        </div>
+
+        <!-- Table Container -->
+        <div class="flex-1 flex flex-col justify-between overflow-hidden">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="h-8 border-b border-borderGreen bg-panelElevated text-[10px] text-textSecondary uppercase tracking-wider font-semibold">
+                <th class="w-10 px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </th>
+                <th class="w-24 px-3 border-r border-borderGreen">SEV</th>
+                <th class="w-56 px-3 border-r border-borderGreen">NODE</th>
+                <th class="px-3 border-r border-borderGreen">REASON</th>
+                <th class="w-28 px-3 border-r border-borderGreen">NOTES / FLAGS</th>
+                <th class="w-20 px-3 text-right border-r border-borderGreen">AGE</th>
+                <th class="w-20 px-3 text-right border-r border-borderGreen">EST</th>
+                <th class="w-24 px-3 text-center">ACTION</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-borderGreen text-[11px] font-mono">
+
+              <!-- ROW 1 (HIGH) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-danger bg-[#FF4D4D14] border border-[#FF4D4D40]">▲ HIGH</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">store-mutex</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">missing provenance metadata</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">12d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">2h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 2 (HIGH) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-danger bg-[#FF4D4D14] border border-[#FF4D4D40]">▲ HIGH</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">embedding-refresh</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">stale 45d</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">45d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">4h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 3 (HIGH) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-danger bg-[#FF4D4D14] border border-[#FF4D4D40]">▲ HIGH</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">legacy-tag-refs</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">orphan edges x3</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">18d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">1h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 4 (MED) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-warn bg-[#FFD23F14] border border-[#FFD23F40]">● MED</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">p4-domain</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">unindexed semantic tag flags</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">8d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">3h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 5 (MED with tooltip cue chip '2 notes') -->
+              <tr class="h-[38px] bg-[#FFD23F08] border-l-2 border-warn hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-warn bg-[#FFD23F14] border border-[#FFD23F40]">● MED</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">wal-replay</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">uncompacted log segment frames</td>
+                <td class="px-3 border-r border-borderGreen">
+                  <!-- Tooltip Cue: text chip '2 notes' (no emoji) with tooltip popover indicator -->
+                  <div class="inline-flex items-center gap-1 px-2 py-0.5 bg-base border border-warn text-warn text-[10px] font-semibold tracking-tight cursor-help" title="Note 1: Lock lease timeout threshold exceeded. Note 2: Manual replay triggered by sub-141.">
+                    <span>2 notes</span>
+                    <span class="text-[9px] text-textSecondary font-mono">[?]</span>
+                  </div>
+                </td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">14d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">2h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-warn text-warn hover:bg-[#FFD23F14]">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 6 (MED) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-warn bg-[#FFD23F14] border border-[#FFD23F40]">● MED</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">heuristics-catalog</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">sub-optimal branch density</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">21d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">5h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 7 (MED) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-warn bg-[#FFD23F14] border border-[#FFD23F40]">● MED</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">schema-contract-04</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">deprecated JSON-LD attributes</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">9d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">1h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 8 (MED) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-warn bg-[#FFD23F14] border border-[#FFD23F40]">● MED</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">vector-cache-evictor</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">missing LRU threshold bounds</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">15d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">2h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 9 (MED) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-warn bg-[#FFD23F14] border border-[#FFD23F40]">● MED</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">retrieval-core</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">cross-partition lock contention</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">6d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">3h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 10 (LOW) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-textSecondary bg-panel border border-borderGreen">○ LOW</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">query-planner</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">unindexed AST sub-clauses</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">24d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">1h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 11 (LOW) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-textSecondary bg-panel border border-borderGreen">○ LOW</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">scoring-engine</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">redundant cosine evaluation passes</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">11d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">2h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 12 (LOW) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-textSecondary bg-panel border border-borderGreen">○ LOW</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">duckdb-compact</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">unoptimized parquet chunk layout</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">19d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">4h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 13 (LOW) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-textSecondary bg-panel border border-borderGreen">○ LOW</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">raft-lease-quorum</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">heartbeat drift margin delta</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">5d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">1h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+              <!-- ROW 14 (LOW) -->
+              <tr class="h-[38px] hover:bg-panelElevated transition-colors">
+                <td class="px-3 text-center border-r border-borderGreen">
+                  <input type="checkbox" class="accent-phosphor bg-base border border-borderGreen">
+                </td>
+                <td class="px-3 border-r border-borderGreen">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-textSecondary bg-panel border border-borderGreen">○ LOW</span>
+                </td>
+                <td class="px-3 border-r border-borderGreen font-semibold text-textPrimary">cli-adapter</td>
+                <td class="px-3 border-r border-borderGreen text-textPrimary">deprecated socket loopback alias</td>
+                <td class="px-3 border-r border-borderGreen text-textSecondary">-</td>
+                <td class="px-3 text-right border-r border-borderGreen text-textSecondary">31d</td>
+                <td class="px-3 text-right border-r border-borderGreen text-phosphor">1h</td>
+                <td class="px-3 text-center">
+                  <button class="px-2 py-0.5 text-[10px] border border-borderGreen text-textSecondary hover:text-phosphor hover:border-phosphor">Inspect</button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer Strip inside Fieldset -->
+        <div class="h-9 px-3 border-t border-borderGreen bg-panelElevated flex items-center justify-between text-xs select-none">
+          <!-- Bulk bar left: '14 OPEN · 3 HIGH · SELECT: 0' -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-textPrimary">14 OPEN</span>
+              <span class="text-textSecondary">·</span>
+              <span class="font-bold text-danger">3 HIGH</span>
+              <span class="text-textSecondary">·</span>
+              <span class="text-textSecondary">SELECT: <span class="text-textPrimary font-semibold">0</span></span>
+            </div>
+            <div class="h-3 w-px bg-borderGreen"></div>
+            <span class="text-[10px] text-textSecondary">SHOWING ROWS 1-14 OF 14</span>
+          </div>
+
+          <!-- Ghost button 'Assign' right -->
+          <div class="flex items-center gap-2">
+            <button class="px-3 py-1 border border-borderGreen bg-base text-textSecondary hover:text-textPrimary hover:border-borderGreenBright text-[11px] font-medium tracking-wide">
+              Export CSV
+            </button>
+            <button class="px-3 py-1 border border-borderGreen bg-panel text-textSecondary hover:text-phosphor hover:border-phosphor text-[11px] font-semibold tracking-wide">
+              Assign
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- GLOBAL CRT STATUS BAR (30px) - Flush at bottom edge -->
+    <footer class="h-7 px-4 flex items-center justify-between border-t border-borderGreen bg-base text-[10px] text-textSecondary font-mono shrink-0 select-none z-20">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 text-phosphor">
+          <span class="w-1.5 h-1.5 bg-phosphor inline-block"></span>
+          <span>14 QUEUE ITEMS</span>
+        </span>
+        <span class="text-textMuted">·</span>
+        <span>MERKLE: 0x9f2c1ab4</span>
+        <span class="text-textMuted">·</span>
+        <span>SHARD: 0x3a</span>
+        <span class="text-textMuted">·</span>
+        <span>ENGINE: DETERMINISTIC AST</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span>SYNC: 100% QUORUM</span>
+        <span class="text-textMuted">·</span>
+        <span>P90 CADENCE: 3,240/DAY</span>
+        <span class="text-textMuted">·</span>
+        <span class="text-phosphor font-bold">TERMINAL ONLINE</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

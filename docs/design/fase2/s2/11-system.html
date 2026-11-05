@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Know Your Soul - System (Terminal Brutalist)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        colors: {
+          base: '#000000',
+          panel: '#050805',
+          borderline: '#1A2E1A',
+          primary: '#C9F7D4',
+          secondary: '#5F8F68',
+          accent: '#33FF66',
+          warn: '#FFD23F',
+          danger: '#FF4D4D',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background-color: #000000;
+    color: #C9F7D4;
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    height: 900px;
+    width: 1440px;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* CRT scanline subtle texture */
+  .crt-grid {
+    background-image: linear-gradient(rgba(26, 46, 26, 0.15) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(26, 46, 26, 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .legend-border {
+    position: relative;
+    border: 1px solid #1A2E1A;
+    background: #050805;
+  }
+  .legend-tag {
+    position: absolute;
+    top: -10px;
+    left: 14px;
+    background: #000000;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #33FF66;
+    border: 1px solid #1A2E1A;
+    line-height: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  /* Custom scrollbar just in case */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #000000;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1A2E1A;
+  }
+</style>
+</head>
+<body class="flex w-[1440px] h-[900px] bg-[#000000] text-[#C9F7D4] font-mono crt-grid">
+
+  <!-- ==================== LEFT SIDEBAR (248px) ==================== -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-[#1A2E1A] bg-[#000000] z-20 shrink-0">
+    <!-- Top Brand & Navigation -->
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-12 px-4 flex items-center justify-between border-b border-[#1A2E1A]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-5 h-5 bg-[#050805] border border-[#33FF66] flex items-center justify-center text-[#33FF66] font-bold text-xs">
+            K
+          </div>
+          <span class="text-xs font-bold tracking-wider text-[#C9F7D4] uppercase">KNOW YOUR SOUL</span>
+        </div>
+        <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1.5 py-0.5 rounded-[1px]">v14.2</span>
+      </div>
+
+      <!-- Nav Sections -->
+      <div class="px-2 py-3 space-y-4">
+        <!-- 01 // MONITOR -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-semibold text-[#5F8F68] uppercase tracking-wider flex items-center justify-between">
+            <span>01 // MONITOR</span>
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 02 // ANALYZE -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-semibold text-[#5F8F68] uppercase tracking-wider">
+            <span>02 // ANALYZE</span>
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 03 // GOVERN -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-semibold text-[#5F8F68] uppercase tracking-wider">
+            <span>03 // GOVERN</span>
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[#5F8F68] text-[10px]">::</span>
+                <span>Proposals</span>
+              </div>
+              <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 bg-[#000000]">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[#5F8F68] text-[10px]">::</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 bg-[#000000]">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 04 // SYSTEM (ACTIVE GROUP) -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-semibold text-[#5F8F68] uppercase tracking-wider">
+            <span>04 // SYSTEM</span>
+          </div>
+          <div class="space-y-0.5">
+            <!-- Active Item: System -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1 text-xs font-semibold text-[#33FF66] bg-[rgba(51,255,102,0.10)] border-l-2 border-[#33FF66] rounded-[2px]">
+              <div class="flex items-center gap-2">
+                <span class="text-[#33FF66] text-xs font-bold">&gt;</span>
+                <span>System</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1 text-xs text-[#C9F7D4] hover:bg-[#050805] hover:text-[#33FF66] rounded-[2px] transition-colors">
+              <span class="text-[#5F8F68] text-[10px]">::</span>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Footer / Operator Card -->
+    <div class="p-2 border-t border-[#1A2E1A] bg-[#000000]">
+      <div class="p-2 border border-[#1A2E1A] bg-[#050805] flex items-center justify-between rounded-[2px]">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 border border-[#1A2E1A] bg-[#000000] text-[#33FF66] flex items-center justify-center font-bold text-[10px]">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold text-[#C9F7D4] leading-tight">Sigit A.</span>
+            <span class="text-[10px] text-[#5F8F68] leading-tight uppercase tracking-wider">operator</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+          <span class="text-[9px] text-[#33FF66] uppercase tracking-widest font-bold">ONLINE</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CONTENT AREA (1192px) ==================== -->
+  <main class="flex-1 h-full flex flex-col justify-between bg-[#000000] overflow-hidden">
+    
+    <!-- Topbar (48px) -->
+    <header class="h-12 border-b border-[#1A2E1A] bg-[#000000] px-4 flex items-center justify-between shrink-0 z-10">
+      <!-- Breadcrumb Prompt Line -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1 text-xs">
+          <span class="text-[#33FF66] font-bold">kyc://system</span>
+          <span class="text-[#33FF66] animate-pulse">_</span>
+        </div>
+        <div class="h-3 w-[1px] bg-[#1A2E1A]"></div>
+        <div class="flex items-center gap-2 text-[10px] text-[#5F8F68]">
+          <span class="border border-[#1A2E1A] px-1.5 py-0.5 bg-[#050805]">CLUSTER: cluster-01</span>
+          <span class="border border-[#1A2E1A] px-1.5 py-0.5 bg-[#050805]">NODE: node-01.local</span>
+          <span class="border border-[#1A2E1A] px-1.5 py-0.5 bg-[#050805]">DAEMON: 127.0.0.1:9042</span>
+        </div>
+      </div>
+
+      <!-- Search Input -->
+      <div class="w-96 relative">
+        <div class="h-7 border border-[#1A2E1A] bg-[#050805] px-2.5 flex items-center justify-between text-xs text-[#5F8F68] focus-within:border-[#33FF66] transition-colors rounded-[2px]">
+          <div class="flex items-center gap-2 flex-1">
+            <span class="text-[#33FF66]">&gt;</span>
+            <input type="text" placeholder="filter system knobs, store, routes..." class="bg-transparent text-xs text-[#C9F7D4] placeholder-[#5F8F68] outline-none w-full font-mono">
+          </div>
+          <span class="text-[10px] border border-[#1A2E1A] px-1 py-0.2 bg-[#000000] text-[#5F8F68]">⌘K</span>
+        </div>
+      </div>
+
+      <!-- Right Header Actions (Max 4 segments) -->
+      <div class="flex items-center gap-3">
+        <!-- Quorum status pill -->
+        <div class="flex items-center gap-1.5 border border-[#1A2E1A] bg-[#050805] px-2 py-1 text-[11px] rounded-[2px]">
+          <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+          <span class="text-[#33FF66] font-semibold tracking-wider">RAFT QUORUM 3/3</span>
+        </div>
+        <!-- Alert Bell -->
+        <button class="w-7 h-7 border border-[#1A2E1A] bg-[#050805] flex items-center justify-center text-[#5F8F68] hover:text-[#33FF66] hover:border-[#33FF66] transition-colors rounded-[2px] relative">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-[#FFD23F] rounded-full"></span>
+        </button>
+        <!-- User Badge -->
+        <div class="w-7 h-7 border border-[#1A2E1A] bg-[#050805] flex items-center justify-center text-xs font-bold text-[#33FF66] rounded-[2px]">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- Sub-header Operational Bar (36px) -->
+    <div class="h-9 border-b border-[#1A2E1A] bg-[#050805] px-4 flex items-center justify-between text-xs shrink-0">
+      <div class="flex items-center gap-3">
+        <span class="text-[#5F8F68] text-[11px] font-semibold uppercase tracking-wider">SUBSYSTEM STATUS //</span>
+        <div class="flex items-center gap-1.5 text-[#33FF66] font-semibold text-[11px]">
+          <span class="w-1.5 h-1.5 bg-[#33FF66]"></span>
+          <span>ALL ENGINES NOMINAL</span>
+        </div>
+        <span class="text-[#1A2E1A]">|</span>
+        <span class="text-[#5F8F68] text-[11px]">UPTIME: <span class="text-[#C9F7D4] font-medium">6d 04h 12m</span></span>
+        <span class="text-[#1A2E1A]">|</span>
+        <span class="text-[#5F8F68] text-[11px]">IPC ROUNDTRIP: <span class="text-[#33FF66] font-medium">0.14ms</span></span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-[#5F8F68] text-[10px] uppercase tracking-wider">SAFETY BARRIER:</span>
+        <span class="px-1.5 py-0.5 text-[10px] font-bold border border-[#1A2E1A] bg-[#000000] text-[#33FF66]">FAIL_SAFE ARMED</span>
+        <button class="px-2 py-0.5 text-[10px] font-bold border border-[#1A2E1A] bg-[#000000] hover:border-[#33FF66] text-[#C9F7D4] hover:text-[#33FF66] transition-colors uppercase">
+          [F5] RE-PROBE HARDWARE
+        </button>
+      </div>
+    </div>
+
+    <!-- 4-Quadrant Content Grid (Fills space exactly down to status bar) -->
+    <div class="flex-1 p-3 grid grid-cols-2 grid-rows-2 gap-3 overflow-hidden">
+
+      <!-- ==================== QUADRANT 1: STORE ==================== -->
+      <section class="legend-border flex flex-col justify-between p-3.5 pt-4 rounded-[1px]">
+        <div class="legend-tag">
+          <span class="w-1.5 h-1.5 bg-[#33FF66]"></span>
+          <span>01 // STORE</span>
+        </div>
+
+        <div class="flex flex-col justify-between h-full pt-1.5">
+          <!-- Intro / Spec meta -->
+          <div class="flex items-center justify-between pb-2 border-b border-[#1A2E1A] text-[11px]">
+            <span class="text-[#5F8F68] uppercase tracking-wider">DATABASE ENGINE &amp; FILE SYSTEM SPEC</span>
+            <span class="text-[10px] text-[#33FF66] border border-[#1A2E1A] px-1.5 py-0.5 bg-[#000000]">SYNCHRONOUS: NORMAL</span>
+          </div>
+
+          <!-- Table rows with hairline dividers (6 stated keys exactly) -->
+          <div class="divide-y divide-[#1A2E1A] flex-1 flex flex-col justify-around py-1">
+            <!-- Row 1: engine -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">engine</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">sqlite 3.45</span>
+                <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 bg-[#000000]">C-ABI</span>
+              </div>
+            </div>
+
+            <!-- Row 2: path (Full, one line, never wrapped) -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">path</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <span class="text-xs text-[#33FF66] font-medium tracking-tight">/var/lib/kys/store.db</span>
+            </div>
+
+            <!-- Row 3: size -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">size</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">46.2 MB</span>
+                <span class="text-[10px] text-[#5F8F68]">(48,443,392 B)</span>
+              </div>
+            </div>
+
+            <!-- Row 4: page_count -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">page_count</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">11,284</span>
+                <span class="text-[10px] text-[#5F8F68]">page_sz 4096 B</span>
+              </div>
+            </div>
+
+            <!-- Row 5: freelist_pages -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">freelist_pages</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">312</span>
+                <span class="text-[10px] text-[#5F8F68]">2.76% fragmentation</span>
+              </div>
+            </div>
+
+            <!-- Row 6: wal -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">wal</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#33FF66]">on · 0 B pending</span>
+                <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 bg-[#000000]">PASS 0 lag</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom micro footer for panel depth -->
+          <div class="pt-2 border-t border-[#1A2E1A] flex items-center justify-between text-[10px] text-[#5F8F68]">
+            <span>JOURNAL_MODE: WAL</span>
+            <span>CHECKSUM: SHA-256 HMAC VALID</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== QUADRANT 2: RUNTIME ==================== -->
+      <section class="legend-border flex flex-col justify-between p-3.5 pt-4 rounded-[1px]">
+        <div class="legend-tag">
+          <span class="w-1.5 h-1.5 bg-[#33FF66]"></span>
+          <span>02 // RUNTIME</span>
+        </div>
+
+        <div class="flex flex-col justify-between h-full pt-1.5">
+          <!-- Intro / Spec meta -->
+          <div class="flex items-center justify-between pb-2 border-b border-[#1A2E1A] text-[11px]">
+            <span class="text-[#5F8F68] uppercase tracking-wider">DAEMON EXECUTION &amp; PROCESS HOST</span>
+            <span class="text-[10px] text-[#33FF66] border border-[#1A2E1A] px-1.5 py-0.5 bg-[#000000]">DAEMON ONLINE</span>
+          </div>
+
+          <!-- Table rows with hairline dividers (5 stated keys exactly + sub-metrics) -->
+          <div class="divide-y divide-[#1A2E1A] flex-1 flex flex-col justify-around py-1">
+            <!-- Row 1: python -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">python</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">3.14.0</span>
+                <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 bg-[#000000]">CPython 64-bit</span>
+              </div>
+            </div>
+
+            <!-- Row 2: uvicorn -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">uvicorn</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">0.54</span>
+                <span class="text-[10px] text-[#5F8F68]">ASGI loop: uvloop</span>
+              </div>
+            </div>
+
+            <!-- Row 3: pid -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">pid</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#33FF66]">4,812</span>
+                <span class="text-[10px] text-[#5F8F68]">user: kys-daemon</span>
+              </div>
+            </div>
+
+            <!-- Row 4: uptime -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">uptime</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">6d 4h</span>
+                <span class="text-[10px] text-[#5F8F68]">started 2026-10-29 08:30Z</span>
+              </div>
+            </div>
+
+            <!-- Row 5: memory_rss -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">memory_rss</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">46.2 MB</span>
+                <span class="text-[10px] text-[#33FF66]">NOMINAL (&lt; 256 MB)</span>
+              </div>
+            </div>
+
+            <!-- Row 6: heap & gc auxiliary telemetry -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">event_loop_lag</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#33FF66]">0.08ms</span>
+                <span class="text-[10px] text-[#5F8F68]">gc_gen0 14.2/s</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom micro footer for panel depth -->
+          <div class="pt-2 border-t border-[#1A2E1A] flex items-center justify-between text-[10px] text-[#5F8F68]">
+            <span>SOCKET: /var/run/kys/daemon.sock</span>
+            <span>IPC PROTOCOL: UNIX DOMAIN STREAM</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== QUADRANT 3: ROUTES ==================== -->
+      <section class="legend-border flex flex-col justify-between p-3.5 pt-4 rounded-[1px]">
+        <div class="legend-tag">
+          <span class="w-1.5 h-1.5 bg-[#33FF66]"></span>
+          <span>03 // ROUTES</span>
+        </div>
+
+        <div class="flex flex-col justify-between h-full pt-1.5">
+          <!-- Table Header -->
+          <div class="flex items-center justify-between pb-2 border-b border-[#1A2E1A] text-[11px]">
+            <span class="text-[#5F8F68] uppercase tracking-wider">DISPATCHER ENDPOINT INVENTORY (5 REGISTERED)</span>
+            <div class="flex items-center gap-2 text-[10px] text-[#5F8F68]">
+              <span class="uppercase">ACCESS</span>
+              <span class="text-[#1A2E1A]">/</span>
+              <span class="uppercase">CLASS</span>
+            </div>
+          </div>
+
+          <!-- 5 Rows, each: route mono + separate access chip + separate class chip -->
+          <div class="divide-y divide-[#1A2E1A] flex-1 flex flex-col justify-around py-1">
+            <!-- Route 1: /v1/knowledge/query -->
+            <div class="flex items-center justify-between py-1 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-[#33FF66] font-bold">01</span>
+                <span class="text-xs font-semibold text-[#C9F7D4]">/v1/knowledge/query</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- Access Chip -->
+                <span class="px-2 py-0.5 text-[10px] font-medium border border-[#1A2E1A] bg-[#000000] text-[#C9F7D4] uppercase">
+                  operator
+                </span>
+                <!-- Class Chip (Separate) -->
+                <span class="px-2 py-0.5 text-[10px] font-bold border border-[#1A2E1A] bg-[#000000] text-[#33FF66] uppercase">
+                  read
+                </span>
+              </div>
+            </div>
+
+            <!-- Route 2: /v1/graph/traverse -->
+            <div class="flex items-center justify-between py-1 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-[#33FF66] font-bold">02</span>
+                <span class="text-xs font-semibold text-[#C9F7D4]">/v1/graph/traverse</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- Access Chip -->
+                <span class="px-2 py-0.5 text-[10px] font-medium border border-[#1A2E1A] bg-[#000000] text-[#C9F7D4] uppercase">
+                  operator
+                </span>
+                <!-- Class Chip (Separate) -->
+                <span class="px-2 py-0.5 text-[10px] font-bold border border-[#1A2E1A] bg-[#000000] text-[#33FF66] uppercase">
+                  read
+                </span>
+              </div>
+            </div>
+
+            <!-- Route 3: /v1/symbols/search -->
+            <div class="flex items-center justify-between py-1 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-[#33FF66] font-bold">03</span>
+                <span class="text-xs font-semibold text-[#C9F7D4]">/v1/symbols/search</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- Access Chip -->
+                <span class="px-2 py-0.5 text-[10px] font-medium border border-[#1A2E1A] bg-[#000000] text-[#C9F7D4] uppercase">
+                  operator
+                </span>
+                <!-- Class Chip (Separate) -->
+                <span class="px-2 py-0.5 text-[10px] font-bold border border-[#1A2E1A] bg-[#000000] text-[#33FF66] uppercase">
+                  read
+                </span>
+              </div>
+            </div>
+
+            <!-- Route 4: /v1/wal/commit -->
+            <div class="flex items-center justify-between py-1 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-[#33FF66] font-bold">04</span>
+                <span class="text-xs font-semibold text-[#C9F7D4]">/v1/wal/commit</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- Access Chip -->
+                <span class="px-2 py-0.5 text-[10px] font-medium border border-[#1A2E1A] bg-[#000000] text-[#C9F7D4] uppercase">
+                  operator
+                </span>
+                <!-- Class Chip (Separate: Write) -->
+                <span class="px-2 py-0.5 text-[10px] font-bold border border-[#FFD23F] bg-[rgba(255,210,63,0.06)] text-[#FFD23F] uppercase">
+                  write
+                </span>
+              </div>
+            </div>
+
+            <!-- Route 5: /v1/export/manifest -->
+            <div class="flex items-center justify-between py-1 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-[#33FF66] font-bold">05</span>
+                <span class="text-xs font-semibold text-[#C9F7D4]">/v1/export/manifest</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- Access Chip -->
+                <span class="px-2 py-0.5 text-[10px] font-medium border border-[#1A2E1A] bg-[#000000] text-[#C9F7D4] uppercase">
+                  operator
+                </span>
+                <!-- Class Chip (Separate) -->
+                <span class="px-2 py-0.5 text-[10px] font-bold border border-[#1A2E1A] bg-[#000000] text-[#33FF66] uppercase">
+                  read
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom micro footer for panel depth -->
+          <div class="pt-2 border-t border-[#1A2E1A] flex items-center justify-between text-[10px] text-[#5F8F68]">
+            <span>ROUTER: FASTAPI STARLETTE MOUNT</span>
+            <span>TOKEN AUTH: BEARER ED25519 VERIFIED</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== QUADRANT 4: HARDWARE ==================== -->
+      <section class="legend-border flex flex-col justify-between p-3.5 pt-4 rounded-[1px]">
+        <div class="legend-tag">
+          <span class="w-1.5 h-1.5 bg-[#33FF66]"></span>
+          <span>04 // HARDWARE</span>
+        </div>
+
+        <div class="flex flex-col justify-between h-full pt-1.5">
+          <!-- Intro / Spec meta -->
+          <div class="flex items-center justify-between pb-2 border-b border-[#1A2E1A] text-[11px]">
+            <span class="text-[#5F8F68] uppercase tracking-wider">HOST TOPOLOGY &amp; HARDWARE ALLOCATION</span>
+            <span class="text-[10px] text-[#33FF66] border border-[#1A2E1A] px-1.5 py-0.5 bg-[#000000]">ARCH: x86_64</span>
+          </div>
+
+          <!-- Table rows with hairline dividers (4 stated keys exactly) -->
+          <div class="divide-y divide-[#1A2E1A] flex-1 flex flex-col justify-around py-1">
+            <!-- Row 1: cpu -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">cpu</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">8 vCPU</span>
+                <span class="text-[10px] text-[#5F8F68]">AMD EPYC · AVX-512 ACTIVE</span>
+              </div>
+            </div>
+
+            <!-- Row 2: mem -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">mem</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">32 GB</span>
+                <span class="text-[10px] text-[#33FF66]">21.4 GB FREE (66.8%)</span>
+              </div>
+            </div>
+
+            <!-- Row 3: disk (Full, one line, never wrapped) -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">disk</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">NVMe SSD, non-rotational</span>
+                <span class="text-[10px] text-[#5F8F68]">&lt; 1ms IO LATENCY</span>
+              </div>
+            </div>
+
+            <!-- Row 4: os -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">os</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#C9F7D4]">Linux 5.15</span>
+                <span class="text-[10px] text-[#5F8F68]">Ubuntu 22.04 LTS (x86_64)</span>
+              </div>
+            </div>
+
+            <!-- Row 5: accelerator / vector acceleration -->
+            <div class="flex items-center justify-between py-1.5 px-1 hover:bg-[#000000] transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-[#5F8F68] uppercase w-36">acceleration</span>
+                <span class="text-[10px] text-[#1A2E1A]">::</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[#33FF66]">SIMD AVX-512 Vectorized</span>
+                <span class="text-[10px] text-[#5F8F68]">GPU none (CPU Fallback)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom micro footer for panel depth -->
+          <div class="pt-2 border-t border-[#1A2E1A] flex items-center justify-between text-[10px] text-[#5F8F68]">
+            <span>I/O BUFFER: 1 MiB RING</span>
+            <span>FS CONTENTION: 0 (CLEAN)</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==================== STATUS BAR (FLUSH AT BOTTOM EDGE, 28px) ==================== -->
+    <footer class="h-7 border-t border-[#1A2E1A] bg-[#000000] px-4 flex items-center justify-between text-[11px] shrink-0 z-20">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+          <span class="text-[#33FF66] font-semibold">TERMINAL ONLINE</span>
+        </div>
+        <span class="text-[#1A2E1A]">|</span>
+        <span class="text-[#5F8F68]">SHARD: <span class="text-[#C9F7D4]">0x3a</span></span>
+        <span class="text-[#1A2E1A]">|</span>
+        <span class="text-[#5F8F68]">MERKLE ROOT: <span class="text-[#C9F7D4]">0x9f8a2c3b1</span></span>
+        <span class="text-[#1A2E1A]">|</span>
+        <span class="text-[#5F8F68]">DAG ENGINE: <span class="text-[#C9F7D4]">v14.2 DETERMINISTIC</span></span>
+      </div>
+
+      <div class="flex items-center gap-4 text-[#5F8F68]">
+        <span>SYNC: <span class="text-[#33FF66] font-medium">100% QUORUM</span></span>
+        <span class="text-[#1A2E1A]">|</span>
+        <span>LATENCY P50: <span class="text-[#C9F7D4]">0.14ms</span></span>
+        <span class="text-[#1A2E1A]">|</span>
+        <span class="text-[#C9F7D4] font-medium">VIEWPORT: 1440x900 FIXED</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

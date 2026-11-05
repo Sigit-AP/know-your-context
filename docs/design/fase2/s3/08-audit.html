@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Audit Ledger (Swiss Grid)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#FAFAF8',
+            surface: '#FFFFFF',
+            hairline: '#E4E4E0',
+            primary: '#111111',
+            secondary: '#6B6B66',
+            accent: '#E03131',
+            'accent-soft': 'rgba(224, 49, 49, 0.08)',
+            'ok-text': '#1b6b47',
+            'ok-bg': '#EBFBEE',
+            'ok-border': '#B7EB8F',
+            'warn-text': '#8C6B00',
+            'warn-bg': '#FFFBE6',
+            'warn-border': '#FFE58F',
+            'fail-text': '#C92A2A',
+            'fail-bg': '#FFF5F5',
+            'fail-border': '#FFA8A8'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #FAFAF8;
+      color: #111111;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+    }
+    /* Hairline border utilities */
+    .border-hairline { border-color: #E4E4E0; }
+    .border-rule { border-color: #111111; }
+  </style>
+</head>
+<body class="flex flex-row w-[1440px] h-[900px] select-none bg-base">
+
+  <!-- ==================== LEFT SIDEBAR (248px) ==================== -->
+  <aside class="w-[248px] h-[900px] flex-shrink-0 flex flex-col justify-between bg-surface border-r border-hairline z-20">
+    
+    <!-- Top Brand & Navigation -->
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-14 px-5 border-b border-hairline flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 bg-primary text-surface flex items-center justify-center font-bold text-xs font-mono rounded-[2px]">
+            K
+          </div>
+          <div>
+            <div class="text-[13px] font-bold tracking-tight text-primary leading-tight">Know Your Soul</div>
+            <div class="text-[10px] font-mono text-secondary uppercase tracking-wider">CLUSTER 01 // V14.2</div>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-[#2F9E6E]" title="Cluster Healthy"></div>
+      </div>
+
+      <!-- Nav Groups -->
+      <nav class="px-3 py-3 space-y-4 text-[13px]">
+        <!-- 01 // MONITOR -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">
+            01 // MONITOR
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">dashboard</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">reorder</span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">hub</span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 02 // ANALYZE -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">
+            02 // ANALYZE
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">search</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">show_chart</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">analytics</span>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 03 // GOVERN -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">
+            03 // GOVERN
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">vital_signs</span>
+              <span>Health</span>
+            </a>
+            <!-- ACTIVE ITEM: Audit Ledger -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-[3px] bg-accent-soft text-accent font-semibold">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[17px] text-accent">verified_user</span>
+                <span class="text-accent">Audit Ledger</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[17px]">gavel</span>
+                <span>Proposals</span>
+              </div>
+              <span class="text-[11px] font-mono text-secondary px-1.5 py-0.2 bg-[#F0F0EC] rounded-[2px]">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[17px]">pending_actions</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="text-[11px] font-mono text-secondary px-1.5 py-0.2 bg-[#F0F0EC] rounded-[2px]">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 04 // SYSTEM -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono font-semibold text-secondary uppercase tracking-wider">
+            04 // SYSTEM
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">tune</span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-secondary hover:text-primary hover:bg-[#F4F4F0] transition-colors">
+              <span class="material-symbols-outlined text-[17px]">settings</span>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sidebar Bottom User Card -->
+    <div class="p-3 border-t border-hairline bg-surface">
+      <div class="flex items-center justify-between px-2 py-1.5 rounded-[3px] hover:bg-[#F4F4F0] transition-colors cursor-pointer">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-[2px] bg-[#111111] text-[#FAFAF8] font-mono font-bold text-xs flex items-center justify-center">
+            SA
+          </div>
+          <div>
+            <div class="text-[12px] font-semibold text-primary leading-tight">Sigit A.</div>
+            <div class="text-[10px] font-mono text-secondary">operator</div>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-[#2F9E6E]"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CONTENT AREA ==================== -->
+  <div class="flex-1 flex flex-col h-[900px] bg-base overflow-hidden">
+    
+    <!-- Topbar (56px) -->
+    <header class="h-14 w-full bg-surface border-b border-hairline px-6 flex items-center justify-between flex-shrink-0 z-10">
+      <!-- Breadcrumb / Title Left -->
+      <div class="flex items-center gap-2 text-[13px]">
+        <span class="font-mono text-[11px] text-secondary">KYS</span>
+        <span class="text-hairline">/</span>
+        <span class="font-mono text-[11px] text-secondary">Govern</span>
+        <span class="text-hairline">/</span>
+        <span class="font-semibold text-primary">Audit Ledger</span>
+        <span class="ml-2 px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] font-mono text-[10px] font-medium rounded-[2px] inline-flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#2F9E6E]"></span>
+          CHAIN VERIFIED
+        </span>
+      </div>
+
+      <!-- Center Search -->
+      <div class="relative w-[420px]">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[16px]">search</span>
+        <input 
+          type="text" 
+          placeholder="Search hash, sequence, actor, or operation..." 
+          class="w-full h-8 pl-8 pr-9 bg-[#FAFAF8] border border-hairline rounded-[3px] text-[12px] text-primary placeholder-secondary font-sans focus:outline-none focus:border-primary transition-colors"
+        />
+        <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+          <kbd class="px-1.5 py-0.5 bg-surface border border-hairline rounded-[2px] font-mono text-[10px] text-secondary">⌘K</kbd>
+        </div>
+      </div>
+
+      <!-- Right Chrome: Bell + SA Avatar (max 4 segments, no clipping) -->
+      <div class="flex items-center gap-3">
+        <button class="relative w-8 h-8 flex items-center justify-center text-secondary hover:text-primary border border-hairline rounded-[3px] hover:bg-[#FAFAF8] transition-colors">
+          <span class="material-symbols-outlined text-[17px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-accent rounded-full"></span>
+        </button>
+        <div class="w-8 h-8 rounded-[2px] bg-primary text-surface font-mono font-bold text-xs flex items-center justify-center">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace (Content + Controls) -->
+    <main class="flex-1 flex flex-col px-6 pt-3 pb-0 overflow-hidden justify-between">
+      
+      <!-- Top Section: Header & Stats + Warning Banner -->
+      <div class="flex flex-col gap-2.5 flex-shrink-0">
+        
+        <!-- Header row with Filter Rails & Actions -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-[11px] font-semibold text-secondary tracking-wider uppercase">01 // CRYPTOGRAPHIC CHAIN</span>
+            <div class="h-3 w-px bg-hairline"></div>
+            <h1 class="text-xl font-bold tracking-tight text-primary">Immutable Merkle Ledger</h1>
+          </div>
+
+          <!-- Filter rail inside toolbar -->
+          <div class="flex items-center gap-2">
+            <!-- Filter Pills -->
+            <div class="flex items-center gap-1.5 bg-surface border border-hairline p-0.5 rounded-[3px]">
+              <button class="px-2.5 py-1 text-[11px] font-mono text-primary hover:bg-[#F4F4F0] rounded-[2px] flex items-center gap-1">
+                <span>All ops</span>
+                <span class="material-symbols-outlined text-[13px] text-secondary">arrow_drop_down</span>
+              </button>
+              <div class="h-3 w-px bg-hairline"></div>
+              <button class="px-2.5 py-1 text-[11px] font-mono text-primary hover:bg-[#F4F4F0] rounded-[2px] flex items-center gap-1">
+                <span>All actors</span>
+                <span class="material-symbols-outlined text-[13px] text-secondary">arrow_drop_down</span>
+              </button>
+              <div class="h-3 w-px bg-hairline"></div>
+              <button class="px-2.5 py-1 text-[11px] font-mono font-medium text-primary hover:bg-[#F4F4F0] rounded-[2px] flex items-center gap-1">
+                <span>NOV 4</span>
+                <span class="material-symbols-outlined text-[13px] text-secondary">arrow_drop_down</span>
+              </button>
+            </div>
+
+            <!-- Export / Verify button -->
+            <button class="h-7 px-3 bg-surface hover:bg-[#F4F4F0] text-primary border border-hairline text-[11px] font-mono font-medium rounded-[3px] flex items-center gap-1.5 transition-colors">
+              <span class="material-symbols-outlined text-[14px]">download</span>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Warning Banner (Amber, exactly 1 line) -->
+        <div class="w-full h-9 px-3 bg-warn-bg border border-warn-border rounded-[3px] flex items-center justify-between flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#B8860B] text-[16px]">warning</span>
+            <span class="text-[12px] font-medium text-warn-text">3 of 1,521 events failed verification — pinned below</span>
+          </div>
+          <button class="h-6 px-2.5 text-[11px] font-mono font-semibold text-warn-text hover:text-primary hover:bg-[#FFF3C4] border border-warn-border rounded-[2px] flex items-center gap-1 transition-colors">
+            <span class="material-symbols-outlined text-[13px]">file_download</span>
+            <span>Download report</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Ledger Table (14 rows: 3 pinned + 11 normal, filling vertical height perfectly) -->
+      <div class="flex-1 mt-2.5 bg-surface border border-hairline rounded-[4px] flex flex-col overflow-hidden">
+        
+        <!-- Table Column Headers -->
+        <div class="h-9 px-4 bg-[#F8F8F5] border-b-2 border-rule flex items-center text-[11px] font-mono font-semibold text-primary uppercase tracking-wider flex-shrink-0">
+          <div class="w-24">SEQ</div>
+          <div class="w-56">TIME</div>
+          <div class="w-32">OP</div>
+          <div class="w-36">ACTOR</div>
+          <div class="flex-1">HASH</div>
+          <div class="w-28 text-right pr-2">STATUS</div>
+        </div>
+
+        <!-- Table Rows Container (14 rows exactly) -->
+        <div class="flex-1 flex flex-col justify-between divide-y divide-hairline font-mono text-[12px]">
+
+          <!-- PINNED 1: SEQ 0001521 (FAIL) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center bg-[#FFF5F5] border-l-2 border-accent transition-colors">
+            <div class="w-24 font-bold text-accent">#0001521</div>
+            <div class="w-56 text-primary">2026-11-04 12:35:00Z</div>
+            <div class="w-32 text-primary font-medium">rollback</div>
+            <div class="w-36 text-secondary">sub-139</div>
+            <div class="flex-1 font-mono text-primary font-semibold">9f2c1ab4e7d3</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#FFE3E3] text-[#C92A2A] border border-[#FFA8A8] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">cancel</span>
+                <span>FAIL</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- PINNED 2: SEQ 0001520 (FAIL) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center bg-[#FFF5F5] border-l-2 border-accent transition-colors">
+            <div class="w-24 font-bold text-accent">#0001520</div>
+            <div class="w-56 text-primary">2026-11-04 12:31:14Z</div>
+            <div class="w-32 text-primary font-medium">apply</div>
+            <div class="w-36 text-secondary">operator</div>
+            <div class="flex-1 font-mono text-primary font-semibold">8a1d440f92b1</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#FFE3E3] text-[#C92A2A] border border-[#FFA8A8] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">cancel</span>
+                <span>FAIL</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- PINNED 3: SEQ 0001519 (FAIL) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center bg-[#FFF5F5] border-l-2 border-accent transition-colors">
+            <div class="w-24 font-bold text-accent">#0001519</div>
+            <div class="w-56 text-primary">2026-11-04 12:28:44Z</div>
+            <div class="w-32 text-primary font-medium">propose</div>
+            <div class="w-36 text-secondary">sub-141</div>
+            <div class="flex-1 font-mono text-primary font-semibold">77e19cb24a08</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#FFE3E3] text-[#C92A2A] border border-[#FFA8A8] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">cancel</span>
+                <span>FAIL</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 4: SEQ 0001518 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001518</div>
+            <div class="w-56 text-primary">2026-11-04 12:25:01Z</div>
+            <div class="w-32 text-primary">query</div>
+            <div class="w-36 text-secondary">operator</div>
+            <div class="flex-1 text-secondary">3d81b899c014</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 5: SEQ 0001517 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001517</div>
+            <div class="w-56 text-primary">2026-11-04 12:21:15Z</div>
+            <div class="w-32 text-primary">apply</div>
+            <div class="w-36 text-secondary">sub-139</div>
+            <div class="flex-1 text-secondary">55c2f0a1e389</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 6: SEQ 0001516 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001516</div>
+            <div class="w-56 text-primary">2026-11-04 12:18:52Z</div>
+            <div class="w-32 text-primary">import</div>
+            <div class="w-36 text-secondary">operator</div>
+            <div class="flex-1 text-secondary">a012e8419bc7</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 7: SEQ 0001515 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001515</div>
+            <div class="w-56 text-primary">2026-11-04 12:12:08Z</div>
+            <div class="w-32 text-primary">propose</div>
+            <div class="w-36 text-secondary">sub-141</div>
+            <div class="flex-1 text-secondary">e44799015d22</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 8: SEQ 0001514 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001514</div>
+            <div class="w-56 text-primary">2026-11-04 12:09:44Z</div>
+            <div class="w-32 text-primary">import</div>
+            <div class="w-36 text-secondary">sub-139</div>
+            <div class="flex-1 text-secondary">43dcb102f901</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 9: SEQ 0001513 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001513</div>
+            <div class="w-56 text-primary">2026-11-04 12:05:22Z</div>
+            <div class="w-32 text-primary">propose</div>
+            <div class="w-36 text-secondary">sub-141</div>
+            <div class="flex-1 text-secondary">78fe23a9d412</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 10: SEQ 0001512 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001512</div>
+            <div class="w-56 text-primary">2026-11-04 12:02:11Z</div>
+            <div class="w-32 text-primary">apply</div>
+            <div class="w-36 text-secondary">operator</div>
+            <div class="flex-1 text-secondary">69bca7118120</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 11: SEQ 0001511 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001511</div>
+            <div class="w-56 text-primary">2026-11-04 11:58:39Z</div>
+            <div class="w-32 text-primary">query</div>
+            <div class="w-36 text-secondary">sub-139</div>
+            <div class="flex-1 text-secondary">12e094fa55c9</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 12: SEQ 0001510 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001510</div>
+            <div class="w-56 text-primary">2026-11-04 11:55:04Z</div>
+            <div class="w-32 text-primary">import</div>
+            <div class="w-36 text-secondary">sub-141</div>
+            <div class="flex-1 text-secondary">b82ef455018a</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 13: SEQ 0001509 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001509</div>
+            <div class="w-56 text-primary">2026-11-04 11:51:28Z</div>
+            <div class="w-32 text-primary">query</div>
+            <div class="w-36 text-secondary">sub-139</div>
+            <div class="flex-1 text-secondary">4e112d7cb6a3</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ROW 14: SEQ 0001508 (VERIFIED) -->
+          <div class="flex-1 min-h-[35px] max-h-[41px] px-4 flex items-center hover:bg-[#FAFAF8] transition-colors">
+            <div class="w-24 text-secondary">#0001508</div>
+            <div class="w-56 text-primary">2026-11-04 11:48:10Z</div>
+            <div class="w-32 text-primary">propose</div>
+            <div class="w-36 text-secondary">operator</div>
+            <div class="flex-1 text-secondary">33190ab78f14</div>
+            <div class="w-28 flex justify-end pr-2">
+              <span class="px-2 py-0.5 bg-[#EBFBEE] text-[#1b6b47] border border-[#B7EB8F] text-[10px] font-bold rounded-[2px] inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>VERIFIED</span>
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pagination / Row Count Strip -->
+      <div class="h-8 flex items-center justify-between text-[11px] font-mono text-secondary px-1 flex-shrink-0">
+        <div>SHOWING 14 OF 1,521 ENTRIES (3 PINNED FAILURES)</div>
+        <div class="flex items-center gap-3">
+          <span>PAGE 1 OF 109</span>
+          <div class="flex items-center gap-1">
+            <button class="w-5 h-5 flex items-center justify-center border border-hairline rounded-[2px] bg-surface text-secondary hover:text-primary">
+              <span class="material-symbols-outlined text-[13px]">chevron_left</span>
+            </button>
+            <button class="w-5 h-5 flex items-center justify-center border border-hairline rounded-[2px] bg-surface text-secondary hover:text-primary">
+              <span class="material-symbols-outlined text-[13px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ==================== STATUS BAR (FLUSH AT BOTTOM) ==================== -->
+    <footer class="h-7 w-full bg-[#FAFAF8] border-t border-hairline px-6 flex items-center justify-between text-[11px] font-mono text-secondary flex-shrink-0 z-20">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 rounded-full bg-[#2F9E6E]"></span>
+        <span class="font-semibold text-primary">1,521 EVENTS</span>
+        <span>·</span>
+        <span class="text-[#1b6b47] font-semibold">CHAIN VERIFIED</span>
+        <span>·</span>
+        <span>ANCHOR 9F2C1AB4</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span>RAFT QUORUM SYNCED</span>
+        <span>·</span>
+        <span>LATENCY P50: 6.4ms</span>
+        <span>·</span>
+        <span class="text-primary font-medium">VIEWPORT: 1440x900 FLUSH</span>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

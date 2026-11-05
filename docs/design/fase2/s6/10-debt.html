@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Debt Queue (Neon Ops)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#05070D',
+            panel: '#0A0E18',
+            raised: '#0E1424',
+            hairline: 'rgba(139,92,246,0.12)',
+            textPrimary: '#E8E6F5',
+            textSecondary: '#8B86A8',
+            accent: '#8B5CF6',
+            statusOk: '#22C55E',
+            statusWarn: '#F59E0B',
+            statusDanger: '#EF4444'
+          },
+          fontFamily: {
+            heading: ['"Space Grotesk"', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #05070D;
+      color: #E8E6F5;
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    /* Dot grid texture */
+    .dot-grid {
+      background-image: radial-gradient(rgba(139, 92, 246, 0.14) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+    /* Pulsing LIVE animation */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .pulse-live {
+      animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    /* Custom scrollbar if any, though viewport is locked */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-base antialiased">
+
+  <!-- ================= LEFT SIDEBAR (248px) ================= -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-[rgba(139,92,246,0.12)] bg-panel z-20 shrink-0">
+    <!-- Top Brand & Navigation -->
+    <div class="flex flex-col">
+      <!-- App Header -->
+      <div class="h-12 px-4 flex items-center justify-between border-b border-[rgba(139,92,246,0.12)]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-5 h-5 rounded flex items-center justify-center bg-[rgba(139,92,246,0.2)] border border-accent/40 text-accent font-heading font-bold text-xs leading-none">
+            K
+          </div>
+          <span class="font-heading font-semibold text-xs tracking-wider text-textPrimary uppercase">Know Your Soul</span>
+        </div>
+        <span class="font-mono text-[10px] text-textSecondary px-1.5 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.12)]">v14.2</span>
+      </div>
+
+      <!-- Navigation Groups -->
+      <div class="px-2.5 py-3 space-y-4">
+        <!-- MONITOR -->
+        <div>
+          <div class="px-2 mb-1.5 text-[10px] font-mono tracking-widest text-textSecondary uppercase">01 // Monitor</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Overview</span>
+              </span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Activity Log</span>
+              </span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Graph Explorer</span>
+              </span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- ANALYZE -->
+        <div>
+          <div class="px-2 mb-1.5 text-[10px] font-mono tracking-widest text-textSecondary uppercase">02 // Analyze</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Search</span>
+              </span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Metrics</span>
+              </span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Analytics</span>
+              </span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- GOVERN -->
+        <div>
+          <div class="px-2 mb-1.5 text-[10px] font-mono tracking-widest text-textSecondary uppercase">03 // Govern</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Health</span>
+              </span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Audit Ledger</span>
+              </span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Proposals</span>
+              </span>
+              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-raised text-textSecondary border border-[rgba(139,92,246,0.12)]">3</span>
+            </a>
+            <!-- Active item: Debt Queue -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded bg-[rgba(139,92,246,0.12)] border border-accent/25 text-accent font-medium text-xs">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] text-accent">&gt;</span>
+                <span class="font-semibold text-textPrimary">Debt Queue</span>
+              </span>
+              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-[rgba(139,92,246,0.2)] text-accent border border-accent/30 font-semibold">14</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- SYSTEM -->
+        <div>
+          <div class="px-2 mb-1.5 text-[10px] font-mono tracking-widest text-textSecondary uppercase">04 // System</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>System</span>
+              </span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-textSecondary hover:text-textPrimary hover:bg-raised transition-colors">
+              <span class="flex items-center gap-2">
+                <span class="font-mono text-[11px] opacity-40">::</span>
+                <span>Setup</span>
+              </span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Bottom: Operator Card -->
+    <div class="p-2.5 border-t border-[rgba(139,92,246,0.12)]">
+      <div class="flex items-center justify-between p-2 rounded bg-raised border border-[rgba(139,92,246,0.12)]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded bg-[rgba(139,92,246,0.15)] border border-accent/30 flex items-center justify-center font-mono font-bold text-xs text-accent">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-textPrimary leading-none">Sigit A.</span>
+            <span class="text-[10px] font-mono text-textSecondary mt-0.5 leading-none">operator</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-base/60 border border-[rgba(139,92,246,0.1)]">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk pulse-live"></span>
+          <span class="font-mono text-[9px] uppercase tracking-wider text-statusOk font-semibold">Online</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT AREA ================= -->
+  <main class="flex-1 h-full flex flex-col bg-base dot-grid overflow-hidden relative">
+
+    <!-- TOPBAR (Thin single line, 44px) -->
+    <header class="h-11 px-5 flex items-center justify-between border-b border-[rgba(139,92,246,0.12)] bg-panel/90 backdrop-blur-sm shrink-0 z-10">
+      <!-- Left: Breadcrumb / Title -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 font-mono text-xs text-textSecondary">
+          <span class="hover:text-textPrimary transition-colors">kyc:</span>
+          <span>//</span>
+          <span class="text-textPrimary font-semibold">debt-queue</span>
+        </div>
+        <span class="text-textSecondary opacity-40 font-mono text-xs">/</span>
+        <div class="flex items-center gap-2 px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.12)] font-mono text-[11px] text-textSecondary">
+          <span>CLUSTER:</span>
+          <span class="text-textPrimary font-medium">cluster-01</span>
+        </div>
+        <div class="flex items-center gap-2 px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.12)] font-mono text-[11px] text-textSecondary">
+          <span>PARTITIONS:</span>
+          <span class="text-textPrimary font-medium">7/7</span>
+        </div>
+      </div>
+
+      <!-- Center: Search Field with ⌘K -->
+      <div class="w-[380px] h-7 px-2.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] flex items-center justify-between text-xs text-textSecondary focus-within:border-accent/40 focus-within:text-textPrimary transition-all">
+        <div class="flex items-center gap-2 truncate">
+          <svg class="w-3.5 h-3.5 opacity-60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span class="font-mono text-[11px] truncate">filter debt items, nodes, hashes, reasons...</span>
+        </div>
+        <kbd class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-base text-textSecondary border border-[rgba(139,92,246,0.16)] shrink-0">⌘K</kbd>
+      </div>
+
+      <!-- Right: Status & Actions (Max 4 segments) -->
+      <div class="flex items-center gap-3">
+        <!-- Raft Consensus Pill -->
+        <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(34,197,94,0.1)] border border-statusOk/30 text-statusOk font-mono text-[11px] font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk pulse-live"></span>
+          <span>RAFT QUORUM 3/3</span>
+        </div>
+
+        <!-- Bell with notification dot -->
+        <button class="relative w-7 h-7 rounded bg-raised border border-[rgba(139,92,246,0.14)] flex items-center justify-center text-textSecondary hover:text-textPrimary hover:border-accent/30 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-statusWarn"></span>
+        </button>
+
+        <!-- User Avatar -->
+        <div class="w-7 h-7 rounded bg-raised border border-accent/40 flex items-center justify-center font-mono text-xs font-semibold text-accent">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT WRAPPER (Flex-1, exactly fitted) -->
+    <div class="flex-1 flex flex-col px-5 pt-3.5 pb-0 justify-between overflow-hidden">
+
+      <!-- TOOLBAR & TELEMETRY STRIP -->
+      <div class="h-10 mb-3 px-3 rounded bg-panel border border-[rgba(139,92,246,0.12)] flex items-center justify-between shrink-0">
+        <!-- Left: Filters & Search -->
+        <div class="flex items-center gap-2.5">
+          <!-- Ghost search input -->
+          <div class="flex items-center gap-2 h-7 px-2.5 rounded bg-raised border border-[rgba(139,92,246,0.12)] w-52 text-xs">
+            <span class="font-mono text-textSecondary text-[11px]">&gt;</span>
+            <input type="text" placeholder="Filter debt..." class="bg-transparent border-none outline-none font-mono text-[11px] text-textPrimary placeholder:text-textSecondary/60 w-full" readonly value="Filter debt...">
+          </div>
+
+          <!-- Dropdown Pills -->
+          <button class="h-7 px-2.5 rounded bg-raised border border-[rgba(139,92,246,0.12)] hover:border-accent/30 font-mono text-[11px] text-textSecondary hover:text-textPrimary flex items-center gap-1.5 transition-colors">
+            <span>Severity</span>
+            <span class="text-[9px] opacity-60">▾</span>
+          </button>
+          <button class="h-7 px-2.5 rounded bg-raised border border-[rgba(139,92,246,0.12)] hover:border-accent/30 font-mono text-[11px] text-textSecondary hover:text-textPrimary flex items-center gap-1.5 transition-colors">
+            <span>Domain</span>
+            <span class="text-[9px] opacity-60">▾</span>
+          </button>
+          <button class="h-7 px-2.5 rounded bg-raised border border-[rgba(139,92,246,0.12)] hover:border-accent/30 font-mono text-[11px] text-textSecondary hover:text-textPrimary flex items-center gap-1.5 transition-colors">
+            <span>30D</span>
+            <span class="text-[9px] opacity-60">▾</span>
+          </button>
+
+          <!-- Divider -->
+          <div class="w-[1px] h-4 bg-[rgba(139,92,246,0.12)] mx-1"></div>
+
+          <!-- Quick Filter Status Pills -->
+          <div class="flex items-center gap-1">
+            <button class="h-6 px-2 rounded bg-[rgba(139,92,246,0.2)] border border-accent/40 font-mono text-[10px] text-accent font-semibold">
+              ALL (14)
+            </button>
+            <button class="h-6 px-2 rounded bg-raised border border-[rgba(139,92,246,0.1)] hover:border-accent/20 font-mono text-[10px] text-textSecondary hover:text-textPrimary">
+              HIGH (3)
+            </button>
+            <button class="h-6 px-2 rounded bg-raised border border-[rgba(139,92,246,0.1)] hover:border-accent/20 font-mono text-[10px] text-textSecondary hover:text-textPrimary">
+              MED (6)
+            </button>
+            <button class="h-6 px-2 rounded bg-raised border border-[rgba(139,92,246,0.1)] hover:border-accent/20 font-mono text-[10px] text-textSecondary hover:text-textPrimary">
+              LOW (5)
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Telemetry / KPIs in Space Grotesk + JetBrains Mono -->
+        <div class="flex items-center gap-4 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[10px] text-textSecondary tracking-wider uppercase">Entropy Mean:</span>
+            <span class="font-heading font-bold text-xs text-statusOk tracking-tight">0.742</span>
+          </div>
+          <div class="w-[1px] h-3.5 bg-[rgba(139,92,246,0.12)]"></div>
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[10px] text-textSecondary tracking-wider uppercase">Token Budget:</span>
+            <span class="font-mono text-xs text-textPrimary font-medium">14.2k</span>
+          </div>
+          <div class="w-[1px] h-3.5 bg-[rgba(139,92,246,0.12)]"></div>
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[10px] text-textSecondary tracking-wider uppercase">Burndown SLA:</span>
+            <span class="font-heading font-bold text-xs text-statusWarn tracking-tight">4.2d</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN TABLE CONTAINER (14 visible rows, exactly calculated to fill vertical space) -->
+      <div class="flex-1 bg-panel border border-[rgba(139,92,246,0.12)] rounded overflow-hidden flex flex-col justify-between">
+        
+        <!-- Table Header (34px) -->
+        <div class="h-[34px] px-3.5 bg-raised/80 border-b border-[rgba(139,92,246,0.12)] flex items-center text-[10px] font-mono tracking-wider text-textSecondary uppercase shrink-0">
+          <div class="w-8 flex items-center">
+            <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+          </div>
+          <div class="w-28 pl-1">SEV</div>
+          <div class="w-56">NODE</div>
+          <div class="flex-1">REASON</div>
+          <div class="w-36 text-left">NOTES / FLAGS</div>
+          <div class="w-20 text-right pr-4">AGE</div>
+          <div class="w-20 text-right pr-4">EST</div>
+          <div class="w-24 text-right pr-2">ACTION</div>
+        </div>
+
+        <!-- 14 Table Rows (Each 38px, total 532px) -->
+        <div class="flex-1 flex flex-col divide-y divide-[rgba(139,92,246,0.07)]">
+
+          <!-- Row 1 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(239,68,68,0.12)] border border-statusDanger/30 text-statusDanger font-mono text-[10px] font-semibold tracking-wide">
+                <span>▲</span>
+                <span>HIGH</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">store-mutex</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">missing provenance metadata</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">12d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">2h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(239,68,68,0.12)] border border-statusDanger/30 text-statusDanger font-mono text-[10px] font-semibold tracking-wide">
+                <span>▲</span>
+                <span>HIGH</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">embedding-refresh</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">stale 45d</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">45d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">4h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(239,68,68,0.12)] border border-statusDanger/30 text-statusDanger font-mono text-[10px] font-semibold tracking-wide">
+                <span>▲</span>
+                <span>HIGH</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">legacy-tag-refs</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">orphan edges x3</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">18d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(245,158,11,0.12)] border border-statusWarn/30 text-statusWarn font-mono text-[10px] font-semibold tracking-wide">
+                <span>●</span>
+                <span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">p4-domain</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">unindexed semantic tag flags</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">8d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">3h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 5 (Tooltip cue / text chip: '2 notes') -->
+          <div class="h-[38px] px-3.5 flex items-center bg-[rgba(139,92,246,0.06)] hover:bg-raised/80 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(245,158,11,0.12)] border border-statusWarn/30 text-statusWarn font-mono text-[10px] font-semibold tracking-wide">
+                <span>●</span>
+                <span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">wal-replay</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">uncompacted log segment frames</div>
+            <!-- Row 5 Tooltip Cue: text chip '2 notes' -->
+            <div class="w-36">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[rgba(245,158,11,0.15)] border border-statusWarn/40 text-statusWarn font-mono text-[10px] font-medium" title="Uncompacted WAL journal size + duplicate segment indexes">
+                <span>2 notes</span>
+                <span class="text-[9px] opacity-70">[?]</span>
+              </span>
+            </div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">14d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">2h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-accent/40 text-accent hover:bg-accent/10 font-mono text-[10px] font-medium transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 6 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(245,158,11,0.12)] border border-statusWarn/30 text-statusWarn font-mono text-[10px] font-semibold tracking-wide">
+                <span>●</span>
+                <span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">heuristics-catalog</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">sub-optimal branch density</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">21d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">5h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 7 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(245,158,11,0.12)] border border-statusWarn/30 text-statusWarn font-mono text-[10px] font-semibold tracking-wide">
+                <span>●</span>
+                <span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">schema-contract-04</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">deprecated JSON-LD attributes</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">9d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 8 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(245,158,11,0.12)] border border-statusWarn/30 text-statusWarn font-mono text-[10px] font-semibold tracking-wide">
+                <span>●</span>
+                <span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">vector-cache-evictor</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">missing LRU threshold bounds</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">15d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">2h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 9 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[rgba(245,158,11,0.12)] border border-statusWarn/30 text-statusWarn font-mono text-[10px] font-semibold tracking-wide">
+                <span>●</span>
+                <span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">retrieval-core</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">cross-partition lock contention</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">6d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">3h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 10 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.15)] text-textSecondary font-mono text-[10px] font-medium tracking-wide">
+                <span>○</span>
+                <span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">query-planner</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">unindexed AST sub-clauses</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">24d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 11 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.15)] text-textSecondary font-mono text-[10px] font-medium tracking-wide">
+                <span>○</span>
+                <span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">scoring-engine</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">redundant cosine evaluation passes</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">11d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">2h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 12 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.15)] text-textSecondary font-mono text-[10px] font-medium tracking-wide">
+                <span>○</span>
+                <span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">duckdb-compact</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">unoptimized parquet chunk layout</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">19d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">4h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 13 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.15)] text-textSecondary font-mono text-[10px] font-medium tracking-wide">
+                <span>○</span>
+                <span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">raft-lease-quorum</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">heartbeat drift margin delta</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">5d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 14 -->
+          <div class="h-[38px] px-3.5 flex items-center hover:bg-raised/60 transition-colors text-xs">
+            <div class="w-8 flex items-center">
+              <input type="checkbox" class="w-3.5 h-3.5 rounded bg-base border border-[rgba(139,92,246,0.2)] accent-[#8B5CF6]">
+            </div>
+            <div class="w-28 pl-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.15)] text-textSecondary font-mono text-[10px] font-medium tracking-wide">
+                <span>○</span>
+                <span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 font-mono text-textPrimary text-xs font-medium truncate">cli-adapter</div>
+            <div class="flex-1 text-textSecondary text-xs truncate">deprecated socket loopback alias</div>
+            <div class="w-36 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary text-xs">31d</div>
+            <div class="w-20 text-right pr-4 font-mono text-statusOk text-xs font-medium">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 rounded bg-raised border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[10px] text-textSecondary hover:text-textPrimary transition-colors">Inspect</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FOOTER STRIP / BULK BAR (Inside panel, exactly 36px) -->
+        <div class="h-9 px-4 bg-raised border-t border-[rgba(139,92,246,0.12)] flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-3 font-mono text-xs">
+            <span class="text-textPrimary font-semibold">14 OPEN</span>
+            <span class="text-textSecondary opacity-40">·</span>
+            <span class="text-statusDanger font-medium">3 HIGH</span>
+            <span class="text-textSecondary opacity-40">·</span>
+            <span class="text-textSecondary">SELECT: <span class="text-textPrimary font-medium">0</span></span>
+            <span class="text-textSecondary opacity-40">·</span>
+            <span class="text-textSecondary text-[11px]">SHOWING ROWS 1-14 OF 14</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button class="h-6 px-2.5 rounded bg-panel border border-[rgba(139,92,246,0.14)] hover:border-accent/40 font-mono text-[11px] text-textSecondary hover:text-textPrimary transition-colors">
+              Export CSV
+            </button>
+            <!-- Ghost button 'Assign' -->
+            <button class="h-6 px-3 rounded bg-[rgba(139,92,246,0.15)] border border-accent/40 hover:bg-accent/25 text-accent font-mono text-[11px] font-semibold transition-colors">
+              Assign
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM FLUSH STATUS BAR (Exactly 26px, sits flush at the very bottom edge) -->
+      <footer class="h-[26px] mt-2.5 -mx-5 px-5 bg-panel border-t border-[rgba(139,92,246,0.12)] flex items-center justify-between font-mono text-[10px] text-textSecondary shrink-0">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1.5 text-textPrimary font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-statusOk pulse-live"></span>
+            <span>14 QUEUE ITEMS</span>
+          </div>
+          <span class="text-textSecondary opacity-30">·</span>
+          <span>MERKLE: <span class="text-textPrimary">0x9f2c1ab4</span></span>
+          <span class="text-textSecondary opacity-30">·</span>
+          <span>SHARD: <span class="text-textPrimary">0x3a</span></span>
+          <span class="text-textSecondary opacity-30">·</span>
+          <span>ENGINE: <span class="text-textPrimary">DETERMINISTIC AST</span></span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <span>SYNC: <span class="text-statusOk font-medium">100% QUORUM</span></span>
+          <span class="text-textSecondary opacity-30">·</span>
+          <span>P90 CADENCE: <span class="text-textPrimary">3,240/DAY</span></span>
+          <span class="text-textSecondary opacity-30">·</span>
+          <span class="text-accent font-semibold">TERMINAL ONLINE</span>
+        </div>
+      </footer>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

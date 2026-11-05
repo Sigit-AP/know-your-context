@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+<title>Know Your Soul - Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        base: '#0F141E',
+        panel: '#151C2A',
+        raised: '#1B2434',
+        textPrimary: '#E7ECF5',
+        textSecondary: '#93A0B8',
+        accent: '#2DD4BF',
+        statusOk: '#4ADE80',
+        statusWarn: '#FCD34D',
+        statusDanger: '#F87171',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background-color: #0F141E;
+    color: #E7ECF5;
+    font-family: 'Inter', sans-serif;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  .hairline-border {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .hairline-b {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .hairline-r {
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .hairline-t {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .hairline-l {
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+  }
+</style>
+</head>
+<body class="flex bg-base text-textPrimary antialiased">
+
+  <!-- LEFT SIDEBAR (Width 252px) -->
+  <aside class="w-[252px] h-[900px] flex-shrink-0 bg-base hairline-r flex flex-col justify-between p-4 z-20">
+    <div class="flex flex-col gap-5">
+      <!-- Brand & Version -->
+      <div class="flex items-center justify-between px-2 pt-1 pb-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded-[8px] bg-accent/15 border border-accent/30 flex items-center justify-center text-accent font-mono font-bold text-xs">
+            K
+          </div>
+          <span class="font-medium text-[15px] tracking-tight text-textPrimary">Know Your Soul</span>
+        </div>
+        <span class="font-mono text-[11px] text-textSecondary px-1.5 py-0.5 rounded-[6px] bg-raised hairline-border">v14.2</span>
+      </div>
+
+      <!-- Navigation Groups -->
+      <nav class="flex flex-col gap-4 text-[13px]">
+        <!-- Group: MONITOR -->
+        <div class="flex flex-col gap-1">
+          <div class="px-2 text-[10px] font-mono tracking-wider text-textSecondary uppercase font-medium">MONITOR</div>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-accent/10 text-accent font-medium transition-colors">
+            <span class="material-symbols-outlined text-[17px]">dashboard</span>
+            <span>Overview</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">format_list_bulleted</span>
+            <span>Activity Log</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">hub</span>
+            <span>Graph Explorer</span>
+          </a>
+        </div>
+
+        <!-- Group: ANALYZE -->
+        <div class="flex flex-col gap-1">
+          <div class="px-2 text-[10px] font-mono tracking-wider text-textSecondary uppercase font-medium">ANALYZE</div>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">search</span>
+            <span>Search</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">monitoring</span>
+            <span>Metrics</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">analytics</span>
+            <span>Analytics</span>
+          </a>
+        </div>
+
+        <!-- Group: GOVERN -->
+        <div class="flex flex-col gap-1">
+          <div class="px-2 text-[10px] font-mono tracking-wider text-textSecondary uppercase font-medium">GOVERN</div>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">health_and_safety</span>
+            <span>Health</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">history_edu</span>
+            <span>Audit Ledger</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-[17px]">balance</span>
+              <span>Proposals</span>
+            </div>
+            <span class="font-mono text-[10px] bg-panel px-1.5 py-0.2 rounded-full hairline-border text-textSecondary">3</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-[17px]">pending_actions</span>
+              <span>Debt Queue</span>
+            </div>
+            <span class="font-mono text-[10px] bg-panel px-1.5 py-0.2 rounded-full hairline-border text-textSecondary">12</span>
+          </a>
+        </div>
+
+        <!-- Group: SYSTEM -->
+        <div class="flex flex-col gap-1">
+          <div class="px-2 text-[10px] font-mono tracking-wider text-textSecondary uppercase font-medium">SYSTEM</div>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">dns</span>
+            <span>System</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+            <span class="material-symbols-outlined text-[17px]">tune</span>
+            <span>Setup</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+
+    <!-- User Card -->
+    <div class="p-2.5 rounded-[16px] bg-panel hairline-border flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-full bg-raised hairline-border flex items-center justify-center font-mono text-[11px] font-medium text-textPrimary">
+          SA
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs font-medium text-textPrimary leading-tight">Sigit A.</span>
+          <span class="font-mono text-[10px] text-textSecondary leading-tight">operator</span>
+        </div>
+      </div>
+      <div class="w-2 h-2 rounded-full bg-statusOk" title="online"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="w-[1188px] h-[900px] flex flex-col justify-between overflow-hidden bg-base">
+    
+    <!-- Topbar (46px, strictly 1 line) -->
+    <header class="h-[46px] flex-shrink-0 px-6 hairline-b flex items-center justify-between bg-base z-10">
+      <div class="flex items-center gap-3">
+        <span class="text-[17px] font-[550] text-textPrimary tracking-tight">Overview</span>
+        <span class="font-mono text-[11px] text-textSecondary px-2 py-0.5 rounded-[6px] bg-panel hairline-border">cluster-01</span>
+      </div>
+
+      <!-- Center Search -->
+      <div class="w-[420px] h-[30px] rounded-[10px] bg-panel hairline-border px-3 flex items-center justify-between text-textSecondary">
+        <div class="flex items-center gap-2 flex-1">
+          <span class="material-symbols-outlined text-[15px] text-textSecondary">search</span>
+          <span class="text-xs text-textSecondary/70 font-mono">search nodes, edges, hashes, tags</span>
+        </div>
+        <kbd class="font-mono text-[10px] bg-raised px-1.5 py-0.5 rounded-[5px] text-textSecondary hairline-border">⌘K</kbd>
+      </div>
+
+      <!-- Right Chrome (max 4 segments: bell with dot, avatar) -->
+      <div class="flex items-center gap-3">
+        <button class="relative w-8 h-8 rounded-[10px] bg-panel hairline-border flex items-center justify-center text-textSecondary hover:text-textPrimary transition-colors">
+          <span class="material-symbols-outlined text-[16px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-raised hairline-border flex items-center justify-center font-mono text-xs text-textPrimary">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (fills remaining vertical space cleanly, padded 24px horiz, 14px vert) -->
+    <div class="flex-1 flex flex-col justify-between px-6 py-3.5 gap-3.5 overflow-hidden">
+      
+      <!-- 1. Alert banner full width (~44px) -->
+      <div class="h-[44px] flex-shrink-0 rounded-[18px] bg-panel hairline-border overflow-hidden flex items-center justify-between px-4 relative">
+        <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-accent"></div>
+        <div class="flex items-center gap-2.5 pl-1.5">
+          <span class="w-2 h-2 rounded-full bg-statusWarn flex-shrink-0"></span>
+          <span class="text-xs font-normal text-textPrimary">
+            2 stale edges detected in domain P4 — last verify 2h ago
+          </span>
+        </div>
+        <button class="px-3.5 py-1 rounded-[10px] bg-raised hover:bg-raised/80 hairline-border text-xs font-medium text-accent transition-colors">
+          Review
+        </button>
+      </div>
+
+      <!-- 2. KPI strip, 4 cards in a row (Height 104px) -->
+      <div class="grid grid-cols-4 gap-3.5 h-[104px] flex-shrink-0">
+        <!-- KPI 1: Nodes -->
+        <div class="rounded-[18px] bg-panel hairline-border p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium">NODES</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-[26px] font-[600] font-sans text-textPrimary leading-none">12,847</span>
+            <!-- Sparkline (stroke only) -->
+            <svg class="w-16 h-6 overflow-visible" viewBox="0 0 64 24" fill="none">
+              <path d="M 2 18 Q 12 16, 22 19 T 42 10 T 62 4" stroke="#2DD4BF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="text-[11px] font-mono text-textSecondary flex items-center gap-1">
+            <span class="text-statusOk">+312</span>
+            <span>vs last week</span>
+          </div>
+        </div>
+
+        <!-- KPI 2: Edges -->
+        <div class="rounded-[18px] bg-panel hairline-border p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium">EDGES</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-[26px] font-[600] font-sans text-textPrimary leading-none">48,203</span>
+            <svg class="w-16 h-6 overflow-visible" viewBox="0 0 64 24" fill="none">
+              <path d="M 2 20 L 18 17 L 34 11 L 48 8 L 62 3" stroke="#2DD4BF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="text-[11px] font-mono text-textSecondary flex items-center gap-1">
+            <span class="text-statusOk">+1,204</span>
+            <span>vs last week</span>
+          </div>
+        </div>
+
+        <!-- KPI 3: Queries 24h -->
+        <div class="rounded-[18px] bg-panel hairline-border p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium">QUERIES 24H</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-[26px] font-[600] font-sans text-textPrimary leading-none">3,412</span>
+            <svg class="w-16 h-6 overflow-visible" viewBox="0 0 64 24" fill="none">
+              <path d="M 2 15 Q 16 22, 30 14 T 48 8 T 62 10" stroke="#2DD4BF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="text-[11px] font-mono text-textSecondary flex items-center gap-1">
+            <span class="text-statusOk">up 8.2%</span>
+            <span>vs baseline</span>
+          </div>
+        </div>
+
+        <!-- KPI 4: Latency P50 -->
+        <div class="rounded-[18px] bg-panel hairline-border p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium">LATENCY P50</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-[26px] font-[600] font-sans text-textPrimary leading-none">6.4<span class="text-sm font-normal text-textSecondary ml-0.5">ms</span></span>
+            <svg class="w-16 h-6 overflow-visible" viewBox="0 0 64 24" fill="none">
+              <path d="M 2 8 L 18 14 L 32 10 L 46 17 L 62 11" stroke="#2DD4BF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="text-[11px] font-mono text-textSecondary flex items-center gap-1">
+            <span class="text-statusOk">down 0.4ms</span>
+            <span>target &lt; 10ms</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Two-column row: Learning Loop (left) + Recent Activity (right) (Height 230px) -->
+      <div class="grid grid-cols-12 gap-3.5 h-[230px] flex-shrink-0">
+        
+        <!-- LEFT: Learning Loop (cols 5) -->
+        <div class="col-span-5 rounded-[18px] bg-panel hairline-border p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-1 hairline-b">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-textPrimary">Learning Loop</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+            </div>
+            <span class="font-mono text-[10px] text-textSecondary uppercase">OPTIMIZER v14</span>
+          </div>
+
+          <!-- Thin bars P, M, E -->
+          <div class="flex flex-col gap-3 py-1">
+            <!-- P: Precision Score -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between font-mono text-xs">
+                <span class="text-textSecondary text-[11px]">Precision score</span>
+                <span class="text-textPrimary font-medium">P 0.828</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-raised overflow-hidden">
+                <div class="h-full rounded-full bg-accent" style="width: 82.8%"></div>
+              </div>
+            </div>
+
+            <!-- M: Mutation Entropy -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between font-mono text-xs">
+                <span class="text-textSecondary text-[11px]">Mutation entropy</span>
+                <span class="text-textPrimary font-medium">M 0.341</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-raised overflow-hidden">
+                <div class="h-full rounded-full bg-accent/60" style="width: 34.1%"></div>
+              </div>
+            </div>
+
+            <!-- E: Eigen Convergence -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between font-mono text-xs">
+                <span class="text-textSecondary text-[11px]">Eigen convergence</span>
+                <span class="text-textPrimary font-medium">E 0.898</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-raised overflow-hidden">
+                <div class="h-full rounded-full bg-accent" style="width: 89.8%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom mono info -->
+          <div class="pt-2 hairline-t flex items-center justify-between font-mono text-[11px] text-textSecondary">
+            <span>Last relearn 2h ago · v14</span>
+            <span class="text-statusOk">CONVERGED</span>
+          </div>
+        </div>
+
+        <!-- RIGHT: Recent Activity (6 rows, cols 7) -->
+        <div class="col-span-7 rounded-[18px] bg-panel hairline-border p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-1 hairline-b">
+            <span class="text-xs font-semibold text-textPrimary">Recent Activity</span>
+            <span class="font-mono text-[10px] text-textSecondary uppercase">6 AUDITED OPS</span>
+          </div>
+
+          <!-- 6 clean tabular rows (single-line, zero wrap, mono tokens) -->
+          <div class="flex flex-col justify-between flex-1 py-1 font-mono text-[11px]">
+            <!-- Row 1 -->
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-3">
+                <span class="text-textSecondary w-[68px]">14:32:07Z</span>
+                <span class="text-accent w-[72px] font-medium">sub-139</span>
+                <span class="text-textPrimary font-sans text-xs">Compacted vector embedding cache tier</span>
+              </div>
+              <span class="text-textSecondary/60 text-[10px]">0x4a1c</span>
+            </div>
+            <!-- Row 2 -->
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-3">
+                <span class="text-textSecondary w-[68px]">14:30:19Z</span>
+                <span class="text-textPrimary w-[72px] font-medium">operator</span>
+                <span class="text-textPrimary font-sans text-xs">Verified Merkle root consistency proof</span>
+              </div>
+              <span class="text-textSecondary/60 text-[10px]">0x9f2c</span>
+            </div>
+            <!-- Row 3 -->
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-3">
+                <span class="text-textSecondary w-[68px]">14:28:44Z</span>
+                <span class="text-accent w-[72px] font-medium">sub-141</span>
+                <span class="text-textPrimary font-sans text-xs">Attached semantic ontology edges</span>
+              </div>
+              <span class="text-textSecondary/60 text-[10px]">0x3e11</span>
+            </div>
+            <!-- Row 4 -->
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-3">
+                <span class="text-textSecondary w-[68px]">14:25:01Z</span>
+                <span class="text-accent w-[72px] font-medium">agent-2</span>
+                <span class="text-textPrimary font-sans text-xs">Pruned unreferenced orphan leaves</span>
+              </div>
+              <span class="text-textSecondary/60 text-[10px]">0x7b90</span>
+            </div>
+            <!-- Row 5 -->
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-3">
+                <span class="text-textSecondary w-[68px]">14:21:15Z</span>
+                <span class="text-accent w-[72px] font-medium">sub-139</span>
+                <span class="text-textPrimary font-sans text-xs">Executed DuckDB AST index sweep</span>
+              </div>
+              <span class="text-textSecondary/60 text-[10px]">0x8f2c</span>
+            </div>
+            <!-- Row 6 -->
+            <div class="flex items-center justify-between py-0.5">
+              <div class="flex items-center gap-3">
+                <span class="text-textSecondary w-[68px]">14:18:52Z</span>
+                <span class="text-textPrimary w-[72px] font-medium">operator</span>
+                <span class="text-textPrimary font-sans text-xs">Re-indexed symbol schema contracts</span>
+              </div>
+              <span class="text-textSecondary/60 text-[10px]">0xa18e</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Panel 'Domain Health' — 7 rows P1..P7 (Fills comfortably, Height 390px) -->
+      <div class="rounded-[18px] bg-panel hairline-border p-4 flex flex-col justify-between flex-1">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-2 hairline-b">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-textPrimary">Domain Health</span>
+            <span class="text-[11px] font-mono text-textSecondary">7 PARTITIONS ACTIVE</span>
+          </div>
+          <div class="flex items-center gap-4 text-[10px] font-mono text-textSecondary uppercase">
+            <span>SHARD_KEY: MD5_RANGE</span>
+            <span class="text-statusOk">SHACL INVARIANTS: PASS (11/11)</span>
+          </div>
+        </div>
+
+        <!-- Table Column Headers -->
+        <div class="grid grid-cols-12 px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-textSecondary font-medium hairline-b">
+          <div class="col-span-1">PARTITION</div>
+          <div class="col-span-5">DOMAIN NAME</div>
+          <div class="col-span-2 text-center">STATUS</div>
+          <div class="col-span-2 text-center">14D ACTIVITY</div>
+          <div class="col-span-2 text-right">ACTIVE NODES</div>
+        </div>
+
+        <!-- 7 Rows (P1 through P7) -->
+        <div class="flex flex-col justify-between flex-1 py-1">
+          <!-- Row P1 -->
+          <div class="grid grid-cols-12 items-center px-2 py-1.5 rounded-[10px] hover:bg-raised/50 transition-colors">
+            <div class="col-span-1 font-mono text-xs font-medium text-accent">P1</div>
+            <div class="col-span-5 text-xs text-textPrimary font-medium">Core Runtime Execution & Store</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk hairline-border flex items-center gap-1 font-medium">
+                <span class="w-1 h-1 rounded-full bg-statusOk"></span>OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-20 h-4" viewBox="0 0 80 16" fill="none">
+                <path d="M 0 10 Q 20 6, 40 10 T 80 8" stroke="#93A0B8" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono text-xs text-right text-textPrimary">3,842</div>
+          </div>
+
+          <!-- Row P2 -->
+          <div class="grid grid-cols-12 items-center px-2 py-1.5 rounded-[10px] hover:bg-raised/50 transition-colors">
+            <div class="col-span-1 font-mono text-xs font-medium text-accent">P2</div>
+            <div class="col-span-5 text-xs text-textPrimary font-medium">Heuristics & Ingestion Catalog</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk hairline-border flex items-center gap-1 font-medium">
+                <span class="w-1 h-1 rounded-full bg-statusOk"></span>OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-20 h-4" viewBox="0 0 80 16" fill="none">
+                <path d="M 0 12 L 25 8 L 50 11 L 80 5" stroke="#93A0B8" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono text-xs text-right text-textPrimary">2,118</div>
+          </div>
+
+          <!-- Row P3 -->
+          <div class="grid grid-cols-12 items-center px-2 py-1.5 rounded-[10px] hover:bg-raised/50 transition-colors">
+            <div class="col-span-1 font-mono text-xs font-medium text-accent">P3</div>
+            <div class="col-span-5 text-xs text-textPrimary font-medium">Vector Space & KNN Embeddings</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk hairline-border flex items-center gap-1 font-medium">
+                <span class="w-1 h-1 rounded-full bg-statusOk"></span>OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-20 h-4" viewBox="0 0 80 16" fill="none">
+                <path d="M 0 8 Q 20 12, 40 7 T 80 9" stroke="#93A0B8" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono text-xs text-right text-textPrimary">1,940</div>
+          </div>
+
+          <!-- Row P4 (Warning domain) -->
+          <div class="grid grid-cols-12 items-center px-2 py-1.5 rounded-[10px] bg-statusWarn/5 hairline-border">
+            <div class="col-span-1 font-mono text-xs font-medium text-statusWarn">P4</div>
+            <div class="col-span-5 text-xs text-textPrimary font-medium flex items-center gap-2">
+              <span>JSON-LD Schema & Invariants</span>
+              <span class="font-mono text-[9px] px-1.5 py-0.2 rounded bg-statusWarn/15 text-statusWarn border border-statusWarn/30">2 STALE EDGES</span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-statusWarn/15 text-statusWarn border border-statusWarn/30 flex items-center gap-1 font-medium">
+                <span class="w-1 h-1 rounded-full bg-statusWarn"></span>WARN
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-20 h-4" viewBox="0 0 80 16" fill="none">
+                <path d="M 0 5 L 30 7 L 60 12 L 80 14" stroke="#FCD34D" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono text-xs text-right text-statusWarn font-medium">1,656</div>
+          </div>
+
+          <!-- Row P5 -->
+          <div class="grid grid-cols-12 items-center px-2 py-1.5 rounded-[10px] hover:bg-raised/50 transition-colors">
+            <div class="col-span-1 font-mono text-xs font-medium text-accent">P5</div>
+            <div class="col-span-5 text-xs text-textPrimary font-medium">Consensus, Leases & Fencing</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk hairline-border flex items-center gap-1 font-medium">
+                <span class="w-1 h-1 rounded-full bg-statusOk"></span>OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-20 h-4" viewBox="0 0 80 16" fill="none">
+                <path d="M 0 12 L 35 11 L 65 7 L 80 6" stroke="#93A0B8" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono text-xs text-right text-textPrimary">1,112</div>
+          </div>
+
+          <!-- Row P6 -->
+          <div class="grid grid-cols-12 items-center px-2 py-1.5 rounded-[10px] hover:bg-raised/50 transition-colors">
+            <div class="col-span-1 font-mono text-xs font-medium text-accent">P6</div>
+            <div class="col-span-5 text-xs text-textPrimary font-medium">Inference Subsumption & Mapping</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk hairline-border flex items-center gap-1 font-medium">
+                <span class="w-1 h-1 rounded-full bg-statusOk"></span>OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-20 h-4" viewBox="0 0 80 16" fill="none">
+                <path d="M 0 11 Q 25 10, 50 8 T 80 7" stroke="#93A0B8" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono text-xs text-right text-textPrimary">1,280</div>
+          </div>
+
+          <!-- Row P7 -->
+          <div class="grid grid-cols-12 items-center px-2 py-1.5 rounded-[10px] hover:bg-raised/50 transition-colors">
+            <div class="col-span-1 font-mono text-xs font-medium text-accent">P7</div>
+            <div class="col-span-5 text-xs text-textPrimary font-medium">Evaluation & Feedback Loop</div>
+            <div class="col-span-2 flex justify-center">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded-full bg-statusOk/10 text-statusOk hairline-border flex items-center gap-1 font-medium">
+                <span class="w-1 h-1 rounded-full bg-statusOk"></span>OK
+              </span>
+            </div>
+            <div class="col-span-2 flex justify-center">
+              <svg class="w-20 h-4" viewBox="0 0 80 16" fill="none">
+                <path d="M 0 13 L 30 11 L 60 7 L 80 5" stroke="#93A0B8" stroke-width="1.2" />
+              </svg>
+            </div>
+            <div class="col-span-2 font-mono text-xs text-right text-textPrimary">869</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 5. STATUS BAR (strictly 1 line, sits FLUSH at bottom edge of 900px viewport) -->
+    <footer class="h-[28px] flex-shrink-0 px-6 hairline-t bg-base flex items-center justify-between font-mono text-[10.5px] uppercase tracking-wider text-textSecondary z-10">
+      <div class="flex items-center gap-4">
+        <span>12,847 NODES</span>
+        <span class="text-textSecondary/40">·</span>
+        <span>48,203 EDGES</span>
+        <span class="text-textSecondary/40">·</span>
+        <span>LAST RELEARN 2H AGO</span>
+        <span class="text-textSecondary/40">·</span>
+        <span>V14</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-textSecondary/70">RAFT QUORUM SYNCED</span>
+        <span class="text-textSecondary/40">·</span>
+        <span class="text-textSecondary/70">LATENCY P50 6.4MS</span>
+        <span class="text-textSecondary/40">·</span>
+        <div class="flex items-center gap-1.5 text-statusOk">
+          <span class="w-2 h-2 rounded-full bg-statusOk"></span>
+          <span>ONLINE</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

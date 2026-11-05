@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Soul - Graph Explorer (Enterprise Clean)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#F6F8FB',
+            card: '#FFFFFF',
+            hairline: '#E3E8F0',
+            primary: '#0F1B2D',
+            secondary: '#5B6B82',
+            accent: '#2563EB',
+            ok: '#16A34A',
+            warn: '#D97706',
+            danger: '#DC2626'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"Roboto Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #0F1B2D;
+      background-color: #F6F8FB;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+    }
+    .dot-grid {
+      background-image: radial-gradient(#CBD5E1 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden select-none bg-base">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-[900px] flex-shrink-0 bg-card border-r border-hairline flex flex-col justify-between z-20">
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-14 px-5 flex items-center justify-between border-b border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-accent flex items-center justify-center text-white font-mono font-bold text-xs tracking-wider">
+            KY
+          </div>
+          <span class="font-semibold text-[15px] tracking-tight text-primary">Know Your Soul</span>
+        </div>
+        <span class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-base text-secondary border border-hairline">v14.2</span>
+      </div>
+
+      <!-- Navigation Groups -->
+      <div class="px-3 py-3 space-y-4 overflow-y-auto">
+        <!-- MONITOR Group -->
+        <div>
+          <div class="px-3 mb-1.5 text-[11px] font-semibold text-secondary tracking-wider uppercase font-sans">Monitor</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">dashboard</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">list_alt</span>
+              <span>Activity Log</span>
+            </a>
+            <!-- Active Nav Item -->
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold text-accent bg-blue-50/80 transition-colors">
+              <span class="material-symbols-outlined text-accent" style="font-variation-settings: 'FILL' 1;">hub</span>
+              <span>Graph Explorer</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- ANALYZE Group -->
+        <div>
+          <div class="px-3 mb-1.5 text-[11px] font-semibold text-secondary tracking-wider uppercase font-sans">Analyze</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">search</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">show_chart</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">query_stats</span>
+              <span>Analytics</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- GOVERN Group -->
+        <div>
+          <div class="px-3 mb-1.5 text-[11px] font-semibold text-secondary tracking-wider uppercase font-sans">Govern</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">vital_signs</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">verified_user</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-secondary">gavel</span>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-base text-secondary border border-hairline">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-secondary">inbox</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-base text-secondary border border-hairline">12</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- SYSTEM Group -->
+        <div>
+          <div class="px-3 mb-1.5 text-[11px] font-semibold text-secondary tracking-wider uppercase font-sans">System</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">memory</span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-base transition-colors">
+              <span class="material-symbols-outlined text-secondary">tune</span>
+              <span>Setup</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Card -->
+    <div class="p-3 border-t border-hairline bg-card">
+      <div class="flex items-center justify-between p-2 rounded-lg bg-base border border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-slate-200 border border-hairline flex items-center justify-center font-semibold text-xs text-primary font-mono">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[13px] font-semibold text-primary leading-tight">Sigit A.</span>
+            <span class="text-[11px] text-secondary font-mono leading-tight">operator</span>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-ok mr-1"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN COLUMN -->
+  <main class="w-[1192px] h-[900px] flex flex-col flex-1 overflow-hidden">
+    
+    <!-- TOPBAR (56px) -->
+    <header class="h-14 px-6 bg-card border-b border-hairline flex items-center justify-between flex-shrink-0 z-20">
+      <!-- Breadcrumb / Title -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 font-sans text-sm">
+          <span class="text-secondary font-medium">Graph</span>
+          <span class="text-slate-300">/</span>
+          <h1 class="text-primary font-semibold text-[15px] font-mono tracking-tight">heuristics-catalog</h1>
+        </div>
+        <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-blue-50 text-accent font-medium border border-blue-100">cluster-01</span>
+      </div>
+
+      <!-- Center Search Field with ⌘K -->
+      <div class="relative w-[380px]">
+        <span class="material-symbols-outlined absolute left-3 top-2.5 text-secondary">search</span>
+        <input type="text" value="heuristics-catalog" readonly class="w-full h-9 pl-9 pr-12 text-[13px] font-mono bg-base border border-hairline rounded-lg text-primary focus:outline-none" />
+        <div class="absolute right-2.5 top-2 flex items-center">
+          <kbd class="font-mono text-[11px] text-secondary px-1.5 py-0.5 bg-white border border-hairline rounded shadow-none">⌘K</kbd>
+        </div>
+      </div>
+
+      <!-- Right Segment: Nodes count, Bell with dot, Avatar (max 4 segments) -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5 font-mono text-xs text-secondary bg-base px-2.5 py-1 rounded-md border border-hairline">
+          <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+          <span class="font-medium text-primary">1,284</span>
+          <span>NODES</span>
+        </div>
+        <button class="relative w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-base transition-colors">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-danger"></span>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-slate-200 border border-hairline flex items-center justify-center font-mono font-medium text-xs text-primary">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Canvas + Inspector) -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+      <!-- MAIN CANVAS (~70% width -> 848px) -->
+      <section class="flex-1 h-full bg-base dot-grid relative flex flex-col justify-between overflow-hidden">
+        
+        <!-- SVG Interactive Graph Canvas -->
+        <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Arrow markers -->
+            <marker id="arrow-accent" viewBox="0 0 10 10" refX="24" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#2563EB"/>
+            </marker>
+            <marker id="arrow-dim" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 2 L 7 5 L 0 8 z" fill="#94A3B8"/>
+            </marker>
+            <marker id="arrow-warn" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 2 L 7 5 L 0 8 z" fill="#D97706"/>
+            </marker>
+          </defs>
+
+          <!-- CONTEXT EDGES (dim 1px, dashed cites or solid) -->
+          <!-- projection -> retrieval -->
+          <line x1="280" y1="120" x2="160" y2="210" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="4 3" />
+          <!-- schema-eval -> scoring-engine -->
+          <line x1="420" y1="140" x2="570" y2="230" stroke="#CBD5E1" stroke-width="1.5" />
+          <!-- retrieval -> p4-domain -->
+          <line x1="160" y1="210" x2="200" y2="380" stroke="#CBD5E1" stroke-width="1.5" />
+          <!-- p4-domain -> audit-ledger -->
+          <line x1="200" y1="380" x2="150" y2="540" stroke="#CBD5E1" stroke-width="1.5" />
+          <!-- audit-ledger -> cli-adapter -->
+          <line x1="150" y1="540" x2="140" y2="670" stroke="#CBD5E1" stroke-width="1.5" />
+          <!-- cli-adapter -> vector-cache -->
+          <line x1="140" y1="670" x2="330" y2="690" stroke="#CBD5E1" stroke-width="1.5" />
+          <!-- query-planner -> vector-cache -->
+          <line x1="360" y1="540" x2="330" y2="690" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="4 3" />
+          <!-- store-mutex -> raft-fencing -->
+          <line x1="600" y1="460" x2="490" y2="600" stroke="#CBD5E1" stroke-width="1.5" />
+
+          <!-- ACTIVE EDGES (connected to selected heuristics-catalog) -->
+          <!-- heuristics-catalog -> retrieval (cites) -->
+          <line x1="380" y1="360" x2="160" y2="210" stroke="#2563EB" stroke-width="2" stroke-dasharray="5 3" />
+          
+          <!-- heuristics-catalog -> scoring-engine (depends_on) -->
+          <line x1="380" y1="360" x2="570" y2="230" stroke="#2563EB" stroke-width="2" marker-end="url(#arrow-accent)" />
+          
+          <!-- heuristics-catalog -> store-mutex (governs) -->
+          <line x1="380" y1="360" x2="600" y2="460" stroke="#2563EB" stroke-width="2" marker-end="url(#arrow-accent)" />
+          
+          <!-- heuristics-catalog -> query-planner (invokes) -->
+          <line x1="380" y1="360" x2="360" y2="540" stroke="#2563EB" stroke-width="2" marker-end="url(#arrow-accent)" />
+          
+          <!-- heuristics-catalog -> p4-domain (contradicts) -->
+          <line x1="380" y1="360" x2="200" y2="380" stroke="#D97706" stroke-width="2" stroke-dasharray="4 2" />
+
+          <!-- EDGE LABELS (Pills at midpoints) -->
+          <!-- cites (midpoint ~270, 285) -->
+          <g transform="translate(250, 272)">
+            <rect x="0" y="0" width="46" height="20" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+            <text x="23" y="14" fill="#5B6B82" font-family="'Roboto Mono', monospace" font-size="10" font-weight="500" text-anchor="middle">cites</text>
+          </g>
+
+          <!-- depends_on (midpoint ~475, 295) -->
+          <g transform="translate(435, 282)">
+            <rect x="0" y="0" width="76" height="20" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1" />
+            <text x="38" y="14" fill="#2563EB" font-family="'Roboto Mono', monospace" font-size="10" font-weight="600" text-anchor="middle">depends_on</text>
+          </g>
+
+          <!-- governs (midpoint ~490, 410) -->
+          <g transform="translate(460, 400)">
+            <rect x="0" y="0" width="60" height="20" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1" />
+            <text x="30" y="14" fill="#2563EB" font-family="'Roboto Mono', monospace" font-size="10" font-weight="600" text-anchor="middle">governs</text>
+          </g>
+
+          <!-- invokes (midpoint ~370, 450) -->
+          <g transform="translate(345, 438)">
+            <rect x="0" y="0" width="56" height="20" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1" />
+            <text x="28" y="14" fill="#2563EB" font-family="'Roboto Mono', monospace" font-size="10" font-weight="600" text-anchor="middle">invokes</text>
+          </g>
+
+          <!-- contradicts (midpoint ~290, 370) -->
+          <g transform="translate(250, 360)">
+            <rect x="0" y="0" width="80" height="20" rx="4" fill="#FEF3C7" stroke="#FDE68A" stroke-width="1" />
+            <text x="40" y="14" fill="#D97706" font-family="'Roboto Mono', monospace" font-size="10" font-weight="600" text-anchor="middle">contradicts</text>
+          </g>
+
+          <!-- NODES (Total ~12 nodes) -->
+
+          <!-- 1. projection (dim context) -->
+          <g transform="translate(280, 120)">
+            <circle r="7" fill="#94A3B8" stroke="#FFFFFF" stroke-width="2"/>
+            <rect x="-38" y="12" width="76" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="26" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" text-anchor="middle">projection</text>
+          </g>
+
+          <!-- 2. schema-eval (domain node) -->
+          <g transform="translate(420, 140)">
+            <circle r="7" fill="#16A34A" stroke="#FFFFFF" stroke-width="2"/>
+            <rect x="-42" y="12" width="84" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="26" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" text-anchor="middle">schema-eval</text>
+          </g>
+
+          <!-- 3. retrieval (domain node) -->
+          <g transform="translate(160, 210)">
+            <circle r="12" fill="#16A34A" stroke="#DCFCE7" stroke-width="3"/>
+            <rect x="-35" y="16" width="70" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="30" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" font-weight="500" text-anchor="middle">retrieval</text>
+          </g>
+
+          <!-- 4. scoring-engine (domain node) -->
+          <g transform="translate(570, 230)">
+            <circle r="12" fill="#16A34A" stroke="#DCFCE7" stroke-width="3"/>
+            <rect x="-48" y="16" width="96" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="30" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" font-weight="500" text-anchor="middle">scoring-engine</text>
+          </g>
+
+          <!-- 5. p4-domain (external/warn node) -->
+          <g transform="translate(200, 380)">
+            <circle r="11" fill="#D97706" stroke="#FEF3C7" stroke-width="3"/>
+            <rect x="-38" y="16" width="76" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="30" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" font-weight="500" text-anchor="middle">p4-domain</text>
+          </g>
+
+          <!-- 6. heuristics-catalog (SELECTED NODE - HERO) -->
+          <g transform="translate(380, 360)">
+            <!-- Outer focus ring -->
+            <circle r="22" fill="#DBEAFE" opacity="0.6"/>
+            <circle r="15" fill="#2563EB" stroke="#FFFFFF" stroke-width="3"/>
+            <circle r="4" fill="#FFFFFF"/>
+            <!-- Micro badge -->
+            <rect x="-45" y="-36" width="90" height="18" rx="4" fill="#2563EB"/>
+            <text x="0" y="-23" fill="#FFFFFF" font-family="'Roboto Mono', monospace" font-size="9" font-weight="600" text-anchor="middle">SELECTED [P5]</text>
+            <!-- Primary Label Box -->
+            <rect x="-68" y="22" width="136" height="24" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5"/>
+            <text x="0" y="38" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="11" font-weight="600" text-anchor="middle">heuristics-catalog</text>
+          </g>
+
+          <!-- 7. store-mutex (domain node) -->
+          <g transform="translate(600, 460)">
+            <circle r="12" fill="#16A34A" stroke="#DCFCE7" stroke-width="3"/>
+            <rect x="-42" y="16" width="84" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="30" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" font-weight="500" text-anchor="middle">store-mutex</text>
+          </g>
+
+          <!-- 8. audit-ledger (domain node) -->
+          <g transform="translate(150, 540)">
+            <circle r="11" fill="#16A34A" stroke="#DCFCE7" stroke-width="3"/>
+            <rect x="-42" y="16" width="84" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="30" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" font-weight="500" text-anchor="middle">audit-ledger</text>
+          </g>
+
+          <!-- 9. query-planner (domain node) -->
+          <g transform="translate(360, 540)">
+            <circle r="10" fill="#16A34A" stroke="#DCFCE7" stroke-width="3"/>
+            <rect x="-45" y="15" width="90" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="29" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" font-weight="500" text-anchor="middle">query-planner</text>
+          </g>
+
+          <!-- 10. raft-fencing (context node) -->
+          <g transform="translate(490, 600)">
+            <circle r="8" fill="#94A3B8" stroke="#FFFFFF" stroke-width="2"/>
+            <rect x="-40" y="14" width="80" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="28" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" text-anchor="middle">raft-fencing</text>
+          </g>
+
+          <!-- 11. cli-adapter (context node) -->
+          <g transform="translate(140, 670)">
+            <circle r="8" fill="#94A3B8" stroke="#FFFFFF" stroke-width="2"/>
+            <rect x="-38" y="14" width="76" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="28" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" text-anchor="middle">cli-adapter</text>
+          </g>
+
+          <!-- 12. vector-cache (context node) -->
+          <g transform="translate(330, 690)">
+            <circle r="8" fill="#94A3B8" stroke="#FFFFFF" stroke-width="2"/>
+            <rect x="-42" y="14" width="84" height="20" rx="4" fill="#FFFFFF" stroke="#E3E8F0" stroke-width="1"/>
+            <text x="0" y="28" fill="#0F1B2D" font-family="'Roboto Mono', monospace" font-size="10" text-anchor="middle">vector-cache</text>
+          </g>
+        </svg>
+
+        <!-- FLOATING CONTROLS: Segmented Zoom Pill at right edge -->
+        <div class="absolute right-5 top-5 flex flex-col bg-card border border-hairline rounded-lg shadow-none overflow-hidden z-10">
+          <button class="w-8 h-8 flex items-center justify-center text-secondary hover:text-primary hover:bg-base border-b border-hairline transition-colors">
+            <span class="material-symbols-outlined text-[16px]">add</span>
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center text-secondary hover:text-primary hover:bg-base border-b border-hairline transition-colors">
+            <span class="material-symbols-outlined text-[16px]">remove</span>
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center text-secondary hover:text-primary hover:bg-base transition-colors" title="Fit to screen">
+            <span class="material-symbols-outlined text-[16px]">crop_free</span>
+          </button>
+        </div>
+
+        <!-- FLOATING LEGEND BAR (Bottom edge of canvas) -->
+        <div class="relative z-10 m-5 self-start">
+          <div class="h-9 px-4 rounded-lg bg-card/95 backdrop-blur-sm border border-hairline flex items-center gap-4 text-xs font-mono text-secondary">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+              <span class="text-primary font-medium">selected</span>
+            </div>
+            <span class="text-hairline">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-ok"></span>
+              <span class="text-primary font-medium">domain</span>
+            </div>
+            <span class="text-hairline">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full border border-secondary bg-transparent"></span>
+              <span class="text-primary font-medium">external</span>
+            </div>
+            <span class="text-hairline">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-4 h-0.5 bg-accent"></span>
+              <span class="text-primary font-medium">depends_on</span>
+            </div>
+            <span class="text-hairline">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-4 h-0.5 border-t border-dashed border-secondary"></span>
+              <span class="text-primary font-medium">cites</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT INSPECTOR PANEL (~28% width -> 344px) -->
+      <aside class="w-[344px] h-full flex-shrink-0 bg-card border-l border-hairline flex flex-col justify-between z-20">
+        
+        <!-- Top Section: Header & Content -->
+        <div class="p-5 overflow-y-auto space-y-5">
+          
+          <!-- Node Header & Domain Chip -->
+          <div class="border-b border-hairline pb-4">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] font-semibold text-secondary uppercase tracking-wider font-sans">Node Inspector</span>
+              <span class="font-mono text-xs px-2 py-0.5 rounded bg-blue-50 text-accent font-semibold border border-blue-100">DOMAIN P5</span>
+            </div>
+            <h2 class="text-lg font-bold text-primary font-mono tracking-tight leading-tight">heuristics-catalog</h2>
+            <p class="text-xs text-secondary mt-1 font-sans">Central heuristic registry & AST pattern evaluator</p>
+          </div>
+
+          <!-- Convergence Telemetry (3 Mono Score Rows) -->
+          <div class="space-y-3">
+            <div class="text-[11px] font-semibold text-secondary uppercase tracking-wider font-sans">Convergence Telemetry</div>
+            
+            <div class="bg-base border border-hairline rounded-lg p-3 space-y-2.5">
+              <!-- Score Row 1 -->
+              <div>
+                <div class="flex items-center justify-between text-xs font-mono mb-1">
+                  <span class="text-secondary">Precision Score</span>
+                  <span class="font-semibold text-primary">P 0.828</span>
+                </div>
+                <div class="w-full h-1.5 bg-hairline rounded-full overflow-hidden">
+                  <div class="h-full bg-accent rounded-full" style="width: 82.8%"></div>
+                </div>
+              </div>
+
+              <!-- Score Row 2 -->
+              <div>
+                <div class="flex items-center justify-between text-xs font-mono mb-1">
+                  <span class="text-secondary">Mutation Entropy</span>
+                  <span class="font-semibold text-primary">M 0.341</span>
+                </div>
+                <div class="w-full h-1.5 bg-hairline rounded-full overflow-hidden">
+                  <div class="h-full bg-secondary rounded-full" style="width: 34.1%"></div>
+                </div>
+              </div>
+
+              <!-- Score Row 3 -->
+              <div>
+                <div class="flex items-center justify-between text-xs font-mono mb-1">
+                  <span class="text-secondary">Eigen Convergence</span>
+                  <span class="font-semibold text-primary">E 0.898</span>
+                </div>
+                <div class="w-full h-1.5 bg-hairline rounded-full overflow-hidden">
+                  <div class="h-full bg-ok rounded-full" style="width: 89.8%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connected Edges (List with 4 short rows) -->
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-semibold text-secondary uppercase tracking-wider font-sans">Connected Edges (4)</span>
+              <span class="text-[11px] font-mono text-secondary">SHARD 0x3a</span>
+            </div>
+
+            <div class="space-y-1.5">
+              <!-- Edge Row 1 -->
+              <div class="flex items-center justify-between p-2 rounded-lg bg-base border border-hairline text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-accent font-semibold border border-blue-100">depends_on</span>
+                  <span class="font-mono font-medium text-primary">scoring-engine</span>
+                </div>
+                <span class="font-mono text-ok text-[11px] font-medium">0.94</span>
+              </div>
+
+              <!-- Edge Row 2 -->
+              <div class="flex items-center justify-between p-2 rounded-lg bg-base border border-hairline text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-warn font-semibold border border-amber-200">contradicts</span>
+                  <span class="font-mono font-medium text-primary">p4-domain</span>
+                </div>
+                <span class="font-mono text-warn text-[11px] font-medium">WARN</span>
+              </div>
+
+              <!-- Edge Row 3 -->
+              <div class="flex items-center justify-between p-2 rounded-lg bg-base border border-hairline text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-secondary font-semibold border border-hairline">cites</span>
+                  <span class="font-mono font-medium text-primary">retrieval</span>
+                </div>
+                <span class="font-mono text-secondary text-[11px] font-medium">0.82</span>
+              </div>
+
+              <!-- Edge Row 4 -->
+              <div class="flex items-center justify-between p-2 rounded-lg bg-base border border-hairline text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-accent font-semibold border border-blue-100">governs</span>
+                  <span class="font-mono font-medium text-primary">store-mutex</span>
+                </div>
+                <span class="font-mono text-accent text-[11px] font-medium">LOCK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spec Provenance Metadata -->
+          <div class="p-3 bg-base border border-hairline rounded-lg space-y-2">
+            <div class="text-[10px] font-semibold text-secondary uppercase tracking-wider font-sans">Spec Provenance</div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div>
+                <span class="text-[10px] text-secondary block">PARTITION</span>
+                <span class="font-medium text-primary">P5 Vector Space</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-secondary block">IMMUTABLE ROOT</span>
+                <span class="font-medium text-primary">0x9f2c1ab4</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-secondary block">LAST EVAL</span>
+                <span class="font-medium text-primary">14:32:07Z</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-secondary block">MUTATION STATUS</span>
+                <span class="font-semibold text-ok">CONVERGED</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Action Buttons: Trace Lineage (SOLID Accent), Copy URI (Ghost) -->
+        <div class="p-4 border-t border-hairline bg-card space-y-2">
+          <button class="w-full h-10 px-4 rounded-lg bg-accent text-white font-sans font-medium text-xs flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors">
+            <span class="material-symbols-outlined text-[16px]">account_tree</span>
+            <span>Trace Lineage</span>
+          </button>
+          <button class="w-full h-9 px-4 rounded-lg bg-card border border-hairline text-primary font-sans font-medium text-xs flex items-center justify-center gap-2 hover:bg-base transition-colors">
+            <span class="material-symbols-outlined text-[16px] text-secondary">content_copy</span>
+            <span>Copy URI</span>
+          </button>
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- STATUS BAR (Flush at bottom edge of viewport, 32px) -->
+    <footer class="h-8 px-6 bg-card border-t border-hairline flex items-center justify-between text-xs font-mono text-secondary z-20 flex-shrink-0">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-ok"></span>
+          <span class="font-semibold text-primary tracking-tight">GRAPH RUNTIME: NOMINAL</span>
+        </div>
+        <span>12,847 NODES</span>
+        <span>48,203 EDGES</span>
+        <span>MERKLE: 0x9f8a...c3b1</span>
+        <span>DAG ENGINE: v14.2</span>
+      </div>
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+          <span>RAFT QUORUM SYNCED</span>
+        </div>
+        <span>VIEWPORT: 1440x900 FIXED</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

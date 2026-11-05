@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Graph Explorer (Paper Dark)</title>
+  <!-- Google Fonts: Fraunces, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-base: #141110;
+      --bg-panel: #1A1713;
+      --bg-raised: #211D17;
+      --border-hairline: rgba(217, 164, 65, 0.10);
+      --border-accent: rgba(217, 164, 65, 0.35);
+      --text-paper: #EDE4D3;
+      --text-secondary: #A3947D;
+      --text-muted: #6B6152;
+      --accent-gold: #D9A441;
+      --status-ok: #7FB069;
+      --status-warn: #E0A458;
+      --status-danger: #D16666;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-paper);
+      font-family: 'Inter', -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-serif-title {
+      font-family: 'Fraunces', serif;
+    }
+
+    .font-mono-data {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Signature thin double rule */
+    .double-rule {
+      position: relative;
+      height: 3px;
+      border-top: 1px solid var(--accent-gold);
+      border-bottom: 1px solid var(--accent-gold);
+      opacity: 0.75;
+    }
+
+    /* Dot grid background for graph canvas */
+    .canvas-dot-grid {
+      background-color: #141110;
+      background-image: radial-gradient(rgba(217, 164, 65, 0.14) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    /* Custom subtle scrollbars if needed */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-raised);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="flex w-[1440px] h-[900px] select-none">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-[900px] bg-[#1A1713] border-r border-[rgba(217,164,65,0.10)] flex flex-col justify-between shrink-0">
+    <!-- Top Brand & Navigation -->
+    <div class="flex flex-col">
+      <!-- App Brand Header -->
+      <div class="h-14 px-5 flex items-center gap-3 border-b border-[rgba(217,164,65,0.10)]">
+        <div class="w-7 h-7 rounded bg-[#211D17] border border-[rgba(217,164,65,0.30)] flex items-center justify-center text-[#D9A441] font-mono-data font-semibold text-xs tracking-wider">
+          K
+        </div>
+        <div class="flex flex-col">
+          <span class="font-serif-title text-[#EDE4D3] text-sm font-semibold tracking-wide leading-tight">Know Your Soul</span>
+          <span class="font-mono-data text-[10px] text-[#A3947D] tracking-wider uppercase">Cluster 01 · v14.2</span>
+        </div>
+      </div>
+
+      <!-- Nav Groups -->
+      <nav class="px-3 py-4 space-y-4 text-xs">
+        <!-- Group I: MONITOR -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono-data text-[10px] text-[#A3947D] tracking-widest uppercase flex items-center gap-1.5">
+            <span class="text-[#D9A441]">I //</span> MONITOR
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 6h16M4 12h16M4 18h11"/></svg>
+              <span>Activity Log</span>
+            </a>
+            <!-- Active item: Graph Explorer -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded bg-[rgba(217,164,65,0.12)] border border-[rgba(217,164,65,0.25)] text-[#D9A441] font-medium">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-[#D9A441]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>Graph Explorer</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#D9A441]"></span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group II: ANALYZE -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono-data text-[10px] text-[#A3947D] tracking-widest uppercase flex items-center gap-1.5">
+            <span class="text-[#D9A441]">II //</span> ANALYZE
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group III: GOVERN -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono-data text-[10px] text-[#A3947D] tracking-widest uppercase flex items-center gap-1.5">
+            <span class="text-[#D9A441]">III //</span> GOVERN
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono-data text-[10px] text-[#A3947D] px-1.5 py-0.2 bg-[#211D17] rounded border border-[rgba(217,164,65,0.12)]">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono-data text-[10px] text-[#A3947D] px-1.5 py-0.2 bg-[#211D17] rounded border border-[rgba(217,164,65,0.12)]">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group IV: SYSTEM -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono-data text-[10px] text-[#A3947D] tracking-widest uppercase flex items-center gap-1.5">
+            <span class="text-[#D9A441]">IV //</span> SYSTEM
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#211D17] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><circle cx="4" cy="14" r="2"/><circle cx="12" cy="8" r="2"/><circle cx="20" cy="16" r="2"/></svg>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- User Card at bottom -->
+    <div class="p-3 border-t border-[rgba(217,164,65,0.10)]">
+      <div class="flex items-center justify-between p-2 rounded bg-[#211D17] border border-[rgba(217,164,65,0.08)]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded bg-[#1A1713] border border-[rgba(217,164,65,0.25)] flex items-center justify-center font-mono-data text-xs text-[#D9A441] font-medium">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#EDE4D3] leading-none">Sigit A.</span>
+            <span class="font-mono-data text-[10px] text-[#A3947D] leading-tight mt-0.5">operator</span>
+          </div>
+        </div>
+        <span class="w-1.5 h-1.5 rounded-full bg-[#7FB069]"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN COLUMN: TOPBAR + WORKSPACE + STATUS BAR -->
+  <div class="flex flex-col flex-1 h-[900px] overflow-hidden bg-[#141110]">
+
+    <!-- TOPBAR (h-14, 56px) - Breadcrumb left, Search center, Actions right -->
+    <header class="h-14 px-6 bg-[#1A1713] border-b border-[rgba(217,164,65,0.10)] flex items-center justify-between shrink-0 z-20">
+      <!-- Left: Breadcrumb and title -->
+      <div class="flex items-center gap-3">
+        <span class="font-mono-data text-xs text-[#A3947D]">KYS</span>
+        <span class="text-[#A3947D] opacity-40 text-xs font-mono-data">//</span>
+        <span class="font-mono-data text-xs text-[#A3947D]">Graph</span>
+        <span class="text-[#A3947D] opacity-40 text-xs font-mono-data">/</span>
+        <div class="flex items-center gap-2">
+          <span class="font-mono-data text-xs px-2 py-0.5 rounded bg-[rgba(217,164,65,0.10)] border border-[rgba(217,164,65,0.25)] text-[#D9A441] font-semibold">heuristics-catalog</span>
+          <span class="font-mono-data text-[10px] text-[#A3947D] px-1.5 py-0.5 bg-[#211D17] border border-[rgba(217,164,65,0.08)] rounded">cluster-01</span>
+        </div>
+      </div>
+
+      <!-- Center: Search with ⌘K -->
+      <div class="relative w-[340px]">
+        <div class="flex items-center h-8 px-3 rounded bg-[#141110] border border-[rgba(217,164,65,0.14)] text-xs text-[#A3947D] focus-within:border-[rgba(217,164,65,0.40)]">
+          <svg class="w-3.5 h-3.5 mr-2 text-[#A3947D] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span class="font-mono-data text-[11px] text-[#A3947D] flex-1">search nodes, edges, hashes, tags</span>
+          <kbd class="font-mono-data text-[10px] text-[#A3947D] bg-[#211D17] px-1.5 py-0.5 rounded border border-[rgba(217,164,65,0.12)]">⌘K</kbd>
+        </div>
+      </div>
+
+      <!-- Right: Status, Bell with dot, Profile Avatar -->
+      <div class="flex items-center gap-4">
+        <!-- Status indicator -->
+        <div class="flex items-center gap-1.5 font-mono-data text-[11px] text-[#A3947D] px-2.5 py-1 bg-[#211D17] rounded border border-[rgba(217,164,65,0.08)]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7FB069]"></span>
+          <span>1,284 NODES</span>
+        </div>
+
+        <!-- Notification bell with dot -->
+        <div class="relative p-1 text-[#A3947D] hover:text-[#EDE4D3] cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-[#D9A441]"></span>
+        </div>
+
+        <!-- User avatar button -->
+        <div class="w-7 h-7 rounded bg-[#211D17] border border-[rgba(217,164,65,0.25)] flex items-center justify-center font-mono-data text-xs text-[#D9A441]">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- WORKSPACE ROW (Canvas ~71% + Inspector ~29%) -->
+    <main class="flex flex-1 overflow-hidden relative">
+
+      <!-- GRAPH CANVAS (71% width) -->
+      <section class="flex-1 relative canvas-dot-grid overflow-hidden border-r border-[rgba(217,164,65,0.10)] flex flex-col justify-between">
+        
+        <!-- Graph Canvas Top Meta Bar -->
+        <div class="absolute top-4 left-5 right-5 flex items-center justify-between pointer-events-none z-10">
+          <div class="flex items-center gap-2 pointer-events-auto">
+            <div class="px-2.5 py-1 rounded bg-[#1A1713]/90 backdrop-blur border border-[rgba(217,164,65,0.15)] font-mono-data text-[11px] text-[#EDE4D3] flex items-center gap-2">
+              <span class="text-[#A3947D] uppercase">VIEW:</span>
+              <span>FORCE-DIRECTED (BARNES-HUT)</span>
+              <span class="text-[rgba(217,164,65,0.3)]">|</span>
+              <span class="text-[#A3947D] uppercase">PHYSICS:</span>
+              <span class="text-[#7FB069] flex items-center gap-1">● STABLE</span>
+              <span class="text-[rgba(217,164,65,0.3)]">|</span>
+              <span class="text-[#A3947D] uppercase">SCALE:</span>
+              <span class="text-[#EDE4D3]">100%</span>
+            </div>
+          </div>
+
+          <!-- Partition filter chips -->
+          <div class="flex items-center gap-1.5 pointer-events-auto">
+            <span class="px-2 py-0.5 rounded bg-[#1A1713] border border-[rgba(217,164,65,0.25)] font-mono-data text-[10px] text-[#D9A441]">P5 VECTOR SPACE</span>
+            <span class="px-2 py-0.5 rounded bg-[#1A1713] border border-[rgba(217,164,65,0.10)] font-mono-data text-[10px] text-[#A3947D]">P4 SCHEMA</span>
+            <span class="px-2 py-0.5 rounded bg-[#1A1713] border border-[rgba(217,164,65,0.10)] font-mono-data text-[10px] text-[#A3947D]">P2 INGEST</span>
+          </div>
+        </div>
+
+        <!-- SVG Topology Graph Layer -->
+        <div class="w-full h-full relative">
+          <svg class="w-full h-full" viewBox="0 0 850 780" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Arrow Marker for active gold edges -->
+              <marker id="arrow-gold" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#D9A441" />
+              </marker>
+              <!-- Arrow Marker for context edges -->
+              <marker id="arrow-dim" viewBox="0 0 10 10" refX="20" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M 0 2 L 6 5 L 0 8 z" fill="#6B6152" />
+              </marker>
+              <!-- Arrow Marker for warn/contradicts edge -->
+              <marker id="arrow-warn" viewBox="0 0 10 10" refX="20" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#E0A458" />
+              </marker>
+            </defs>
+
+            <!-- 1. CONTEXT EDGES (Dim 1px, neutral/muted) -->
+            <!-- retrieval -> projection -->
+            <line x1="280" y1="210" x2="350" y2="135" stroke="#6B6152" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>
+            <!-- schema-eval -> projection -->
+            <line x1="435" y1="170" x2="350" y2="135" stroke="#6B6152" stroke-width="1" opacity="0.4"/>
+            <!-- schema-eval -> scoring-engine -->
+            <line x1="435" y1="170" x2="525" y2="245" stroke="#6B6152" stroke-width="1" opacity="0.5"/>
+            <!-- p4-domain -> audit-ledger -->
+            <line x1="305" y1="385" x2="285" y2="520" stroke="#6B6152" stroke-width="1" opacity="0.5"/>
+            <!-- audit-ledger -> cli-adapter -->
+            <line x1="285" y1="520" x2="320" y2="615" stroke="#6B6152" stroke-width="1" opacity="0.5"/>
+            <!-- cli-adapter -> vector-cache -->
+            <line x1="320" y1="615" x2="415" y2="605" stroke="#6B6152" stroke-width="1" opacity="0.5"/>
+            <!-- vector-cache -> raft-fencing -->
+            <line x1="415" y1="605" x2="505" y2="550" stroke="#6B6152" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+            <!-- raft-fencing -> store-mutex -->
+            <line x1="505" y1="550" x2="550" y2="435" stroke="#6B6152" stroke-width="1" opacity="0.5"/>
+
+            <!-- 2. ACTIVE EDGES FROM SELECTED NODE (heuristics-catalog) (x: 425, y: 345) -->
+            <!-- heuristics-catalog -> scoring-engine (Active gold 2px solid) -->
+            <line x1="425" y1="345" x2="525" y2="245" stroke="#D9A441" stroke-width="2" marker-end="url(#arrow-gold)"/>
+
+            <!-- heuristics-catalog -> store-mutex (Active gold 2px solid) -->
+            <line x1="425" y1="345" x2="550" y2="435" stroke="#D9A441" stroke-width="2" marker-end="url(#arrow-gold)"/>
+
+            <!-- heuristics-catalog -> query-planner (Active gold 2px solid) -->
+            <line x1="425" y1="345" x2="425" y2="480" stroke="#D9A441" stroke-width="2" marker-end="url(#arrow-gold)"/>
+
+            <!-- heuristics-catalog -> retrieval (Active dashed gold 1.5px 'cites') -->
+            <line x1="425" y1="345" x2="280" y2="210" stroke="#D9A441" stroke-width="1.75" stroke-dasharray="4 3"/>
+
+            <!-- heuristics-catalog -> p4-domain (Contradicts warm amber 2px) -->
+            <line x1="425" y1="345" x2="305" y2="385" stroke="#E0A458" stroke-width="2" marker-end="url(#arrow-warn)"/>
+
+            <!-- 3. EDGE MIDPOINT PILL LABELS -->
+            <!-- 'depends_on' midpoint (475, 295) -->
+            <g transform="translate(452, 282)">
+              <rect width="66" height="18" rx="3" fill="#1A1713" stroke="rgba(217,164,65,0.4)" stroke-width="1"/>
+              <text x="33" y="12" fill="#D9A441" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" text-anchor="middle">depends_on</text>
+            </g>
+
+            <!-- 'contradicts' midpoint (365, 365) -->
+            <g transform="translate(332, 355)">
+              <rect width="68" height="18" rx="3" fill="#211D17" stroke="#E0A458" stroke-width="1"/>
+              <text x="34" y="12" fill="#E0A458" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" text-anchor="middle">contradicts</text>
+            </g>
+
+            <!-- 'cites' midpoint (352, 277) -->
+            <g transform="translate(335, 268)">
+              <rect width="36" height="16" rx="3" fill="#1A1713" stroke="rgba(217,164,65,0.3)" stroke-width="1"/>
+              <text x="18" y="11" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">cites</text>
+            </g>
+
+            <!-- 'governs' midpoint (487, 390) -->
+            <g transform="translate(470, 381)">
+              <rect width="44" height="16" rx="3" fill="#1A1713" stroke="rgba(217,164,65,0.3)" stroke-width="1"/>
+              <text x="22" y="11" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">governs</text>
+            </g>
+
+            <!-- 'invokes' midpoint (425, 412) -->
+            <g transform="translate(408, 403)">
+              <rect width="42" height="16" rx="3" fill="#1A1713" stroke="rgba(217,164,65,0.25)" stroke-width="1"/>
+              <text x="21" y="11" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">invokes</text>
+            </g>
+
+            <!-- 4. PERIPHERAL NODES (Context & Domain) -->
+            
+            <!-- Node: projection (x: 350, y: 135) -->
+            <g transform="translate(350, 135)">
+              <circle r="10" fill="#211D17" stroke="#6B6152" stroke-width="1.5"/>
+              <circle r="4" fill="#A3947D"/>
+              <rect x="-38" y="14" width="76" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.12)" stroke-width="1"/>
+              <text x="0" y="26" fill="#A3947D" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">projection</text>
+            </g>
+
+            <!-- Node: schema-eval (x: 435, y: 170) -->
+            <g transform="translate(435, 170)">
+              <circle r="13" fill="#211D17" stroke="#6B6152" stroke-width="1.5"/>
+              <circle r="5" fill="#A3947D"/>
+              <rect x="-42" y="17" width="84" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.12)" stroke-width="1"/>
+              <text x="0" y="29" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">schema-eval</text>
+            </g>
+
+            <!-- Node: retrieval (x: 280, y: 210) -->
+            <g transform="translate(280, 210)">
+              <circle r="15" fill="#211D17" stroke="rgba(217,164,65,0.3)" stroke-width="1.5"/>
+              <circle r="6" fill="#A3947D"/>
+              <rect x="-36" y="19" width="72" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.14)" stroke-width="1"/>
+              <text x="0" y="31" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">retrieval</text>
+            </g>
+
+            <!-- Node: scoring-engine (x: 525, y: 245) -->
+            <g transform="translate(525, 245)">
+              <circle r="16" fill="#211D17" stroke="rgba(217,164,65,0.5)" stroke-width="1.75"/>
+              <circle r="7" fill="#EDE4D3"/>
+              <rect x="-48" y="20" width="96" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.25)" stroke-width="1"/>
+              <text x="0" y="32" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle">scoring-engine</text>
+            </g>
+
+            <!-- Node: p4-domain (x: 305, y: 385) (Warn highlight border) -->
+            <g transform="translate(305, 385)">
+              <circle r="17" fill="#211D17" stroke="#E0A458" stroke-width="2"/>
+              <circle r="7" fill="#E0A458"/>
+              <rect x="-38" y="21" width="76" height="18" rx="2" fill="#1A1713" stroke="#E0A458" stroke-width="1"/>
+              <text x="0" y="33" fill="#E0A458" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" text-anchor="middle">p4-domain</text>
+            </g>
+
+            <!-- Node: store-mutex (x: 550, y: 435) -->
+            <g transform="translate(550, 435)">
+              <circle r="15" fill="#211D17" stroke="rgba(217,164,65,0.35)" stroke-width="1.5"/>
+              <circle r="6" fill="#EDE4D3"/>
+              <rect x="-42" y="19" width="84" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.15)" stroke-width="1"/>
+              <text x="0" y="31" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">store-mutex</text>
+            </g>
+
+            <!-- Node: query-planner (x: 425, y: 480) -->
+            <g transform="translate(425, 480)">
+              <circle r="13" fill="#211D17" stroke="rgba(217,164,65,0.3)" stroke-width="1.5"/>
+              <circle r="5" fill="#A3947D"/>
+              <rect x="-46" y="17" width="92" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.12)" stroke-width="1"/>
+              <text x="0" y="29" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">query-planner</text>
+            </g>
+
+            <!-- Node: audit-ledger (x: 285, y: 520) -->
+            <g transform="translate(285, 520)">
+              <circle r="12" fill="#211D17" stroke="#6B6152" stroke-width="1.5"/>
+              <circle r="4" fill="#A3947D"/>
+              <rect x="-42" y="16" width="84" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.10)" stroke-width="1"/>
+              <text x="0" y="28" fill="#A3947D" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">audit-ledger</text>
+            </g>
+
+            <!-- Node: raft-fencing (x: 505, y: 550) -->
+            <g transform="translate(505, 550)">
+              <circle r="11" fill="#211D17" stroke="#6B6152" stroke-width="1.5"/>
+              <circle r="4" fill="#A3947D"/>
+              <rect x="-40" y="15" width="80" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.10)" stroke-width="1"/>
+              <text x="0" y="27" fill="#A3947D" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">raft-fencing</text>
+            </g>
+
+            <!-- Node: cli-adapter (x: 320, y: 615) -->
+            <g transform="translate(320, 615)">
+              <circle r="11" fill="#211D17" stroke="#6B6152" stroke-width="1.5"/>
+              <circle r="4" fill="#A3947D"/>
+              <rect x="-40" y="15" width="80" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.10)" stroke-width="1"/>
+              <text x="0" y="27" fill="#A3947D" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">cli-adapter</text>
+            </g>
+
+            <!-- Node: vector-cache (x: 415, y: 605) -->
+            <g transform="translate(415, 605)">
+              <circle r="11" fill="#211D17" stroke="#6B6152" stroke-width="1.5"/>
+              <circle r="4" fill="#A3947D"/>
+              <rect x="-42" y="15" width="84" height="18" rx="2" fill="#1A1713" stroke="rgba(217,164,65,0.10)" stroke-width="1"/>
+              <text x="0" y="27" fill="#A3947D" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">vector-cache</text>
+            </g>
+
+            <!-- 5. THE SELECTED HUB NODE: heuristics-catalog (x: 425, y: 345) -->
+            <g transform="translate(425, 345)">
+              <!-- Outer concentric halo -->
+              <circle r="34" fill="none" stroke="rgba(217,164,65,0.22)" stroke-width="1" stroke-dasharray="2 2"/>
+              <circle r="26" fill="#211D17" stroke="#D9A441" stroke-width="2"/>
+              <circle r="12" fill="#D9A441"/>
+              <circle r="4" fill="#141110"/>
+              
+              <!-- Badge label pill -->
+              <rect x="-68" y="29" width="136" height="24" rx="4" fill="#1A1713" stroke="#D9A441" stroke-width="1.5"/>
+              <text x="0" y="45" fill="#EDE4D3" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" text-anchor="middle">heuristics-catalog</text>
+
+              <!-- Domain indicator pill -->
+              <rect x="-24" y="55" width="48" height="14" rx="2" fill="#211D17" stroke="rgba(217,164,65,0.3)" stroke-width="1"/>
+              <text x="0" y="65" fill="#D9A441" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="600" text-anchor="middle">DOMAIN P5</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Vertical Segmented Zoom Pill (+ / – / fit) at right edge of canvas -->
+        <div class="absolute right-5 top-20 flex flex-col rounded bg-[#1A1713] border border-[rgba(217,164,65,0.18)] shadow-sm overflow-hidden z-10 font-mono-data text-xs text-[#EDE4D3]">
+          <button class="w-8 h-8 flex items-center justify-center hover:bg-[#211D17] hover:text-[#D9A441] border-b border-[rgba(217,164,65,0.12)] transition-colors" title="Zoom in">+</button>
+          <button class="w-8 h-8 flex items-center justify-center hover:bg-[#211D17] hover:text-[#D9A441] border-b border-[rgba(217,164,65,0.12)] transition-colors" title="Zoom out">–</button>
+          <button class="w-8 h-8 flex items-center justify-center hover:bg-[#211D17] hover:text-[#D9A441] text-[10px] font-semibold transition-colors" title="Reset View">FIT</button>
+        </div>
+
+        <!-- Legend Bar Floating at Canvas Bottom -->
+        <div class="absolute bottom-4 left-6 z-10">
+          <div class="flex items-center gap-4 px-4 py-2 rounded bg-[#1A1713]/95 backdrop-blur border border-[rgba(217,164,65,0.18)] text-[11px] font-mono-data">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#D9A441]"></span>
+              <span class="text-[#EDE4D3]">selected</span>
+            </div>
+            <span class="text-[rgba(217,164,65,0.25)]">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#A3947D]"></span>
+              <span class="text-[#A3947D]">domain</span>
+            </div>
+            <span class="text-[rgba(217,164,65,0.25)]">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full border border-[#6B6152] bg-transparent"></span>
+              <span class="text-[#A3947D]">external</span>
+            </div>
+            <span class="text-[rgba(217,164,65,0.25)]">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-[2px] bg-[#D9A441]"></span>
+              <span class="text-[#EDE4D3]">depends_on</span>
+            </div>
+            <span class="text-[rgba(217,164,65,0.25)]">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-[2px] border-b border-dashed border-[#A3947D]"></span>
+              <span class="text-[#A3947D]">cites</span>
+            </div>
+            <span class="text-[rgba(217,164,65,0.25)]">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-[2px] bg-[#E0A458]"></span>
+              <span class="text-[#E0A458]">contradicts</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT INSPECTOR PANEL (~29% width = 345px) -->
+      <aside class="w-[345px] h-full bg-[#1A1713] flex flex-col justify-between shrink-0 overflow-y-auto">
+        
+        <!-- Inspector Content Body -->
+        <div class="p-5 flex flex-col gap-5">
+
+          <!-- Section Header: Node Identity -->
+          <div>
+            <div class="flex items-center justify-between pb-1">
+              <div class="flex items-center gap-2">
+                <span class="font-mono-data text-[10px] text-[#A3947D] tracking-widest uppercase">NODE INSPECTOR</span>
+              </div>
+              <span class="font-mono-data text-[10px] px-2 py-0.5 rounded bg-[rgba(217,164,65,0.12)] border border-[rgba(217,164,65,0.25)] text-[#D9A441] font-semibold">
+                DOMAIN P5
+              </span>
+            </div>
+
+            <!-- Page/Node Title with Fraunces font & signature double rule -->
+            <div class="mt-1">
+              <h2 class="font-mono-data text-lg font-semibold text-[#EDE4D3] tracking-tight">heuristics-catalog</h2>
+              <div class="double-rule mt-2 mb-2"></div>
+              <p class="text-xs text-[#A3947D] leading-relaxed">
+                Central heuristic registry and AST pattern evaluator across partitions. Evaluates invariants on commit.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section I: Convergence Telemetry (3 Score Rows) -->
+          <div class="rounded bg-[#211D17] border border-[rgba(217,164,65,0.10)] p-3.5">
+            <div class="flex items-center justify-between pb-2 mb-2.5 border-b border-[rgba(217,164,65,0.08)]">
+              <span class="font-mono-data text-[10px] text-[#A3947D] tracking-wider uppercase">
+                <span class="text-[#D9A441]">I //</span> CONVERGENCE TELEMETRY
+              </span>
+              <span class="font-mono-data text-[10px] text-[#7FB069] flex items-center gap-1">
+                <span class="w-1 h-1 rounded-full bg-[#7FB069]"></span> STABLE
+              </span>
+            </div>
+
+            <div class="space-y-2.5">
+              <!-- Score Row 1: Precision score P 0.828 -->
+              <div>
+                <div class="flex items-center justify-between font-mono-data text-xs mb-1">
+                  <span class="text-[#A3947D]">Precision Score</span>
+                  <span class="text-[#EDE4D3] font-semibold">P 0.828</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#141110] rounded-full overflow-hidden border border-[rgba(217,164,65,0.08)]">
+                  <div class="h-full bg-[#D9A441] rounded-full" style="width: 82.8%"></div>
+                </div>
+              </div>
+
+              <!-- Score Row 2: Mutation entropy M 0.341 -->
+              <div>
+                <div class="flex items-center justify-between font-mono-data text-xs mb-1">
+                  <span class="text-[#A3947D]">Mutation Entropy</span>
+                  <span class="text-[#EDE4D3] font-semibold">M 0.341</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#141110] rounded-full overflow-hidden border border-[rgba(217,164,65,0.08)]">
+                  <div class="h-full bg-[#A3947D] rounded-full" style="width: 34.1%"></div>
+                </div>
+              </div>
+
+              <!-- Score Row 3: Eigen convergence E 0.898 -->
+              <div>
+                <div class="flex items-center justify-between font-mono-data text-xs mb-1">
+                  <span class="text-[#A3947D]">Eigen Convergence</span>
+                  <span class="text-[#EDE4D3] font-semibold">E 0.898</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#141110] rounded-full overflow-hidden border border-[rgba(217,164,65,0.08)]">
+                  <div class="h-full bg-[#D9A441] rounded-full" style="width: 89.8%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section II: Connected Edges (4 short rows) -->
+          <div>
+            <div class="flex items-center justify-between pb-1.5 mb-1.5">
+              <span class="font-mono-data text-[10px] text-[#A3947D] tracking-wider uppercase">
+                <span class="text-[#D9A441]">II //</span> CONNECTED EDGES (4)
+              </span>
+              <span class="font-mono-data text-[10px] text-[#A3947D]">SHARD 0x3a</span>
+            </div>
+
+            <div class="space-y-1.5 font-mono-data text-xs">
+              <!-- Edge Row 1: depends_on -> scoring-engine -->
+              <div class="flex items-center justify-between p-2 rounded bg-[#211D17] border border-[rgba(217,164,65,0.08)] hover:border-[rgba(217,164,65,0.20)] transition-colors">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-[rgba(217,164,65,0.12)] text-[#D9A441] border border-[rgba(217,164,65,0.25)] font-medium">depends_on</span>
+                  <span class="text-[#EDE4D3] font-medium">scoring-engine</span>
+                </div>
+                <span class="text-[11px] text-[#A3947D]">0.94</span>
+              </div>
+
+              <!-- Edge Row 2: contradicts -> p4-domain -->
+              <div class="flex items-center justify-between p-2 rounded bg-[#211D17] border border-[rgba(224,164,88,0.25)] hover:border-[#E0A458] transition-colors">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-[rgba(224,164,88,0.15)] text-[#E0A458] border border-[rgba(224,164,88,0.3)] font-semibold">contradicts</span>
+                  <span class="text-[#E0A458] font-medium">p4-domain</span>
+                </div>
+                <span class="text-[10px] font-mono-data text-[#E0A458] px-1 bg-[rgba(224,164,88,0.1)] rounded">WARN</span>
+              </div>
+
+              <!-- Edge Row 3: cites -> retrieval -->
+              <div class="flex items-center justify-between p-2 rounded bg-[#211D17] border border-[rgba(217,164,65,0.08)] hover:border-[rgba(217,164,65,0.20)] transition-colors">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#1A1713] text-[#A3947D] border border-[rgba(217,164,65,0.12)]">cites</span>
+                  <span class="text-[#EDE4D3]">retrieval</span>
+                </div>
+                <span class="text-[11px] text-[#A3947D]">0.82</span>
+              </div>
+
+              <!-- Edge Row 4: governs -> store-mutex -->
+              <div class="flex items-center justify-between p-2 rounded bg-[#211D17] border border-[rgba(217,164,65,0.08)] hover:border-[rgba(217,164,65,0.20)] transition-colors">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-[rgba(217,164,65,0.12)] text-[#D9A441] border border-[rgba(217,164,65,0.25)]">governs</span>
+                  <span class="text-[#EDE4D3]">store-mutex</span>
+                </div>
+                <span class="text-[10px] text-[#7FB069]">LOCK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section III: Spec Provenance Metadata -->
+          <div class="p-3 rounded bg-[#211D17] border border-[rgba(217,164,65,0.08)]">
+            <div class="font-mono-data text-[10px] text-[#A3947D] tracking-wider uppercase mb-2">
+              <span class="text-[#D9A441]">III //</span> SPEC PROVENANCE
+            </div>
+            <div class="grid grid-cols-2 gap-2 font-mono-data text-[11px]">
+              <div>
+                <span class="text-[#A3947D] block text-[9px] uppercase">Partition</span>
+                <span class="text-[#EDE4D3]">P5 Vector Space</span>
+              </div>
+              <div>
+                <span class="text-[#A3947D] block text-[9px] uppercase">Immutable Root</span>
+                <span class="text-[#D9A441]">0x9f2c1ab4</span>
+              </div>
+              <div>
+                <span class="text-[#A3947D] block text-[9px] uppercase">Last Eval</span>
+                <span class="text-[#EDE4D3]">14:32:07Z</span>
+              </div>
+              <div>
+                <span class="text-[#A3947D] block text-[9px] uppercase">Mutation Status</span>
+                <span class="text-[#7FB069] flex items-center gap-1 font-semibold">● CONVERGED</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Two Action Buttons (Primary Paper Dark Gold + Ghost) at panel footer -->
+        <div class="p-5 border-t border-[rgba(217,164,65,0.10)] bg-[#1A1713] space-y-2">
+          <!-- Primary Action Button: 'Trace Lineage' -->
+          <button class="w-full h-10 px-4 rounded bg-[#D9A441] hover:bg-[#E5B558] text-[#141110] font-mono-data text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-colors">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+            <span>Trace Lineage</span>
+          </button>
+
+          <!-- Ghost Action Button: 'Copy URI' -->
+          <button class="w-full h-9 px-4 rounded bg-transparent hover:bg-[#211D17] border border-[rgba(217,164,65,0.25)] text-[#EDE4D3] hover:text-[#D9A441] font-mono-data text-xs font-medium flex items-center justify-center gap-2 transition-colors">
+            <svg class="w-3.5 h-3.5 text-[#A3947D]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy URI</span>
+          </button>
+        </div>
+
+      </aside>
+
+    </main>
+
+    <!-- STATUS BAR (FLUSH AT BOTTOM, exactly on one line) -->
+    <footer class="h-7 px-6 bg-[#1A1713] border-t border-[rgba(217,164,65,0.10)] flex items-center justify-between font-mono-data text-[11px] text-[#A3947D] shrink-0 z-20">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5 text-[#7FB069]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7FB069]"></span>
+          <span>GRAPH RUNTIME: NOMINAL</span>
+        </span>
+        <span class="text-[rgba(217,164,65,0.25)]">|</span>
+        <span>12,847 NODES</span>
+        <span>48,203 EDGES</span>
+        <span class="text-[rgba(217,164,65,0.25)]">|</span>
+        <span>MERKLE: <span class="text-[#EDE4D3]">0x9f8a2c3b1</span></span>
+        <span class="text-[rgba(217,164,65,0.25)]">|</span>
+        <span>DAG ENGINE: <span class="text-[#D9A441]">v14.2</span></span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5 text-[#7FB069]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7FB069]"></span>
+          <span>RAFT QUORUM SYNCED</span>
+        </span>
+        <span class="text-[rgba(217,164,65,0.25)]">·</span>
+        <span>LATENCY P50 <span class="text-[#EDE4D3]">6.4ms</span></span>
+        <span class="text-[rgba(217,164,65,0.25)]">·</span>
+        <span class="text-[#7FB069] flex items-center gap-1">● ONLINE</span>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

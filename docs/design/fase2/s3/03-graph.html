@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Know Your Soul - Graph Explorer</title>
+<!-- Google Fonts: Inter & IBM Plex Mono & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Inter:wght@300;400;500;600;700;800&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#FAFAF8",
+            "surface-variant": "#F3F3F0",
+            primary: "#E03131",
+            "on-surface": "#111111",
+            "on-surface-variant": "#6B6B66",
+            outline: "#E4E4E0",
+            "outline-variant": "#EFEFEA",
+            swissred: "#E03131",
+            swissdark: "#111111",
+            swissmono: "#6B6B66",
+            swisscard: "#FFFFFF",
+            statusok: "#2F9E6E",
+            statuswarn: "#B8860B",
+            statusdanger: "#C92A2A"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            mono: ["IBM Plex Mono", "monospace"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Dot Grid Background for Engineering Canvas */
+    .bg-grid-dots {
+      background-image: radial-gradient(#D6D6D0 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    /* Hairline Swiss borders */
+    .hairline-r { border-right: 1px solid #E4E4E0; }
+    .hairline-b { border-bottom: 1px solid #E4E4E0; }
+    .hairline-t { border-top: 1px solid #E4E4E0; }
+    .hairline-l { border-left: 1px solid #E4E4E0; }
+  </style>
+</head>
+<body class="bg-[#FAFAF8] text-[#111111] font-body antialiased h-screen w-screen overflow-hidden select-none flex">
+<!-- ========================================================================= -->
+<!-- 1. LEFT SIDEBAR (Width 240px, Shared Component Alignment)                 -->
+<!-- ========================================================================= -->
+<aside class="w-60 h-screen bg-[#FAFAF8] hairline-r flex flex-col justify-between shrink-0 z-30">
+<div class="flex flex-col">
+<!-- Brand & Console Title Header -->
+<div class="p-4 pb-3 flex items-center gap-3 hairline-b">
+<div class="w-8 h-8 bg-[#111111] text-white font-mono font-bold flex items-center justify-center rounded-[4px] text-base tracking-tight shadow-sm">
+          K
+        </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-bold text-xs tracking-tight text-[#111111] uppercase truncate">Know Your Soul</span>
+<span class="font-mono text-[9px] px-1 py-0.5 bg-[#E4E4E0] text-[#111111] rounded-[2px] font-semibold leading-none">v14.2</span>
+</div>
+<span class="font-mono text-[10px] text-[#6B6B66] tracking-tight">Graph Operations Console</span>
+</div>
+</div>
+<!-- Navigation Hierarchy -->
+<nav class="p-3 space-y-4">
+<!-- GROUP 1: MONITOR (Active category) -->
+<div>
+<div class="px-2 pb-1.5 flex items-center justify-between text-[10px] font-mono tracking-wider text-[#6B6B66] font-semibold uppercase">
+<span>01 // MONITOR</span>
+<span class="material-symbols-outlined text-[14px]">monitoring</span>
+</div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">overview</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+<span>Activity Log</span>
+</a>
+<!-- Active Sub-item: Graph Explorer -->
+<a class="flex items-center justify-between px-2.5 py-1.5 text-xs font-semibold text-[#E03131] bg-[rgba(224,49,49,0.08)] border-l-2 border-[#E03131] rounded-r-[3px]" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[16px]">hub</span>
+<span>Graph Explorer</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#E03131]"></span>
+</a>
+</div>
+</div>
+<!-- GROUP 2: ANALYZE -->
+<div>
+<div class="px-2 pb-1.5 flex items-center justify-between text-[10px] font-mono tracking-wider text-[#6B6B66] font-semibold uppercase">
+<span>02 // ANALYZE</span>
+<span class="material-symbols-outlined text-[14px]">analytics</span>
+</div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">search</span>
+<span>Search</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">bar_chart</span>
+<span>Metrics</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">insights</span>
+<span>Analytics</span>
+</a>
+</div>
+</div>
+<!-- GROUP 3: GOVERN -->
+<div>
+<div class="px-2 pb-1.5 flex items-center justify-between text-[10px] font-mono tracking-wider text-[#6B6B66] font-semibold uppercase">
+<span>03 // GOVERN</span>
+<span class="material-symbols-outlined text-[14px]">policy</span>
+</div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Health</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">account_balance</span>
+<span>Audit Ledger</span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+<span>Proposals</span>
+</div>
+<span class="font-mono text-[9px] font-bold px-1.5 py-0.2 bg-[#F3F3F0] border border-[#E4E4E0] text-[#111111] rounded">3</span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[16px]">pending_actions</span>
+<span>Debt Queue</span>
+</div>
+<span class="font-mono text-[9px] font-bold px-1.5 py-0.2 bg-[#F3F3F0] border border-[#E4E4E0] text-[#C92A2A] rounded">12</span>
+</a>
+</div>
+</div>
+<!-- GROUP 4: SYSTEM -->
+<div>
+<div class="px-2 pb-1.5 flex items-center justify-between text-[10px] font-mono tracking-wider text-[#6B6B66] font-semibold uppercase">
+<span>04 // SYSTEM</span>
+<span class="material-symbols-outlined text-[14px]">settings</span>
+</div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span>System</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-[#6B6B66] hover:text-[#111111] hover:bg-[#F3F3F0] rounded-[3px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">settings_suggest</span>
+<span>Setup</span>
+</a>
+</div>
+</div>
+</nav>
+</div>
+<!-- User / Operator Card -->
+<div class="p-3 hairline-t bg-[#FAFAF8]">
+<div class="flex items-center justify-between p-2 rounded-[4px] border border-[#E4E4E0] bg-[#FFFFFF]">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 bg-[#111111] text-white flex items-center justify-center font-mono text-xs font-bold rounded-[3px]">
+            SA
+          </div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-[#111111] leading-tight">Sigit A.</span>
+<span class="font-mono text-[10px] text-[#6B6B66]">operator: p5_lead</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#2F9E6E]"></span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- 2. MAIN WORKSPACE (Topbar + Canvas/Inspector + Status Bar)                -->
+<!-- ========================================================================= -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#FAFAF8]">
+<!-- Topbar (Height 48px) -->
+<header class="h-12 bg-[#FFFFFF] hairline-b px-4 flex items-center justify-between shrink-0 z-20">
+<!-- Left: Breadcrumbs -->
+<div class="flex items-center gap-2 font-mono text-xs text-[#6B6B66]">
+<span class="font-bold text-[#111111] tracking-tight">KYS</span>
+<span class="text-[#D4D4D0]">/</span>
+<span>Graph</span>
+<span class="text-[#D4D4D0]">/</span>
+<span class="text-[#111111] font-semibold">heuristics-catalog</span>
+<span class="ml-2 font-mono text-[10px] bg-[#F3F3F0] text-[#111111] px-1.5 py-0.5 rounded border border-[#E4E4E0]">cluster-01</span>
+</div>
+<!-- Center: Universal Search -->
+<div class="w-96 relative">
+<div class="flex items-center bg-[#FAFAF8] border border-[#E4E4E0] rounded-[4px] px-2.5 py-1 text-xs">
+<span class="material-symbols-outlined text-[16px] text-[#6B6B66] mr-2">search</span>
+<input class="bg-transparent border-none outline-none text-xs w-full text-[#111111] placeholder-[#6B6B66] p-0 focus:ring-0 font-mono" placeholder="search nodes, edges, hashes, tags" type="text"/>
+<kbd class="font-mono text-[10px] bg-[#FFFFFF] border border-[#E4E4E0] text-[#6B6B66] px-1.5 py-0.5 rounded shadow-2xs">⌘K</kbd>
+</div>
+</div>
+<!-- Right: Status and Tools -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-[rgba(47,158,110,0.08)] border border-[rgba(47,158,110,0.25)] rounded text-[11px] font-mono text-[#2F9E6E] font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2F9E6E] animate-pulse"></span>
+<span>RAFT SYNCED</span>
+</div>
+<div class="h-4 w-[1px] bg-[#E4E4E0]"></div>
+<button class="text-[#6B6B66] hover:text-[#111111] p-1 transition-colors">
+<span class="material-symbols-outlined text-[18px]">notifications</span>
+</button>
+<button class="w-7 h-7 rounded-[4px] bg-[#FAFAF8] border border-[#E4E4E0] flex items-center justify-center font-mono text-[11px] font-bold text-[#111111]">
+          SA
+        </button>
+</div>
+</header>
+<!-- Content Split Area -->
+<div class="flex-1 flex overflow-hidden">
+<!-- ===================================================================== -->
+<!-- GRAPH CANVAS (70% Width)                                              -->
+<!-- ===================================================================== -->
+<section class="flex-1 flex flex-col bg-[#FAFAF8] relative overflow-hidden">
+<!-- Canvas Utility Ribbon -->
+<div class="h-9 px-4 bg-[#FFFFFF] hairline-b flex items-center justify-between z-10">
+<div class="flex items-center gap-4 font-mono text-[11px] text-[#6B6B66]">
+<div class="flex items-center gap-1.5">
+<span class="text-[#111111] font-semibold">VIEW:</span>
+<span>FORCE-DIRECTED (BARNES-HUT)</span>
+</div>
+<span class="text-[#E4E4E0]">|</span>
+<div class="flex items-center gap-1.5">
+<span class="text-[#111111] font-semibold">PHYSICS:</span>
+<span class="text-[#2F9E6E] font-medium">STABLE</span>
+</div>
+<span class="text-[#E4E4E0]">|</span>
+<div class="flex items-center gap-1.5">
+<span class="text-[#111111] font-semibold">SCALE:</span>
+<span>100%</span>
+</div>
+</div>
+<div class="flex items-center gap-1 bg-[#FAFAF8] border border-[#E4E4E0] rounded-[3px] p-0.5">
+<button class="w-6 h-6 flex items-center justify-center hover:bg-[#FFFFFF] rounded text-[#111111] transition-colors" title="Zoom In">
+<span class="material-symbols-outlined text-[14px]">add</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-[#FFFFFF] rounded text-[#111111] transition-colors" title="Zoom Out">
+<span class="material-symbols-outlined text-[14px]">remove</span>
+</button>
+<div class="w-[1px] h-3 bg-[#E4E4E0] mx-0.5"></div>
+<button class="px-1.5 h-6 flex items-center justify-center hover:bg-[#FFFFFF] rounded font-mono text-[10px] text-[#111111] font-medium transition-colors" title="Reset View">
+              FIT
+            </button>
+</div>
+</div>
+<!-- Interactive Vector Graph Canvas -->
+<div class="flex-1 bg-grid-dots relative overflow-hidden flex items-center justify-center">
+<svg class="w-full h-full absolute inset-0 cursor-crosshair" preserveaspectratio="xMidYMid meet" viewbox="0 0 850 560">
+<defs>
+<!-- Marker definitions for Swiss Edge lines -->
+<marker id="arrow-red" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="22" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 10 5 L 0 9 z" fill="#E03131"></path>
+</marker>
+<marker id="arrow-black" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="22" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 10 5 L 0 9 z" fill="#111111"></path>
+</marker>
+<marker id="arrow-gray" markerheight="5" markerwidth="5" orient="auto-start-reverse" refx="20" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 10 5 L 0 9 z" fill="#D4D4D0"></path>
+</marker>
+</defs>
+<!-- Dim Secondary Context Edges -->
+<g stroke="#D4D4D0" stroke-linecap="round" stroke-width="1.2">
+<line x1="170" x2="330" y1="120" y2="100"></line>
+<line x1="330" x2="520" y1="100" y2="90"></line>
+<line x1="680" x2="520" y1="130" y2="90"></line>
+<line x1="680" x2="720" y1="130" y2="280"></line>
+<line x1="720" x2="650" y1="280" y2="430"></line>
+<line x1="650" x2="490" y1="430" y2="470"></line>
+<line x1="490" x2="260" y1="470" y2="460"></line>
+<line x1="260" x2="150" y1="460" y2="350"></line>
+<line x1="150" x2="170" y1="350" y2="120"></line>
+</g>
+<!-- PRIMARY ACTIVE EDGES (connected to focused central node @ 420, 275) -->
+<!-- 1. depends_on -> scoring-engine (420, 275 to 220, 210) -->
+<line marker-end="url(#arrow-black)" stroke="#111111" stroke-width="2" x1="420" x2="220" y1="275" y2="210"></line>
+<!-- 2. contradicts -> p4-domain (420, 275 to 590, 190) -->
+<line marker-end="url(#arrow-red)" stroke="#E03131" stroke-dasharray="6,4" stroke-width="2" x1="420" x2="590" y1="275" y2="190"></line>
+<!-- 3. cites -> retrieval (420, 275 to 290, 390) -->
+<line marker-end="url(#arrow-black)" stroke="#111111" stroke-dasharray="4,3" stroke-width="1.8" x1="420" x2="290" y1="275" y2="390"></line>
+<!-- 4. governs -> store-mutex (420, 275 to 570, 370) -->
+<line marker-end="url(#arrow-black)" stroke="#111111" stroke-width="2" x1="420" x2="570" y1="275" y2="370"></line>
+<!-- Midpoint Edge Badges -->
+<!-- depends_on label -->
+<g transform="translate(310, 235)">
+<rect fill="#FFFFFF" height="18" rx="2" stroke="#111111" stroke-width="1" width="70" x="-35" y="-9"></rect>
+<text fill="#111111" font-family="IBM Plex Mono" font-size="8.5" font-weight="600" text-anchor="middle" y="3.5">depends_on</text>
+</g>
+<!-- contradicts label (Swiss Red Pill) -->
+<g transform="translate(515, 226)">
+<rect fill="#E03131" height="18" rx="2" width="72" x="-36" y="-9"></rect>
+<text fill="#FFFFFF" font-family="IBM Plex Mono" font-size="8.5" font-weight="600" text-anchor="middle" y="3.5">contradicts</text>
+</g>
+<!-- cites label -->
+<g transform="translate(345, 340)">
+<rect fill="#FFFFFF" height="18" rx="2" stroke="#6B6B66" stroke-width="1" width="48" x="-24" y="-9"></rect>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="8.5" font-weight="500" text-anchor="middle" y="3.5">cites</text>
+</g>
+<!-- governs label -->
+<g transform="translate(502, 330)">
+<rect fill="#FFFFFF" height="18" rx="2" stroke="#111111" stroke-width="1" width="56" x="-28" y="-9"></rect>
+<text fill="#111111" font-family="IBM Plex Mono" font-size="8.5" font-weight="600" text-anchor="middle" y="3.5">governs</text>
+</g>
+<!-- EXTERNAL / CONTEXT NODES -->
+<!-- 1. cli-adapter -->
+<g transform="translate(170, 120)">
+<circle fill="#FFFFFF" r="14" stroke="#E4E4E0" stroke-width="2"></circle>
+<circle fill="#6B6B66" r="4"></circle>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" y="26">cli-adapter</text>
+</g>
+<!-- 2. vector-cache -->
+<g transform="translate(330, 100)">
+<circle fill="#FFFFFF" r="15" stroke="#E4E4E0" stroke-width="2"></circle>
+<circle fill="#6B6B66" r="4"></circle>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" y="27">vector-cache</text>
+</g>
+<!-- 3. schema-eval -->
+<g transform="translate(520, 90)">
+<circle fill="#FFFFFF" r="16" stroke="#E4E4E0" stroke-width="2"></circle>
+<circle fill="#6B6B66" r="4"></circle>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" y="28">schema-eval</text>
+</g>
+<!-- 4. query-planner -->
+<g transform="translate(680, 130)">
+<circle fill="#FFFFFF" r="16" stroke="#E4E4E0" stroke-width="2"></circle>
+<circle fill="#6B6B66" r="4"></circle>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" y="28">query-planner</text>
+</g>
+<!-- 5. projection -->
+<g transform="translate(720, 280)">
+<circle fill="#FFFFFF" r="15" stroke="#E4E4E0" stroke-width="2"></circle>
+<circle fill="#6B6B66" r="4"></circle>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" y="27">projection</text>
+</g>
+<!-- 6. raft-fencing -->
+<g transform="translate(650, 430)">
+<circle fill="#FFFFFF" r="16" stroke="#E4E4E0" stroke-width="2"></circle>
+<circle fill="#6B6B66" r="4"></circle>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" y="28">raft-fencing</text>
+</g>
+<!-- 7. audit-ledger -->
+<g transform="translate(490, 470)">
+<circle fill="#FFFFFF" r="16" stroke="#E4E4E0" stroke-width="2"></circle>
+<circle fill="#6B6B66" r="4"></circle>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" y="28">audit-ledger</text>
+</g>
+<!-- 8. p4-domain -->
+<g transform="translate(260, 460)">
+<circle fill="#FFFFFF" r="15" stroke="#E4E4E0" stroke-width="2"></circle>
+<circle fill="#6B6B66" r="4"></circle>
+<text fill="#6B6B66" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" y="27">p4-domain</text>
+</g>
+<!-- DIRECTLY CONNECTED NODES -->
+<!-- A. scoring-engine -->
+<g transform="translate(220, 210)">
+<circle fill="#FFFFFF" r="20" stroke="#111111" stroke-width="2"></circle>
+<circle fill="#111111" r="6"></circle>
+<rect fill="#F3F3F0" height="15" rx="2" width="84" x="-42" y="24"></rect>
+<text fill="#111111" font-family="IBM Plex Mono" font-size="9.5" font-weight="600" text-anchor="middle" y="35">scoring-engine</text>
+</g>
+<!-- B. p4-domain (Contradicting) -->
+<g transform="translate(590, 190)">
+<circle fill="#FFFFFF" r="20" stroke="#E03131" stroke-width="2"></circle>
+<circle fill="#E03131" r="6"></circle>
+<rect fill="#F3F3F0" height="15" rx="2" width="72" x="-36" y="24"></rect>
+<text fill="#111111" font-family="IBM Plex Mono" font-size="9.5" font-weight="600" text-anchor="middle" y="35">p4-domain</text>
+</g>
+<!-- C. retrieval -->
+<g transform="translate(290, 390)">
+<circle fill="#FFFFFF" r="19" stroke="#111111" stroke-width="2"></circle>
+<circle fill="#111111" r="5"></circle>
+<rect fill="#F3F3F0" height="15" rx="2" width="64" x="-32" y="23"></rect>
+<text fill="#111111" font-family="IBM Plex Mono" font-size="9.5" font-weight="600" text-anchor="middle" y="34">retrieval</text>
+</g>
+<!-- D. store-mutex -->
+<g transform="translate(570, 370)">
+<circle fill="#FFFFFF" r="19" stroke="#111111" stroke-width="2"></circle>
+<circle fill="#111111" r="5"></circle>
+<rect fill="#F3F3F0" height="15" rx="2" width="72" x="-36" y="23"></rect>
+<text fill="#111111" font-family="IBM Plex Mono" font-size="9.5" font-weight="600" text-anchor="middle" y="34">store-mutex</text>
+</g>
+<!-- ============================================================= -->
+<!-- CENTRAL FOCUSED NODE: heuristics-catalog                      -->
+<!-- ============================================================= -->
+<g class="cursor-pointer" transform="translate(420, 275)">
+<!-- Outer pulse concentric ring -->
+<circle fill="none" opacity="0.6" r="44" stroke="#E03131" stroke-dasharray="2,2" stroke-width="1"></circle>
+<!-- Secondary ring -->
+<circle fill="rgba(224,49,49,0.04)" r="36" stroke="#111111" stroke-width="1.5"></circle>
+<!-- Core node card -->
+<circle fill="#FFFFFF" r="26" stroke="#E03131" stroke-width="3"></circle>
+<circle fill="#E03131" r="10"></circle>
+<!-- Focus indicator badge -->
+<g transform="translate(0, 42)">
+<rect fill="#111111" height="20" rx="3" width="116" x="-58" y="0"></rect>
+<text fill="#FFFFFF" font-family="IBM Plex Mono" font-size="10.5" font-weight="700" letter-spacing="-0.02em" text-anchor="middle" y="13.5">
+                  heuristics-catalog
+                </text>
+</g>
+<g transform="translate(0, 66)">
+<rect fill="#F3F3F0" height="14" rx="2" stroke="#E4E4E0" stroke-width="1" width="70" x="-35" y="0"></rect>
+<text fill="#E03131" font-family="IBM Plex Mono" font-size="8" font-weight="600" text-anchor="middle" y="10">● FOCUS NODE</text>
+</g>
+</g>
+</svg>
+<!-- Floating Map Legend Bar (Swiss Design System) -->
+<div class="absolute bottom-3 left-4 bg-[#FFFFFF] hairline-t hairline-b hairline-l hairline-r px-3 py-1.5 rounded-[4px] shadow-sm flex items-center gap-4 font-mono text-[10px] text-[#6B6B66]">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#E03131]"></span>
+<span class="text-[#111111] font-medium">selected</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#111111]"></span>
+<span>domain</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full border border-[#6B6B66] bg-transparent"></span>
+<span>external</span>
+</div>
+<div class="h-3 w-[1px] bg-[#E4E4E0]"></div>
+<div class="flex items-center gap-1.5">
+<span class="w-4 h-0.5 bg-[#111111]"></span>
+<span>depends_on</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-4 border-b border-dashed border-[#6B6B66]"></span>
+<span>cites</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="px-1 py-0.2 bg-[#E03131] text-white text-[8px] font-bold rounded-[2px] leading-tight">INV</span>
+<span class="text-[#E03131] font-medium">contradicts</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- RIGHT INSPECTOR PANEL (30% Width / w-96)                              -->
+<!-- ===================================================================== -->
+<aside class="w-96 bg-[#FFFFFF] hairline-l flex flex-col justify-between shrink-0 h-full overflow-hidden">
+<!-- Scrollable content area -->
+<div class="flex-1 overflow-y-auto divide-y divide-[#E4E4E0]">
+<!-- SECTION 01: NODE INSPECTOR HEADER -->
+<div class="p-4">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] font-bold text-[#6B6B66] tracking-wider uppercase">01 // NODE INSPECTOR</span>
+<span class="font-mono text-[10px] font-semibold px-2 py-0.5 bg-[#F3F3F0] text-[#111111] border border-[#E4E4E0] rounded">
+                DOMAIN P5
+              </span>
+</div>
+<h1 class="font-headline font-bold text-lg text-[#111111] tracking-tight leading-snug">
+              heuristics-catalog
+            </h1>
+<p class="text-xs text-[#6B6B66] mt-1 leading-relaxed">
+              Central heuristic registry &amp; AST pattern evaluator across partitions. Validates invariants against live schema projections.
+            </p>
+</div>
+<!-- SECTION 02: CONVERGENCE TELEMETRY -->
+<div class="p-4">
+<div class="flex items-center justify-between mb-3">
+<span class="font-mono text-[11px] font-bold text-[#6B6B66] tracking-wider uppercase">02 // CONVERGENCE TELEMETRY</span>
+<span class="material-symbols-outlined text-[15px] text-[#2F9E6E]">sync</span>
+</div>
+<!-- 3 Mono Metric Rows with Progress Bars -->
+<div class="space-y-3.5">
+<!-- Metric 1 -->
+<div>
+<div class="flex justify-between items-baseline mb-1">
+<span class="text-xs text-[#111111]">Precision score</span>
+<div class="flex items-center gap-1.5 font-mono text-xs">
+<span class="text-[#6B6B66]">P</span>
+<span class="font-bold text-[#111111]">0.828</span>
+</div>
+</div>
+<div class="w-full bg-[#F3F3F0] h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#111111] h-1.5 rounded-full" style="width: 82.8%"></div>
+</div>
+</div>
+<!-- Metric 2 -->
+<div>
+<div class="flex justify-between items-baseline mb-1">
+<span class="text-xs text-[#111111]">Mutation entropy</span>
+<div class="flex items-center gap-1.5 font-mono text-xs">
+<span class="text-[#6B6B66]">M</span>
+<span class="font-bold text-[#2F9E6E]">0.341</span>
+</div>
+</div>
+<div class="w-full bg-[#F3F3F0] h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#2F9E6E] h-1.5 rounded-full" style="width: 34.1%"></div>
+</div>
+</div>
+<!-- Metric 3 -->
+<div>
+<div class="flex justify-between items-baseline mb-1">
+<span class="text-xs text-[#111111]">Eigen convergence</span>
+<div class="flex items-center gap-1.5 font-mono text-xs">
+<span class="text-[#6B6B66]">E</span>
+<span class="font-bold text-[#111111]">0.898</span>
+</div>
+</div>
+<div class="w-full bg-[#F3F3F0] h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#111111] h-1.5 rounded-full" style="width: 89.8%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 03: CONNECTED EDGES (4) -->
+<div class="p-4">
+<div class="flex items-center justify-between mb-2.5">
+<span class="font-mono text-[11px] font-bold text-[#6B6B66] tracking-wider uppercase">03 // CONNECTED EDGES (4)</span>
+<span class="font-mono text-[10px] text-[#6B6B66]">4 LINKS ACTIVE</span>
+</div>
+<div class="space-y-1.5">
+<!-- Edge 1 -->
+<div class="flex items-center justify-between p-2 rounded-[3px] bg-[#FAFAF8] border border-[#E4E4E0] hover:border-[#111111] transition-colors">
+<div class="flex items-center gap-2">
+<span class="font-mono text-[9px] px-1.5 py-0.5 bg-[#FFFFFF] border border-[#E4E4E0] text-[#111111] rounded font-semibold uppercase">depends_on</span>
+<span class="font-mono text-xs text-[#111111] font-medium">scoring-engine</span>
+</div>
+<span class="font-mono text-[11px] font-bold text-[#111111]">0.94</span>
+</div>
+<!-- Edge 2: Warning Contradiction -->
+<div class="flex items-center justify-between p-2 rounded-[3px] bg-[#FFF5F5] border border-[rgba(224,49,49,0.3)]">
+<div class="flex items-center gap-2">
+<span class="font-mono text-[9px] px-1.5 py-0.5 bg-[#E03131] text-white rounded font-semibold uppercase">contradicts</span>
+<span class="font-mono text-xs text-[#C92A2A] font-semibold">p4-domain</span>
+</div>
+<span class="font-mono text-[10px] font-bold text-[#C92A2A] bg-white px-1.5 py-0.5 border border-[rgba(201,42,42,0.3)] rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[11px]">warning</span>
+                  WARN
+                </span>
+</div>
+<!-- Edge 3 -->
+<div class="flex items-center justify-between p-2 rounded-[3px] bg-[#FAFAF8] border border-[#E4E4E0] hover:border-[#111111] transition-colors">
+<div class="flex items-center gap-2">
+<span class="font-mono text-[9px] px-1.5 py-0.5 bg-[#FFFFFF] border border-[#E4E4E0] text-[#6B6B66] rounded font-medium uppercase">cites</span>
+<span class="font-mono text-xs text-[#111111]">retrieval</span>
+</div>
+<span class="font-mono text-[11px] text-[#6B6B66]">0.82</span>
+</div>
+<!-- Edge 4 -->
+<div class="flex items-center justify-between p-2 rounded-[3px] bg-[#FAFAF8] border border-[#E4E4E0] hover:border-[#111111] transition-colors">
+<div class="flex items-center gap-2">
+<span class="font-mono text-[9px] px-1.5 py-0.5 bg-[#FFFFFF] border border-[#E4E4E0] text-[#111111] rounded font-semibold uppercase">governs</span>
+<span class="font-mono text-xs text-[#111111]">store-mutex</span>
+</div>
+<span class="font-mono text-[10px] font-bold text-[#111111] bg-[#F3F3F0] px-1.5 py-0.5 rounded border border-[#E4E4E0] flex items-center gap-1">
+<span class="material-symbols-outlined text-[11px]">lock</span>
+                  LOCK
+                </span>
+</div>
+</div>
+</div>
+<!-- SECTION 04: SPEC PROVENANCE -->
+<div class="p-4">
+<span class="font-mono text-[11px] font-bold text-[#6B6B66] tracking-wider uppercase block mb-2">04 // SPEC PROVENANCE</span>
+<div class="font-mono text-[11px] border border-[#E4E4E0] rounded-[3px] overflow-hidden">
+<div class="flex justify-between p-1.5 hairline-b bg-[#FAFAF8]">
+<span class="text-[#6B6B66]">Partition</span>
+<span class="text-[#111111] font-medium">P5 Vector Space</span>
+</div>
+<div class="flex justify-between p-1.5 hairline-b bg-[#FFFFFF]">
+<span class="text-[#6B6B66]">Immutable Root</span>
+<span class="text-[#111111] font-bold text-[#111111]">0x9f2c1ab4</span>
+</div>
+<div class="flex justify-between p-1.5 bg-[#FAFAF8]">
+<span class="text-[#6B6B66]">Status</span>
+<span class="text-[#2F9E6E] font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2F9E6E]"></span>
+                  CONVERGED
+                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Inspector Action Buttons -->
+<div class="p-4 hairline-t bg-[#FAFAF8] grid grid-cols-2 gap-2 shrink-0">
+<button class="bg-[#E03131] hover:bg-[#C92A2A] text-white font-headline text-xs font-semibold py-2 px-3 rounded-[4px] transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[15px]">timeline</span>
+<span>Trace Lineage</span>
+</button>
+<button class="bg-[#FFFFFF] hover:bg-[#F3F3F0] border border-[#111111] text-[#111111] font-mono text-xs font-semibold py-2 px-3 rounded-[4px] transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+<span>Copy URI</span>
+</button>
+</div>
+</aside>
+</div>
+<!-- ========================================================================= -->
+<!-- 3. FLUSH STATUS BAR (Height 28px)                                         -->
+<!-- ========================================================================= -->
+<footer class="h-7 bg-[#FAFAF8] hairline-t px-4 flex items-center justify-between text-[11px] font-mono text-[#6B6B66] shrink-0 z-20">
+<div class="flex items-center gap-2">
+<span class="font-bold text-[#111111]">GRAPH RUNTIME:</span>
+<span class="text-[#2F9E6E] font-semibold">NOMINAL</span>
+<span class="text-[#E4E4E0]">·</span>
+<span>12,847 NODES</span>
+<span>48,203 EDGES</span>
+<span class="text-[#E4E4E0]">·</span>
+<span class="text-[#6B6B66]">MERKLE: <span class="text-[#111111]">0x9f8a2c3b1</span></span>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2F9E6E]"></span>
+<span class="text-[#111111] font-medium">RAFT QUORUM SYNCED</span>
+</div>
+<span class="text-[#E4E4E0]">·</span>
+<span>LATENCY P50 <span class="text-[#111111] font-semibold">6.4ms</span></span>
+<span class="text-[#E4E4E0]">·</span>
+<div class="flex items-center gap-1 text-[#2F9E6E] font-bold">
+<span>●</span>
+<span>ONLINE</span>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

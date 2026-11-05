@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Know Your Soul - Overview</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        colors: {
+          base: '#FFFFFF',
+          panel: '#FAFAFA',
+          ink: '#0A0A0A',
+          muted: '#525252',
+          hairline: '#D4D4D4',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background-color: #FFFFFF;
+    color: #0A0A0A;
+    font-family: 'Inter', sans-serif;
+  }
+  /* Precise scrollbar suppression */
+  ::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body class="w-[1440px] h-[900px] flex bg-base text-ink select-none overflow-hidden">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-ink bg-base flex-shrink-0 z-20">
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-12 px-4 flex items-center justify-between border-b border-hairline">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 bg-ink text-base flex items-center justify-center font-bold text-[11px] tracking-tight">K</div>
+          <span class="font-bold text-[13px] tracking-tight text-ink uppercase">Know Your Soul</span>
+        </div>
+        <span class="font-mono text-[10px] text-muted border border-hairline px-1.5 py-0.5">v14.2</span>
+      </div>
+
+      <!-- Navigation Groups -->
+      <div class="px-3 py-3 space-y-4">
+        <!-- MONITOR -->
+        <div>
+          <div class="px-2 pb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted">Monitor</div>
+          <nav class="space-y-0.5">
+            <!-- Active: SOLID BLACK fill with white text -->
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 bg-ink text-base text-[12px] font-semibold">
+              <span class="font-mono text-[11px] leading-none">■</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>Graph Explorer</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- ANALYZE -->
+        <div>
+          <div class="px-2 pb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted">Analyze</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>Analytics</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- GOVERN -->
+        <div>
+          <div class="px-2 pb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted">Govern</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[11px] leading-none text-muted">::</span>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] border border-hairline px-1 py-0.2 bg-panel text-ink">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[11px] leading-none text-muted">::</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] border border-hairline px-1 py-0.2 bg-panel text-ink">12</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- SYSTEM -->
+        <div>
+          <div class="px-2 pb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted">System</div>
+          <nav class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-muted hover:text-ink hover:bg-panel text-[12px] font-normal transition-colors">
+              <span class="font-mono text-[11px] leading-none text-muted">::</span>
+              <span>Setup</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Card Footer -->
+    <div class="p-3 border-t border-hairline bg-panel">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 bg-ink text-base font-mono text-[11px] font-bold flex items-center justify-center">SA</div>
+          <div class="flex flex-col">
+            <span class="text-[12px] font-bold leading-tight text-ink">Sigit A.</span>
+            <span class="font-mono text-[10px] text-muted leading-tight">operator</span>
+          </div>
+        </div>
+        <div class="w-2 h-2 bg-ink" title="Session active"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN COLUMN -->
+  <main class="flex-1 h-full flex flex-col justify-between overflow-hidden bg-base">
+    
+    <!-- TOPBAR (44px) -->
+    <header class="h-11 px-6 border-b border-ink flex items-center justify-between bg-base flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <span class="font-mono text-[11px] text-muted tracking-wide">KYS //</span>
+        <h1 class="text-[13px] font-bold uppercase tracking-wider text-ink">Overview</h1>
+        <span class="font-mono text-[11px] px-1.5 py-0.5 bg-panel border border-hairline text-muted">cluster-01</span>
+      </div>
+
+      <!-- Search field with ⌘K -->
+      <div class="w-[380px] h-7 border border-ink bg-panel px-2.5 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-muted">
+          <span class="font-mono text-[11px] text-ink">&gt;</span>
+          <span class="font-mono text-[11px] text-muted">search nodes, edges, hashes</span>
+        </div>
+        <span class="font-mono text-[10px] border border-hairline px-1 bg-base text-muted">⌘K</span>
+      </div>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <div class="relative flex items-center justify-center w-7 h-7 border border-hairline hover:border-ink cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-ink" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-ink"></span>
+        </div>
+        <div class="w-7 h-7 border border-ink bg-panel font-mono text-[10px] font-bold flex items-center justify-center text-ink">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (fills remaining vertical space) -->
+    <div class="flex-1 px-6 py-4 flex flex-col justify-between overflow-hidden gap-3.5">
+
+      <!-- 1. ALERT BANNER (~44px) -->
+      <div class="h-11 px-4 border border-ink bg-panel flex items-center justify-between border-l-[3px] border-l-ink flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-[11px] font-bold text-ink">◐ WARN</span>
+          <span class="text-[13px] font-medium text-ink">2 stale edges detected in domain P4 — last verify 2h ago</span>
+        </div>
+        <button class="h-7 px-3 border border-ink text-ink font-mono text-[11px] uppercase tracking-wider font-semibold hover:bg-ink hover:text-base transition-colors">
+          Review
+        </button>
+      </div>
+
+      <!-- 2. KPI STRIP (4 cards in a row) -->
+      <div class="grid grid-cols-4 gap-3.5 flex-shrink-0">
+        <!-- Card 1 -->
+        <div class="p-3.5 border border-ink bg-panel flex flex-col justify-between h-[104px]">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Nodes</span>
+            <span class="font-mono text-[10px] text-ink">● OK</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <div class="text-[32px] font-bold tracking-tight text-ink leading-none">12,847</div>
+            <svg class="w-20 h-7" viewBox="0 0 80 28" fill="none">
+              <path d="M2 24 L 18 20 L 34 22 L 48 14 L 62 16 L 78 4" stroke="#0A0A0A" stroke-width="1.75" fill="none" stroke-linecap="square"/>
+            </svg>
+          </div>
+          <div class="font-mono text-[11px] text-muted leading-none">
+            +312 vs last week
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="p-3.5 border border-ink bg-panel flex flex-col justify-between h-[104px]">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Edges</span>
+            <span class="font-mono text-[10px] text-ink">● OK</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <div class="text-[32px] font-bold tracking-tight text-ink leading-none">48,203</div>
+            <svg class="w-20 h-7" viewBox="0 0 80 28" fill="none">
+              <path d="M2 22 L 16 23 L 32 18 L 48 19 L 64 10 L 78 6" stroke="#0A0A0A" stroke-width="1.75" fill="none" stroke-linecap="square"/>
+            </svg>
+          </div>
+          <div class="font-mono text-[11px] text-muted leading-none">
+            +1,204 vs last week
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="p-3.5 border border-ink bg-panel flex flex-col justify-between h-[104px]">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Queries 24h</span>
+            <span class="font-mono text-[10px] text-ink">● OK</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <div class="text-[32px] font-bold tracking-tight text-ink leading-none">3,412</div>
+            <svg class="w-20 h-7" viewBox="0 0 80 28" fill="none">
+              <path d="M2 20 L 16 16 L 30 22 L 46 15 L 60 17 L 78 8" stroke="#0A0A0A" stroke-width="1.75" fill="none" stroke-linecap="square"/>
+            </svg>
+          </div>
+          <div class="font-mono text-[11px] text-muted leading-none">
+            up 8.2% vs baseline
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="p-3.5 border border-ink bg-panel flex flex-col justify-between h-[104px]">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Latency P50</span>
+            <span class="font-mono text-[10px] text-ink">● OK</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <div class="text-[32px] font-bold tracking-tight text-ink leading-none">6.4<span class="text-[18px] font-medium font-mono ml-0.5">ms</span></div>
+            <svg class="w-20 h-7" viewBox="0 0 80 28" fill="none">
+              <path d="M2 8 L 18 10 L 32 6 L 48 18 L 62 14 L 78 20" stroke="#0A0A0A" stroke-width="1.75" fill="none" stroke-linecap="square"/>
+            </svg>
+          </div>
+          <div class="font-mono text-[11px] text-muted leading-none">
+            down 0.4ms target &lt; 10ms
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TWO-COLUMN ROW (Learning Loop & Recent Activity) -->
+      <div class="grid grid-cols-12 gap-3.5 flex-shrink-0 h-[216px]">
+        <!-- LEFT: Learning Loop (5 cols) -->
+        <div class="col-span-5 border border-ink bg-panel p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-hairline pb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-[12px] uppercase tracking-wider text-ink">Learning Loop</span>
+                <span class="font-mono text-[10px] border border-ink bg-ink text-base px-1.5 py-0.2">ONLINE // v14.2</span>
+              </div>
+              <span class="font-mono text-[11px] text-muted">RAFT</span>
+            </div>
+
+            <!-- 3 Bars -->
+            <div class="mt-3.5 space-y-3">
+              <!-- Precision Score -->
+              <div>
+                <div class="flex items-center justify-between font-mono text-[11px] mb-1">
+                  <span class="text-ink">Precision score</span>
+                  <span class="font-semibold text-ink">P 0.828</span>
+                </div>
+                <div class="w-full h-2 border border-ink bg-base p-[1px]">
+                  <div class="h-full bg-ink" style="width: 82.8%;"></div>
+                </div>
+              </div>
+
+              <!-- Mutation entropy -->
+              <div>
+                <div class="flex items-center justify-between font-mono text-[11px] mb-1">
+                  <span class="text-ink">Mutation entropy</span>
+                  <span class="font-semibold text-ink">M 0.341</span>
+                </div>
+                <div class="w-full h-2 border border-ink bg-base p-[1px]">
+                  <div class="h-full bg-ink" style="width: 34.1%;"></div>
+                </div>
+              </div>
+
+              <!-- Eigen convergence -->
+              <div>
+                <div class="flex items-center justify-between font-mono text-[11px] mb-1">
+                  <span class="text-ink">Eigen convergence</span>
+                  <span class="font-semibold text-ink">E 0.898</span>
+                </div>
+                <div class="w-full h-2 border border-ink bg-base p-[1px]">
+                  <div class="h-full bg-ink" style="width: 89.8%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-hairline flex items-center justify-between font-mono text-[11px]">
+            <span class="text-muted">Last relearn 2h ago · v14</span>
+            <span class="text-ink font-semibold">● CONVERGED</span>
+          </div>
+        </div>
+
+        <!-- RIGHT: Recent Activity (7 cols, 6 rows) -->
+        <div class="col-span-7 border border-ink bg-panel p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between border-b border-hairline pb-2">
+            <span class="font-bold text-[12px] uppercase tracking-wider text-ink">Recent Activity</span>
+            <span class="font-mono text-[10px] text-muted">6 AUDITED OPS SHOWN</span>
+          </div>
+
+          <!-- 6 Rows Table -->
+          <div class="flex flex-col divide-y divide-hairline mt-1">
+            <div class="grid grid-cols-12 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-2 text-muted">14:32:07Z</span>
+              <span class="col-span-2 text-ink font-semibold border-r border-hairline pr-1">sub-139</span>
+              <span class="col-span-6 pl-2 text-ink truncate font-sans text-[12px]">Compacted vector embedding cache tier</span>
+              <span class="col-span-2 text-right text-muted">0x4a1c</span>
+            </div>
+            <div class="grid grid-cols-12 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-2 text-muted">14:30:19Z</span>
+              <span class="col-span-2 text-ink font-semibold border-r border-hairline pr-1">operator</span>
+              <span class="col-span-6 pl-2 text-ink truncate font-sans text-[12px]">Verified Merkle root consistency proof</span>
+              <span class="col-span-2 text-right text-muted">0x9f2c</span>
+            </div>
+            <div class="grid grid-cols-12 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-2 text-muted">14:28:44Z</span>
+              <span class="col-span-2 text-ink font-semibold border-r border-hairline pr-1">sub-141</span>
+              <span class="col-span-6 pl-2 text-ink truncate font-sans text-[12px]">Attached semantic ontology edges</span>
+              <span class="col-span-2 text-right text-muted">0x3e11</span>
+            </div>
+            <div class="grid grid-cols-12 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-2 text-muted">14:25:01Z</span>
+              <span class="col-span-2 text-ink font-semibold border-r border-hairline pr-1">agent-2</span>
+              <span class="col-span-6 pl-2 text-ink truncate font-sans text-[12px]">Pruned unreferenced orphan leaves</span>
+              <span class="col-span-2 text-right text-muted">0x7b90</span>
+            </div>
+            <div class="grid grid-cols-12 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-2 text-muted">14:21:15Z</span>
+              <span class="col-span-2 text-ink font-semibold border-r border-hairline pr-1">sub-139</span>
+              <span class="col-span-6 pl-2 text-ink truncate font-sans text-[12px]">Executed DuckDB AST index sweep</span>
+              <span class="col-span-2 text-right text-muted">0x8f2c</span>
+            </div>
+            <div class="grid grid-cols-12 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-2 text-muted">14:18:52Z</span>
+              <span class="col-span-2 text-ink font-semibold border-r border-hairline pr-1">operator</span>
+              <span class="col-span-6 pl-2 text-ink truncate font-sans text-[12px]">Re-indexed symbol schema contracts</span>
+              <span class="col-span-2 text-right text-muted">0xa18e</span>
+            </div>
+          </div>
+
+          <div class="pt-1.5 border-t border-hairline flex items-center justify-between font-mono text-[10px]">
+            <span class="text-muted">RAFT MONOTONIC LOG CONTINUITY 100%</span>
+            <a href="#" class="text-ink font-bold hover:underline">FULL LOG &gt;</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. DOMAIN HEALTH PANEL (7 rows P1..P7, fills vertical space) -->
+      <div class="flex-1 border border-ink bg-panel p-3.5 flex flex-col justify-between min-h-[260px]">
+        <div>
+          <div class="flex items-center justify-between border-b border-hairline pb-2">
+            <div class="flex items-center gap-3">
+              <span class="font-bold text-[12px] uppercase tracking-wider text-ink">Domain Health</span>
+              <span class="font-mono text-[11px] text-muted">7 PARTITIONS ACTIVE</span>
+            </div>
+            <div class="font-mono text-[10px] text-muted">
+              SHACL CORE INVARIANTS: PASS (11/11)
+            </div>
+          </div>
+
+          <!-- Table Header -->
+          <div class="grid grid-cols-12 px-2 py-1.5 border-b border-hairline text-[9px] font-bold uppercase tracking-[0.14em] text-muted font-mono">
+            <span class="col-span-1">Domain</span>
+            <span class="col-span-5 font-sans">Partition Name</span>
+            <span class="col-span-2 text-center">Status</span>
+            <span class="col-span-3 text-center font-sans">Activity (14d)</span>
+            <span class="col-span-1 text-right">Nodes</span>
+          </div>
+
+          <!-- 7 Rows -->
+          <div class="divide-y divide-hairline">
+            <!-- P1 -->
+            <div class="grid grid-cols-12 px-2 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-1 font-bold text-ink">P1</span>
+              <span class="col-span-5 font-sans text-[12px] text-ink font-medium">Core Runtime Execution &amp; Store</span>
+              <div class="col-span-2 flex justify-center">
+                <span class="border border-ink bg-base text-ink px-2 py-0.2 text-[10px] font-bold">● OK</span>
+              </div>
+              <div class="col-span-3 flex justify-center items-center">
+                <svg class="w-32 h-4" viewBox="0 0 120 16" fill="none">
+                  <path d="M2 12 L 20 10 L 40 13 L 60 7 L 80 9 L 100 4 L 118 6" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="square"/>
+                </svg>
+              </div>
+              <span class="col-span-1 text-right font-mono text-ink">3,842</span>
+            </div>
+
+            <!-- P2 -->
+            <div class="grid grid-cols-12 px-2 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-1 font-bold text-ink">P2</span>
+              <span class="col-span-5 font-sans text-[12px] text-ink font-medium">Heuristics &amp; Ingestion Catalog</span>
+              <div class="col-span-2 flex justify-center">
+                <span class="border border-ink bg-base text-ink px-2 py-0.2 text-[10px] font-bold">● OK</span>
+              </div>
+              <div class="col-span-3 flex justify-center items-center">
+                <svg class="w-32 h-4" viewBox="0 0 120 16" fill="none">
+                  <path d="M2 14 L 20 11 L 40 12 L 60 8 L 80 7 L 100 8 L 118 3" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="square"/>
+                </svg>
+              </div>
+              <span class="col-span-1 text-right font-mono text-ink">2,118</span>
+            </div>
+
+            <!-- P3 -->
+            <div class="grid grid-cols-12 px-2 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-1 font-bold text-ink">P3</span>
+              <span class="col-span-5 font-sans text-[12px] text-ink font-medium">Vector Space &amp; KNN Embeddings</span>
+              <div class="col-span-2 flex justify-center">
+                <span class="border border-ink bg-base text-ink px-2 py-0.2 text-[10px] font-bold">● OK</span>
+              </div>
+              <div class="col-span-3 flex justify-center items-center">
+                <svg class="w-32 h-4" viewBox="0 0 120 16" fill="none">
+                  <path d="M2 10 L 20 9 L 40 12 L 60 11 L 80 6 L 100 8 L 118 5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="square"/>
+                </svg>
+              </div>
+              <span class="col-span-1 text-right font-mono text-ink">1,940</span>
+            </div>
+
+            <!-- P4 (WARN) - Inverted / distinct shape + text -->
+            <div class="grid grid-cols-12 px-2 py-1.5 items-center font-mono text-[11px] bg-base border border-ink my-0.5">
+              <span class="col-span-1 font-bold text-ink">P4</span>
+              <span class="col-span-5 font-sans text-[12px] text-ink font-bold">JSON-LD Schema &amp; Invariants</span>
+              <div class="col-span-2 flex justify-center">
+                <span class="border border-ink bg-ink text-base px-2 py-0.2 text-[10px] font-bold tracking-tight">◐ WARN</span>
+              </div>
+              <div class="col-span-3 flex justify-center items-center">
+                <svg class="w-32 h-4" viewBox="0 0 120 16" fill="none">
+                  <path d="M2 4 L 20 6 L 40 5 L 60 10 L 80 12 L 100 13 L 118 15" stroke="#0A0A0A" stroke-width="2" stroke-linecap="square"/>
+                </svg>
+              </div>
+              <span class="col-span-1 text-right font-mono font-bold text-ink">1,656</span>
+            </div>
+
+            <!-- P5 -->
+            <div class="grid grid-cols-12 px-2 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-1 font-bold text-ink">P5</span>
+              <span class="col-span-5 font-sans text-[12px] text-ink font-medium">Consensus, Leases &amp; Fencing</span>
+              <div class="col-span-2 flex justify-center">
+                <span class="border border-ink bg-base text-ink px-2 py-0.2 text-[10px] font-bold">● OK</span>
+              </div>
+              <div class="col-span-3 flex justify-center items-center">
+                <svg class="w-32 h-4" viewBox="0 0 120 16" fill="none">
+                  <path d="M2 12 L 20 11 L 40 10 L 60 8 L 80 7 L 100 5 L 118 4" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="square"/>
+                </svg>
+              </div>
+              <span class="col-span-1 text-right font-mono text-ink">1,112</span>
+            </div>
+
+            <!-- P6 -->
+            <div class="grid grid-cols-12 px-2 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-1 font-bold text-ink">P6</span>
+              <span class="col-span-5 font-sans text-[12px] text-ink font-medium">Inference Subsumption &amp; Mapping</span>
+              <div class="col-span-2 flex justify-center">
+                <span class="border border-ink bg-base text-ink px-2 py-0.2 text-[10px] font-bold">● OK</span>
+              </div>
+              <div class="col-span-3 flex justify-center items-center">
+                <svg class="w-32 h-4" viewBox="0 0 120 16" fill="none">
+                  <path d="M2 13 L 20 12 L 40 10 L 60 9 L 80 6 L 100 4 L 118 2" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="square"/>
+                </svg>
+              </div>
+              <span class="col-span-1 text-right font-mono text-ink">1,280</span>
+            </div>
+
+            <!-- P7 -->
+            <div class="grid grid-cols-12 px-2 py-1.5 items-center font-mono text-[11px]">
+              <span class="col-span-1 font-bold text-ink">P7</span>
+              <span class="col-span-5 font-sans text-[12px] text-ink font-medium">Evaluation &amp; Feedback Loop</span>
+              <div class="col-span-2 flex justify-center">
+                <span class="border border-ink bg-base text-ink px-2 py-0.2 text-[10px] font-bold">● OK</span>
+              </div>
+              <div class="col-span-3 flex justify-center items-center">
+                <svg class="w-32 h-4" viewBox="0 0 120 16" fill="none">
+                  <path d="M2 14 L 20 13 L 40 12 L 60 11 L 80 9 L 100 8 L 118 6" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="square"/>
+                </svg>
+              </div>
+              <span class="col-span-1 text-right font-mono text-ink">869</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-hairline flex items-center justify-between font-mono text-[10px] text-muted">
+          <span>SHARD_KEY: MD5_RANGE [0x0000..0xFFFF]</span>
+          <span>QUORUM TOLERANCE: 2 FAULTS (N=5, F=2)</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 5. STATUS BAR (FLUSH AT BOTTOM EDGE, 24px) -->
+    <footer class="h-6 px-4 border-t border-ink bg-panel flex items-center justify-between font-mono text-[10px] uppercase text-muted tracking-tight flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <span class="text-ink font-bold">12,847 NODES</span>
+        <span>·</span>
+        <span class="text-ink font-bold">48,203 EDGES</span>
+        <span>·</span>
+        <span>LAST RELEARN 2H AGO</span>
+        <span>·</span>
+        <span>V14</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span>RAFT QUORUM SYNCED</span>
+        <span>·</span>
+        <span>P50: 6.4MS</span>
+        <span>·</span>
+        <div class="flex items-center gap-1.5 text-ink font-semibold">
+          <span>ONLINE</span>
+          <!-- Reserved green status dot at the right end -->
+          <span class="w-2 h-2 rounded-full bg-[#16A34A] inline-block"></span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=1440, height=900, initial-scale=1.0" name="viewport"/>
+<title>Know Your Soul - Activity Log</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Inter (UI) & IBM Plex Mono (Data) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=Inter:wght@400;500;600;700&amp;family=Public+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            base: "#FAFAF8",
+            surface: "#FFFFFF",
+            "surface-variant": "#F2F2EE",
+            hairline: "#E4E4E0",
+            primary: "#111111",
+            "on-surface": "#111111",
+            "on-surface-variant": "#6B6B66",
+            outline: "#111111",
+            "outline-variant": "#E4E4E0",
+            "swiss-red": "#E03131",
+            "status-ok": "#2F9E6E",
+            "status-warn": "#B8860B",
+            "status-fail": "#C92A2A"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["'IBM Plex Mono'", "monospace"]
+          },
+          borderRadius: {
+            DEFAULT: "4px",
+            sm: "2px",
+            lg: "4px",
+            xl: "6px",
+            full: "9999px"
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* Custom exact styling rules for Swiss Grid aesthetic */
+    body {
+      background-color: #FAFAF8;
+      color: #111111;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 900px;
+      width: 1440px;
+    }
+
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* Strict table layout */
+    .row-compact {
+      height: 33px;
+    }
+
+    /* Sublte grid hairline patterns */
+    .hairline-b {
+      border-bottom: 1px solid #E4E4E0;
+    }
+    .hairline-r {
+      border-right: 1px solid #E4E4E0;
+    }
+    .hairline-t {
+      border-top: 1px solid #E4E4E0;
+    }
+    .hairline-l {
+      border-left: 1px solid #E4E4E0;
+    }
+
+    .rule-2px-b {
+      border-bottom: 2px solid #111111;
+    }
+    .rule-2px-t {
+      border-top: 2px solid #111111;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden antialiased bg-base select-none">
+<!-- ============================================================== -->
+<!-- SIDEBAR (240px wide, strict hairlines, Swiss typography)       -->
+<!-- ============================================================== -->
+<aside class="w-[240px] h-[900px] bg-base hairline-r flex flex-col justify-between shrink-0 z-30">
+<!-- Top Identity / Nav Section -->
+<div class="flex flex-col">
+<!-- Workspace Brand Anchor -->
+<div class="h-14 px-4 flex items-center justify-between hairline-b bg-base">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 bg-primary text-white flex items-center justify-center font-mono font-bold text-xs rounded-sm">
+            K
+          </div>
+<span class="font-headline font-bold text-[13px] tracking-tight text-primary">Know Your Soul</span>
+</div>
+<span class="font-mono text-[10px] tracking-tight px-1.5 py-0.5 border border-hairline text-on-surface-variant rounded-sm bg-white">
+          v14.2
+        </span>
+</div>
+<!-- Nav Section List -->
+<nav class="p-3 space-y-4">
+<!-- Group: MONITOR -->
+<div>
+<div class="px-2 pb-1 font-label text-[10px] tracking-wider text-on-surface-variant font-semibold">
+            MONITOR
+          </div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="monitoring">monitoring</span>
+<span class="font-headline">Overview</span>
+</a>
+<!-- Active item: Activity Log -->
+<a class="flex items-center justify-between px-2.5 py-1.5 text-xs rounded font-medium bg-[#E03131]/[0.08] text-swiss-red transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px] text-swiss-red" data-icon="policy">policy</span>
+<span class="font-headline">Activity Log</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-swiss-red"></span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="analytics">analytics</span>
+<span class="font-headline">Graph Explorer</span>
+</a>
+</div>
+</div>
+<!-- Group: ANALYZE -->
+<div>
+<div class="px-2 pb-1 font-label text-[10px] tracking-wider text-on-surface-variant font-semibold">
+            ANALYZE
+          </div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="search">search</span>
+<span class="font-headline">Search</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="speed">speed</span>
+<span class="font-headline">Metrics</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="query_stats">query_stats</span>
+<span class="font-headline">Analytics</span>
+</a>
+</div>
+</div>
+<!-- Group: GOVERN -->
+<div>
+<div class="px-2 pb-1 font-label text-[10px] tracking-wider text-on-surface-variant font-semibold">
+            GOVERN
+          </div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="health_and_safety">health_and_safety</span>
+<span class="font-headline">Health</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="receipt_long">receipt_long</span>
+<span class="font-headline">Audit Ledger</span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px]" data-icon="fact_check">fact_check</span>
+<span class="font-headline">Proposals</span>
+</div>
+<span class="font-mono text-[10px] bg-hairline px-1.5 py-0.2 rounded-sm text-primary font-medium">3</span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px]" data-icon="pending_actions">pending_actions</span>
+<span class="font-headline">Debt Queue</span>
+</div>
+<span class="font-mono text-[10px] bg-hairline px-1.5 py-0.2 rounded-sm text-primary font-medium">12</span>
+</a>
+</div>
+</div>
+<!-- Group: SYSTEM -->
+<div>
+<div class="px-2 pb-1 font-label text-[10px] tracking-wider text-on-surface-variant font-semibold">
+            SYSTEM
+          </div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="settings">settings</span>
+<span class="font-headline">System</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]" data-icon="tune">tune</span>
+<span class="font-headline">Setup</span>
+</a>
+</div>
+</div>
+</nav>
+</div>
+<!-- Sidebar Bottom: Operator Profile Card -->
+<div class="p-3 hairline-t bg-base">
+<div class="flex items-center justify-between p-2 rounded bg-white border border-hairline">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-sm bg-primary text-white font-mono text-xs font-semibold flex items-center justify-center">
+            SA
+          </div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-primary leading-tight">Sigit A.</span>
+<span class="font-mono text-[10px] text-on-surface-variant leading-none">operator</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer text-sm" data-icon="more_vert">more_vert</span>
+</div>
+</div>
+</aside>
+<!-- ============================================================== -->
+<!-- MAIN WORKSPACE VIEWPORT                                        -->
+<!-- ============================================================== -->
+<main class="flex-1 h-[900px] flex flex-col justify-between bg-surface overflow-hidden">
+<!-- 1. Topbar (h-14, exactly 56px) -->
+<header class="h-14 px-6 hairline-b flex items-center justify-between bg-base shrink-0">
+<!-- Left breadcrumb with status badge -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 font-headline text-xs font-semibold tracking-tight text-primary">
+<span class="text-on-surface-variant">KYS</span>
+<span class="text-on-surface-variant font-mono">/</span>
+<span class="text-on-surface-variant font-mono">/</span>
+<span>Activity Log</span>
+</div>
+<span class="font-mono text-[10px] font-medium tracking-tight text-on-surface-variant px-2 py-0.5 border border-hairline bg-white rounded-sm">
+          cluster-01
+        </span>
+</div>
+<!-- Center search bar with ⌘K -->
+<div class="w-[420px] relative">
+<span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="search">search</span>
+</span>
+<input class="w-full h-8 pl-8 pr-12 text-xs font-mono bg-white border border-hairline rounded focus:outline-none focus:border-primary text-primary placeholder-on-surface-variant" placeholder="search nodes, edges, hashes, logs" readonly="" type="text"/>
+<span class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+<kbd class="font-mono text-[9px] bg-base border border-hairline px-1.5 py-0.5 rounded text-on-surface-variant">⌘K</kbd>
+</span>
+</div>
+<!-- Right actions cluster -->
+<div class="flex items-center gap-4">
+<!-- RAFT indicator -->
+<div class="flex items-center gap-1.5 text-xs font-mono font-medium text-primary">
+<span class="w-2 h-2 rounded-full bg-status-ok inline-block"></span>
+<span class="text-[11px] tracking-tight">RAFT SYNCED</span>
+</div>
+<div class="h-4 w-[1px] bg-hairline"></div>
+<!-- Notification bell with dot -->
+<button class="relative text-on-surface-variant hover:text-primary transition-colors flex items-center">
+<span class="material-symbols-outlined text-lg" data-icon="notifications">notifications</span>
+<span class="absolute 0 top-0 right-0 w-1.5 h-1.5 rounded-full bg-swiss-red ring-2 ring-base"></span>
+</button>
+<!-- User Monogram Avatar -->
+<div class="w-6 h-6 rounded-sm bg-primary text-white font-mono text-[10px] font-semibold flex items-center justify-center cursor-pointer">
+          SA
+        </div>
+</div>
+</header>
+<!-- 2. Screen Content: Toolbar & Audited Events Table -->
+<div class="flex-1 flex flex-col px-6 pt-4 pb-0 overflow-hidden bg-base">
+<!-- Section Toolbar (34px height) -->
+<div class="h-9 mb-3 flex items-center justify-between shrink-0">
+<!-- Filter event search input -->
+<div class="relative w-64">
+<span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[15px]" data-icon="search">search</span>
+</span>
+<input class="w-full h-8 pl-8 pr-3 text-xs font-headline bg-white border border-hairline rounded focus:outline-none focus:border-primary text-primary placeholder-on-surface-variant" placeholder="Filter events" type="text"/>
+</div>
+<!-- Filter Dropdowns & Export -->
+<div class="flex items-center gap-2">
+<div class="flex items-center bg-white border border-hairline rounded divide-x divide-hairline text-xs font-headline">
+<button class="px-2.5 py-1.5 text-on-surface-variant hover:text-primary flex items-center gap-1 font-medium text-[11px]">
+              Level <span class="text-[9px] font-mono">▾</span>
+</button>
+<button class="px-2.5 py-1.5 text-on-surface-variant hover:text-primary flex items-center gap-1 font-medium text-[11px]">
+              Agent <span class="text-[9px] font-mono">▾</span>
+</button>
+<button class="px-2.5 py-1.5 text-on-surface-variant hover:text-primary flex items-center gap-1 font-medium text-[11px]">
+              Domain <span class="text-[9px] font-mono">▾</span>
+</button>
+<button class="px-2.5 py-1.5 text-primary flex items-center gap-1 font-mono text-[11px] font-semibold">
+              NOV 1 – NOV 5, 2026 <span class="text-[9px] font-mono">▾</span>
+</button>
+</div>
+<button class="h-8 px-3 bg-white border border-hairline rounded hover:border-primary hover:text-primary text-on-surface-variant text-[11px] font-mono font-medium flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[14px]" data-icon="upload">upload</span>
+<span>Export</span>
+</button>
+</div>
+</div>
+<!-- Events Table Frame (Strict 2px black structural boundaries, Museum print quality) -->
+<div class="flex-1 bg-white border-x-2 border-t-2 border-b border-primary flex flex-col overflow-hidden shadow-none rounded-[2px]">
+<!-- Table Header (28px height) -->
+<div class="h-7 bg-base hairline-b grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 font-mono text-[10px] font-semibold tracking-wider text-on-surface-variant uppercase select-none shrink-0">
+<div>TIME</div>
+<div>LEVEL</div>
+<div>AGENT</div>
+<div>ACTION</div>
+<div>DETAIL</div>
+<div class="text-right pr-2">HASH</div>
+</div>
+<!-- 18 Visible Rows (Compact exact ~34px rows filling vertical canvas cleanly) -->
+<div class="flex-1 flex flex-col justify-start divide-y divide-hairline font-mono text-xs overflow-hidden">
+<!-- Row 1 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:32:07Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-139</div>
+<div class="font-body text-primary font-medium text-[11px]">apply proposal</div>
+<div class="font-body text-primary truncate text-[11px]">Proposal p-2041 applied to domain P4</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">9f2c1ab4</div>
+</div>
+<!-- Row 2 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:30:19Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">operator</div>
+<div class="font-body text-primary font-medium text-[11px]">import file</div>
+<div class="font-body text-primary truncate text-[11px]">Ingested AST schema graph bundle into shard 2</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">8a1d440f</div>
+</div>
+<!-- Row 3 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:28:44Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-141</div>
+<div class="font-body text-primary font-medium text-[11px]">evaluate</div>
+<div class="font-body text-primary truncate text-[11px]">Computed topological convergence metrics across P1..P7</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">77e19cb2</div>
+</div>
+<!-- Row 4 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:25:01Z</div>
+<div class="flex items-center gap-1 text-status-warn font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-warn"></span> WARN
+            </div>
+<div class="text-primary font-medium text-[11px]">system</div>
+<div class="font-body text-primary font-medium text-[11px]">propose</div>
+<div class="font-body text-primary truncate text-[11px]">Stale citation threshold exceeded for vector cache tier</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">3d81b899</div>
+</div>
+<!-- Row 5 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:21:15Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-139</div>
+<div class="font-body text-primary font-medium text-[11px]">apply proposal</div>
+<div class="font-body text-primary truncate text-[11px]">Merged AST symbol index into partition P2</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">55c2f0a1</div>
+</div>
+<!-- Row 6 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:18:52Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">operator</div>
+<div class="font-body text-primary font-medium text-[11px]">evaluate</div>
+<div class="font-body text-primary truncate text-[11px]">Verified Raft monotonic log continuity to sequence 10423</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">a012e841</div>
+</div>
+<!-- Row 7 (ERROR ROW - Special highlighted state) -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 bg-[#C92A2A]/[0.06] border-l-[3px] border-status-fail">
+<div class="text-status-fail font-semibold text-[11px]">14:15:30Z</div>
+<div class="flex items-center gap-1 text-status-fail font-bold text-[11px]">
+<span class="w-1.5 h-1.5 bg-status-fail"></span> FAIL
+            </div>
+<div class="text-status-fail font-bold text-[11px]">sub-141</div>
+<div class="font-body text-status-fail font-bold text-[11px]">rollback</div>
+<div class="font-body text-status-fail font-bold truncate text-[11px] tracking-tight">REINDEX FAILED — stale embedding pointers</div>
+<div class="text-right text-status-fail font-bold text-[11px] font-mono pr-2">c190bb42</div>
+</div>
+<!-- Row 8 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:12:08Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">system</div>
+<div class="font-body text-primary font-medium text-[11px]">evaluate</div>
+<div class="font-body text-primary truncate text-[11px]">Asserted 11 SHACL core invariant constraints cleanly</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">e4479901</div>
+</div>
+<!-- Row 9 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:09:44Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-139</div>
+<div class="font-body text-primary font-medium text-[11px]">import file</div>
+<div class="font-body text-primary truncate text-[11px]">Loaded JSON-LD ontology definitions for domain P6</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">43dcb102</div>
+</div>
+<!-- Row 10 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:05:22Z</div>
+<div class="flex items-center gap-1 text-status-warn font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-warn"></span> WARN
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-141</div>
+<div class="font-body text-primary font-medium text-[11px]">propose</div>
+<div class="font-body text-primary truncate text-[11px]">Detected 2 orphan reference nodes in schema table</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">78fe23a9</div>
+</div>
+<!-- Row 11 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">14:02:11Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">operator</div>
+<div class="font-body text-primary font-medium text-[11px]">apply proposal</div>
+<div class="font-body text-primary truncate text-[11px]">Applied fencing lease renewal on cluster storage root</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">69bca711</div>
+</div>
+<!-- Row 12 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">13:58:39Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-139</div>
+<div class="font-body text-primary font-medium text-[11px]">evaluate</div>
+<div class="font-body text-primary truncate text-[11px]">Completed DuckDB vector table compaction step 4</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">12e094fa</div>
+</div>
+<!-- Row 13 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">13:55:04Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">system</div>
+<div class="font-body text-primary font-medium text-[11px]">import file</div>
+<div class="font-body text-primary truncate text-[11px]">Synchronized IPC broadcast socket to loopback port 8741</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">b82ef455</div>
+</div>
+<!-- Row 14 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">13:51:28Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-141</div>
+<div class="font-body text-primary font-medium text-[11px]">evaluate</div>
+<div class="font-body text-primary truncate text-[11px]">Measured cluster P50 query latency at 6.4ms baseline</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">4e112d7c</div>
+</div>
+<!-- Row 15 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">13:48:10Z</div>
+<div class="flex items-center gap-1 text-status-warn font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-warn"></span> WARN
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-139</div>
+<div class="font-body text-primary font-medium text-[11px]">propose</div>
+<div class="font-body text-primary truncate text-[11px]">Unindexed semantic tag flagged for vacuum maintenance</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">33190ab7</div>
+</div>
+<!-- Row 16 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">13:44:55Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">operator</div>
+<div class="font-body text-primary font-medium text-[11px]">apply proposal</div>
+<div class="font-body text-primary truncate text-[11px]">Pruned unreferenced orphan leaves from knowledge DAG</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">44bc19f0</div>
+</div>
+<!-- Row 17 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">13:40:12Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">system</div>
+<div class="font-body text-primary font-medium text-[11px]">evaluate</div>
+<div class="font-body text-primary truncate text-[11px]">Validated Merkle root monotonic chain integrity 100%</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">8f2c00a1</div>
+</div>
+<!-- Row 18 -->
+<div class="row-compact grid grid-cols-[100px_90px_100px_140px_1fr_100px] items-center px-4 hover:bg-base/70 transition-colors">
+<div class="text-on-surface-variant text-[11px]">13:36:40Z</div>
+<div class="flex items-center gap-1 text-status-ok font-semibold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span> OK
+            </div>
+<div class="text-primary font-medium text-[11px]">sub-141</div>
+<div class="font-body text-primary font-medium text-[11px]">import file</div>
+<div class="font-body text-primary truncate text-[11px]">Exported frozen runtime manifest digest BLAKE3 batch</div>
+<div class="text-right text-on-surface-variant text-[11px] font-mono pr-2">4a01c482</div>
+</div>
+</div>
+<!-- 3. Pagination row inside frame base (32px height) -->
+<div class="h-8 px-4 hairline-t bg-base flex items-center justify-between shrink-0 font-mono text-[11px]">
+<div class="text-on-surface-variant">
+<span class="text-primary font-semibold">1-18</span> of <span class="text-primary font-semibold">3,452</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-1 px-2 py-0.5 border border-hairline rounded bg-white text-on-surface-variant hover:text-primary">
+<span>18 / page</span>
+<span class="text-[9px]">▾</span>
+</button>
+<div class="flex items-center border border-hairline rounded bg-white divide-x divide-hairline">
+<button class="px-2 py-0.5 text-on-surface-variant hover:bg-base text-xs font-semibold">&lt;</button>
+<button class="px-2 py-0.5 text-primary hover:bg-base text-xs font-semibold">&gt;</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Spacing spacer before footer -->
+<div class="h-3 shrink-0"></div>
+</div>
+<!-- 4. Bottom Status Bar (2px black top structural rule, flush at bottom edge 900px) -->
+<footer class="h-7 px-6 bg-base rule-2px-t flex items-center justify-between font-mono text-[10px] tracking-tight shrink-0 select-none">
+<!-- Left system summary -->
+<div class="flex items-center gap-2 text-primary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+<span>3,452 EVENTS · 2 AGENTS LIVE · STREAM CONNECTED</span>
+</div>
+<!-- Right cluster health & latency -->
+<div class="flex items-center gap-2 text-on-surface-variant font-medium">
+<span>RAFT QUORUM SYNCED</span>
+<span>·</span>
+<span>LATENCY P50 6.4ms</span>
+<span>·</span>
+<span class="text-primary font-semibold flex items-center gap-1">
+          ONLINE
+          <span class="w-1.5 h-1.5 rounded-full bg-status-ok inline-block"></span>
+</span>
+</div>
+</footer>
+</main>
+</body></html>

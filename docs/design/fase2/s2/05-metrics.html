@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Metrics (Terminal Brutalist)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            base: '#000000',
+            panel: '#050805',
+            panelRaised: '#0A100A',
+            borderGreen: '#1A2E1A',
+            borderGreenBright: '#294A29',
+            accent: '#33FF66',
+            textPrimary: '#C9F7D4',
+            textSecondary: '#5F8F68',
+            warn: '#FFD23F',
+            danger: '#FF4D4D',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #000000;
+      color: #C9F7D4;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* CRT Scanline subtle texture */
+    .crt-overlay {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+    }
+    /* Fieldset style legend border headers */
+    .field-panel {
+      position: relative;
+      border: 1px solid #1A2E1A;
+      background: #050805;
+      border-radius: 1px;
+    }
+    .field-legend {
+      position: absolute;
+      top: -9px;
+      left: 12px;
+      background: #050805;
+      padding: 0 6px;
+      font-size: 10px;
+      line-height: 14px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #5F8F68;
+      border-left: 1px solid #1A2E1A;
+      border-right: 1px solid #1A2E1A;
+    }
+    /* Custom scrollbar reset */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #000000; }
+    ::-webkit-scrollbar-thumb { background: #1A2E1A; }
+  </style>
+</head>
+<body class="relative flex w-[1440px] h-[900px] overflow-hidden bg-base text-textPrimary font-mono">
+
+  <!-- ================= SIDEBAR (240px) ================= -->
+  <aside class="w-[240px] h-[900px] flex flex-col justify-between border-r border-borderGreen bg-base flex-shrink-0 z-20">
+    <!-- Top Branding -->
+    <div>
+      <div class="h-11 px-4 border-b border-borderGreen flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 border border-accent flex items-center justify-center text-[10px] font-bold text-accent bg-[#071F0C]">K</div>
+          <span class="text-xs font-bold tracking-wider text-textPrimary uppercase">Know Your Soul</span>
+        </div>
+        <span class="text-[10px] text-textSecondary border border-borderGreen px-1 py-0.5">v14.2</span>
+      </div>
+
+      <!-- Navigation Groups -->
+      <nav class="p-3 space-y-4 text-xs">
+        <!-- MONITOR -->
+        <div>
+          <div class="text-[10px] uppercase font-semibold text-textSecondary tracking-widest px-2 mb-1.5 flex items-center gap-1.5">
+            <span class="text-textSecondary opacity-60">01 //</span> MONITOR
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> Overview
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> Activity Log
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> Graph Explorer
+            </a>
+          </div>
+        </div>
+
+        <!-- ANALYZE -->
+        <div>
+          <div class="text-[10px] uppercase font-semibold text-textSecondary tracking-widest px-2 mb-1.5 flex items-center gap-1.5">
+            <span class="text-textSecondary opacity-60">02 //</span> ANALYZE
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> Search
+            </a>
+            <!-- Active Item: Metrics -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-[2px] text-accent bg-[#0B210E] border-l-2 border-accent font-semibold">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-accent">&gt;</span> Metrics
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> Analytics
+            </a>
+          </div>
+        </div>
+
+        <!-- GOVERN -->
+        <div>
+          <div class="text-[10px] uppercase font-semibold text-textSecondary tracking-widest px-2 mb-1.5 flex items-center gap-1.5">
+            <span class="text-textSecondary opacity-60">03 //</span> GOVERN
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> Health
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> Audit Ledger
+            </a>
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors cursor-pointer">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] opacity-70">::</span> Proposals
+              </div>
+              <span class="text-[10px] text-textSecondary border border-borderGreen px-1">3</span>
+            </div>
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors cursor-pointer">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] opacity-70">::</span> Debt Queue
+              </div>
+              <span class="text-[10px] text-textSecondary border border-borderGreen px-1">12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SYSTEM -->
+        <div>
+          <div class="text-[10px] uppercase font-semibold text-textSecondary tracking-widest px-2 mb-1.5 flex items-center gap-1.5">
+            <span class="text-textSecondary opacity-60">04 //</span> SYSTEM
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> System
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] text-textSecondary hover:text-textPrimary hover:bg-panel transition-colors">
+              <span class="text-[11px] opacity-70">::</span> Setup
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sidebar Bottom: User Card -->
+    <div class="p-3 border-t border-borderGreen bg-panel flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 border border-borderGreen bg-[#081209] flex items-center justify-center text-[10px] font-bold text-accent">SA</div>
+        <div class="flex flex-col">
+          <span class="text-xs font-medium text-textPrimary leading-tight">Sigit A.</span>
+          <span class="text-[10px] text-textSecondary font-mono leading-tight">operator</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+        <span class="text-[9px] text-textSecondary uppercase">LIVE</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT (1200px) ================= -->
+  <main class="w-[1200px] h-[900px] flex flex-col justify-between bg-base relative z-10 flex-shrink-0">
+
+    <!-- TOPBAR (44px) - Prompt style -->
+    <header class="h-11 px-4 border-b border-borderGreen bg-base flex items-center justify-between flex-shrink-0">
+      <!-- Left prompt -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="text-textSecondary font-semibold">kyc://</span><span class="text-accent font-bold">metrics</span>
+          <span class="inline-block w-2 h-3.5 bg-accent animate-pulse ml-0.5"></span>
+        </div>
+        <div class="h-3 w-px bg-borderGreen"></div>
+        <div class="text-[11px] text-textSecondary border border-borderGreen px-2 py-0.5 bg-panel">
+          CLUSTER: <span class="text-textPrimary">cluster-01</span>
+        </div>
+        <div class="text-[11px] text-textSecondary border border-borderGreen px-2 py-0.5 bg-panel">
+          ENGINE: <span class="text-textPrimary">v14.2 DETERMINISTIC</span>
+        </div>
+      </div>
+
+      <!-- Center Search -->
+      <div class="w-80 h-7 border border-borderGreen bg-panel px-2.5 flex items-center justify-between text-xs text-textSecondary">
+        <div class="flex items-center gap-2">
+          <span class="text-textSecondary">&gt;</span>
+          <span class="text-[11px] text-textSecondary opacity-80">search benchmarks, queries, hashes...</span>
+        </div>
+        <span class="text-[10px] border border-borderGreen px-1 text-textSecondary">⌘K</span>
+      </div>
+
+      <!-- Right Chrome: Max 4 segments (Sync, Bell, Avatar, Status) -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 text-[11px] text-accent border border-borderGreen bg-[#08180A] px-2 py-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+          <span>RAFT QUORUM 3/3</span>
+        </div>
+        <!-- Bell with notification dot -->
+        <button class="relative w-7 h-7 border border-borderGreen bg-panel flex items-center justify-center text-textSecondary hover:text-accent hover:border-accent transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-warn rounded-full"></span>
+        </button>
+        <!-- Avatar tag -->
+        <div class="w-7 h-7 border border-borderGreen bg-panel flex items-center justify-center text-[10px] font-bold text-textPrimary">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Fills exactly between Topbar and Footer) -->
+    <div class="p-3.5 flex flex-col gap-3.5 flex-1 overflow-hidden justify-between">
+
+      <!-- 1. KPI STRIP (4 CARDS) -->
+      <section class="grid grid-cols-4 gap-3 flex-shrink-0">
+        <!-- Card 1: QUERIES 24H -->
+        <div class="field-panel p-3 flex flex-col justify-between h-[88px]">
+          <span class="field-legend">01 // QUERIES 24H</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-2xl font-bold tracking-tight text-textPrimary">3,412</span>
+            <span class="text-[11px] text-accent font-semibold tracking-tight">↑ +8.2%</span>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-borderGreen text-[10px] text-textSecondary">
+            <span>vs baseline 3,153</span>
+            <svg class="w-24 h-4 stroke-accent fill-none" viewBox="0 0 96 16">
+              <path d="M0 12 L14 10 L28 13 L42 8 L56 10 L70 5 L84 6 L96 2" stroke-width="1.25" stroke-linecap="square"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 2: P50 LATENCY -->
+        <div class="field-panel p-3 flex flex-col justify-between h-[88px]">
+          <span class="field-legend">02 // P50 LATENCY</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-2xl font-bold tracking-tight text-textPrimary">6.4<span class="text-sm font-normal text-textSecondary ml-0.5">ms</span></span>
+            <span class="text-[11px] text-accent font-semibold tracking-tight">↓ -0.4ms</span>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-borderGreen text-[10px] text-textSecondary">
+            <span>target &lt; 10ms (OK)</span>
+            <svg class="w-24 h-4 stroke-accent fill-none" viewBox="0 0 96 16">
+              <path d="M0 4 L16 6 L32 5 L48 9 L64 7 L80 11 L96 12" stroke-width="1.25" stroke-linecap="square"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 3: TOKEN SAVING -->
+        <div class="field-panel p-3 flex flex-col justify-between h-[88px]">
+          <span class="field-legend">03 // TOKEN SAVING</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-2xl font-bold tracking-tight text-textPrimary">94.2<span class="text-sm font-normal text-textSecondary ml-0.5">%</span></span>
+            <span class="text-[11px] text-accent font-semibold tracking-tight">↑ +0.3pt</span>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-borderGreen text-[10px] text-textSecondary">
+            <span>AST pruned 1.82M</span>
+            <svg class="w-24 h-4 stroke-accent fill-none" viewBox="0 0 96 16">
+              <path d="M0 13 L14 11 L28 12 L42 9 L56 7 L70 5 L84 4 L96 3" stroke-width="1.25" stroke-linecap="square"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 4: CACHE HIT -->
+        <div class="field-panel p-3 flex flex-col justify-between h-[88px]">
+          <span class="field-legend">04 // CACHE HIT</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-2xl font-bold tracking-tight text-textPrimary">87.1<span class="text-sm font-normal text-textSecondary ml-0.5">%</span></span>
+            <span class="text-[11px] text-accent font-semibold tracking-tight">↑ +1.2pt</span>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-borderGreen text-[10px] text-textSecondary">
+            <span>DuckDB in-mem WAL</span>
+            <svg class="w-24 h-4 stroke-accent fill-none" viewBox="0 0 96 16">
+              <path d="M0 11 L14 9 L28 10 L42 6 L56 7 L70 3 L84 4 L96 2" stroke-width="1.25" stroke-linecap="square"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. LARGE CHART PANEL: QUERY VOLUME, 14 DAYS -->
+      <section class="field-panel px-4 pt-3.5 pb-2.5 flex flex-col justify-between h-[168px] flex-shrink-0">
+        <span class="field-legend">TELEMETRY // QUERY VOLUME, 14 DAYS</span>
+
+        <div class="flex items-center justify-between text-[11px] text-textSecondary mb-1">
+          <div class="flex items-center gap-3">
+            <span class="text-textPrimary font-semibold">14D ACCUMULATION: 48,203 QUERIES</span>
+            <span class="text-textSecondary">//</span>
+            <span>MEAN VELOCITY: 3,443/DAY</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-0.5 bg-accent"></span>
+            <span class="text-[10px] text-accent uppercase font-medium">TRAVERSAL LOAD (STROKE-ONLY)</span>
+            <span class="border border-accent text-accent text-[9px] px-1 py-0.2 bg-[#09240D]">TODAY FLAGGED</span>
+          </div>
+        </div>
+
+        <!-- SVG Line Chart (14 points, stroke-only, clean phosphor aesthetic) -->
+        <div class="w-full h-[98px] relative">
+          <svg class="w-full h-full" viewBox="0 0 1160 88" preserveAspectRatio="none">
+            <!-- Subtle dashed threshold line -->
+            <line x1="0" y1="44" x2="1160" y2="44" stroke="#1A2E1A" stroke-width="1" stroke-dasharray="4 4"/>
+            <!-- 14 vertical subtle tick markers -->
+            <line x1="30" y1="0" x2="30" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="114" y1="0" x2="114" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="198" y1="0" x2="198" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="282" y1="0" x2="282" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="366" y1="0" x2="366" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="450" y1="0" x2="450" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="534" y1="0" x2="534" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="618" y1="0" x2="618" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="702" y1="0" x2="702" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="786" y1="0" x2="786" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="870" y1="0" x2="870" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="954" y1="0" x2="954" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="1038" y1="0" x2="1038" y2="88" stroke="#0E1C0E" stroke-width="1"/>
+            <line x1="1122" y1="0" x2="1122" y2="88" stroke="#1A2E1A" stroke-width="1"/>
+
+            <!-- Stroke-only accent trajectory -->
+            <polyline
+              points="30,62 114,56 198,64 282,50 366,54 450,42 534,46 618,36 702,40 786,30 870,34 954,24 1038,20 1122,12"
+              fill="none"
+              stroke="#33FF66"
+              stroke-width="1.75"
+              stroke-linecap="square"
+              stroke-linejoin="miter"
+            />
+
+            <!-- Data tick points on the line -->
+            <circle cx="30" cy="62" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="114" cy="56" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="198" cy="64" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="282" cy="50" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="366" cy="54" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="450" cy="42" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="534" cy="46" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="618" cy="36" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="702" cy="40" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="786" cy="30" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="870" cy="34" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="954" cy="24" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            <circle cx="1038" cy="20" r="2" fill="#000000" stroke="#33FF66" stroke-width="1"/>
+            
+            <!-- TODAY FLAGGED: highlight pulse node at 1122,12 -->
+            <circle cx="1122" cy="12" r="4.5" fill="#33FF66" stroke="#000000" stroke-width="1.5"/>
+            <line x1="1122" y1="18" x2="1122" y2="88" stroke="#33FF66" stroke-width="1" stroke-dasharray="2 2"/>
+          </svg>
+        </div>
+
+        <!-- 14 Day Ticks Footer -->
+        <div class="grid grid-cols-14 text-[9px] text-textSecondary uppercase tracking-tighter pt-1 border-t border-borderGreen text-center">
+          <span>D-13</span>
+          <span>D-12</span>
+          <span>D-11</span>
+          <span>D-10</span>
+          <span>D-09</span>
+          <span>D-08</span>
+          <span>D-07</span>
+          <span>D-06</span>
+          <span>D-05</span>
+          <span>D-04</span>
+          <span>D-03</span>
+          <span>D-02</span>
+          <span>D-01</span>
+          <span class="text-accent font-bold bg-[#08200B]">TODAY (3,412)</span>
+        </div>
+      </section>
+
+      <!-- 3. BENCHMARK TABLE (EXACTLY 12 VISIBLE ROWS) -->
+      <section class="field-panel flex-1 flex flex-col justify-between overflow-hidden">
+        <span class="field-legend">BENCHMARK TEST BED // 12 REGISTERED PRIMITIVES</span>
+
+        <!-- Table Structure (Dense Rows 36-38px) -->
+        <div class="w-full flex-1 flex flex-col justify-between">
+          <!-- Table Header -->
+          <div class="h-8 border-b border-borderGreen bg-[#030603] px-3 grid grid-cols-12 items-center text-[10px] uppercase font-bold text-textSecondary tracking-wider flex-shrink-0">
+            <span class="col-span-4">BENCH</span>
+            <span class="col-span-2 text-right">P50</span>
+            <span class="col-span-2 text-right">P95</span>
+            <span class="col-span-2 text-right">TOKENS</span>
+            <span class="col-span-2 text-right pr-2">SAVING</span>
+          </div>
+
+          <!-- 12 Rows - Exactly fit in remaining vertical height -->
+          <div class="flex-1 flex flex-col justify-between divide-y divide-borderGreen text-xs">
+            
+            <!-- Row 1 (BEST ROW ACCENTED) -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center bg-[#071F0C] text-accent font-medium">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-accent opacity-70">#01</span>
+                <span class="font-bold">q01-root-subgraph-expansion</span>
+                <span class="text-[9px] px-1 py-0 border border-accent bg-[#0B2E12]">BEST</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-accent">0.82ms</span>
+              <span class="col-span-2 text-right font-mono text-accent">1.45ms</span>
+              <span class="col-span-2 text-right font-mono text-accent">142</span>
+              <span class="col-span-2 text-right font-mono font-bold text-accent pr-2">98.4%</span>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#02</span>
+                <span>q02-fast-ast-index-lookup</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">1.14ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">2.10ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">216</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">96.8%</span>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#03</span>
+                <span>q03-heuristic-fencing-verify</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">1.88ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">3.40ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">380</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">95.1%</span>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#04</span>
+                <span>q04-knn-cosine-subspace-scan</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">2.42ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">4.65ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">492</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">94.7%</span>
+            </div>
+
+            <!-- Row 5 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#05</span>
+                <span>q05-merkle-chain-proof-walk</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">3.15ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">5.82ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">610</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">93.9%</span>
+            </div>
+
+            <!-- Row 6 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#06</span>
+                <span>q06-shacl-contract-eval</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">4.02ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">6.74ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">744</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">92.8%</span>
+            </div>
+
+            <!-- Row 7 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#07</span>
+                <span>q07-multi-domain-subsumption</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">5.20ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">8.12ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">890</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">91.4%</span>
+            </div>
+
+            <!-- Row 8 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#08</span>
+                <span>q08-orphan-leaf-prune-sweep</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">6.40ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">9.80ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">968</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">90.2%</span>
+            </div>
+
+            <!-- Row 9 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#09</span>
+                <span>q09-duckdb-vector-compaction</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">7.85ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">11.40ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">1,120</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">88.6%</span>
+            </div>
+
+            <!-- Row 10 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#10</span>
+                <span>q10-jsonld-ontology-rebind</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">8.92ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">13.15ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">1,280</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">86.7%</span>
+            </div>
+
+            <!-- Row 11 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#11</span>
+                <span>q11-raft-monotonic-lease-sync</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">10.40ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">15.80ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">1,410</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">84.9%</span>
+            </div>
+
+            <!-- Row 12 -->
+            <div class="px-3 py-1.5 grid grid-cols-12 items-center hover:bg-panelRaised text-textPrimary">
+              <div class="col-span-4 flex items-center gap-2">
+                <span class="text-[10px] text-textSecondary">#12</span>
+                <span>q12-cross-shard-entropy-relearn</span>
+              </div>
+              <span class="col-span-2 text-right font-mono text-textPrimary">12.18ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">18.90ms</span>
+              <span class="col-span-2 text-right font-mono text-textPrimary">1,680</span>
+              <span class="col-span-2 text-right font-mono text-textSecondary pr-2">82.3%</span>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 4. STATUS BAR (FLUSH AT BOTTOM EDGE, 28px) -->
+    <footer class="h-7 px-4 border-t border-borderGreen bg-base flex items-center justify-between text-[11px] text-textSecondary flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 text-accent font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+          24 BENCH CASES
+        </span>
+        <span class="text-borderGreen">•</span>
+        <span>LAST RUN 12 MIN AGO</span>
+        <span class="text-borderGreen">•</span>
+        <span class="text-textPrimary font-medium">GATE 24/24 PASS</span>
+      </div>
+
+      <div class="flex items-center gap-4 text-[10px]">
+        <span>ENGINE: v14.2 DETERMINISTIC</span>
+        <span class="text-borderGreen">|</span>
+        <span>SHARD: ALL_PARTITIONS</span>
+        <span class="text-borderGreen">|</span>
+        <span class="text-accent flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+          TERMINAL ONLINE
+        </span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- CRT Scanline Overlay -->
+  <div class="crt-overlay absolute inset-0 z-30 pointer-events-none"></div>
+
+</body>
+</html>

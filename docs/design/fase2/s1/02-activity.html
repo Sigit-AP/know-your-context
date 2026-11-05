@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Activity Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 1440px;
+      height: 900px;
+      max-width: 1440px;
+      max-height: 900px;
+      overflow: hidden;
+      background-color: #0B0D11;
+      color: #E6E9EF;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Layout structure */
+    .app-container {
+      display: flex;
+      width: 1440px;
+      height: 900px;
+      background-color: #0B0D11;
+    }
+
+    /* Left Sidebar: 256px wide */
+    aside.sidebar {
+      width: 256px;
+      flex-shrink: 0;
+      height: 900px;
+      background-color: #0E1116;
+      border-right: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .brand-header {
+      padding: 16px 20px 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .brand-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: #161B24;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .brand-icon svg {
+      width: 12px;
+      height: 12px;
+      stroke: #6366F1;
+      fill: none;
+    }
+    .brand-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E6E9EF;
+      letter-spacing: -0.01em;
+    }
+    .brand-version {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #9AA3B2;
+      margin-left: auto;
+    }
+
+    .nav-scroll {
+      flex: 1;
+      padding: 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: hidden;
+    }
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9AA3B2;
+      padding: 0 10px;
+      margin-bottom: 4px;
+    }
+    .nav-items {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #9AA3B2;
+      text-decoration: none;
+      transition: color 0.1s, background-color 0.1s;
+    }
+    .nav-item:hover {
+      color: #E6E9EF;
+      background-color: #12161D;
+    }
+    .nav-item.active {
+      color: #818CF8;
+      background-color: rgba(99, 102, 241, 0.12);
+      font-weight: 500;
+    }
+    .nav-item svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 1.75;
+      stroke: currentColor;
+      fill: none;
+      flex-shrink: 0;
+    }
+
+    .user-footer {
+      padding: 12px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      background-color: #0E1116;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #161B24;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: #E6E9EF;
+    }
+    .user-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .user-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #E6E9EF;
+      line-height: 1.2;
+    }
+    .user-role {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #9AA3B2;
+      line-height: 1.2;
+    }
+    .status-indicator-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #34D399;
+      margin-left: auto;
+    }
+
+    /* Main Area: 1184px wide */
+    main.main-content {
+      width: 1184px;
+      height: 900px;
+      display: flex;
+      flex-direction: column;
+      background-color: #0B0D11;
+      overflow: hidden;
+    }
+
+    /* Topbar: 48px */
+    header.topbar {
+      height: 48px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background-color: #0B0D11;
+      flex-shrink: 0;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumb-root {
+      font-size: 12px;
+      color: #9AA3B2;
+    }
+    .breadcrumb-slash {
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 12px;
+    }
+    .topbar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E6E9EF;
+      letter-spacing: -0.01em;
+    }
+    .cluster-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #12161D;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: #9AA3B2;
+      margin-left: 6px;
+    }
+
+    .topbar-center {
+      width: 320px;
+    }
+    .topbar-search-box {
+      width: 100%;
+      height: 28px;
+      background: #12161D;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      color: #9AA3B2;
+    }
+    .topbar-search-box svg {
+      width: 13px;
+      height: 13px;
+      stroke: #9AA3B2;
+      fill: none;
+    }
+    .topbar-search-placeholder {
+      font-size: 11px;
+      color: #9AA3B2;
+      flex: 1;
+    }
+    .kbd-shortcut {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: #161B24;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #9AA3B2;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .bell-btn {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: #9AA3B2;
+      cursor: pointer;
+    }
+    .bell-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+    }
+    .bell-dot {
+      position: absolute;
+      top: 5px;
+      right: 6px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #6366F1;
+    }
+    .topbar-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #161B24;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: #E6E9EF;
+    }
+
+    /* Content Body Area */
+    .body-content {
+      flex: 1;
+      padding: 14px 20px 0 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Toolbar: 36px */
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .filter-input-wrap {
+      width: 260px;
+      height: 30px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+    }
+    .filter-input-wrap svg {
+      width: 13px;
+      height: 13px;
+      stroke: #9AA3B2;
+      fill: none;
+    }
+    .filter-input-wrap input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #E6E9EF;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      width: 100%;
+    }
+    .filter-input-wrap input::placeholder {
+      color: #9AA3B2;
+    }
+
+    .toolbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-pill {
+      height: 30px;
+      padding: 0 10px;
+      background: #12161D;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      color: #9AA3B2;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .filter-pill:hover {
+      background: #161B24;
+      color: #E6E9EF;
+    }
+    .filter-pill.mono-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+    .caret-down {
+      font-size: 8px;
+      opacity: 0.7;
+    }
+    .btn-export {
+      height: 30px;
+      padding: 0 12px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      color: #E6E9EF;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .btn-export:hover {
+      background: #161B24;
+    }
+
+    /* Table Container: exactly 18 rows */
+    .table-container {
+      background: #12161D;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Table Header */
+    .table-header {
+      height: 32px;
+      min-height: 32px;
+      background: #0E1116;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      display: grid;
+      grid-template-columns: 110px 84px 104px 140px 1fr 100px;
+      align-items: center;
+      padding: 0 16px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #9AA3B2;
+    }
+
+    /* Table Body with 18 items */
+    .table-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .table-row {
+      height: 38px;
+      min-height: 38px;
+      max-height: 38px;
+      display: grid;
+      grid-template-columns: 110px 84px 104px 140px 1fr 100px;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 12px;
+      background: #12161D;
+      transition: background-color 0.08s;
+      white-space: nowrap;
+    }
+    .table-row:hover {
+      background: #161B24;
+    }
+    .table-row:last-child {
+      border-bottom: none;
+    }
+
+    /* Row 7 ERROR SPECIFIC */
+    .table-row.row-error {
+      background: rgba(248, 113, 113, 0.08);
+      border-left: 2px solid #F87171;
+      padding-left: 14px;
+    }
+    .table-row.row-error:hover {
+      background: rgba(248, 113, 113, 0.12);
+    }
+
+    /* Micro Pills */
+    .pill-level {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      line-height: 1;
+      width: fit-content;
+    }
+    .pill-level.info {
+      background: rgba(99, 102, 241, 0.14);
+      color: #818CF8;
+      border: 1px solid rgba(99, 102, 241, 0.28);
+    }
+    .pill-level.warn {
+      background: rgba(251, 191, 36, 0.12);
+      color: #FBBF24;
+      border: 1px solid rgba(251, 191, 36, 0.28);
+    }
+    .pill-level.error {
+      background: rgba(248, 113, 113, 0.15);
+      color: #F87171;
+      border: 1px solid rgba(248, 113, 113, 0.35);
+    }
+
+    .col-time {
+      color: #9AA3B2;
+      font-size: 11px;
+    }
+    .col-agent {
+      color: #E6E9EF;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .agent-tag {
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #161B24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #E6E9EF;
+    }
+    .agent-tag.operator {
+      border-color: rgba(99, 102, 241, 0.25);
+      color: #A5B4FC;
+    }
+    .col-action {
+      color: #E6E9EF;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .col-detail {
+      color: #9AA3B2;
+      overflow: hidden;
+      text-overflow: clip;
+      padding-right: 12px;
+    }
+    .col-detail.text-error {
+      color: #F87171;
+      font-weight: 500;
+    }
+    .col-hash {
+      color: #9AA3B2;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Pagination Bar: 40px */
+    .pagination-bar {
+      height: 40px;
+      min-height: 40px;
+      background: #0E1116;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 0 0 12px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+    .pagination-left {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #9AA3B2;
+    }
+    .pagination-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .per-page-chip {
+      height: 24px;
+      padding: 0 8px;
+      background: #12161D;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      color: #9AA3B2;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .pg-btn {
+      width: 28px;
+      height: 28px;
+      background: #12161D;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      color: #9AA3B2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .pg-btn:hover {
+      background: #161B24;
+      color: #E6E9EF;
+    }
+    .pg-btn.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .pg-btn svg {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    /* Bottom Flush Status Bar: 28px */
+    footer.bottom-status-bar {
+      height: 28px;
+      min-height: 28px;
+      background: #0E1116;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+      margin-top: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #9AA3B2;
+    }
+    .status-meta-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: 0.04em;
+    }
+    .status-pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34D399;
+      display: inline-block;
+    }
+    .status-meta-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #9AA3B2;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand-header">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 3v18M3 12h18"/>
+            </svg>
+          </div>
+          <span class="brand-title">Know Your Soul</span>
+          <span class="brand-version">v14.2</span>
+        </div>
+
+        <div class="nav-scroll">
+          <!-- MONITOR -->
+          <div>
+            <div class="nav-group-label">Monitor</div>
+            <div class="nav-items">
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Overview</span>
+              </a>
+              <a href="#" class="nav-item active">
+                <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                <span>Activity Log</span>
+              </a>
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 8.5l7 7"/></svg>
+                <span>Graph Explorer</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ANALYZE -->
+          <div>
+            <div class="nav-group-label">Analyze</div>
+            <div class="nav-items">
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <span>Search</span>
+              </a>
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 16l4-4 4 4 5-6"/></svg>
+                <span>Metrics</span>
+              </a>
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/></svg>
+                <span>Analytics</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- GOVERN -->
+          <div>
+            <div class="nav-group-label">Govern</div>
+            <div class="nav-items">
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <span>Health</span>
+              </a>
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <span>Audit Ledger</span>
+              </a>
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/></svg>
+                <span>Proposals</span>
+              </a>
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><path d="M6 3h12v4H6zM4 7h16v4H4zM6 11h12v10H6z"/></svg>
+                <span>Debt Queue</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- SYSTEM -->
+          <div>
+            <div class="nav-group-label">System</div>
+            <div class="nav-items">
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
+                <span>System</span>
+              </a>
+              <a href="#" class="nav-item">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Setup</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar footer -->
+      <div class="user-footer">
+        <div class="user-avatar">SA</div>
+        <div class="user-details">
+          <span class="user-name">Sigit A.</span>
+          <span class="user-role">operator</span>
+        </div>
+        <span class="status-indicator-dot"></span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Thin Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="breadcrumb-root">KYS</span>
+          <span class="breadcrumb-slash">/</span>
+          <span class="topbar-title">Activity Log</span>
+          <span class="cluster-tag">cluster-01</span>
+        </div>
+
+        <div class="topbar-center">
+          <div class="topbar-search-box">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <span class="topbar-search-placeholder">Search nodes, edges, hashes</span>
+            <span class="kbd-shortcut">⌘K</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="bell-btn" title="Notifications">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="bell-dot"></span>
+          </button>
+          <div class="topbar-avatar">SA</div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="body-content">
+        <!-- Toolbar Row -->
+        <div class="toolbar-row">
+          <div class="filter-input-wrap">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Filter events…" spellcheck="false" />
+          </div>
+
+          <div class="toolbar-controls">
+            <div class="filter-pill">
+              <span>Level</span>
+              <span class="caret-down">▾</span>
+            </div>
+            <div class="filter-pill">
+              <span>Agent</span>
+              <span class="caret-down">▾</span>
+            </div>
+            <div class="filter-pill">
+              <span>Domain</span>
+              <span class="caret-down">▾</span>
+            </div>
+            <div class="filter-pill mono-pill">
+              <span>NOV 1 – NOV 5, 2026</span>
+              <span class="caret-down">▾</span>
+            </div>
+            <button class="btn-export">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dense Table with exactly 18 visible rows -->
+        <div class="table-container">
+          <div class="table-header">
+            <div>TIME</div>
+            <div>LEVEL</div>
+            <div>AGENT</div>
+            <div>ACTION</div>
+            <div>DETAIL</div>
+            <div>HASH</div>
+          </div>
+
+          <div class="table-body">
+            <!-- Row 1 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:32:07Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-139</span></div>
+              <div class="col-action font-mono">apply proposal</div>
+              <div class="col-detail">Proposal p-2041 applied to domain P4</div>
+              <div class="col-hash font-mono">9f2c1ab4</div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:30:19Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag operator font-mono">operator</span></div>
+              <div class="col-action font-mono">import file</div>
+              <div class="col-detail">Ingested AST schema graph bundle into shard 2</div>
+              <div class="col-hash font-mono">8a1d440f</div>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:28:44Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-141</span></div>
+              <div class="col-action font-mono">evaluate</div>
+              <div class="col-detail">Computed topological convergence metrics across P1..P7</div>
+              <div class="col-hash font-mono">77e19cb2</div>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:25:01Z</div>
+              <div><span class="pill-level warn">WARN</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">system</span></div>
+              <div class="col-action font-mono">propose</div>
+              <div class="col-detail">Stale citation threshold exceeded for vector cache tier</div>
+              <div class="col-hash font-mono">3d81b899</div>
+            </div>
+
+            <!-- Row 5 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:21:15Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-139</span></div>
+              <div class="col-action font-mono">apply proposal</div>
+              <div class="col-detail">Merged AST symbol index into partition P2</div>
+              <div class="col-hash font-mono">55c2f0a1</div>
+            </div>
+
+            <!-- Row 6 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:18:52Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag operator font-mono">operator</span></div>
+              <div class="col-action font-mono">evaluate</div>
+              <div class="col-detail">Verified Raft monotonic log continuity to sequence 10423</div>
+              <div class="col-hash font-mono">a012e841</div>
+            </div>
+
+            <!-- Row 7: HARD RULE ERROR ROW -->
+            <div class="table-row row-error">
+              <div class="col-time font-mono">14:15:30Z</div>
+              <div><span class="pill-level error">ERROR</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-141</span></div>
+              <div class="col-action font-mono">rollback</div>
+              <div class="col-detail text-error">REINDEX FAILED — stale embedding pointers</div>
+              <div class="col-hash font-mono">c190bb42</div>
+            </div>
+
+            <!-- Row 8 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:12:08Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">system</span></div>
+              <div class="col-action font-mono">evaluate</div>
+              <div class="col-detail">Asserted 11 SHACL core invariant constraints cleanly</div>
+              <div class="col-hash font-mono">e4479901</div>
+            </div>
+
+            <!-- Row 9 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:09:44Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-139</span></div>
+              <div class="col-action font-mono">import file</div>
+              <div class="col-detail">Loaded JSON-LD ontology definitions for domain P6</div>
+              <div class="col-hash font-mono">43dcb102</div>
+            </div>
+
+            <!-- Row 10 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:05:22Z</div>
+              <div><span class="pill-level warn">WARN</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-141</span></div>
+              <div class="col-action font-mono">propose</div>
+              <div class="col-detail">Detected 2 orphan reference nodes in schema table</div>
+              <div class="col-hash font-mono">78fe23a9</div>
+            </div>
+
+            <!-- Row 11 -->
+            <div class="table-row">
+              <div class="col-time font-mono">14:02:11Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag operator font-mono">operator</span></div>
+              <div class="col-action font-mono">apply proposal</div>
+              <div class="col-detail">Applied fencing lease renewal on cluster storage root</div>
+              <div class="col-hash font-mono">69bca711</div>
+            </div>
+
+            <!-- Row 12 -->
+            <div class="table-row">
+              <div class="col-time font-mono">13:58:39Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-139</span></div>
+              <div class="col-action font-mono">evaluate</div>
+              <div class="col-detail">Completed DuckDB vector table compaction step 4</div>
+              <div class="col-hash font-mono">12e094fa</div>
+            </div>
+
+            <!-- Row 13 -->
+            <div class="table-row">
+              <div class="col-time font-mono">13:55:04Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">system</span></div>
+              <div class="col-action font-mono">import file</div>
+              <div class="col-detail">Synchronized IPC broadcast socket to loopback port 8741</div>
+              <div class="col-hash font-mono">b82ef455</div>
+            </div>
+
+            <!-- Row 14 -->
+            <div class="table-row">
+              <div class="col-time font-mono">13:51:28Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-141</span></div>
+              <div class="col-action font-mono">evaluate</div>
+              <div class="col-detail">Measured cluster P50 query latency at 6.4ms baseline</div>
+              <div class="col-hash font-mono">4e112d7c</div>
+            </div>
+
+            <!-- Row 15 -->
+            <div class="table-row">
+              <div class="col-time font-mono">13:48:10Z</div>
+              <div><span class="pill-level warn">WARN</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-139</span></div>
+              <div class="col-action font-mono">propose</div>
+              <div class="col-detail">Unindexed semantic tag flagged for vacuum maintenance</div>
+              <div class="col-hash font-mono">33190ab7</div>
+            </div>
+
+            <!-- Row 16 -->
+            <div class="table-row">
+              <div class="col-time font-mono">13:44:55Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag operator font-mono">operator</span></div>
+              <div class="col-action font-mono">apply proposal</div>
+              <div class="col-detail">Pruned unreferenced orphan leaves from knowledge DAG</div>
+              <div class="col-hash font-mono">44bc19f0</div>
+            </div>
+
+            <!-- Row 17 -->
+            <div class="table-row">
+              <div class="col-time font-mono">13:40:12Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">system</span></div>
+              <div class="col-action font-mono">evaluate</div>
+              <div class="col-detail">Validated Merkle root monotonic chain integrity 100%</div>
+              <div class="col-hash font-mono">8f2c00a1</div>
+            </div>
+
+            <!-- Row 18 -->
+            <div class="table-row">
+              <div class="col-time font-mono">13:36:40Z</div>
+              <div><span class="pill-level info">INFO</span></div>
+              <div class="col-agent"><span class="agent-tag font-mono">sub-141</span></div>
+              <div class="col-action font-mono">import file</div>
+              <div class="col-detail">Exported frozen runtime manifest digest BLAKE3 batch</div>
+              <div class="col-hash font-mono">4a01c482</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination Row -->
+        <div class="pagination-bar">
+          <div class="pagination-left">1-18 of 3,452</div>
+          <div class="pagination-right">
+            <div class="per-page-chip">
+              <span>18 / page</span>
+              <span class="caret-down">▾</span>
+            </div>
+            <button class="pg-btn disabled" title="Previous page">
+              <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="pg-btn" title="Next page">
+              <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Flush Status Bar -->
+      <footer class="bottom-status-bar">
+        <div class="status-meta-left">
+          <span>3,452 EVENTS · 2 AGENTS LIVE · STREAM CONNECTED</span>
+          <span class="status-pulse-dot"></span>
+        </div>
+        <div class="status-meta-right">
+          <span>RAFT QUORUM SYNCED</span>
+          <span>LATENCY P50 6.4ms</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

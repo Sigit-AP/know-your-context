@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#141110]">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Soul - System (Paper Dark)</title>
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <!-- Fonts: Fraunces, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#141110',
+            panel: '#1A1713',
+            raised: '#211D17',
+            accent: '#D9A441',
+            paper: '#EDE4D3',
+            secondary: '#A3947D',
+            ok: '#7FB069',
+            warn: '#E0A458',
+            danger: '#D16666',
+          },
+          fontFamily: {
+            serif: ['Fraunces', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      color: #EDE4D3;
+      background-color: #141110;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+    }
+    .hairline-border {
+      border-color: rgba(217, 164, 65, 0.10);
+    }
+    .hairline-r {
+      border-right: 1px solid rgba(217, 164, 65, 0.10);
+    }
+    .hairline-b {
+      border-bottom: 1px solid rgba(217, 164, 65, 0.10);
+    }
+    .hairline-t {
+      border-top: 1px solid rgba(217, 164, 65, 0.10);
+    }
+    .double-rule {
+      position: relative;
+    }
+    .double-rule::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -6px;
+      height: 1px;
+      background: rgba(217, 164, 65, 0.25);
+      box-shadow: 0 3px 0 0 rgba(217, 164, 65, 0.12);
+    }
+  </style>
+</head>
+<body class="flex h-[900px] w-[1440px] select-none text-[13px] leading-normal">
+
+  <!-- LEFT SIDEBAR (248px width) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between hairline-r bg-[#141110] z-20 flex-shrink-0">
+    <div>
+      <!-- Brand Header -->
+      <div class="h-14 px-5 flex items-center gap-3 hairline-b">
+        <div class="w-7 h-7 rounded border border-[#D9A441]/30 bg-[#211D17] flex items-center justify-center font-serif text-[#D9A441] text-sm font-semibold">
+          K
+        </div>
+        <div class="flex flex-col">
+          <span class="font-serif text-sm font-semibold tracking-tight text-[#EDE4D3] leading-tight">Know Your Soul</span>
+          <span class="font-mono text-[10px] tracking-wider text-[#A3947D] uppercase">CLUSTER 01 // V14.2</span>
+        </div>
+      </div>
+
+      <!-- Navigation Hierarchy -->
+      <nav class="p-3 space-y-4">
+        <!-- GROUP 1: MONITOR -->
+        <div>
+          <div class="px-2.5 mb-1.5 text-[10px] font-mono font-medium tracking-widest text-[#A3947D]/80 uppercase">
+            I // MONITOR
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GROUP 2: ANALYZE -->
+        <div>
+          <div class="px-2.5 mb-1.5 text-[10px] font-mono font-medium tracking-widest text-[#A3947D]/80 uppercase">
+            II // ANALYZE
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GROUP 3: GOVERN -->
+        <div>
+          <div class="px-2.5 mb-1.5 text-[10px] font-mono font-medium tracking-widest text-[#A3947D]/80 uppercase">
+            III // GOVERN
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] text-[#A3947D] bg-[#211D17] px-1.5 py-0.2 rounded border hairline-border">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] text-[#A3947D] bg-[#211D17] px-1.5 py-0.2 rounded border hairline-border">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GROUP 4: SYSTEM (ACTIVE) -->
+        <div>
+          <div class="px-2.5 mb-1.5 text-[10px] font-mono font-medium tracking-widest text-[#A3947D]/80 uppercase">
+            IV // SYSTEM
+          </div>
+          <div class="space-y-0.5">
+            <!-- Active item System: accent-tinted pill background (~10% alpha) with accent text -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded bg-[#D9A441]/10 text-[#D9A441] border border-[#D9A441]/20 font-medium">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-[#D9A441]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                <span>System</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#D9A441]"></span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[#A3947D] hover:text-[#EDE4D3] hover:bg-[#1A1713] transition-colors">
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- User Card at Bottom -->
+    <div class="p-3 hairline-t bg-[#1A1713]/40">
+      <div class="flex items-center justify-between p-2 rounded bg-[#1A1713] border hairline-border">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded border border-[#D9A441]/25 bg-[#211D17] flex items-center justify-center font-mono text-[11px] font-semibold text-[#D9A441]">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-[#EDE4D3] leading-tight">Sigit A.</span>
+            <span class="font-mono text-[10px] text-[#A3947D]">operator</span>
+          </div>
+        </div>
+        <div class="w-1.5 h-1.5 rounded-full bg-[#7FB069] ring-2 ring-[#7FB069]/20" title="Online"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT (1192px width x 900px height) -->
+  <main class="flex-1 flex flex-col h-full overflow-hidden bg-[#141110]">
+    
+    <!-- TOPBAR (Exact 56px height, single line chrome) -->
+    <header class="h-14 px-6 flex items-center justify-between hairline-b bg-[#141110] flex-shrink-0 z-10">
+      <!-- Breadcrumb / Route -->
+      <div class="flex items-center gap-3">
+        <span class="font-mono text-xs text-[#A3947D]">KYS</span>
+        <span class="text-[#A3947D]/40">/</span>
+        <span class="font-mono text-xs text-[#A3947D]">System</span>
+        <span class="text-[#A3947D]/40">/</span>
+        <span class="font-mono text-xs px-2 py-0.5 rounded bg-[#1A1713] border hairline-border text-[#EDE4D3]">CLUSTER-01</span>
+      </div>
+
+      <!-- Center Search with ⌘K -->
+      <div class="w-[420px] relative">
+        <input 
+          type="text" 
+          placeholder="Search system metrics, knobs, daemon routes..." 
+          readonly
+          class="w-full bg-[#1A1713] border hairline-border rounded px-3 py-1.5 text-xs text-[#EDE4D3] placeholder-[#A3947D]/60 focus:outline-none cursor-default font-sans"
+        />
+        <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 font-mono text-[10px] text-[#A3947D] bg-[#211D17] px-1.5 py-0.5 rounded border hairline-border">
+          <span>⌘K</span>
+        </div>
+      </div>
+
+      <!-- Right Chrome: Max 4 segments (Status, Bell with dot, Avatar) -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-2.5 py-1 rounded bg-[#1A1713] border hairline-border font-mono text-[11px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7FB069]"></span>
+          <span class="text-[#7FB069] font-medium tracking-wide">RAFT QUORUM SYNCED</span>
+        </div>
+        <button class="w-8 h-8 rounded bg-[#1A1713] border hairline-border flex items-center justify-center text-[#A3947D] hover:text-[#EDE4D3] relative">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#D9A441] rounded-full"></span>
+        </button>
+        <div class="w-8 h-8 rounded border border-[#D9A441]/30 bg-[#211D17] flex items-center justify-center font-mono text-xs font-semibold text-[#D9A441]">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Page Title & Double Rule + 2x2 Grid) -->
+    <div class="flex-1 flex flex-col px-6 pt-5 pb-0 overflow-hidden">
+      
+      <!-- Page Title & Meta Section (Archive Mood, Fraunces serif) -->
+      <div class="mb-4 flex-shrink-0">
+        <div class="flex items-end justify-between mb-2">
+          <div>
+            <div class="font-mono text-[10px] tracking-widest text-[#A3947D] uppercase mb-0.5">
+              IV.I // RUNTIME SPEC &amp; TELEMETRY INTROSPECTION
+            </div>
+            <h1 class="font-serif text-2xl font-bold tracking-tight text-[#EDE4D3]">
+              System Configuration &amp; Topology
+            </h1>
+          </div>
+          <div class="flex items-center gap-6 font-mono text-xs text-[#A3947D]">
+            <div class="flex items-center gap-2">
+              <span class="text-[#A3947D]/70">STATE:</span>
+              <span class="text-[#7FB069] font-medium flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#7FB069]"></span> ALL SUBSYSTEMS NOMINAL
+              </span>
+            </div>
+            <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+            <div>
+              <span class="text-[#A3947D]/70">UPTIME:</span>
+              <span class="text-[#EDE4D3] font-medium ml-1">6d 04h 12m</span>
+            </div>
+            <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+            <div>
+              <span class="text-[#A3947D]/70">IPC LATENCY:</span>
+              <span class="text-[#EDE4D3] font-medium ml-1">0.14ms</span>
+            </div>
+            <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+            <div class="px-2 py-0.5 rounded bg-[#211D17] border hairline-border text-[11px] text-[#D9A441] font-medium">
+              FAIL_SAFE ARMED
+            </div>
+          </div>
+        </div>
+
+        <!-- Signature: Thin double rule (two 1px lines) under page title -->
+        <div class="w-full h-[4px] relative border-t border-[#D9A441]/25">
+          <div class="w-full border-t border-[#D9A441]/15 mt-[2px]"></div>
+        </div>
+      </div>
+
+      <!-- 4-QUADRANT PANEL GRID (2x2), perfectly sized to fill remaining vertical height flush -->
+      <div class="grid grid-cols-2 grid-rows-2 gap-4 flex-1 pb-3 overflow-hidden">
+        
+        <!-- ================= QUADRANT 1: STORE ================= -->
+        <section class="bg-[#1A1713] border hairline-border rounded flex flex-col overflow-hidden">
+          <!-- Panel Header -->
+          <div class="h-10 px-4 flex items-center justify-between hairline-b bg-[#211D17]/40 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-[#D9A441] font-semibold">I.</span>
+              <span class="font-mono text-xs font-semibold tracking-wider text-[#EDE4D3] uppercase">STORE</span>
+              <span class="font-mono text-[10px] text-[#A3947D] ml-1">// Relational AST Ledger</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#141110] border hairline-border text-[#7FB069]">
+                SYNCHRONOUS: NORMAL
+              </span>
+            </div>
+          </div>
+
+          <!-- Table of Key-Values (Comfortable rows 56-62px, exactly matching specs) -->
+          <div class="flex-1 flex flex-col divide-y divide-[#D9A441]/10 bg-[#1A1713] justify-between py-1">
+            <!-- Row 1: engine -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Database Engine</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-[#EDE4D3] font-medium">sqlite 3.45</span>
+                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D]">C-ABI</span>
+              </div>
+            </div>
+
+            <!-- Row 2: path (Full, one line, never ellipsis) -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Storage Path</span>
+              </div>
+              <div class="font-mono text-xs text-[#EDE4D3] font-medium tracking-tight bg-[#141110] px-2 py-1 rounded border hairline-border">
+                /var/lib/kys/store.db
+              </div>
+            </div>
+
+            <!-- Row 3: size -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Database Size</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-semibold">46.2 MB</span>
+                <span class="text-[#A3947D] text-[11px]">(48,443,392 B)</span>
+              </div>
+            </div>
+
+            <!-- Row 4: page_count -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Page Count</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-medium">11,284</span>
+                <span class="text-[#A3947D] text-[11px]">@ 4096 B</span>
+              </div>
+            </div>
+
+            <!-- Row 5: freelist_pages -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Freelist Pages</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-medium">312</span>
+                <span class="text-[#7FB069] text-[11px]">2.76% fragmentation</span>
+              </div>
+            </div>
+
+            <!-- Row 6: wal -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">WAL Status</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-[#7FB069] font-medium">on · 0 B pending</span>
+                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D]">0 lag</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= QUADRANT 2: RUNTIME ================= -->
+        <section class="bg-[#1A1713] border hairline-border rounded flex flex-col overflow-hidden">
+          <!-- Panel Header -->
+          <div class="h-10 px-4 flex items-center justify-between hairline-b bg-[#211D17]/40 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-[#D9A441] font-semibold">II.</span>
+              <span class="font-mono text-xs font-semibold tracking-wider text-[#EDE4D3] uppercase">RUNTIME</span>
+              <span class="font-mono text-[10px] text-[#A3947D] ml-1">// Execution &amp; Host Environment</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#141110] border hairline-border text-[#7FB069]">
+                DAEMON ONLINE
+              </span>
+            </div>
+          </div>
+
+          <!-- Table of Key-Values (5 primary fields + sub-socket spec) -->
+          <div class="flex-1 flex flex-col divide-y divide-[#D9A441]/10 bg-[#1A1713] justify-between py-1">
+            <!-- Row 1: python -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Python Version</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-medium">3.14.0</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D]">CPython 64-bit</span>
+              </div>
+            </div>
+
+            <!-- Row 2: uvicorn -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">ASGI Uvicorn</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-medium">0.54</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D]">uvloop</span>
+              </div>
+            </div>
+
+            <!-- Row 3: pid -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Daemon Process PID</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#D9A441] font-semibold">4,812</span>
+                <span class="text-[#A3947D] text-[11px]">user: kys-daemon</span>
+              </div>
+            </div>
+
+            <!-- Row 4: uptime -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Continuous Uptime</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-medium">6d 4h</span>
+                <span class="text-[#A3947D] text-[11px]">since 2026-10-29 08:30Z</span>
+              </div>
+            </div>
+
+            <!-- Row 5: memory_rss -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Memory RSS</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-semibold">46.2 MB</span>
+                <span class="text-[#7FB069] text-[10px] px-1.5 py-0.5 rounded bg-[#211D17] border hairline-border">nominal (&lt; 256 MB)</span>
+              </div>
+            </div>
+
+            <!-- Row 6: socket details (filling out quadrant row budget) -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">IPC Domain Socket</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#A3947D]">/var/run/kys/daemon.sock</span>
+                <span class="text-[#7FB069] text-[10px] px-1.5 py-0.5 rounded bg-[#141110] border hairline-border">ACTIVE</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= QUADRANT 3: ROUTES ================= -->
+        <section class="bg-[#1A1713] border hairline-border rounded flex flex-col overflow-hidden">
+          <!-- Panel Header -->
+          <div class="h-10 px-4 flex items-center justify-between hairline-b bg-[#211D17]/40 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-[#D9A441] font-semibold">III.</span>
+              <span class="font-mono text-xs font-semibold tracking-wider text-[#EDE4D3] uppercase">ROUTES</span>
+              <span class="font-mono text-[10px] text-[#A3947D] ml-1">// Dispatcher Endpoints (5 Registered)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-[#A3947D] uppercase">ACCESS // CLASS</span>
+            </div>
+          </div>
+
+          <!-- Table of 5 Routes (Each route mono, two separate chips: access & class) -->
+          <div class="flex-1 flex flex-col divide-y divide-[#D9A441]/10 bg-[#1A1713] justify-between py-1">
+            <!-- Route 1: /v1/knowledge/query -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-3">
+                <span class="font-mono text-[11px] text-[#D9A441]">01</span>
+                <span class="font-mono text-xs text-[#EDE4D3] font-medium tracking-tight">/v1/knowledge/query</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- ACCESS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D] uppercase font-medium">
+                  operator
+                </span>
+                <!-- CLASS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#141110] border border-[#7FB069]/30 text-[#7FB069] uppercase font-semibold">
+                  read
+                </span>
+              </div>
+            </div>
+
+            <!-- Route 2: /v1/graph/traverse -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-3">
+                <span class="font-mono text-[11px] text-[#D9A441]">02</span>
+                <span class="font-mono text-xs text-[#EDE4D3] font-medium tracking-tight">/v1/graph/traverse</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- ACCESS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D] uppercase font-medium">
+                  operator
+                </span>
+                <!-- CLASS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#141110] border border-[#7FB069]/30 text-[#7FB069] uppercase font-semibold">
+                  read
+                </span>
+              </div>
+            </div>
+
+            <!-- Route 3: /v1/symbols/search -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-3">
+                <span class="font-mono text-[11px] text-[#D9A441]">03</span>
+                <span class="font-mono text-xs text-[#EDE4D3] font-medium tracking-tight">/v1/symbols/search</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- ACCESS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D] uppercase font-medium">
+                  operator
+                </span>
+                <!-- CLASS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#141110] border border-[#7FB069]/30 text-[#7FB069] uppercase font-semibold">
+                  read
+                </span>
+              </div>
+            </div>
+
+            <!-- Route 4: /v1/wal/commit -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-3">
+                <span class="font-mono text-[11px] text-[#D9A441]">04</span>
+                <span class="font-mono text-xs text-[#EDE4D3] font-medium tracking-tight">/v1/wal/commit</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- ACCESS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D] uppercase font-medium">
+                  operator
+                </span>
+                <!-- CLASS CHIP (write) -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#D9A441]/15 border border-[#D9A441]/35 text-[#D9A441] uppercase font-semibold">
+                  write
+                </span>
+              </div>
+            </div>
+
+            <!-- Route 5: /v1/export/manifest -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-3">
+                <span class="font-mono text-[11px] text-[#D9A441]">05</span>
+                <span class="font-mono text-xs text-[#EDE4D3] font-medium tracking-tight">/v1/export/manifest</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- ACCESS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#211D17] border hairline-border text-[#A3947D] uppercase font-medium">
+                  operator
+                </span>
+                <!-- CLASS CHIP -->
+                <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#141110] border border-[#7FB069]/30 text-[#7FB069] uppercase font-semibold">
+                  read
+                </span>
+              </div>
+            </div>
+
+            <!-- Route Summary Info Footer -->
+            <div class="flex items-center justify-between px-4 h-[49px] bg-[#141110]/30 font-mono text-[11px] text-[#A3947D]">
+              <span>ROUTER: FASTAPI STARLETTE MOUNT</span>
+              <span class="text-[#D9A441]">TOKEN AUTH: BEARER ED25519 VERIFIED</span>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= QUADRANT 4: HARDWARE ================= -->
+        <section class="bg-[#1A1713] border hairline-border rounded flex flex-col overflow-hidden">
+          <!-- Panel Header -->
+          <div class="h-10 px-4 flex items-center justify-between hairline-b bg-[#211D17]/40 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-[#D9A441] font-semibold">IV.</span>
+              <span class="font-mono text-xs font-semibold tracking-wider text-[#EDE4D3] uppercase">HARDWARE</span>
+              <span class="font-mono text-[10px] text-[#A3947D] ml-1">// Host Topology &amp; Physical Allocation</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#141110] border hairline-border text-[#A3947D]">
+                ARCH: x86_64
+              </span>
+            </div>
+          </div>
+
+          <!-- Table of Key-Values (cpu, mem, disk, os + acceleration) -->
+          <div class="flex-1 flex flex-col divide-y divide-[#D9A441]/10 bg-[#1A1713] justify-between py-1">
+            <!-- Row 1: cpu -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">CPU Allocation</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-semibold">8 vCPU</span>
+                <span class="text-[#A3947D] text-[11px]">AMD EPYC · AVX-512 ACTIVE</span>
+              </div>
+            </div>
+
+            <!-- Row 2: mem -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Physical Memory</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-semibold">32 GB</span>
+                <span class="text-[#7FB069] text-[11px]">21.4 GB free (66.8%)</span>
+              </div>
+            </div>
+
+            <!-- Row 3: disk (Full, strictly one line, no wrap) -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Primary Storage</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-medium whitespace-nowrap">NVMe SSD, non-rotational</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#211D17] border hairline-border text-[#7FB069] whitespace-nowrap">&lt; 1ms IO latency</span>
+              </div>
+            </div>
+
+            <!-- Row 4: os -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Operating System</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#EDE4D3] font-medium">Linux 5.15</span>
+                <span class="text-[#A3947D] text-[11px]">Ubuntu 22.04 LTS (x86_64)</span>
+              </div>
+            </div>
+
+            <!-- Row 5: acceleration -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Vector Acceleration</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="text-[#D9A441] font-medium">SIMD AVX-512 Vectorized</span>
+                <span class="text-[#A3947D] text-[10px] px-1.5 py-0.5 rounded bg-[#211D17] border hairline-border">GPU none (CPU Fallback)</span>
+              </div>
+            </div>
+
+            <!-- Row 6: IO Buffer -->
+            <div class="flex items-center justify-between px-4 h-[49px]">
+              <div class="flex items-center gap-2">
+                <span class="font-sans text-xs text-[#A3947D] tracking-wide">Host Buffer Spec</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-xs text-[#A3947D]">
+                <span>I/O BUFFER: 1 MiB RING</span>
+                <span class="text-[#7FB069] text-[10px] px-1.5 py-0.5 rounded bg-[#141110] border hairline-border">FS CONTENTION: 0 (CLEAN)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- FLUSH BOTTOM STATUS BAR (Exact 36px, zero void below, 100% inside 900px viewport) -->
+    <footer class="h-9 px-6 flex items-center justify-between hairline-t bg-[#1A1713] text-xs font-mono text-[#A3947D] flex-shrink-0 z-10">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#7FB069]"></span>
+          <span class="text-[#EDE4D3] font-medium">SYSTEM ONLINE</span>
+        </div>
+        <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+        <div>SHARD: <span class="text-[#EDE4D3]">0x3a</span></div>
+        <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+        <div>MERKLE ROOT: <span class="text-[#EDE4D3]">0x9f8a2c3b1</span></div>
+        <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+        <div>DAG ENGINE: <span class="text-[#EDE4D3]">DETERMINISTIC v14.2</span></div>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <div>SYNC: <span class="text-[#7FB069] font-medium">100% QUORUM</span></div>
+        <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+        <div>LATENCY P50: <span class="text-[#EDE4D3]">0.14ms</span></div>
+        <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+        <div>VIEWPORT: <span class="text-[#D9A441]">1440x900 FIXED</span></div>
+        <div class="h-3 w-[1px] bg-[#D9A441]/20"></div>
+        <div class="flex items-center gap-1.5 text-[#7FB069]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7FB069]"></span>
+          <span>CLUSTER ONLINE</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

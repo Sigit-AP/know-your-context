@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, height=900">
+<title>Know Your Soul - Analytics (Terminal Brutalist)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          base: '#000000',
+          panel: '#050805',
+          panelRaised: '#0A0F0A',
+          borderDim: '#1A2E1A',
+          borderBright: '#294A29',
+          accent: '#33FF66',
+          textPrimary: '#C9F7D4',
+          textSecondary: '#5F8F68',
+          textMuted: '#38543E',
+          warn: '#FFD23F',
+          danger: '#FF4D4D',
+        },
+        fontFamily: {
+          mono: ['"JetBrains Mono"', 'monospace'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'JetBrains Mono', monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  html, body {
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background-color: #000000;
+    color: #C9F7D4;
+  }
+  /* CRT scanline subtle feel */
+  .crt-grid {
+    background-image: linear-gradient(rgba(26, 46, 26, 0.25) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(26, 46, 26, 0.25) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  /* Fieldset Legend style */
+  .terminal-box {
+    position: relative;
+    border: 1px solid #1A2E1A;
+    background-color: #050805;
+  }
+  .legend-badge {
+    position: absolute;
+    top: -9px;
+    left: 12px;
+    background-color: #000000;
+    padding: 0 8px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: #5F8F68;
+    text-transform: uppercase;
+    font-weight: 600;
+    line-height: 16px;
+    border: 1px solid #1A2E1A;
+  }
+  .legend-badge.leader {
+    color: #33FF66;
+    border-color: #33FF66;
+  }
+  /* Custom scrollbar hidden since exact fit */
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+</style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-black select-none text-[11px] leading-tight font-mono">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-[#1A2E1A] bg-black shrink-0 z-30">
+    <!-- Brand / Header -->
+    <div>
+      <div class="h-12 border-b border-[#1A2E1A] flex items-center justify-between px-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 border border-[#33FF66] bg-[#050805] flex items-center justify-center text-[#33FF66] font-bold text-xs">
+            K
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[#C9F7D4] font-bold text-xs tracking-wider uppercase">Know Your Soul</span>
+            <span class="text-[9px] text-[#5F8F68] tracking-widest">v14.2 // CLUSTER-01</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#33FF66] animate-pulse"></span>
+          <span class="text-[9px] text-[#5F8F68]">R3</span>
+        </div>
+      </div>
+
+      <!-- Navigation Groups -->
+      <nav class="p-3 space-y-4">
+        <!-- 01 // MONITOR -->
+        <div>
+          <div class="text-[9px] text-[#5F8F68] font-bold tracking-widest px-2.5 mb-1.5 uppercase">
+            01 // MONITOR
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 02 // ANALYZE -->
+        <div>
+          <div class="text-[9px] text-[#5F8F68] font-bold tracking-widest px-2.5 mb-1.5 uppercase">
+            02 // ANALYZE
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>Metrics</span>
+            </a>
+            <!-- ACTIVE: Analytics -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 bg-[#0A1A0D] border-l-2 border-[#33FF66] text-[#33FF66] font-medium rounded-r-[1px]">
+              <div class="flex items-center gap-2">
+                <span>&gt;</span>
+                <span class="font-bold">Analytics</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 03 // GOVERN -->
+        <div>
+          <div class="text-[9px] text-[#5F8F68] font-bold tracking-widest px-2.5 mb-1.5 uppercase">
+            03 // GOVERN
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <div class="flex items-center gap-2">
+                <span class="text-[#38543E]">::</span>
+                <span>Proposals</span>
+              </div>
+              <span class="text-[9px] px-1 py-0.2 bg-[#0A0F0A] border border-[#1A2E1A] text-[#5F8F68]">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <div class="flex items-center gap-2">
+                <span class="text-[#38543E]">::</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="text-[9px] px-1 py-0.2 bg-[#0A0F0A] border border-[#1A2E1A] text-[#FFD23F]">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 04 // SYSTEM -->
+        <div>
+          <div class="text-[9px] text-[#5F8F68] font-bold tracking-widest px-2.5 mb-1.5 uppercase">
+            04 // SYSTEM
+          </div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2 px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] transition-colors rounded-[1px]">
+              <span class="text-[#38543E]">::</span>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- User Card at Sidebar Bottom -->
+    <div class="p-3 border-t border-[#1A2E1A] bg-[#050805]">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 border border-[#1A2E1A] bg-[#0A0F0A] flex items-center justify-center text-[10px] font-bold text-[#33FF66]">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[#C9F7D4] text-xs font-semibold">Sigit A.</span>
+            <span class="text-[9px] text-[#5F8F68]">operator</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+          <span class="text-[9px] text-[#5F8F68] uppercase font-mono">ONLINE</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA (1192px) -->
+  <main class="flex-1 h-full flex flex-col justify-between bg-black overflow-hidden relative">
+
+    <!-- TOPBAR (Exact 40px) -->
+    <header class="h-10 border-b border-[#1A2E1A] bg-[#050805] flex items-center justify-between px-4 shrink-0 z-20">
+      <!-- Breadcrumb prompt-styled -->
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-[#33FF66] font-bold">kyc://analytics</span>
+        <span class="text-[#38543E]">_</span>
+        <span class="text-[10px] text-[#5F8F68] ml-2 px-1.5 py-0.5 border border-[#1A2E1A] bg-black">
+          CLUSTER: cluster-01
+        </span>
+        <span class="text-[10px] text-[#5F8F68] px-1.5 py-0.5 border border-[#1A2E1A] bg-black">
+          PARTITIONS: 7/7
+        </span>
+      </div>
+
+      <!-- Center Search Field with ⌘K -->
+      <div class="w-[420px] h-6 border border-[#1A2E1A] bg-black flex items-center justify-between px-2.5">
+        <div class="flex items-center gap-2 text-[10px] text-[#5F8F68]">
+          <span class="text-[#33FF66]">&gt;</span>
+          <span>search graph analytics, nodes, query traces...</span>
+        </div>
+        <span class="text-[9px] text-[#5F8F68] border border-[#1A2E1A] px-1 py-0.2 bg-[#050805]">⌘K</span>
+      </div>
+
+      <!-- Right Chrome: Raft Status + Bell + Avatar (Max 4 segments, single line) -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 px-2 py-0.5 border border-[#1A2E1A] bg-black text-[10px] text-[#33FF66]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+          <span class="font-bold tracking-wider">RAFT QUORUM 3/3</span>
+        </div>
+        <!-- Bell with dot -->
+        <button class="w-6 h-6 border border-[#1A2E1A] bg-black flex items-center justify-center text-[#5F8F68] hover:text-[#C9F7D4] relative">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1 right-1 w-1 h-1 rounded-full bg-[#33FF66]"></span>
+        </button>
+        <!-- User Avatar monogram -->
+        <div class="w-6 h-6 border border-[#1A2E1A] bg-[#0A0F0A] flex items-center justify-center text-[10px] font-bold text-[#33FF66]">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Fills exactly between topbar and bottom status bar) -->
+    <div class="flex-1 p-3.5 flex flex-col justify-between crt-grid overflow-hidden">
+
+      <!-- FILTER ROW ABOVE (32px) -->
+      <div class="h-8 flex items-center justify-between border-b border-[#1A2E1A] pb-2 shrink-0">
+        <!-- Filter pills -->
+        <div class="flex items-center gap-2 text-[10px]">
+          <span class="text-[#5F8F68] uppercase tracking-wider font-semibold mr-1">FILTER //</span>
+          <button class="px-2.5 py-1 border border-[#33FF66] bg-[#0A1A0D] text-[#33FF66] font-semibold flex items-center gap-1.5 hover:bg-[#122415]">
+            <span>WINDOW: 7D</span>
+            <span class="text-[8px]">▾</span>
+          </button>
+          <button class="px-2.5 py-1 border border-[#1A2E1A] bg-[#050805] text-[#C9F7D4] hover:border-[#38543E] flex items-center gap-1.5">
+            <span>DOMAINS: All domains</span>
+            <span class="text-[8px] text-[#5F8F68]">▾</span>
+          </button>
+          <button class="px-2.5 py-1 border border-[#1A2E1A] bg-[#050805] text-[#C9F7D4] hover:border-[#38543E] flex items-center gap-1.5">
+            <span>VERBS: All verbs</span>
+            <span class="text-[8px] text-[#5F8F68]">▾</span>
+          </button>
+          <div class="h-3.5 w-[1px] bg-[#1A2E1A] mx-1"></div>
+          <span class="text-[#5F8F68] text-[10px]">EVALUATED 48,203 QUERIES</span>
+        </div>
+
+        <!-- Telemetry stats right -->
+        <div class="flex items-center gap-4 text-[10px] text-[#5F8F68]">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[#38543E]">SAMPLE:</span>
+            <span class="text-[#C9F7D4]">100% DETERMINISTIC</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[#38543E]">MERKLE:</span>
+            <span class="text-[#C9F7D4]">0x9f8a2c3b1</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[#38543E]">SHARD:</span>
+            <span class="text-[#C9F7D4]">0x3a</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN TWO-COLUMN SPLIT (Takes full available height) -->
+      <div class="flex-1 grid grid-cols-12 gap-3.5 pt-3 overflow-hidden">
+
+        <!-- LEFT PANEL: NODE LEADERBOARD (7 cols) -->
+        <div class="col-span-7 terminal-box flex flex-col justify-between pt-3.5 px-3 pb-2.5 overflow-hidden">
+          <div class="legend-badge leader">
+            01 // NODE LEADERBOARD [TOP 12 TRAVERSED ENTITIES]
+          </div>
+
+          <!-- Table Header -->
+          <div class="grid grid-cols-12 items-center text-[9px] uppercase font-bold text-[#5F8F68] tracking-wider border-b border-[#1A2E1A] pb-1.5 px-2 shrink-0">
+            <div class="col-span-1">RANK</div>
+            <div class="col-span-5">NODE IDENTIFIER</div>
+            <div class="col-span-3 text-right pr-4">QUERIES (7D)</div>
+            <div class="col-span-3 text-right">VOLUME SHARE</div>
+          </div>
+
+          <!-- Table Body: Exactly 12 visible rows (38px each) -->
+          <div class="flex-1 flex flex-col justify-between py-1">
+
+            <!-- ROW 01 (LEADER ROW: subtle accent tint + 2px accent left border) -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 bg-[#09150B] border-l-2 border-[#33FF66] border-y border-[#1A2E1A]/40 transition-colors">
+              <div class="col-span-1 text-[#33FF66] font-bold">01</div>
+              <div class="col-span-5 text-[#33FF66] font-semibold flex items-center gap-2 truncate">
+                <span class="w-1.5 h-1.5 bg-[#33FF66] shrink-0"></span>
+                <span class="truncate">heuristics-catalog</span>
+                <span class="text-[8px] px-1 py-0.2 bg-[#050805] border border-[#33FF66] text-[#33FF66] shrink-0 font-normal">LEADER</span>
+              </div>
+              <div class="col-span-3 text-right pr-4 text-[#33FF66] font-bold">1,204</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#33FF66]" style="width: 24.8%"></div>
+                </div>
+                <span class="text-[#33FF66] font-bold w-10 text-right">24.8%</span>
+              </div>
+            </div>
+
+            <!-- ROW 02 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">02</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">scoring-engine</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">892</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 18.4%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">18.4%</span>
+              </div>
+            </div>
+
+            <!-- ROW 03 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">03</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">store-mutex</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">641</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 13.2%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">13.2%</span>
+              </div>
+            </div>
+
+            <!-- ROW 04 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">04</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">p4-domain</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">518</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 10.7%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">10.7%</span>
+              </div>
+            </div>
+
+            <!-- ROW 05 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">05</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">retrieval-core</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">422</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 8.7%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">8.7%</span>
+              </div>
+            </div>
+
+            <!-- ROW 06 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">06</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">audit-ledger</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">389</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 8.0%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">8.0%</span>
+              </div>
+            </div>
+
+            <!-- ROW 07 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">07</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">projection</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">312</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 6.4%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">6.4%</span>
+              </div>
+            </div>
+
+            <!-- ROW 08 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">08</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">cli-adapter</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">276</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 5.7%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">5.7%</span>
+              </div>
+            </div>
+
+            <!-- ROW 09 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">09</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">embedding-store</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">210</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 4.3%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">4.3%</span>
+              </div>
+            </div>
+
+            <!-- ROW 10 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">10</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">review-queue</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">148</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 3.1%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">3.1%</span>
+              </div>
+            </div>
+
+            <!-- ROW 11 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">11</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">debt-tracker</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">97</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 2.0%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">2.0%</span>
+              </div>
+            </div>
+
+            <!-- ROW 12 -->
+            <div class="grid grid-cols-12 items-center px-2 py-1.5 hover:bg-[#080D08] transition-colors">
+              <div class="col-span-1 text-[#5F8F68]">12</div>
+              <div class="col-span-5 text-[#C9F7D4] truncate">setup-wizard</div>
+              <div class="col-span-3 text-right pr-4 text-[#C9F7D4]">41</div>
+              <div class="col-span-3 flex items-center justify-end gap-2">
+                <div class="w-20 h-1.5 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 0.8%"></div>
+                </div>
+                <span class="text-[#C9F7D4] w-10 text-right">0.8%</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Footer Info for Left Table -->
+          <div class="pt-1.5 border-t border-[#1A2E1A] flex items-center justify-between text-[9px] text-[#5F8F68] shrink-0">
+            <span>SHOWING 12 OF 1,284 NODES</span>
+            <span>ACCUMULATED TOTAL: 4,857 QUERIES</span>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: BRIDGES + QUERY MIX (5 cols) -->
+        <div class="col-span-5 flex flex-col justify-between gap-3.5 overflow-hidden">
+
+          <!-- RIGHT TOP PANEL: BRIDGES (4 rows) -->
+          <div class="terminal-box flex-1 flex flex-col justify-between pt-3.5 px-3 pb-2.5 overflow-hidden">
+            <div class="legend-badge">
+              02 // CRITICAL BRIDGES [CROSS-CLUSTER PATHWAYS]
+            </div>
+
+            <!-- Header -->
+            <div class="flex items-center justify-between text-[9px] uppercase font-bold text-[#5F8F68] tracking-wider border-b border-[#1A2E1A] pb-1.5 px-1 shrink-0">
+              <span>PATHWAY TOPOLOGY &amp; RELATION</span>
+              <span>BANDWIDTH / WEIGHT</span>
+            </div>
+
+            <!-- 4 Rows with thin edge line & relation chip -->
+            <div class="flex-1 flex flex-col justify-between py-1">
+
+              <!-- Bridge 1 -->
+              <div class="flex items-center justify-between px-2 py-2 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+                <div class="flex items-center gap-2 flex-1 mr-3 truncate">
+                  <span class="text-[#C9F7D4] font-medium shrink-0">heuristics-catalog</span>
+                  <div class="flex-1 flex items-center justify-center relative min-w-[80px]">
+                    <div class="w-full h-[1px] bg-[#1A2E1A]"></div>
+                    <span class="absolute px-1.5 py-0.2 bg-black border border-[#1A2E1A] text-[8px] text-[#5F8F68] uppercase">
+                      depends_on
+                    </span>
+                  </div>
+                  <span class="text-[#C9F7D4] font-medium shrink-0">scoring-engine</span>
+                </div>
+                <div class="text-right text-[10px] text-[#C9F7D4] shrink-0 font-mono">
+                  0.94
+                </div>
+              </div>
+
+              <!-- Bridge 2 -->
+              <div class="flex items-center justify-between px-2 py-2 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+                <div class="flex items-center gap-2 flex-1 mr-3 truncate">
+                  <span class="text-[#C9F7D4] font-medium shrink-0">retrieval-core</span>
+                  <div class="flex-1 flex items-center justify-center relative min-w-[80px]">
+                    <div class="w-full h-[1px] bg-[#1A2E1A]"></div>
+                    <span class="absolute px-1.5 py-0.2 bg-black border border-[#1A2E1A] text-[8px] text-[#5F8F68] uppercase">
+                      cites
+                    </span>
+                  </div>
+                  <span class="text-[#C9F7D4] font-medium shrink-0">p4-domain</span>
+                </div>
+                <div class="text-right text-[10px] text-[#C9F7D4] shrink-0 font-mono">
+                  0.82
+                </div>
+              </div>
+
+              <!-- Bridge 3 -->
+              <div class="flex items-center justify-between px-2 py-2 border-b border-[#1A2E1A]/40 hover:bg-[#080D08] transition-colors">
+                <div class="flex items-center gap-2 flex-1 mr-3 truncate">
+                  <span class="text-[#C9F7D4] font-medium shrink-0">store-mutex</span>
+                  <div class="flex-1 flex items-center justify-center relative min-w-[80px]">
+                    <div class="w-full h-[1px] bg-[#1A2E1A]"></div>
+                    <span class="absolute px-1.5 py-0.2 bg-black border border-[#1A2E1A] text-[8px] text-[#5F8F68] uppercase">
+                      governs
+                    </span>
+                  </div>
+                  <span class="text-[#C9F7D4] font-medium shrink-0">audit-ledger</span>
+                </div>
+                <div class="text-right text-[10px] text-[#C9F7D4] shrink-0 font-mono">
+                  LOCK
+                </div>
+              </div>
+
+              <!-- Bridge 4 -->
+              <div class="flex items-center justify-between px-2 py-2 hover:bg-[#080D08] transition-colors">
+                <div class="flex items-center gap-2 flex-1 mr-3 truncate">
+                  <span class="text-[#C9F7D4] font-medium shrink-0">cli-adapter</span>
+                  <div class="flex-1 flex items-center justify-center relative min-w-[80px]">
+                    <div class="w-full h-[1px] bg-[#1A2E1A]"></div>
+                    <span class="absolute px-1.5 py-0.2 bg-black border border-[#1A2E1A] text-[8px] text-[#5F8F68] uppercase">
+                      invokes
+                    </span>
+                  </div>
+                  <span class="text-[#C9F7D4] font-medium shrink-0">embedding-store</span>
+                </div>
+                <div class="text-right text-[10px] text-[#C9F7D4] shrink-0 font-mono">
+                  0.71
+                </div>
+              </div>
+
+            </div>
+
+            <div class="pt-1.5 border-t border-[#1A2E1A] flex items-center justify-between text-[9px] text-[#5F8F68] shrink-0">
+              <span>ACTIVE SHARD TRAVERSALS: 4 LINKS</span>
+              <span>LATENCY P50: 6.4ms</span>
+            </div>
+          </div>
+
+          <!-- RIGHT BOTTOM PANEL: QUERY MIX (4 rows) -->
+          <div class="terminal-box flex-1 flex flex-col justify-between pt-3.5 px-3 pb-2.5 overflow-hidden">
+            <div class="legend-badge">
+              03 // QUERY MIX [EXECUTION VERB PROFILE]
+            </div>
+
+            <!-- Header -->
+            <div class="flex items-center justify-between text-[9px] uppercase font-bold text-[#5F8F68] tracking-wider border-b border-[#1A2E1A] pb-1.5 px-1 shrink-0">
+              <span>VERB DISPATCH</span>
+              <span>DISTRIBUTION &amp; RATIO</span>
+            </div>
+
+            <!-- 4 Rows with thin horizontal bars: lookup 46%, path 22%, explain 18%, affected 14% -->
+            <div class="flex-1 flex flex-col justify-between py-1">
+
+              <!-- Mix 1: lookup 46% -->
+              <div class="px-2 py-1.5 border-b border-[#1A2E1A]/40 flex flex-col justify-center">
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[#C9F7D4] font-bold">lookup</span>
+                    <span class="text-[9px] text-[#5F8F68]">[DIRECT KEY-VALUE]</span>
+                  </div>
+                  <span class="text-[#C9F7D4] font-mono font-bold">46%</span>
+                </div>
+                <div class="w-full h-1 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 46%"></div>
+                </div>
+              </div>
+
+              <!-- Mix 2: path 22% -->
+              <div class="px-2 py-1.5 border-b border-[#1A2E1A]/40 flex flex-col justify-center">
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[#C9F7D4] font-bold">path</span>
+                    <span class="text-[9px] text-[#5F8F68]">[DAG TRAVERSAL]</span>
+                  </div>
+                  <span class="text-[#C9F7D4] font-mono font-bold">22%</span>
+                </div>
+                <div class="w-full h-1 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 22%"></div>
+                </div>
+              </div>
+
+              <!-- Mix 3: explain 18% -->
+              <div class="px-2 py-1.5 border-b border-[#1A2E1A]/40 flex flex-col justify-center">
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[#C9F7D4] font-bold">explain</span>
+                    <span class="text-[9px] text-[#5F8F68]">[HEURISTIC INFERENCE]</span>
+                  </div>
+                  <span class="text-[#C9F7D4] font-mono font-bold">18%</span>
+                </div>
+                <div class="w-full h-1 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 18%"></div>
+                </div>
+              </div>
+
+              <!-- Mix 4: affected 14% -->
+              <div class="px-2 py-1.5 flex flex-col justify-center">
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[#C9F7D4] font-bold">affected</span>
+                    <span class="text-[9px] text-[#5F8F68]">[SUBGRAPH IMPACT]</span>
+                  </div>
+                  <span class="text-[#C9F7D4] font-mono font-bold">14%</span>
+                </div>
+                <div class="w-full h-1 bg-[#050805] border border-[#1A2E1A] overflow-hidden">
+                  <div class="h-full bg-[#5F8F68]" style="width: 14%"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="pt-1.5 border-t border-[#1A2E1A] flex items-center justify-between text-[9px] text-[#5F8F68] shrink-0">
+              <span>DISPATCH AGGREGATION: 100.0%</span>
+              <span>ZERO DRIFT ASSERTION</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- STATUS BAR (FLUSH at bottom, 28px height, 0px void below) -->
+    <footer class="h-7 border-t border-[#1A2E1A] bg-[#050805] flex items-center justify-between px-4 text-[9px] text-[#5F8F68] shrink-0 z-20">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+          <span class="text-[#C9F7D4] font-semibold">12 LEADERBOARD ROWS MOUNTED</span>
+        </div>
+        <span class="text-[#1A2E1A]">|</span>
+        <div>SUITE: <span class="text-[#C9F7D4]">ANALYTICS_V14.2</span></div>
+        <span class="text-[#1A2E1A]">|</span>
+        <div>ENGINE: <span class="text-[#C9F7D4]">v14.2 DETERMINISTIC</span></div>
+        <span class="text-[#1A2E1A]">|</span>
+        <div>HASH: <span class="text-[#C9F7D4]">0x9f8a2c3b1</span></div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div>SHARD: <span class="text-[#C9F7D4]">ALL_PARTITIONS</span></div>
+        <span class="text-[#1A2E1A]">|</span>
+        <div>VIEWPORT: <span class="text-[#C9F7D4]">1440x900 FIXED</span></div>
+        <span class="text-[#1A2E1A]">|</span>
+        <div class="flex items-center gap-1.5 text-[#33FF66]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+          <span class="font-bold">TERMINAL ONLINE</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

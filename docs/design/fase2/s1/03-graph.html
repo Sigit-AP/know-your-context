@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Graph Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            kbase: '#0B0D11',
+            ksidebar: '#0E1116',
+            kcard: '#12161D',
+            kraised: '#161B24',
+            khairline: 'rgba(255,255,255,0.07)',
+            ktext: '#E6E9EF',
+            ksec: '#9AA3B2',
+            kaccent: '#6366F1',
+            kaccentbg: 'rgba(99,102,241,0.12)',
+            statusok: '#34D399',
+            statuswarn: '#FBBF24',
+            statusdanger: '#F87171'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D11;
+      color: #E6E9EF;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      user-select: none;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 20;
+    }
+    .grid-bg {
+      background-color: #0B0D11;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="flex flex-row w-[1440px] h-[900px] overflow-hidden bg-kbase text-ktext">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-[900px] bg-ksidebar border-r border-khairline flex flex-col justify-between shrink-0 select-none">
+    <div class="flex flex-col">
+      <!-- Workspace Brand -->
+      <div class="h-14 px-5 border-b border-khairline flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded bg-kaccent/20 border border-kaccent/40 flex items-center justify-center text-kaccent">
+            <span class="material-symbols-outlined text-[16px]">account_tree</span>
+          </div>
+          <div>
+            <span class="text-sm font-semibold tracking-tight text-ktext block leading-none">Know Your Soul</span>
+            <span class="text-[10px] text-ksec font-mono leading-none mt-1 block">KG-OPS · v14.2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation groups -->
+      <nav class="px-3 py-3 space-y-4 text-[13px]">
+        <!-- Group 1: MONITOR -->
+        <div>
+          <div class="px-3 pb-1.5 text-[10px] font-semibold tracking-wider text-ksec uppercase font-mono">MONITOR</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">dashboard</span>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
+              <span>Activity Log</span>
+            </a>
+            <!-- Active item -->
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-kaccentbg text-kaccent font-medium border border-kaccent/20">
+              <span class="material-symbols-outlined text-[18px]">hub</span>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group 2: ANALYZE -->
+        <div>
+          <div class="px-3 pb-1.5 text-[10px] font-semibold tracking-wider text-ksec uppercase font-mono">ANALYZE</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">search</span>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">show_chart</span>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">query_stats</span>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group 3: GOVERN -->
+        <div>
+          <div class="px-3 pb-1.5 text-[10px] font-semibold tracking-wider text-ksec uppercase font-mono">GOVERN</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">vital_signs</span>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">verified_user</span>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px]">rule</span>
+                <span>Proposals</span>
+              </div>
+              <span class="px-1.5 py-0.5 text-[10px] font-mono bg-kcard border border-khairline rounded text-ksec">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px]">layers</span>
+                <span>Debt Queue</span>
+              </div>
+              <span class="px-1.5 py-0.5 text-[10px] font-mono bg-kcard border border-khairline rounded text-ksec">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Group 4: SYSTEM -->
+        <div>
+          <div class="px-3 pb-1.5 text-[10px] font-semibold tracking-wider text-ksec uppercase font-mono">SYSTEM</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">memory</span>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-ksec hover:text-ktext hover:bg-kcard transition-colors">
+              <span class="material-symbols-outlined text-[18px]">settings</span>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- User footer card -->
+    <div class="p-3 border-t border-khairline">
+      <div class="flex items-center justify-between p-2 rounded-xl bg-kcard border border-khairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-kraised border border-khairline flex items-center justify-center font-mono text-[11px] font-semibold text-ktext">
+            SA
+          </div>
+          <div>
+            <div class="text-[13px] font-medium leading-none text-ktext">Sigit A.</div>
+            <div class="text-[11px] font-mono text-ksec leading-none mt-1">operator</div>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-statusok ring-4 ring-statusok/10"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN COLUMN -->
+  <div class="flex-1 h-[900px] flex flex-col overflow-hidden bg-kbase">
+
+    <!-- TOPBAR (h-14, 56px) on ONE line -->
+    <header class="h-14 px-5 border-b border-khairline flex items-center justify-between shrink-0 bg-ksidebar">
+      <!-- Breadcrumb left -->
+      <div class="flex items-center gap-2.5 text-sm">
+        <span class="text-ksec font-normal">Graph</span>
+        <span class="text-ksec/40">/</span>
+        <span class="font-mono text-xs font-semibold text-ktext bg-kcard px-2 py-0.5 rounded border border-khairline">heuristics-catalog</span>
+        <span class="px-1.5 py-0.5 text-[10px] font-mono bg-kaccent/10 text-kaccent border border-kaccent/20 rounded">cluster-01</span>
+      </div>
+
+      <!-- Search field with ⌘K center -->
+      <div class="w-96 relative">
+        <span class="material-symbols-outlined text-ksec text-[17px] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+        <input type="text" value="heuristics-catalog" readonly class="w-full bg-kcard border border-khairline rounded-lg pl-9 pr-12 py-1.5 text-xs font-mono text-ktext placeholder-ksec focus:outline-none focus:border-kaccent/50 cursor-pointer">
+        <div class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-kraised text-[10px] font-mono text-ksec border border-khairline pointer-events-none">⌘K</div>
+      </div>
+
+      <!-- Right actions: bell + avatar (staying strictly on ONE line) -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-kcard border border-khairline text-ksec font-mono text-[11px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusok"></span>
+          <span>1,284 NODES</span>
+        </div>
+        <button class="w-8 h-8 rounded-lg bg-kcard border border-khairline flex items-center justify-center text-ksec hover:text-ktext relative">
+          <span class="material-symbols-outlined text-[18px]">notifications</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-kaccent absolute top-2 right-2"></span>
+        </button>
+        <div class="w-7 h-7 rounded-full bg-kraised border border-khairline flex items-center justify-center text-[10px] font-mono font-medium text-ktext">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT WORKSPACE: GRAPH CANVAS + INSPECTOR PANEL -->
+    <div class="flex-1 flex flex-row overflow-hidden relative">
+
+      <!-- GRAPH CANVAS (72% width) -->
+      <div class="w-[72%] h-full relative grid-bg overflow-hidden flex flex-col justify-between">
+
+        <!-- Topology Viewport Info Overlay (Top Left of canvas) -->
+        <div class="absolute top-4 left-4 z-10 flex items-center gap-2">
+          <div class="px-2.5 py-1 rounded-lg bg-kcard/90 backdrop-blur-md border border-khairline flex items-center gap-2.5 text-xs">
+            <span class="text-ksec font-mono text-[11px]">DOMAIN:</span>
+            <span class="text-ktext font-mono font-semibold text-[11px]">P5 Vector Space &amp; Ingestion</span>
+            <span class="text-khairline">|</span>
+            <span class="text-ksec font-mono text-[11px]">DENSITY:</span>
+            <span class="text-statusok font-mono text-[11px]">OPTIMAL</span>
+          </div>
+          <div class="px-2 py-1 rounded-lg bg-kcard/90 backdrop-blur-md border border-khairline flex items-center gap-1.5 text-xs text-ksec font-mono text-[11px]">
+            <span class="material-symbols-outlined text-[15px] text-ksec">filter_alt</span>
+            <span>Active Partition</span>
+          </div>
+        </div>
+
+        <!-- Vertical Segmented Zoom Controls (Right edge of canvas) -->
+        <div class="absolute right-4 top-4 z-10 flex flex-col bg-kcard border border-khairline rounded-lg overflow-hidden shadow-none">
+          <button class="w-8 h-8 flex items-center justify-center text-ksec hover:text-ktext hover:bg-kraised border-b border-khairline transition-colors" title="Zoom in">
+            <span class="material-symbols-outlined text-[16px]">add</span>
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center text-ksec hover:text-ktext hover:bg-kraised border-b border-khairline transition-colors" title="Zoom out">
+            <span class="material-symbols-outlined text-[16px]">remove</span>
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center text-ksec hover:text-ktext hover:bg-kraised transition-colors" title="Fit viewport">
+            <span class="material-symbols-outlined text-[16px]">fit_screen</span>
+          </button>
+        </div>
+
+        <!-- SVG GRAPH SURFACE (Exactly positioned 12 nodes, active & dim edges, midpoint labels) -->
+        <svg class="w-full h-full absolute inset-0 z-0" viewBox="0 0 858 810" preserveAspectRatio="none">
+          <defs>
+            <!-- Marker for active edge arrow -->
+            <marker id="arrow-active" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6366F1" />
+            </marker>
+            <!-- Marker for context edge arrow -->
+            <marker id="arrow-dim" viewBox="0 0 10 10" refX="20" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="rgba(255,255,255,0.18)" />
+            </marker>
+            <!-- Selection halo glow -->
+            <radialGradient id="selected-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#6366F1" stop-opacity="0.25" />
+              <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <!-- CONTEXT EDGES (dim 1px, rgba(255,255,255,0.12)) -->
+          <!-- retrieval -> projection -->
+          <line x1="160" y1="170" x2="310" y2="120" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow-dim)" />
+          <!-- p4-domain -> audit-ledger -->
+          <line x1="220" y1="360" x2="160" y2="520" stroke="rgba(255,255,255,0.14)" stroke-width="1" marker-end="url(#arrow-dim)" />
+          <!-- scoring-engine -> store-mutex -->
+          <line x1="680" y1="230" x2="710" y2="440" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow-dim)" />
+          <!-- cli-adapter -> projection -->
+          <line x1="150" y1="670" x2="380" y2="690" stroke="rgba(255,255,255,0.14)" stroke-width="1" marker-end="url(#arrow-dim)" />
+          <!-- store-mutex -> raft-fencing -->
+          <line x1="710" y1="440" x2="570" y2="590" stroke="rgba(255,255,255,0.14)" stroke-width="1" marker-end="url(#arrow-dim)" />
+          <!-- schema-eval -> heuristics-catalog context edge -->
+          <line x1="490" y1="150" x2="430" y2="350" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow-dim)" />
+
+          <!-- ACTIVE EDGES (accent indigo #6366F1 2px solid) connected to SELECTED node: heuristics-catalog (430, 350) -->
+          <!-- Edge 1: heuristics-catalog -> scoring-engine -->
+          <line x1="430" y1="350" x2="680" y2="230" stroke="#6366F1" stroke-width="2" marker-end="url(#arrow-active)" />
+          <!-- Edge 2: heuristics-catalog -> retrieval -->
+          <line x1="430" y1="350" x2="160" y2="170" stroke="#6366F1" stroke-width="2" marker-end="url(#arrow-active)" />
+          <!-- Edge 3: heuristics-catalog -> p4-domain -->
+          <line x1="430" y1="350" x2="220" y2="360" stroke="#6366F1" stroke-width="2" marker-end="url(#arrow-active)" />
+          <!-- Edge 4: heuristics-catalog -> store-mutex -->
+          <line x1="430" y1="350" x2="710" y2="440" stroke="#6366F1" stroke-width="2" marker-end="url(#arrow-active)" />
+          <!-- Edge 5: heuristics-catalog -> query-planner -->
+          <line x1="430" y1="350" x2="400" y2="540" stroke="#6366F1" stroke-width="2" marker-end="url(#arrow-active)" />
+
+          <!-- MIDPOINT LABELS for Edges -->
+          <!-- Label 1: depends_on (heuristics -> scoring-engine) -->
+          <g transform="translate(540, 280)">
+            <rect x="-38" y="-10" width="76" height="20" rx="5" fill="#12161D" stroke="#6366F1" stroke-width="1" />
+            <text x="0" y="4" text-anchor="middle" fill="#6366F1" font-family="JetBrains Mono" font-size="10" font-weight="500">depends_on</text>
+          </g>
+
+          <!-- Label 2: contradicts (heuristics -> p4-domain) -->
+          <g transform="translate(320, 342)">
+            <rect x="-38" y="-10" width="76" height="20" rx="5" fill="#12161D" stroke="#F87171" stroke-width="1" />
+            <text x="0" y="4" text-anchor="middle" fill="#F87171" font-family="JetBrains Mono" font-size="10" font-weight="500">contradicts</text>
+          </g>
+
+          <!-- Label 3: cites (heuristics -> retrieval) -->
+          <g transform="translate(290, 250)">
+            <rect x="-26" y="-10" width="52" height="20" rx="5" fill="#12161D" stroke="rgba(255,255,255,0.18)" stroke-width="1" />
+            <text x="0" y="4" text-anchor="middle" fill="#9AA3B2" font-family="JetBrains Mono" font-size="10" font-weight="400">cites</text>
+          </g>
+
+          <!-- Label 4: governs (heuristics -> store-mutex) -->
+          <g transform="translate(580, 400)">
+            <rect x="-30" y="-10" width="60" height="20" rx="5" fill="#12161D" stroke="#6366F1" stroke-width="1" />
+            <text x="0" y="4" text-anchor="middle" fill="#6366F1" font-family="JetBrains Mono" font-size="10" font-weight="500">governs</text>
+          </g>
+
+          <!-- Label 5: invokes (heuristics -> query-planner) -->
+          <g transform="translate(416, 450)">
+            <rect x="-28" y="-10" width="56" height="20" rx="5" fill="#12161D" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+            <text x="0" y="4" text-anchor="middle" fill="#9AA3B2" font-family="JetBrains Mono" font-size="10" font-weight="400">invokes</text>
+          </g>
+
+          <!-- 12 NODE DISCS: TWO SIZES (Primary 52px diameter / r=26, Secondary 36px diameter / r=18) -->
+
+          <!-- 1. SELECTED NODE: heuristics-catalog (Center x=430, y=350, r=32 large hero) -->
+          <g transform="translate(430, 350)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="54" fill="url(#selected-glow)" />
+            <circle cx="0" cy="0" r="30" fill="#161B24" stroke="#6366F1" stroke-width="2.5" />
+            <circle cx="0" cy="0" r="8" fill="#6366F1" />
+            <rect x="-65" y="38" width="130" height="22" rx="6" fill="#12161D" stroke="#6366F1" stroke-width="1" />
+            <text x="0" y="53" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="11" font-weight="600">heuristics-catalog</text>
+            <text x="0" y="-36" text-anchor="middle" fill="#6366F1" font-family="JetBrains Mono" font-size="10" font-weight="600">● SELECTED [P5]</text>
+          </g>
+
+          <!-- 2. scoring-engine (x=680, y=230, r=24) -->
+          <g transform="translate(680, 230)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="24" fill="#161B24" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" />
+            <circle cx="0" cy="0" r="5" fill="#34D399" />
+            <rect x="-55" y="30" width="110" height="20" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="44" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="10">scoring-engine</text>
+          </g>
+
+          <!-- 3. store-mutex (x=710, y=440, r=24) -->
+          <g transform="translate(710, 440)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="24" fill="#161B24" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" />
+            <circle cx="0" cy="0" r="5" fill="#6366F1" />
+            <rect x="-48" y="30" width="96" height="20" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="44" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="10">store-mutex</text>
+          </g>
+
+          <!-- 4. audit-ledger (x=160, y=520, r=22) -->
+          <g transform="translate(160, 520)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="22" fill="#12161D" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+            <circle cx="0" cy="0" r="4" fill="#34D399" />
+            <rect x="-46" y="28" width="92" height="20" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="42" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="10">audit-ledger</text>
+          </g>
+
+          <!-- 5. p4-domain (x=220, y=360, r=24) -->
+          <g transform="translate(220, 360)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="24" fill="#161B24" stroke="#FBBF24" stroke-width="1.5" />
+            <circle cx="0" cy="0" r="5" fill="#FBBF24" />
+            <rect x="-42" y="30" width="84" height="20" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="44" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="10">p4-domain</text>
+          </g>
+
+          <!-- 6. retrieval (x=160, y=170, r=24) -->
+          <g transform="translate(160, 170)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="24" fill="#161B24" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" />
+            <circle cx="0" cy="0" r="5" fill="#34D399" />
+            <rect x="-38" y="30" width="76" height="20" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="44" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="10">retrieval</text>
+          </g>
+
+          <!-- 7. projection (x=310, y=120, r=18) -->
+          <g transform="translate(310, 120)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="18" fill="#12161D" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+            <circle cx="0" cy="0" r="4" fill="#9AA3B2" />
+            <rect x="-40" y="24" width="80" height="18" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="37" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="9">projection</text>
+          </g>
+
+          <!-- 8. cli-adapter (x=150, y=670, r=18) -->
+          <g transform="translate(150, 670)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="18" fill="#12161D" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+            <circle cx="0" cy="0" r="4" fill="#9AA3B2" />
+            <rect x="-42" y="24" width="84" height="18" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="37" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="9">cli-adapter</text>
+          </g>
+
+          <!-- 9. query-planner (x=400, y=540, r=22) -->
+          <g transform="translate(400, 540)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="22" fill="#161B24" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" />
+            <circle cx="0" cy="0" r="4" fill="#6366F1" />
+            <rect x="-50" y="28" width="100" height="20" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="42" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="10">query-planner</text>
+          </g>
+
+          <!-- 10. raft-fencing (x=570, y=590, r=20) -->
+          <g transform="translate(570, 590)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="20" fill="#12161D" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+            <circle cx="0" cy="0" r="4" fill="#34D399" />
+            <rect x="-45" y="26" width="90" height="18" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="39" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="9">raft-fencing</text>
+          </g>
+
+          <!-- 11. schema-eval (x=490, y=150, r=20) -->
+          <g transform="translate(490, 150)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="20" fill="#12161D" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+            <circle cx="0" cy="0" r="4" fill="#34D399" />
+            <rect x="-45" y="26" width="90" height="18" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="39" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="9">schema-eval</text>
+          </g>
+
+          <!-- 12. vector-cache (x=380, y=690, r=18) -->
+          <g transform="translate(380, 690)" class="cursor-pointer">
+            <circle cx="0" cy="0" r="18" fill="#12161D" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+            <circle cx="0" cy="0" r="4" fill="#9AA3B2" />
+            <rect x="-44" y="24" width="88" height="18" rx="4" fill="#12161D" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="0" y="37" text-anchor="middle" fill="#E6E9EF" font-family="JetBrains Mono" font-size="9">vector-cache</text>
+          </g>
+        </svg>
+
+        <!-- Floating Legend Bar at Canvas Bottom (Flush alignment, clean minimal) -->
+        <div class="p-4 z-10">
+          <div class="inline-flex items-center gap-4 px-3.5 py-2 rounded-xl bg-kcard/95 backdrop-blur-md border border-khairline text-xs font-mono text-ksec">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-kaccent ring-2 ring-kaccent/20"></span>
+              <span class="text-ktext text-[11px]">selected</span>
+            </div>
+            <span class="text-khairline">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-statusok"></span>
+              <span class="text-[11px]">domain</span>
+            </div>
+            <span class="text-khairline">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full border border-ksec bg-transparent"></span>
+              <span class="text-[11px]">external</span>
+            </div>
+            <span class="text-khairline">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-4 h-0.5 bg-kaccent inline-block"></span>
+              <span class="text-[11px]">depends_on</span>
+            </div>
+            <span class="text-khairline">·</span>
+            <div class="flex items-center gap-1.5">
+              <span class="w-4 h-0.5 border-t border-dashed border-ksec inline-block"></span>
+              <span class="text-[11px]">cites</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT INSPECTOR PANEL (28% width, exactly fits screen, no void) -->
+      <aside class="w-[28%] h-full bg-ksidebar border-l border-khairline flex flex-col justify-between shrink-0 overflow-y-auto">
+        <div class="p-5 flex flex-col space-y-5">
+
+          <!-- Header 'Node' + mono id 'heuristics-catalog' (full, one line) -->
+          <div class="pb-4 border-b border-khairline">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-semibold tracking-wider text-ksec uppercase font-mono">NODE INSPECTOR</span>
+              <!-- Domain chip 'P5' -->
+              <span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-kaccent/15 text-kaccent border border-kaccent/25">
+                DOMAIN P5
+              </span>
+            </div>
+            <div class="text-lg font-mono font-semibold text-ktext tracking-tight truncate">
+              heuristics-catalog
+            </div>
+            <div class="text-xs text-ksec mt-1">Central heuristic registry &amp; AST pattern evaluator</div>
+          </div>
+
+          <!-- Mono Score Rows (P 0.828, M 0.341, E 0.898) -->
+          <div class="space-y-3 p-3.5 rounded-xl bg-kcard border border-khairline">
+            <div class="text-[10px] font-semibold tracking-wider text-ksec uppercase font-mono">CONVERGENCE TELEMETRY</div>
+            
+            <!-- Row 1: Precision -->
+            <div>
+              <div class="flex justify-between items-center text-xs font-mono mb-1">
+                <span class="text-ksec">Precision Score</span>
+                <span class="text-ktext font-semibold">P 0.828</span>
+              </div>
+              <div class="w-full h-1.5 bg-kraised rounded-full overflow-hidden">
+                <div class="h-full bg-kaccent rounded-full" style="width: 82.8%"></div>
+              </div>
+            </div>
+
+            <!-- Row 2: Mutation Entropy -->
+            <div>
+              <div class="flex justify-between items-center text-xs font-mono mb-1">
+                <span class="text-ksec">Mutation Entropy</span>
+                <span class="text-ktext font-semibold">M 0.341</span>
+              </div>
+              <div class="w-full h-1.5 bg-kraised rounded-full overflow-hidden">
+                <div class="h-full bg-statuswarn rounded-full" style="width: 34.1%"></div>
+              </div>
+            </div>
+
+            <!-- Row 3: Eigen Convergence -->
+            <div>
+              <div class="flex justify-between items-center text-xs font-mono mb-1">
+                <span class="text-ksec">Eigen Convergence</span>
+                <span class="text-ktext font-semibold">E 0.898</span>
+              </div>
+              <div class="w-full h-1.5 bg-kraised rounded-full overflow-hidden">
+                <div class="h-full bg-statusok rounded-full" style="width: 89.8%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- List 'Edges' with 4 short rows (relation chip + target name, one line each) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold tracking-wider text-ksec uppercase font-mono">CONNECTED EDGES (4)</span>
+              <span class="text-[10px] font-mono text-ksec">SHARD 0x3a</span>
+            </div>
+
+            <div class="space-y-1.5">
+              <!-- Edge 1 -->
+              <div class="h-[44px] px-3 rounded-lg bg-kcard border border-khairline flex items-center justify-between hover:bg-kraised transition-colors">
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-kaccent/15 text-kaccent border border-kaccent/20 shrink-0">depends_on</span>
+                  <span class="text-xs font-mono text-ktext truncate">scoring-engine</span>
+                </div>
+                <span class="text-[11px] font-mono text-statusok shrink-0">0.94</span>
+              </div>
+
+              <!-- Edge 2 -->
+              <div class="h-[44px] px-3 rounded-lg bg-kcard border border-khairline flex items-center justify-between hover:bg-kraised transition-colors">
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-statusdanger/15 text-statusdanger border border-statusdanger/20 shrink-0">contradicts</span>
+                  <span class="text-xs font-mono text-ktext truncate">p4-domain</span>
+                </div>
+                <span class="text-[11px] font-mono text-statusdanger shrink-0">WARN</span>
+              </div>
+
+              <!-- Edge 3 -->
+              <div class="h-[44px] px-3 rounded-lg bg-kcard border border-khairline flex items-center justify-between hover:bg-kraised transition-colors">
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-kraised text-ksec border border-khairline shrink-0">cites</span>
+                  <span class="text-xs font-mono text-ktext truncate">retrieval</span>
+                </div>
+                <span class="text-[11px] font-mono text-ksec shrink-0">0.82</span>
+              </div>
+
+              <!-- Edge 4 -->
+              <div class="h-[44px] px-3 rounded-lg bg-kcard border border-khairline flex items-center justify-between hover:bg-kraised transition-colors">
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-kaccent/15 text-kaccent border border-kaccent/20 shrink-0">governs</span>
+                  <span class="text-xs font-mono text-ktext truncate">store-mutex</span>
+                </div>
+                <span class="text-[11px] font-mono text-kaccent shrink-0">LOCK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata Attributes Spec Block -->
+          <div class="p-3 rounded-xl bg-kcard border border-khairline space-y-2">
+            <div class="text-[10px] font-semibold tracking-wider text-ksec uppercase font-mono">SPEC PROVENANCE</div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div>
+                <span class="text-[10px] text-ksec block">PARTITION</span>
+                <span class="text-ktext text-[11px]">P5 Vector Space</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-ksec block">IMMUTABLE ROOT</span>
+                <span class="text-ktext text-[11px]">0x9f2c1ab4</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-ksec block">LAST EVAL</span>
+                <span class="text-ktext text-[11px]">14:32:07Z</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-ksec block">MUTATION STATUS</span>
+                <span class="text-statusok text-[11px]">CONVERGED</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action Buttons (Bottom of Inspector, fully visible, strictly conforming to style) -->
+        <div class="p-4 border-t border-khairline bg-ksidebar space-y-2">
+          <!-- Primary button: Trace Lineage (solid indigo accent) -->
+          <button class="w-full h-10 rounded-lg bg-kaccent hover:bg-kaccent/90 text-white font-medium text-xs flex items-center justify-center gap-2 transition-colors">
+            <span class="material-symbols-outlined text-[16px]">account_tree</span>
+            <span>Trace Lineage</span>
+          </button>
+          <!-- Ghost button: Copy URI -->
+          <button class="w-full h-9 rounded-lg bg-transparent hover:bg-kraised border border-khairline text-ksec hover:text-ktext font-mono text-xs flex items-center justify-center gap-2 transition-colors">
+            <span class="material-symbols-outlined text-[15px]">content_copy</span>
+            <span>Copy URI</span>
+          </button>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- STATUS BAR (Flush at bottom edge of 900px viewport, on ONE line) -->
+    <footer class="h-8 px-5 bg-ksidebar border-t border-khairline flex items-center justify-between text-[11px] font-mono text-ksec shrink-0">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusok"></span>
+          <span class="text-ktext">GRAPH RUNTIME: NOMINAL</span>
+        </div>
+        <span class="text-khairline">·</span>
+        <span>12,847 NODES</span>
+        <span class="text-khairline">·</span>
+        <span>48,203 EDGES</span>
+        <span class="text-khairline">·</span>
+        <span>MERKLE: 0x9f8a...c3b1</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span>DAG ENGINE: v14.2</span>
+        <span class="text-khairline">·</span>
+        <div class="flex items-center gap-1 text-ktext">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusok"></span>
+          <span>RAFT QUORUM SYNCED</span>
+        </div>
+        <span class="text-khairline">·</span>
+        <span>VIEWPORT: 1440x900 FIXED</span>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

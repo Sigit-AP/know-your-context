@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=1440, height=900, initial-scale=1.0" name="viewport"/>
+<title>KYS Core // System Operations</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            space: "#05070D",
+            panel: "#0A0E18",
+            raised: "#0E1424",
+            electric: "#8B5CF6",
+            "text-primary": "#E8E6F5",
+            "text-secondary": "#8B86A8",
+            "status-ok": "#22C55E",
+            "status-warn": "#F59E0B",
+            "status-danger": "#EF4444",
+            hairline: "rgba(139, 92, 246, 0.12)",
+          },
+          fontFamily: {
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* Dot Matrix Background Pattern */
+    .neon-ops-dots {
+      background-color: #05070D;
+      background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 0);
+      background-size: 22px 22px;
+      background-position: -19px -19px;
+    }
+
+    /* Pulse Live Animation */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .live-pulse {
+      animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Crisp Micro-borders */
+    .border-hairline {
+      border-color: rgba(139, 92, 246, 0.12);
+    }
+    .divide-hairline > * + * {
+      border-color: rgba(139, 92, 246, 0.12);
+    }
+
+    /* Custom Scrollbar prevention */
+    html, body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="neon-ops-dots text-text-primary antialiased flex flex-row w-[1440px] h-[900px] max-w-[1440px] max-h-[900px] overflow-hidden">
+<!-- LEFT SIDEBAR (Width: 256px, Fixed Full Height) -->
+<aside class="w-64 h-full bg-panel flex flex-col justify-between border-r border-hairline z-40 shrink-0">
+<!-- Top Brand & Navigation Section -->
+<div class="flex flex-col">
+<!-- Header Section -->
+<div class="h-12 px-4 flex items-center justify-between border-b border-hairline">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded bg-[#8B5CF6]/15 border border-[#8B5CF6]/40 flex items-center justify-center text-electric">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<span class="font-headline font-bold text-xs tracking-wider text-text-primary">KNOW YOUR SOUL</span>
+</div>
+<span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-raised border border-hairline text-electric font-semibold">v14.2</span>
+</div>
+<!-- Navigation Groups List -->
+<nav class="p-2 space-y-4 font-body text-xs overflow-hidden">
+<!-- 01 // MONITOR -->
+<div>
+<div class="px-2 py-1 font-mono text-[10px] text-text-secondary font-medium tracking-tight">01 // MONITOR</div>
+<div class="space-y-0.5 mt-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">list_alt</span>
+<span>Activity Log</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">hub</span>
+<span>Graph Explorer</span>
+</a>
+</div>
+</div>
+<!-- 02 // ANALYZE -->
+<div>
+<div class="px-2 py-1 font-mono text-[10px] text-text-secondary font-medium tracking-tight">02 // ANALYZE</div>
+<div class="space-y-0.5 mt-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">search</span>
+<span>Search</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">query_stats</span>
+<span>Metrics</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">analytics</span>
+<span>Analytics</span>
+</a>
+</div>
+</div>
+<!-- 03 // GOVERN -->
+<div>
+<div class="px-2 py-1 font-mono text-[10px] text-text-secondary font-medium tracking-tight">03 // GOVERN</div>
+<div class="space-y-0.5 mt-0.5">
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">monitor_heart</span>
+<span>Health</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">history_edu</span>
+<span>Audit Ledger</span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px]">how_to_vote</span>
+<span>Proposals</span>
+</div>
+<span class="font-mono text-[10px] bg-[#8B5CF6]/15 text-electric px-1.5 py-0.2 rounded border border-hairline font-semibold">3</span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px]">pending_actions</span>
+<span>Debt Queue</span>
+</div>
+<span class="font-mono text-[10px] bg-status-warn/15 text-status-warn px-1.5 py-0.2 rounded border border-status-warn/25 font-semibold">12</span>
+</a>
+</div>
+</div>
+<!-- 04 // SYSTEM -->
+<div>
+<div class="px-2 py-1 font-mono text-[10px] text-text-secondary font-medium tracking-tight">04 // SYSTEM</div>
+<div class="space-y-0.5 mt-0.5">
+<!-- ACTIVE: System Tab with electric violet indicator & pill styling -->
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded bg-[#8B5CF6]/15 text-electric font-medium border-l-2 border-electric relative">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<span class="font-medium text-electric">System</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-electric"></span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-text-secondary hover:text-text-primary hover:bg-raised transition-colors">
+<span class="material-symbols-outlined text-[15px]">settings</span>
+<span>Setup</span>
+</a>
+</div>
+</div>
+</nav>
+</div>
+<!-- User / Operator Card Footer -->
+<div class="p-3 border-t border-hairline bg-panel flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded bg-raised border border-hairline flex items-center justify-center font-mono text-xs font-semibold text-text-primary">
+          SA
+        </div>
+<div class="flex flex-col">
+<span class="font-headline text-xs font-medium text-text-primary leading-tight">Sigit A.</span>
+<span class="font-mono text-[10px] text-text-secondary leading-none mt-0.5">operator</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 bg-raised px-2 py-1 rounded border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok live-pulse"></span>
+<span class="font-mono text-[9px] text-status-ok uppercase tracking-wider font-semibold">LOCKED</span>
+</div>
+</div>
+</aside>
+<!-- MAIN CANVAS (1184px wide, exactly 900px high layout) -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-transparent">
+<!-- TOPBAR (48px high, border-b hairline, single line) -->
+<header class="h-12 border-b border-hairline bg-panel px-4 flex items-center justify-between shrink-0 z-30">
+<!-- Left: Breadcrumb & Cluster Pills -->
+<div class="flex items-center gap-3">
+<div class="font-mono text-xs font-semibold text-text-primary flex items-center gap-1">
+<span class="text-electric">kyc:</span><span class="text-text-secondary">//</span><span>system</span>
+</div>
+<div class="h-3.5 w-px bg-hairline"></div>
+<div class="flex items-center gap-1.5 font-mono text-[11px] text-text-secondary">
+<span class="bg-raised border border-hairline px-2 py-0.5 rounded text-text-primary">CLUSTER: cluster-01</span>
+<span class="bg-raised border border-hairline px-2 py-0.5 rounded text-text-secondary">NODE: node-01.local</span>
+<span class="bg-raised border border-hairline px-2 py-0.5 rounded text-text-secondary">DAEMON: 127.0.0.1:9042</span>
+</div>
+</div>
+<!-- Center: Filter/Search Input -->
+<div class="relative w-80">
+<span class="material-symbols-outlined text-sm text-text-secondary absolute left-2.5 top-1/2 -translate-y-1/2">search</span>
+<input class="w-full bg-raised border border-hairline rounded text-xs text-text-secondary pl-8 pr-9 py-1 cursor-default font-mono focus:outline-none" readonly="" type="text" value="filter system knobs, store, routes..."/>
+<kbd class="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[9px] bg-panel border border-hairline text-text-secondary px-1.5 py-0.5 rounded">⌘K</kbd>
+</div>
+<!-- Right: Quorum status, Bell, Profile Avatar -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 bg-raised border border-hairline px-2.5 py-1 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok live-pulse"></span>
+<span class="font-mono text-[11px] text-status-ok font-medium tracking-tight">RAFT QUORUM 3/3</span>
+</div>
+<button class="relative w-7 h-7 rounded bg-raised border border-hairline flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined text-[15px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-electric rounded-full"></span>
+</button>
+<div class="w-7 h-7 rounded bg-raised border border-hairline flex items-center justify-center font-mono text-xs font-semibold text-electric">
+          SA
+        </div>
+</div>
+</header>
+<!-- SUB-HEADER TELEMETRY STRIP (30px high) -->
+<div class="h-[30px] border-b border-hairline bg-raised/75 px-4 flex items-center justify-between shrink-0 font-mono text-[11px]">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok live-pulse"></span>
+<span class="font-semibold text-text-primary">SUBSYSTEM STATUS // ALL ENGINES NOMINAL</span>
+<span class="text-hairline">|</span>
+<span class="text-text-secondary">UPTIME: <span class="text-text-primary">6d 04h 12m</span></span>
+<span class="text-hairline">|</span>
+<span class="text-text-secondary">IPC ROUNDTRIP: <span class="text-status-ok">0.14ms</span></span>
+<span class="text-hairline">|</span>
+<span class="text-text-secondary">SAFETY BARRIER: <span class="text-electric">FAIL_SAFE ARMED</span></span>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 bg-panel hover:bg-raised border border-hairline px-2 py-0.5 rounded text-[10px] text-text-secondary hover:text-text-primary transition-colors cursor-pointer">
+<span class="text-electric font-semibold">[F5]</span>
+<span>RE-PROBE HARDWARE</span>
+</button>
+</div>
+</div>
+<!-- MAIN QUADRANT CONTENT (Fills remaining height precisely, 2x2 Bento Grid) -->
+<div class="flex-1 p-3.5 grid grid-cols-2 grid-rows-2 gap-3.5 min-h-0">
+<!-- QUADRANT 01: STORE -->
+<section class="bg-panel border border-hairline rounded-lg flex flex-col justify-between overflow-hidden shadow-none">
+<div class="flex flex-col">
+<!-- Card Header -->
+<div class="h-10 px-3.5 border-b border-hairline flex items-center justify-between bg-raised/40">
+<div class="flex items-center gap-2">
+<span class="font-headline font-bold text-xs tracking-wider text-text-primary">01 // STORE</span>
+<span class="text-text-secondary text-[11px] font-body">DATABASE ENGINE &amp; FILE SYSTEM SPEC</span>
+</div>
+<span class="font-mono text-[10px] px-2 py-0.5 rounded bg-status-ok/10 text-status-ok border border-status-ok/30 font-medium">SYNCHRONOUS: NORMAL</span>
+</div>
+<!-- Data Rows (Dense 36-38px hairline key-value) -->
+<div class="divide-y divide-hairline font-mono text-xs">
+<!-- engine -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">engine</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">sqlite 3.45</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-raised border border-hairline text-electric rounded">C-ABI</span>
+</div>
+</div>
+<!-- path -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">path</span>
+<span class="text-text-primary truncate font-normal">/var/lib/kys/store.db</span>
+</div>
+<!-- size -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">size</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">46.2 MB</span>
+<span class="text-text-secondary text-[11px]">(48,443,392 B)</span>
+</div>
+</div>
+<!-- page_count -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">page_count</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">11,284</span>
+<span class="text-text-secondary text-[11px]">page_sz 4096 B</span>
+</div>
+</div>
+<!-- freelist_pages -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">freelist_pages</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">312</span>
+<span class="text-text-secondary text-[11px]">2.76% fragmentation</span>
+</div>
+</div>
+<!-- wal -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">wal</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary">on · 0 B pending</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-status-ok/10 text-status-ok border border-status-ok/25 rounded font-medium">PASS 0 lag</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Store Footer -->
+<div class="h-7 px-3.5 border-t border-hairline bg-raised/30 flex items-center justify-between font-mono text-[10px] text-text-secondary">
+<span>JOURNAL_MODE: <span class="text-text-primary">WAL</span></span>
+<span>CHECKSUM: <span class="text-status-ok">SHA-256 HMAC VALID</span></span>
+</div>
+</section>
+<!-- QUADRANT 02: RUNTIME -->
+<section class="bg-panel border border-hairline rounded-lg flex flex-col justify-between overflow-hidden shadow-none">
+<div class="flex flex-col">
+<!-- Card Header -->
+<div class="h-10 px-3.5 border-b border-hairline flex items-center justify-between bg-raised/40">
+<div class="flex items-center gap-2">
+<span class="font-headline font-bold text-xs tracking-wider text-text-primary">02 // RUNTIME</span>
+<span class="text-text-secondary text-[11px] font-body">DAEMON EXECUTION &amp; PROCESS HOST</span>
+</div>
+<span class="font-mono text-[10px] px-2 py-0.5 rounded bg-status-ok/10 text-status-ok border border-status-ok/30 font-medium">DAEMON ONLINE</span>
+</div>
+<!-- Data Rows -->
+<div class="divide-y divide-hairline font-mono text-xs">
+<!-- python -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">python</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">3.14.0</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-raised border border-hairline text-electric rounded">CPython 64-bit</span>
+</div>
+</div>
+<!-- uvicorn -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">uvicorn</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">0.54</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-raised border border-hairline text-text-secondary rounded">ASGI loop: uvloop</span>
+</div>
+</div>
+<!-- pid -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">pid</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">4,812</span>
+<span class="text-text-secondary text-[11px]">user: kys-daemon</span>
+</div>
+</div>
+<!-- uptime -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">uptime</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">6d 4h</span>
+<span class="text-text-secondary text-[11px]">started 2026-10-29 08:30Z</span>
+</div>
+</div>
+<!-- memory_rss -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">memory_rss</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">46.2 MB</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-status-ok/10 text-status-ok border border-status-ok/25 rounded font-medium">NOMINAL (&lt; 256 MB)</span>
+</div>
+</div>
+<!-- event_loop_lag -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">event_loop_lag</span>
+<div class="flex items-center gap-2">
+<span class="text-status-ok font-semibold">0.08ms</span>
+<span class="text-text-secondary text-[11px]">gc_gen0 14.2/s</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Runtime Footer -->
+<div class="h-7 px-3.5 border-t border-hairline bg-raised/30 flex items-center justify-between font-mono text-[10px] text-text-secondary">
+<span>SOCKET: <span class="text-text-primary">/var/run/kys/daemon.sock</span></span>
+<span>IPC PROTOCOL: <span class="text-electric">UNIX DOMAIN STREAM</span></span>
+</div>
+</section>
+<!-- QUADRANT 03: ROUTES -->
+<section class="bg-panel border border-hairline rounded-lg flex flex-col justify-between overflow-hidden shadow-none">
+<div class="flex flex-col">
+<!-- Card Header -->
+<div class="h-10 px-3.5 border-b border-hairline flex items-center justify-between bg-raised/40">
+<div class="flex items-center gap-2">
+<span class="font-headline font-bold text-xs tracking-wider text-text-primary">03 // ROUTES</span>
+<span class="text-text-secondary text-[11px] font-body">DISPATCHER ENDPOINT INVENTORY</span>
+</div>
+<span class="font-mono text-[10px] px-2 py-0.5 rounded bg-raised border border-hairline text-electric font-medium">5 REGISTERED</span>
+</div>
+<!-- Route Rows -->
+<div class="divide-y divide-hairline font-mono text-xs">
+<!-- 01 -->
+<div class="h-[43px] px-3.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="text-text-secondary text-[10px]">01</span>
+<span class="text-text-primary font-medium">/v1/knowledge/query</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-raised border border-hairline text-text-secondary">OPERATOR</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-electric font-semibold">READ</span>
+</div>
+</div>
+<!-- 02 -->
+<div class="h-[43px] px-3.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="text-text-secondary text-[10px]">02</span>
+<span class="text-text-primary font-medium">/v1/graph/traverse</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-raised border border-hairline text-text-secondary">OPERATOR</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-electric font-semibold">READ</span>
+</div>
+</div>
+<!-- 03 -->
+<div class="h-[43px] px-3.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="text-text-secondary text-[10px]">03</span>
+<span class="text-text-primary font-medium">/v1/symbols/search</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-raised border border-hairline text-text-secondary">OPERATOR</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-electric font-semibold">READ</span>
+</div>
+</div>
+<!-- 04 (WRITE) -->
+<div class="h-[43px] px-3.5 flex items-center justify-between bg-raised/20">
+<div class="flex items-center gap-2.5">
+<span class="text-text-secondary text-[10px]">04</span>
+<span class="text-text-primary font-medium">/v1/wal/commit</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-raised border border-hairline text-text-secondary">OPERATOR</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-status-warn/15 border border-status-warn/30 text-status-warn font-semibold">WRITE</span>
+</div>
+</div>
+<!-- 05 -->
+<div class="h-[43px] px-3.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="text-text-secondary text-[10px]">05</span>
+<span class="text-text-primary font-medium">/v1/export/manifest</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-raised border border-hairline text-text-secondary">OPERATOR</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-electric font-semibold">READ</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Routes Footer -->
+<div class="h-7 px-3.5 border-t border-hairline bg-raised/30 flex items-center justify-between font-mono text-[10px] text-text-secondary">
+<span>ROUTER: <span class="text-text-primary">FASTAPI STARLETTE MOUNT</span></span>
+<span>TOKEN AUTH: <span class="text-status-ok">BEARER ED25519 VERIFIED</span></span>
+</div>
+</section>
+<!-- QUADRANT 04: HARDWARE -->
+<section class="bg-panel border border-hairline rounded-lg flex flex-col justify-between overflow-hidden shadow-none">
+<div class="flex flex-col">
+<!-- Card Header -->
+<div class="h-10 px-3.5 border-b border-hairline flex items-center justify-between bg-raised/40">
+<div class="flex items-center gap-2">
+<span class="font-headline font-bold text-xs tracking-wider text-text-primary">04 // HARDWARE</span>
+<span class="text-text-secondary text-[11px] font-body">HOST TOPOLOGY &amp; HARDWARE ALLOCATION</span>
+</div>
+<span class="font-mono text-[10px] px-2 py-0.5 rounded bg-raised border border-hairline text-electric font-medium">ARCH: x86_64</span>
+</div>
+<!-- Data Rows -->
+<div class="divide-y divide-hairline font-mono text-xs">
+<!-- cpu -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">cpu</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">8 vCPU</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-raised border border-hairline text-electric rounded">AMD EPYC · AVX-512 ACTIVE</span>
+</div>
+</div>
+<!-- mem -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">mem</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">32 GB</span>
+<span class="text-text-secondary text-[11px]">21.4 GB FREE (66.8%)</span>
+</div>
+</div>
+<!-- disk -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">disk</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary whitespace-nowrap">NVMe SSD, non-rotational</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-status-ok/10 text-status-ok border border-status-ok/25 rounded">&lt; 1ms IO LATENCY</span>
+</div>
+</div>
+<!-- os -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">os</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">Linux 5.15</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-raised border border-hairline text-text-secondary rounded">Ubuntu 22.04 LTS (x86_64)</span>
+</div>
+</div>
+<!-- acceleration -->
+<div class="h-9 px-3.5 flex items-center justify-between">
+<span class="text-text-secondary font-medium">acceleration</span>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-semibold">SIMD AVX-512 Vectorized</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-raised border border-hairline text-text-secondary rounded">GPU none (CPU Fallback)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Hardware Footer -->
+<div class="h-7 px-3.5 border-t border-hairline bg-raised/30 flex items-center justify-between font-mono text-[10px] text-text-secondary">
+<span>I/O BUFFER: <span class="text-text-primary">1 MiB RING</span></span>
+<span>FS CONTENTION: <span class="text-status-ok">0 (CLEAN)</span></span>
+</div>
+</section>
+</div>
+<!-- BOTTOM STATUS BAR (Flush at bottom edge, exactly 32px high, border-t hairline, bg panel) -->
+<footer class="h-8 border-t border-hairline bg-panel px-3.5 flex items-center justify-between shrink-0 font-mono text-[11px] text-text-secondary z-30">
+<!-- Left Indicators -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok live-pulse"></span>
+<span class="text-text-primary font-semibold">TERMINAL ONLINE</span>
+</div>
+<span class="text-hairline">|</span>
+<span>SHARD: <span class="text-text-primary">0x3a</span></span>
+<span class="text-hairline">|</span>
+<span>MERKLE ROOT: <span class="text-electric">0x9f8a2c3b1</span></span>
+<span class="text-hairline">|</span>
+<span>DAG ENGINE: <span class="text-text-primary font-medium">v14.2 DETERMINISTIC</span></span>
+</div>
+<!-- Right Indicators -->
+<div class="flex items-center gap-3">
+<span>SYNC: <span class="text-status-ok font-semibold">100% QUORUM</span></span>
+<span class="text-hairline">|</span>
+<span>LATENCY P50: <span class="text-text-primary font-medium">0.14ms</span></span>
+<span class="text-hairline">|</span>
+<span>VIEWPORT: <span class="text-text-secondary">1440x900 FIXED</span></span>
+<span class="text-hairline">|</span>
+<div class="flex items-center gap-1.5 text-status-ok font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+<span>CLUSTER ONLINE</span>
+</div>
+</div>
+</footer>
+</main>
+<script>
+    // Lightweight keyboard navigation feedback
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F5') {
+        e.preventDefault();
+        const banner = document.querySelector('button');
+        if (banner) {
+          banner.classList.add('bg-electric/20');
+          setTimeout(() => banner.classList.remove('bg-electric/20'), 250);
+        }
+      }
+    });
+  </script>
+</body></html>

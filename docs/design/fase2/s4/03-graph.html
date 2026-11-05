@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Know Your Soul - Graph Explorer (Glass Console)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#070B16',
+            glass: 'rgba(148, 178, 255, 0.05)',
+            'glass-raised': 'rgba(148, 178, 255, 0.09)',
+            'glass-border': 'rgba(148, 178, 255, 0.14)',
+            'glass-top': 'rgba(148, 178, 255, 0.28)',
+            textMain: '#E3EBFF',
+            textSecondary: '#8FA3CC',
+            cyanAccent: '#22D3EE',
+            statusOk: '#34D399',
+            statusWarn: '#FBBF24',
+            statusDanger: '#FB7185',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      background-color: #070B16;
+      color: #E3EBFF;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+    }
+    .frosted-panel {
+      background: rgba(148, 178, 255, 0.05);
+      border: 1px solid rgba(148, 178, 255, 0.14);
+      border-top-color: rgba(148, 178, 255, 0.26);
+    }
+    .frosted-raised {
+      background: rgba(148, 178, 255, 0.09);
+      border: 1px solid rgba(148, 178, 255, 0.18);
+      border-top-color: rgba(148, 178, 255, 0.32);
+    }
+    .frosted-active {
+      background: rgba(34, 211, 238, 0.10);
+      border: 1px solid rgba(34, 211, 238, 0.28);
+    }
+    .dot-grid {
+      background-image: radial-gradient(rgba(148, 178, 255, 0.14) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex overflow-hidden bg-base text-textMain antialiased">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-[900px] flex-shrink-0 flex flex-col justify-between border-r border-glass-border frosted-panel z-20">
+    <!-- Top Branding & Nav Groups -->
+    <div class="flex flex-col pt-4 px-3">
+      <!-- Brand Title -->
+      <div class="flex items-center justify-between px-3 mb-6">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded-md bg-cyanAccent/15 border border-cyanAccent/30 flex items-center justify-center text-cyanAccent font-mono text-xs font-semibold">
+            K
+          </div>
+          <span class="font-sans font-semibold tracking-tight text-textMain text-sm">Know Your Soul</span>
+        </div>
+        <span class="font-mono text-[10px] text-textSecondary bg-glass-raised px-1.5 py-0.5 rounded border border-glass-border">v14.2</span>
+      </div>
+
+      <!-- Nav Section 1: MONITOR -->
+      <div class="mb-4">
+        <div class="px-3 mb-1.5 text-[10px] font-mono font-medium tracking-[0.12em] text-textSecondary uppercase">
+          MONITOR
+        </div>
+        <nav class="space-y-0.5">
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <span>Overview</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Activity Log</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs frosted-active text-cyanAccent font-medium">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-3.5 h-3.5 text-cyanAccent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Graph Explorer</span>
+            </div>
+            <span class="w-1.5 h-1.5 rounded-full bg-cyanAccent"></span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Nav Section 2: ANALYZE -->
+      <div class="mb-4">
+        <div class="px-3 mb-1.5 text-[10px] font-mono font-medium tracking-[0.12em] text-textSecondary uppercase">
+          ANALYZE
+        </div>
+        <nav class="space-y-0.5">
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span>Search</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <span>Metrics</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+            <span>Analytics</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Nav Section 3: GOVERN -->
+      <div class="mb-4">
+        <div class="px-3 mb-1.5 text-[10px] font-mono font-medium tracking-[0.12em] text-textSecondary uppercase">
+          GOVERN
+        </div>
+        <nav class="space-y-0.5">
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span>Health</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Audit Ledger</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+              <span>Proposals</span>
+            </div>
+            <span class="font-mono text-[10px] text-textSecondary bg-glass-raised px-1.5 py-0.2 rounded border border-glass-border">3</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              <span>Debt Queue</span>
+            </div>
+            <span class="font-mono text-[10px] text-textSecondary bg-glass-raised px-1.5 py-0.2 rounded border border-glass-border">12</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Nav Section 4: SYSTEM -->
+      <div>
+        <div class="px-3 mb-1.5 text-[10px] font-mono font-medium tracking-[0.12em] text-textSecondary uppercase">
+          SYSTEM
+        </div>
+        <nav class="space-y-0.5">
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>System</span>
+          </a>
+          <a href="#" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            <span>Setup</span>
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Sidebar Bottom: User Card -->
+    <div class="p-3 border-t border-glass-border">
+      <div class="flex items-center justify-between p-2 rounded-xl frosted-raised">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyanAccent/10 border border-cyanAccent/20 flex items-center justify-center text-xs font-mono font-medium text-cyanAccent">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-textMain leading-tight">Sigit A.</span>
+            <span class="text-[11px] font-mono text-textSecondary leading-tight">operator</span>
+          </div>
+        </div>
+        <span class="w-2 h-2 rounded-full bg-statusOk" title="online"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN COLUMN: Topbar + Viewport (Canvas 72% + Inspector 28%) + Flush Status Bar -->
+  <main class="w-[1192px] h-[900px] flex flex-col justify-between overflow-hidden">
+    
+    <!-- TOPBAR (48px) -->
+    <header class="h-12 w-full flex-shrink-0 flex items-center justify-between px-6 border-b border-glass-border frosted-panel z-10">
+      <!-- Breadcrumb Left -->
+      <div class="flex items-center gap-2 text-xs font-mono">
+        <span class="text-textSecondary">Graph</span>
+        <span class="text-textSecondary/60">/</span>
+        <span class="text-cyanAccent font-medium">heuristics-catalog</span>
+        <span class="ml-2 px-1.5 py-0.5 text-[10px] font-mono rounded bg-cyanAccent/10 border border-cyanAccent/25 text-cyanAccent">P5 Vector Space</span>
+      </div>
+
+      <!-- Search with ⌘K Hint Center -->
+      <div class="w-96 flex items-center gap-2 px-3 py-1.5 rounded-lg frosted-panel border border-glass-border text-xs text-textSecondary">
+        <svg class="w-3.5 h-3.5 text-textSecondary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <span class="flex-1 font-mono text-[11px] text-textSecondary/80">search nodes, edges, hashes, tags</span>
+        <kbd class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-glass-raised text-textSecondary border border-glass-border">⌘K</kbd>
+      </div>
+
+      <!-- Right Chrome: Max 4 segments (Raft status, notifications, avatar) -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-statusOk/10 border border-statusOk/30 text-statusOk font-mono text-[11px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk animate-pulse"></span>
+          <span>RAFT SYNCED</span>
+        </div>
+        <button class="relative p-1.5 rounded-lg text-textSecondary hover:text-textMain hover:bg-glass border border-transparent hover:border-glass-border transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-cyanAccent"></span>
+        </button>
+        <div class="w-7 h-7 rounded-lg bg-glass-raised border border-glass-border flex items-center justify-center font-mono text-xs text-textMain font-medium">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Canvas + Inspector) 824px -->
+    <div class="flex-1 w-full flex overflow-hidden">
+
+      <!-- MAIN CANVAS SECTION (~72% width: 858px) -->
+      <section class="w-[858px] h-full relative flex flex-col dot-grid border-r border-glass-border overflow-hidden">
+        
+        <!-- Canvas Context Control Bar (top of canvas) -->
+        <div class="h-10 px-5 flex items-center justify-between border-b border-glass-border bg-base/60 backdrop-blur-sm z-10">
+          <div class="flex items-center gap-4 text-xs font-mono text-textSecondary">
+            <span>VIEW: <span class="text-textMain font-medium">FORCE-DIRECTED</span></span>
+            <span class="text-glass-border">|</span>
+            <span>PHYSICS: <span class="text-statusOk font-medium">STABLE</span></span>
+            <span class="text-glass-border">|</span>
+            <span>NODES: <span class="text-cyanAccent font-medium">12 ACTIVE</span></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[11px] text-textSecondary bg-glass px-2 py-0.5 rounded border border-glass-border">CLUSTER: cluster-01</span>
+          </div>
+        </div>
+
+        <!-- SVG Topology Graph Canvas -->
+        <div class="flex-1 relative w-full h-[736px] overflow-hidden">
+          <svg class="w-full h-full" viewBox="0 0 858 736" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Glow and arrow markers -->
+              <marker id="arrow-cyan" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#22D3EE" />
+              </marker>
+              <marker id="arrow-warn" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#FBBF24" />
+              </marker>
+              <marker id="arrow-dim" viewBox="0 0 10 10" refX="20" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="rgba(148, 178, 255, 0.3)" />
+              </marker>
+            </defs>
+
+            <!-- CONTEXT EDGES (Dim 1px hairlines) -->
+            <!-- cli-adapter (200, 240) to memory-index (190, 430) -->
+            <line x1="200" y1="240" x2="190" y2="430" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+            <!-- cli-adapter (200, 240) to vector-cache (310, 180) -->
+            <line x1="200" y1="240" x2="310" y2="180" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+            <!-- vector-cache (310, 180) to schema-eval (460, 170) -->
+            <line x1="310" y1="180" x2="460" y2="170" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+            <!-- schema-eval (460, 170) to query-planner (580, 220) -->
+            <line x1="460" y1="170" x2="580" y2="220" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+            <!-- query-planner (580, 220) to projection (600, 390) -->
+            <line x1="580" y1="220" x2="600" y2="390" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+            <!-- projection (600, 390) to raft-fencing (560, 520) -->
+            <line x1="600" y1="390" x2="560" y2="520" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+            <!-- raft-fencing (560, 520) to audit-ledger (440, 560) -->
+            <line x1="560" y1="520" x2="440" y2="560" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+            <!-- audit-ledger (440, 560) to shard-router (290, 560) -->
+            <line x1="440" y1="560" x2="290" y2="560" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+            <!-- shard-router (290, 560) to memory-index (190, 430) -->
+            <line x1="290" y1="560" x2="190" y2="430" stroke="rgba(148,178,255,0.22)" stroke-width="1" />
+
+            <!-- ACTIVE EDGES (Accent 2px or Semantic status) -->
+            <!-- 1. depends_on: heuristics-catalog (400, 360) -> scoring-engine (245, 340) -->
+            <line x1="400" y1="360" x2="250" y2="340" stroke="#22D3EE" stroke-width="2" marker-end="url(#arrow-cyan)" />
+            <!-- Edge label pill 'depends_on' -->
+            <g transform="translate(320, 340)">
+              <rect x="-34" y="-9" width="68" height="18" rx="9" fill="#070B16" stroke="#22D3EE" stroke-width="1" />
+              <text x="0" y="3.5" fill="#22D3EE" font-family="JetBrains Mono" font-size="9" text-anchor="middle" font-weight="500">depends_on</text>
+            </g>
+
+            <!-- 2. governs: heuristics-catalog (400, 360) -> store-mutex (510, 470) -->
+            <line x1="400" y1="360" x2="510" y2="470" stroke="#22D3EE" stroke-width="2" marker-end="url(#arrow-cyan)" />
+            <g transform="translate(460, 420)">
+              <rect x="-24" y="-9" width="48" height="18" rx="9" fill="#070B16" stroke="#22D3EE" stroke-width="1" />
+              <text x="0" y="3.5" fill="#22D3EE" font-family="JetBrains Mono" font-size="9" text-anchor="middle" font-weight="500">governs</text>
+            </g>
+
+            <!-- 3. cites (dashed): heuristics-catalog (400, 360) -> retrieval (280, 480) -->
+            <line x1="400" y1="360" x2="280" y2="480" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow-cyan)" />
+            <g transform="translate(332, 424)">
+              <rect x="-18" y="-9" width="36" height="18" rx="9" fill="#070B16" stroke="rgba(34, 211, 238, 0.6)" stroke-width="1" />
+              <text x="0" y="3.5" fill="#22D3EE" font-family="JetBrains Mono" font-size="9" text-anchor="middle" font-weight="500">cites</text>
+            </g>
+
+            <!-- 4. contradicts (status warn): heuristics-catalog (400, 360) -> p4-domain (520, 300) -->
+            <line x1="400" y1="360" x2="520" y2="300" stroke="#FBBF24" stroke-width="2" stroke-dasharray="6 2" marker-end="url(#arrow-warn)" />
+            <g transform="translate(466, 326)">
+              <rect x="-34" y="-9" width="68" height="18" rx="9" fill="#070B16" stroke="#FBBF24" stroke-width="1" />
+              <text x="0" y="3.5" fill="#FBBF24" font-family="JetBrains Mono" font-size="9" text-anchor="middle" font-weight="500">contradicts</text>
+            </g>
+
+            <!-- NODES REPRESENTATION (Discs of two sizes + Labels) -->
+
+            <!-- Peripheral Node 1: cli-adapter (200, 240) -->
+            <g transform="translate(200, 240)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="20" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">cli-adapter</text>
+            </g>
+
+            <!-- Peripheral Node 2: vector-cache (310, 180) -->
+            <g transform="translate(310, 180)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="-14" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">vector-cache</text>
+            </g>
+
+            <!-- Peripheral Node 3: schema-eval (460, 170) -->
+            <g transform="translate(460, 170)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="-14" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">schema-eval</text>
+            </g>
+
+            <!-- Peripheral Node 4: query-planner (580, 220) -->
+            <g transform="translate(580, 220)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="-14" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">query-planner</text>
+            </g>
+
+            <!-- Peripheral Node 5: memory-index (190, 430) -->
+            <g transform="translate(190, 430)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="22" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">memory-index</text>
+            </g>
+
+            <!-- Peripheral Node 6: projection (600, 390) -->
+            <g transform="translate(600, 390)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="22" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">projection</text>
+            </g>
+
+            <!-- Peripheral Node 7: raft-fencing (560, 520) -->
+            <g transform="translate(560, 520)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="22" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">raft-fencing</text>
+            </g>
+
+            <!-- Peripheral Node 8: audit-ledger (440, 560) -->
+            <g transform="translate(440, 560)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="22" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">audit-ledger</text>
+            </g>
+
+            <!-- Peripheral Node 9: shard-router (290, 560) -->
+            <g transform="translate(290, 560)">
+              <circle r="7" fill="rgba(148,178,255,0.22)" stroke="rgba(148,178,255,0.4)" stroke-width="1.5" />
+              <text x="0" y="22" fill="#8FA3CC" font-family="Inter" font-size="11" text-anchor="middle">shard-router</text>
+            </g>
+
+            <!-- LARGER ACTIVE / RELATED NODES -->
+
+            <!-- Related Node A: scoring-engine (245, 340) -->
+            <g transform="translate(245, 340)">
+              <circle r="18" fill="rgba(34,211,238,0.12)" stroke="#22D3EE" stroke-width="1.5" />
+              <circle r="6" fill="#22D3EE" />
+              <text x="0" y="32" fill="#E3EBFF" font-family="Inter" font-size="11" font-weight="500" text-anchor="middle">scoring-engine</text>
+            </g>
+
+            <!-- Related Node B: p4-domain (520, 300) [Warn State] -->
+            <g transform="translate(520, 300)">
+              <circle r="16" fill="rgba(251,191,36,0.15)" stroke="#FBBF24" stroke-width="1.5" />
+              <circle r="5" fill="#FBBF24" />
+              <text x="0" y="30" fill="#FBBF24" font-family="Inter" font-size="11" font-weight="500" text-anchor="middle">p4-domain</text>
+            </g>
+
+            <!-- Related Node C: store-mutex (510, 470) -->
+            <g transform="translate(510, 470)">
+              <circle r="14" fill="rgba(34,211,238,0.15)" stroke="#22D3EE" stroke-width="1.5" />
+              <circle r="5" fill="#22D3EE" />
+              <text x="0" y="28" fill="#E3EBFF" font-family="Inter" font-size="11" font-weight="500" text-anchor="middle">store-mutex</text>
+            </g>
+
+            <!-- Related Node D: retrieval (280, 480) -->
+            <g transform="translate(280, 480)">
+              <circle r="14" fill="rgba(34,211,238,0.15)" stroke="#22D3EE" stroke-width="1.5" />
+              <circle r="5" fill="#22D3EE" />
+              <text x="0" y="28" fill="#E3EBFF" font-family="Inter" font-size="11" font-weight="500" text-anchor="middle">retrieval</text>
+            </g>
+
+            <!-- PRIMARY SELECTED NODE: heuristics-catalog (400, 360) -->
+            <g transform="translate(400, 360)">
+              <!-- Selection ring with radar pulse styling -->
+              <circle r="36" fill="none" stroke="#22D3EE" stroke-width="1" stroke-dasharray="2 3" opacity="0.4" />
+              <circle r="26" fill="none" stroke="#22D3EE" stroke-width="1" opacity="0.6" />
+              <circle r="20" fill="rgba(34,211,238,0.22)" stroke="#22D3EE" stroke-width="2" />
+              <circle r="7" fill="#22D3EE" />
+
+              <!-- Label Badge -->
+              <g transform="translate(0, 44)">
+                <rect x="-62" y="-12" width="124" height="24" rx="12" fill="#070B16" stroke="#22D3EE" stroke-width="1.5" />
+                <text x="0" y="4" fill="#22D3EE" font-family="JetBrains Mono" font-size="11" font-weight="600" text-anchor="middle">heuristics-catalog</text>
+              </g>
+              <g transform="translate(0, 68)">
+                <rect x="-26" y="-8" width="52" height="16" rx="4" fill="rgba(148,178,255,0.09)" stroke="rgba(148,178,255,0.2)" stroke-width="1" />
+                <text x="0" y="3.5" fill="#8FA3CC" font-family="JetBrains Mono" font-size="9" text-anchor="middle">DOMAIN P5</text>
+              </g>
+            </g>
+
+          </svg>
+        </div>
+
+        <!-- Vertical Segmented Zoom Pill (Right edge of canvas) -->
+        <div class="absolute right-4 top-16 flex flex-col rounded-xl frosted-raised border border-glass-border overflow-hidden z-20">
+          <button class="w-8 h-8 flex items-center justify-center text-textSecondary hover:text-textMain hover:bg-glass border-b border-glass-border transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center text-textSecondary hover:text-textMain hover:bg-glass border-b border-glass-border transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center text-[10px] font-mono text-textSecondary hover:text-textMain hover:bg-glass transition-colors">
+            FIT
+          </button>
+        </div>
+
+        <!-- Floating Legend Bar (Bottom of canvas) -->
+        <div class="absolute bottom-4 left-6 flex items-center gap-4 px-4 py-2 rounded-xl frosted-raised border border-glass-border backdrop-blur-md z-20">
+          <div class="flex items-center gap-1.5 text-xs font-mono text-textMain">
+            <span class="w-2 h-2 rounded-full bg-cyanAccent"></span>
+            <span class="text-textSecondary">selected</span>
+          </div>
+          <span class="text-glass-border text-xs">·</span>
+          <div class="flex items-center gap-1.5 text-xs font-mono text-textMain">
+            <span class="w-2 h-2 rounded-full bg-statusOk"></span>
+            <span class="text-textSecondary">domain</span>
+          </div>
+          <span class="text-glass-border text-xs">·</span>
+          <div class="flex items-center gap-1.5 text-xs font-mono text-textMain">
+            <span class="w-2 h-2 rounded-full border border-textSecondary"></span>
+            <span class="text-textSecondary">external</span>
+          </div>
+          <span class="text-glass-border text-xs">·</span>
+          <div class="flex items-center gap-1.5 text-xs font-mono text-textMain">
+            <span class="w-3 h-0.5 bg-cyanAccent"></span>
+            <span class="text-textSecondary">depends_on</span>
+          </div>
+          <span class="text-glass-border text-xs">·</span>
+          <div class="flex items-center gap-1.5 text-xs font-mono text-textMain">
+            <span class="w-3 border-t border-dashed border-cyanAccent"></span>
+            <span class="text-textSecondary">cites</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT INSPECTOR PANEL (~28% width: 334px) -->
+      <aside class="w-[334px] h-full flex flex-col justify-between frosted-panel p-5 overflow-hidden z-10">
+        
+        <div class="flex flex-col space-y-5">
+          <!-- Header 'Node' + mono id + domain chip 'P5' -->
+          <div class="pb-3 border-b border-glass-border">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-mono font-medium tracking-[0.12em] text-textSecondary uppercase">NODE</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono font-semibold rounded bg-cyanAccent/15 border border-cyanAccent/30 text-cyanAccent">
+                P5
+              </span>
+            </div>
+            <div class="font-mono text-base font-semibold text-textMain tracking-tight">
+              heuristics-catalog
+            </div>
+            <p class="text-xs text-textSecondary mt-1 leading-relaxed">
+              Central heuristic registry and AST pattern evaluator across partitions. Validates invariant safety against live schema projections.
+            </p>
+          </div>
+
+          <!-- Section: Convergence Scores (3 mono score rows 'P 0.828' 'M 0.341' 'E 0.898') -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono font-medium tracking-[0.12em] text-textSecondary uppercase">CONVERGENCE SCORES</span>
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </div>
+            <div class="space-y-2">
+              <!-- Score Row 1: Precision -->
+              <div class="p-2 rounded-lg frosted-raised">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="text-textSecondary">Precision score</span>
+                  <span class="font-mono text-cyanAccent font-medium">P 0.828</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-glass-border overflow-hidden">
+                  <div class="h-full bg-cyanAccent rounded-full" style="width: 82.8%"></div>
+                </div>
+              </div>
+
+              <!-- Score Row 2: Mutation entropy -->
+              <div class="p-2 rounded-lg frosted-raised">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="text-textSecondary">Mutation entropy</span>
+                  <span class="font-mono text-cyanAccent font-medium">M 0.341</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-glass-border overflow-hidden">
+                  <div class="h-full bg-cyanAccent/70 rounded-full" style="width: 34.1%"></div>
+                </div>
+              </div>
+
+              <!-- Score Row 3: Eigen convergence -->
+              <div class="p-2 rounded-lg frosted-raised">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="text-textSecondary">Eigen convergence</span>
+                  <span class="font-mono text-cyanAccent font-medium">E 0.898</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-glass-border overflow-hidden">
+                  <div class="h-full bg-cyanAccent rounded-full" style="width: 89.8%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Edits/Edges list (4 short rows: relation chip + target name) -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono font-medium tracking-[0.12em] text-textSecondary uppercase">EDGES (4 ACTIVE)</span>
+              <span class="font-mono text-[10px] text-textSecondary">SHARD 0x3a</span>
+            </div>
+            <div class="space-y-1.5">
+              
+              <!-- Edge 1 -->
+              <div class="h-[38px] px-2.5 rounded-lg frosted-raised flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-cyanAccent/10 border border-cyanAccent/30 text-cyanAccent">depends_on</span>
+                  <span class="font-mono text-xs text-textMain">scoring-engine</span>
+                </div>
+                <span class="font-mono text-[11px] text-textSecondary">0.94</span>
+              </div>
+
+              <!-- Edge 2 (Warn) -->
+              <div class="h-[38px] px-2.5 rounded-lg frosted-raised flex items-center justify-between border-l-2 border-l-statusWarn">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-statusWarn/10 border border-statusWarn/30 text-statusWarn">contradicts</span>
+                  <span class="font-mono text-xs text-statusWarn">p4-domain</span>
+                </div>
+                <span class="font-mono text-[10px] text-statusWarn bg-statusWarn/10 px-1 py-0.2 rounded">WARN</span>
+              </div>
+
+              <!-- Edge 3 -->
+              <div class="h-[38px] px-2.5 rounded-lg frosted-raised flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-glass border border-glass-border text-textSecondary">cites</span>
+                  <span class="font-mono text-xs text-textMain">retrieval</span>
+                </div>
+                <span class="font-mono text-[11px] text-textSecondary">0.82</span>
+              </div>
+
+              <!-- Edge 4 -->
+              <div class="h-[38px] px-2.5 rounded-lg frosted-raised flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-cyanAccent/10 border border-cyanAccent/30 text-cyanAccent">governs</span>
+                  <span class="font-mono text-xs text-textMain">store-mutex</span>
+                </div>
+                <span class="font-mono text-[10px] text-textSecondary bg-glass px-1 py-0.2 rounded">LOCK</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Section: Spec Provenance Details -->
+          <div class="pt-2 border-t border-glass-border">
+            <div class="flex items-center justify-between text-xs py-1">
+              <span class="text-textSecondary">Immutable Root</span>
+              <span class="font-mono text-xs text-textMain">0x9f2c1ab4</span>
+            </div>
+            <div class="flex items-center justify-between text-xs py-1">
+              <span class="text-textSecondary">Convergence</span>
+              <span class="font-mono text-xs text-statusOk flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+                CONVERGED
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action Buttons (Bottom of Inspector): Trace Lineage (primary) + Copy URI (ghost) -->
+        <div class="pt-4 border-t border-glass-border flex gap-2.5">
+          <button class="flex-1 h-9 rounded-xl bg-cyanAccent text-[#070B16] font-sans font-semibold text-xs flex items-center justify-center gap-2 hover:bg-cyanAccent/90 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span>Trace Lineage</span>
+          </button>
+          <button class="h-9 px-4 rounded-xl frosted-raised border border-glass-border text-textMain hover:bg-glass font-mono text-xs flex items-center justify-center gap-1.5 transition-colors">
+            <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <span>Copy URI</span>
+          </button>
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- FLUSH STATUS BAR (28px - sitting flush at bottom edge) -->
+    <footer class="h-7 w-full flex-shrink-0 flex items-center justify-between px-6 border-t border-glass-border bg-base/90 frosted-panel font-mono text-[11px] text-textSecondary z-20">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5 text-statusOk">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          GRAPH RUNTIME: NOMINAL
+        </span>
+        <span class="text-glass-border">·</span>
+        <span>12,847 NODES</span>
+        <span>48,203 EDGES</span>
+        <span class="text-glass-border">·</span>
+        <span>MERKLE: 0x9f8a2c3b1</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyanAccent"></span>
+          RAFT QUORUM SYNCED
+        </span>
+        <span class="text-glass-border">·</span>
+        <span>LATENCY P50 6.4ms</span>
+        <span class="text-glass-border">·</span>
+        <span class="text-statusOk">ONLINE</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

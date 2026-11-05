@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+<title>Know Your Soul - Analytics (Paper Dark)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          base: '#141110',
+          panel: '#1A1713',
+          raised: '#211D17',
+          hairline: 'rgba(217, 164, 65, 0.10)',
+          hairlineSolid: '#2a241c',
+          paper: '#EDE4D3',
+          paperSecondary: '#A3947D',
+          paperMuted: '#6B6051',
+          gold: '#D9A441',
+          statusOk: '#7FB069',
+          statusWarn: '#E0A458',
+          statusDanger: '#D16666'
+        },
+        fontFamily: {
+          serif: ['Fraunces', 'serif'],
+          sans: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html, body {
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background-color: #141110;
+    color: #EDE4D3;
+    font-family: 'Inter', sans-serif;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  .double-rule {
+    position: relative;
+    padding-bottom: 7px;
+  }
+  .double-rule::before {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: rgba(217, 164, 65, 0.18);
+  }
+  .double-rule::after {
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: rgba(217, 164, 65, 0.08);
+  }
+  /* Custom scrollbar hiding */
+  ::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body class="flex w-[1440px] h-[900px] bg-base text-paper antialiased">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-[900px] bg-panel border-r border-hairline flex flex-col justify-between shrink-0">
+    <!-- Top Branding & Nav Groups -->
+    <div class="flex flex-col">
+      <!-- Workspace Brand Header -->
+      <div class="h-14 px-5 flex items-center justify-between border-b border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded bg-raised border border-hairline flex items-center justify-center text-gold font-serif text-sm font-semibold">
+            Ψ
+          </div>
+          <div class="flex flex-col">
+            <span class="font-serif text-sm font-semibold tracking-tight text-paper leading-none">Know Your Soul</span>
+            <span class="font-mono text-[10px] text-paperMuted tracking-wider mt-0.5">CLUSTER 01 · V14.2</span>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-statusOk"></div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="p-3 space-y-4">
+        <!-- GROUP I: MONITOR -->
+        <div>
+          <div class="px-2 mb-1.5 font-mono text-[10px] tracking-widest text-paperMuted uppercase flex items-center gap-1">
+            <span>I</span>
+            <span>//</span>
+            <span>MONITOR</span>
+          </div>
+          <div class="space-y-0.5 text-xs">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+              </svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GROUP II: ANALYZE -->
+        <div>
+          <div class="px-2 mb-1.5 font-mono text-[10px] tracking-widest text-paperMuted uppercase flex items-center gap-1">
+            <span>II</span>
+            <span>//</span>
+            <span>ANALYZE</span>
+          </div>
+          <div class="space-y-0.5 text-xs">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Metrics</span>
+            </a>
+            <!-- ACTIVE: Analytics -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded bg-[rgba(217,164,65,0.12)] text-gold border-l-2 border-gold font-medium">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 stroke-current text-gold" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <span>Analytics</span>
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-gold"></span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GROUP III: GOVERN -->
+        <div>
+          <div class="px-2 mb-1.5 font-mono text-[10px] tracking-widest text-paperMuted uppercase flex items-center gap-1">
+            <span>III</span>
+            <span>//</span>
+            <span>GOVERN</span>
+          </div>
+          <div class="space-y-0.5 text-xs">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+              </svg>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                  <polyline points="9 11 12 14 22 4"></polyline>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-raised border border-hairline text-paperMuted">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-raised border border-hairline text-paperMuted">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GROUP IV: SYSTEM -->
+        <div>
+          <div class="px-2 mb-1.5 font-mono text-[10px] tracking-widest text-paperMuted uppercase flex items-center gap-1">
+            <span>IV</span>
+            <span>//</span>
+            <span>SYSTEM</span>
+          </div>
+          <div class="space-y-0.5 text-xs">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-paperSecondary hover:text-paper hover:bg-raised transition-colors">
+              <svg class="w-3.5 h-3.5 stroke-current text-paperMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sidebar Bottom User Card -->
+    <div class="p-3 border-t border-hairline bg-panel">
+      <div class="flex items-center justify-between p-2 rounded bg-raised border border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded bg-[#2D261D] border border-gold/30 text-gold flex items-center justify-center font-mono text-xs font-semibold">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-paper leading-none">Sigit A.</span>
+            <span class="text-[10px] text-paperMuted font-mono mt-0.5">operator</span>
+          </div>
+        </div>
+        <div class="w-1.5 h-1.5 rounded-full bg-statusOk" title="online"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER (1192px) -->
+  <main class="w-[1192px] h-[900px] flex flex-col justify-between shrink-0 bg-base overflow-hidden">
+
+    <!-- TOPBAR (h-14, 56px) - STRICT 1 LINE -->
+    <header class="h-14 px-6 border-b border-hairline bg-panel flex items-center justify-between shrink-0">
+      <!-- Left: Breadcrumb / Screen Title -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 font-mono text-xs text-paperMuted">
+          <span>KYS</span>
+          <span>//</span>
+          <span>Analyze</span>
+          <span>//</span>
+        </div>
+        <h1 class="text-sm font-serif font-semibold text-paper tracking-wide">Analytics</h1>
+        <span class="font-mono text-[10px] text-gold/80 px-2 py-0.5 rounded bg-gold/10 border border-gold/20">CLUSTER-01</span>
+      </div>
+
+      <!-- Center: Search Input with ⌘K -->
+      <div class="w-80 h-8 px-3 rounded bg-raised border border-hairline flex items-center justify-between text-xs text-paperMuted">
+        <div class="flex items-center gap-2 w-full">
+          <svg class="w-3.5 h-3.5 text-paperMuted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="font-mono text-[11px] text-paperMuted truncate">search nodes, edges, relations...</span>
+        </div>
+        <kbd class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-base text-paperMuted border border-hairline shrink-0">⌘K</kbd>
+      </div>
+
+      <!-- Right: Status badge, Bell with dot, Profile avatar -->
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-raised border border-hairline font-mono text-[11px] text-paperSecondary">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>RAFT QUORUM SYNCED</span>
+        </div>
+        <button class="relative w-8 h-8 rounded bg-raised border border-hairline flex items-center justify-center text-paperSecondary hover:text-paper">
+          <svg class="w-4 h-4 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-gold"></span>
+        </button>
+        <div class="w-8 h-8 rounded bg-[#2D261D] border border-gold/30 flex items-center justify-center font-mono text-xs font-semibold text-gold">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (fills remaining vertical space exactly: 900 - 56 - 32 = 812px) -->
+    <div class="h-[812px] p-6 flex flex-col justify-between shrink-0">
+
+      <!-- TOP SECTION: Page Header + Filter Row -->
+      <div class="flex flex-col gap-3">
+        <!-- Title & Subtitle with Fraunces serif & Roman Numeral Signature -->
+        <div class="flex items-end justify-between double-rule">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-gold font-medium">II.III // KNOWLEDGE GRAPH TRAVERSAL</span>
+              <span class="font-mono text-[10px] text-paperMuted">INDEX: 48,203 EDGES · 12,847 NODES</span>
+            </div>
+            <h2 class="font-serif text-2xl font-semibold text-paper tracking-tight mt-0.5">
+              Knowledge Graph Analytics &amp; Structural Topology
+            </h2>
+          </div>
+
+          <!-- Filter Row: 7D, All domains, All verbs -->
+          <div class="flex items-center gap-2 pb-1">
+            <span class="font-mono text-[10px] text-paperMuted uppercase tracking-wider mr-1">WINDOW &amp; SCOPE:</span>
+            <div class="px-2.5 py-1 rounded bg-panel border border-hairline text-xs font-mono text-paper hover:border-gold/40 flex items-center gap-1.5 cursor-pointer">
+              <span>7D</span>
+              <span class="text-gold text-[10px]">▾</span>
+            </div>
+            <div class="px-2.5 py-1 rounded bg-panel border border-hairline text-xs font-mono text-paper hover:border-gold/40 flex items-center gap-1.5 cursor-pointer">
+              <span>All domains</span>
+              <span class="text-gold text-[10px]">▾</span>
+            </div>
+            <div class="px-2.5 py-1 rounded bg-panel border border-hairline text-xs font-mono text-paper hover:border-gold/40 flex items-center gap-1.5 cursor-pointer">
+              <span>All verbs</span>
+              <span class="text-gold text-[10px]">▾</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN WORKSPACE: TWO COLUMNS (Height: 708px) -->
+      <div class="grid grid-cols-12 gap-5 h-[708px]">
+
+        <!-- LEFT PANEL (Col 7 / 12): Node Leaderboard (Exact 12 rows, Row 1 Leader) -->
+        <div class="col-span-7 h-full bg-panel border border-hairline rounded flex flex-col justify-between overflow-hidden">
+          <!-- Panel Header -->
+          <div class="h-10 px-4 border-b border-hairline flex items-center justify-between bg-raised shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-gold">I //</span>
+              <h3 class="font-serif text-sm font-semibold text-paper">Node Leaderboard</h3>
+              <span class="font-mono text-[10px] text-paperMuted">TOP 12 HUBS</span>
+            </div>
+            <div class="font-mono text-[10px] text-paperMuted flex items-center gap-2">
+              <span>SORT: QUERIES (DESC)</span>
+              <span>·</span>
+              <span>SAMPLE: DETERMINISTIC 100%</span>
+            </div>
+          </div>
+
+          <!-- Table Header -->
+          <div class="h-8 px-4 grid grid-cols-12 items-center font-mono text-[10px] text-paperMuted border-b border-hairline bg-panel uppercase tracking-wider shrink-0">
+            <div class="col-span-1">RANK</div>
+            <div class="col-span-5">NODE IDENTIFIER</div>
+            <div class="col-span-3 text-right">QUERIES</div>
+            <div class="col-span-3 text-right pr-2">SHARE</div>
+          </div>
+
+          <!-- 12 Rows Table Body (evenly fills ~615px height, ~51.2px/row) -->
+          <div class="flex-1 flex flex-col justify-between py-0.5">
+
+            <!-- ROW 1 (Leader: Subtle accent tint + 2px accent left border) -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 bg-[rgba(217,164,65,0.08)] border-l-2 border-gold border-b border-hairline/60">
+              <div class="col-span-1 font-mono text-xs font-semibold text-gold">01</div>
+              <div class="col-span-5 flex items-center gap-2">
+                <span class="font-mono text-xs font-medium text-paper">heuristics-catalog</span>
+                <span class="font-mono text-[9px] px-1 py-0.2 rounded bg-gold/20 text-gold border border-gold/40">LEADER</span>
+              </div>
+              <div class="col-span-3 font-mono text-xs text-right font-semibold text-gold">1,204</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-base overflow-hidden border border-gold/30">
+                  <div class="h-full bg-gold rounded-full" style="width: 28.7%;"></div>
+                </div>
+                <span class="font-mono text-xs text-gold w-10 text-right">28.7%</span>
+              </div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">02</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">scoring-engine</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">892</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 21.3%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">21.3%</span>
+              </div>
+            </div>
+
+            <!-- ROW 3 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">03</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">store-mutex</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">614</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 14.6%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">14.6%</span>
+              </div>
+            </div>
+
+            <!-- ROW 4 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">04</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">p4-domain</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">438</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 10.4%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">10.4%</span>
+              </div>
+            </div>
+
+            <!-- ROW 5 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">05</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">retrieval-core</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">321</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 7.7%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">7.7%</span>
+              </div>
+            </div>
+
+            <!-- ROW 6 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">06</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">audit-ledger</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">245</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 5.8%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">5.8%</span>
+              </div>
+            </div>
+
+            <!-- ROW 7 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">07</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">projection</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">182</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 4.3%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">4.3%</span>
+              </div>
+            </div>
+
+            <!-- ROW 8 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">08</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">cli-adapter</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">116</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 2.8%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">2.8%</span>
+              </div>
+            </div>
+
+            <!-- ROW 9 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">09</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">embedding-store</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">74</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 1.8%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">1.8%</span>
+              </div>
+            </div>
+
+            <!-- ROW 10 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">10</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">review-queue</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">42</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 1.0%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">1.0%</span>
+              </div>
+            </div>
+
+            <!-- ROW 11 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 border-b border-hairline/40 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">11</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">debt-tracker</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">29</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 0.7%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">0.7%</span>
+              </div>
+            </div>
+
+            <!-- ROW 12 -->
+            <div class="grid grid-cols-12 items-center px-4 py-2.5 hover:bg-raised/40 transition-colors">
+              <div class="col-span-1 font-mono text-xs text-paperMuted">12</div>
+              <div class="col-span-5 font-mono text-xs text-paperSecondary">setup-wizard</div>
+              <div class="col-span-3 font-mono text-xs text-right text-paperSecondary">18</div>
+              <div class="col-span-3 flex items-center justify-end gap-2 pr-2">
+                <div class="w-16 h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 0.4%;"></div>
+                </div>
+                <span class="font-mono text-xs text-paperSecondary w-10 text-right">0.4%</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Footer Bar for Left Panel -->
+          <div class="h-8 px-4 border-t border-hairline bg-raised flex items-center justify-between font-mono text-[10px] text-paperMuted shrink-0">
+            <span>TOTAL AGGREGATED QUERIES: 4,196 OPS</span>
+            <span class="text-paperSecondary">COVERAGE: 100% DAG</span>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN (Col 5 / 12): Bridges (Top) + Query Mix (Bottom) -->
+        <div class="col-span-5 h-full flex flex-col justify-between">
+
+          <!-- RIGHT TOP PANEL: Bridges (4 rows) -->
+          <div class="h-[344px] bg-panel border border-hairline rounded flex flex-col justify-between overflow-hidden">
+            <!-- Header -->
+            <div class="h-10 px-4 border-b border-hairline flex items-center justify-between bg-raised shrink-0">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-gold">II //</span>
+                <h3 class="font-serif text-sm font-semibold text-paper">Bridges</h3>
+                <span class="font-mono text-[10px] text-paperMuted">CROSS-PARTITION COUPLING</span>
+              </div>
+              <span class="font-mono text-[10px] text-paperMuted">4 ACTIVE BRIDGES</span>
+            </div>
+
+            <!-- Content: 4 rows with thin edge line + relation chip -->
+            <div class="flex-1 flex flex-col justify-between p-3.5 space-y-2">
+
+              <!-- BRIDGE ROW 1 -->
+              <div class="p-3 bg-raised/70 border border-hairline rounded flex items-center justify-between">
+                <div class="flex items-center gap-2.5 w-full">
+                  <span class="font-mono text-xs text-paper font-medium shrink-0">heuristics-catalog</span>
+                  
+                  <div class="flex-1 flex items-center relative px-1">
+                    <div class="w-full h-px bg-hairlineSolid relative flex items-center justify-center">
+                      <span class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-base text-paperSecondary border border-hairline leading-none">
+                        depends_on
+                      </span>
+                    </div>
+                  </div>
+
+                  <span class="font-mono text-xs text-paper font-medium shrink-0">scoring-engine</span>
+                </div>
+                <span class="font-mono text-[10px] text-paperMuted ml-3 shrink-0">w: 0.94</span>
+              </div>
+
+              <!-- BRIDGE ROW 2 -->
+              <div class="p-3 bg-raised/70 border border-hairline rounded flex items-center justify-between">
+                <div class="flex items-center gap-2.5 w-full">
+                  <span class="font-mono text-xs text-paper font-medium shrink-0">retrieval-core</span>
+                  
+                  <div class="flex-1 flex items-center relative px-1">
+                    <div class="w-full h-px bg-hairlineSolid relative flex items-center justify-center">
+                      <span class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-base text-paperSecondary border border-hairline leading-none">
+                        governs
+                      </span>
+                    </div>
+                  </div>
+
+                  <span class="font-mono text-xs text-paper font-medium shrink-0">store-mutex</span>
+                </div>
+                <span class="font-mono text-[10px] text-paperMuted ml-3 shrink-0">w: 0.88</span>
+              </div>
+
+              <!-- BRIDGE ROW 3 -->
+              <div class="p-3 bg-raised/70 border border-hairline rounded flex items-center justify-between">
+                <div class="flex items-center gap-2.5 w-full">
+                  <span class="font-mono text-xs text-paper font-medium shrink-0">p4-domain</span>
+                  
+                  <div class="flex-1 flex items-center relative px-1">
+                    <div class="w-full h-px bg-hairlineSolid relative flex items-center justify-center">
+                      <span class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-base text-paperSecondary border border-hairline leading-none">
+                        cites
+                      </span>
+                    </div>
+                  </div>
+
+                  <span class="font-mono text-xs text-paper font-medium shrink-0">audit-ledger</span>
+                </div>
+                <span class="font-mono text-[10px] text-paperMuted ml-3 shrink-0">w: 0.82</span>
+              </div>
+
+              <!-- BRIDGE ROW 4 -->
+              <div class="p-3 bg-raised/70 border border-hairline rounded flex items-center justify-between">
+                <div class="flex items-center gap-2.5 w-full">
+                  <span class="font-mono text-xs text-paper font-medium shrink-0">embedding-store</span>
+                  
+                  <div class="flex-1 flex items-center relative px-1">
+                    <div class="w-full h-px bg-hairlineSolid relative flex items-center justify-center">
+                      <span class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-base text-paperSecondary border border-hairline leading-none">
+                        feeds
+                      </span>
+                    </div>
+                  </div>
+
+                  <span class="font-mono text-xs text-paper font-medium shrink-0">projection</span>
+                </div>
+                <span class="font-mono text-[10px] text-paperMuted ml-3 shrink-0">w: 0.79</span>
+              </div>
+
+            </div>
+
+            <!-- Footer for Bridges -->
+            <div class="h-8 px-4 border-t border-hairline bg-raised flex items-center justify-between font-mono text-[10px] text-paperMuted shrink-0">
+              <span>INTER-CLUSTER EDGES: 12 / 3,917</span>
+              <span>DENSITY: 0.038</span>
+            </div>
+          </div>
+
+          <!-- RIGHT BOTTOM PANEL: Query Mix (4 rows with thin bars) -->
+          <div class="h-[344px] bg-panel border border-hairline rounded flex flex-col justify-between overflow-hidden">
+            <!-- Header -->
+            <div class="h-10 px-4 border-b border-hairline flex items-center justify-between bg-raised shrink-0">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-gold">III //</span>
+                <h3 class="font-serif text-sm font-semibold text-paper">Query Mix</h3>
+                <span class="font-mono text-[10px] text-paperMuted">PRIMITIVE VERB DISTRIBUTION</span>
+              </div>
+              <span class="font-mono text-[10px] text-paperMuted">WINDOW: 7D</span>
+            </div>
+
+            <!-- 4 Rows with thin horizontal bars: lookup 46%, path 22%, explain 18%, affected 14% -->
+            <div class="flex-1 flex flex-col justify-between p-4">
+
+              <!-- ROW 1: lookup 46% -->
+              <div class="p-3 bg-raised/70 border border-hairline rounded flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-semibold text-paper">lookup</span>
+                    <span class="font-mono text-[10px] text-paperMuted">point entity traversal</span>
+                  </div>
+                  <div class="font-mono text-xs font-semibold text-paper">46%</div>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-base overflow-hidden border border-hairline/80">
+                  <div class="h-full bg-paperSecondary rounded-full" style="width: 46%;"></div>
+                </div>
+              </div>
+
+              <!-- ROW 2: path 22% -->
+              <div class="p-3 bg-raised/70 border border-hairline rounded flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-semibold text-paper">path</span>
+                    <span class="font-mono text-[10px] text-paperMuted">acyclic reachability scan</span>
+                  </div>
+                  <div class="font-mono text-xs font-semibold text-paper">22%</div>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-base overflow-hidden border border-hairline/80">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 22%;"></div>
+                </div>
+              </div>
+
+              <!-- ROW 3: explain 18% -->
+              <div class="p-3 bg-raised/70 border border-hairline rounded flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-semibold text-paper">explain</span>
+                    <span class="font-mono text-[10px] text-paperMuted">provenance deduction trace</span>
+                  </div>
+                  <div class="font-mono text-xs font-semibold text-paper">18%</div>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-base overflow-hidden border border-hairline/80">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 18%;"></div>
+                </div>
+              </div>
+
+              <!-- ROW 4: affected 14% -->
+              <div class="p-3 bg-raised/70 border border-hairline rounded flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-semibold text-paper">affected</span>
+                    <span class="font-mono text-[10px] text-paperMuted">invalidation blast radius</span>
+                  </div>
+                  <div class="font-mono text-xs font-semibold text-paper">14%</div>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-base overflow-hidden border border-hairline/80">
+                  <div class="h-full bg-paperMuted rounded-full" style="width: 14%;"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Footer for Query Mix -->
+            <div class="h-8 px-4 border-t border-hairline bg-raised flex items-center justify-between font-mono text-[10px] text-paperMuted shrink-0">
+              <span>SUM: 100% DISPATCHED</span>
+              <span>VERIFICATION: STRICT_ASSERT</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- FLUSH BOTTOM STATUS BAR (h-8, 32px) - STRICT FLUSH AT BOTTOM OF 900px -->
+    <footer class="h-8 px-6 border-t border-hairline bg-panel flex items-center justify-between font-mono text-[11px] text-paperMuted shrink-0">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 text-paperSecondary">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>12 HUBS MONITORED</span>
+        </span>
+        <span>·</span>
+        <span>LAST SWEEP: 8 MIN AGO</span>
+        <span>·</span>
+        <span class="text-gold/90 font-medium">SHARD: 0x3a</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>ENGINE: v14.2 DETERMINISTIC</span>
+        <span>·</span>
+        <span>MERKLE: 0x9f8a2c3b</span>
+        <span>·</span>
+        <span class="text-statusOk flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>ONLINE</span>
+        </span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Overview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"Roboto Mono"', 'monospace'],
+          },
+          colors: {
+            base: '#F6F8FB',
+            card: '#FFFFFF',
+            border: '#E3E8F0',
+            textMain: '#0F1B2D',
+            textMuted: '#5B6B82',
+            accent: '#2563EB',
+            accentLight: '#EFF6FF',
+            ok: '#16A34A',
+            warn: '#D97706',
+            danger: '#DC2626',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F6F8FB;
+      color: #0F1B2D;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+    /* Hairline borders */
+    .border-hairline {
+      border-color: #E3E8F0;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="h-[900px] w-[1440px] flex overflow-hidden antialiased bg-[#F6F8FB]">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-[#E3E8F0] bg-[#FFFFFF] shrink-0 z-20">
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-14 px-5 flex items-center gap-2.5 border-b border-[#E3E8F0]">
+        <div class="w-6 h-6 rounded bg-[#2563EB] flex items-center justify-center shrink-0">
+          <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[13px] font-semibold tracking-tight text-[#0F1B2D]">Know Your Soul</span>
+          <span class="text-[11px] font-mono text-[#5B6B82] leading-none">KG-OPS · v14.2</span>
+        </div>
+      </div>
+
+      <!-- Nav Items -->
+      <nav class="px-3 py-3 space-y-4 text-[13px]">
+        <!-- MONITOR -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-semibold text-[#5B6B82] tracking-wider uppercase font-mono">Monitor</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md bg-[#EFF6FF] text-[#2563EB] font-medium">
+              <svg class="w-4 h-4 text-[#2563EB]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+              </svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="6" cy="6" r="3"></circle>
+                <circle cx="18" cy="18" r="3"></circle>
+                <circle cx="6" cy="18" r="3"></circle>
+                <line x1="18" y1="9" x2="18" y2="15"></line>
+                <line x1="8.5" y1="7.5" x2="15.5" y2="16.5"></line>
+              </svg>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- ANALYZE -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-semibold text-[#5B6B82] tracking-wider uppercase font-mono">Analyze</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+              </svg>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GOVERN -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-semibold text-[#5B6B82] tracking-wider uppercase font-mono">Govern</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+              </svg>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span>Proposals</span>
+              </div>
+              <span class="text-[11px] font-mono font-medium text-[#5B6B82] bg-[#F1F5F9] px-1.5 py-0.5 rounded">3</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                  <polyline points="2 17 12 22 22 17"></polyline>
+                  <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+                <span>Debt Queue</span>
+              </div>
+              <span class="text-[11px] font-mono font-medium text-[#5B6B82] bg-[#F1F5F9] px-1.5 py-0.5 rounded">12</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- SYSTEM -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-semibold text-[#5B6B82] tracking-wider uppercase font-mono">System</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                <rect x="9" y="9" width="6" height="6"></rect>
+              </svg>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#5B6B82] hover:bg-[#F6F8FB] hover:text-[#0F1B2D] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- User Card Footer -->
+    <div class="p-3 border-t border-[#E3E8F0]">
+      <div class="flex items-center justify-between p-2 rounded-lg bg-[#F6F8FB] border border-[#E3E8F0]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-[#E2E8F0] border border-[#CBD5E1] flex items-center justify-center font-mono text-[11px] font-semibold text-[#0F1B2D]">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[12px] font-semibold text-[#0F1B2D] leading-tight">Sigit A.</span>
+            <span class="text-[10px] font-mono text-[#5B6B82] leading-tight">operator</span>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-[#16A34A]" title="Raft Quorum Connected"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT (1192px wide, 900px high) -->
+  <main class="flex-1 h-full flex flex-col overflow-hidden bg-[#F6F8FB]">
+
+    <!-- TOPBAR (48px) -->
+    <header class="h-12 px-6 flex items-center justify-between border-b border-[#E3E8F0] bg-[#FFFFFF] shrink-0">
+      <!-- Title & Breadcrumb -->
+      <div class="flex items-center gap-2 text-[14px]">
+        <span class="font-mono text-[12px] text-[#5B6B82]">KYS</span>
+        <span class="text-[#CBD5E1]">/</span>
+        <h1 class="font-semibold text-[18px] text-[#0F1B2D] leading-none">Overview</h1>
+        <span class="ml-2 px-2 py-0.5 rounded font-mono text-[11px] bg-[#F1F5F9] text-[#5B6B82] border border-[#E2E8F0]">cluster-01</span>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="w-96 relative flex items-center">
+        <svg class="w-4 h-4 text-[#5B6B82] absolute left-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" placeholder="Search nodes, edges, hashes..." readonly class="w-full h-8 pl-9 pr-10 text-[12px] bg-[#F6F8FB] border border-[#E3E8F0] rounded-md text-[#0F1B2D] placeholder-[#5B6B82] focus:outline-none cursor-pointer">
+        <kbd class="absolute right-2 px-1.5 py-0.5 text-[10px] font-mono text-[#5B6B82] bg-[#FFFFFF] border border-[#E3E8F0] rounded shadow-none">⌘K</kbd>
+      </div>
+
+      <!-- Right Segments -->
+      <div class="flex items-center gap-3">
+        <button class="relative p-1.5 text-[#5B6B82] hover:text-[#0F1B2D] hover:bg-[#F6F8FB] rounded-md transition-colors">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#2563EB] rounded-full"></span>
+        </button>
+        <div class="h-4 w-px bg-[#E3E8F0]"></div>
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full bg-[#EFF6FF] border border-[#DBEAFE] flex items-center justify-center font-mono text-[11px] font-semibold text-[#2563EB]">
+            SA
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Scroll-free, structured to fill height flush) -->
+    <div class="flex-1 p-5 flex flex-col justify-between overflow-hidden gap-3.5">
+
+      <!-- 1. ALERT BANNER (~44px) -->
+      <div class="h-[44px] px-4 rounded-[10px] bg-[#EFF6FF] border border-[#DBEAFE] border-l-[3px] border-l-[#2563EB] flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5 text-[13px] text-[#0F1B2D]">
+          <svg class="w-4 h-4 text-[#2563EB] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>2 stale edges detected in domain P4 — last verify 2h ago</span>
+        </div>
+        <button class="h-7 px-3 text-[12px] font-medium text-[#2563EB] bg-[#FFFFFF] border border-[#BFDBFE] hover:bg-[#F8FAFC] rounded-md transition-colors">
+          Review
+        </button>
+      </div>
+
+      <!-- 2. KPI STRIP (4 cards in a row) -->
+      <div class="grid grid-cols-4 gap-3.5 shrink-0">
+        <!-- NODES -->
+        <div class="h-[96px] bg-[#FFFFFF] border border-[#E3E8F0] rounded-[12px] p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[11px] font-mono uppercase text-[#5B6B82] font-medium">
+            <span>Nodes</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <div class="text-[24px] font-semibold text-[#0F1B2D] tracking-tight leading-none">12,847</div>
+              <div class="text-[11px] font-mono text-[#5B6B82] mt-1.5">+312 vs last week</div>
+            </div>
+            <!-- Sparkline -->
+            <div class="w-20 h-7 flex items-end pb-0.5">
+              <svg class="w-full h-full overflow-visible" viewBox="0 0 80 24" fill="none">
+                <path d="M0 18 L16 16 L32 20 L48 11 L64 12 L80 4" stroke="#2563EB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- EDGES -->
+        <div class="h-[96px] bg-[#FFFFFF] border border-[#E3E8F0] rounded-[12px] p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[11px] font-mono uppercase text-[#5B6B82] font-medium">
+            <span>Edges</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <div class="text-[24px] font-semibold text-[#0F1B2D] tracking-tight leading-none">48,203</div>
+              <div class="text-[11px] font-mono text-[#5B6B82] mt-1.5">+1,204 vs last week</div>
+            </div>
+            <!-- Sparkline -->
+            <div class="w-20 h-7 flex items-end pb-0.5">
+              <svg class="w-full h-full overflow-visible" viewBox="0 0 80 24" fill="none">
+                <path d="M0 20 L16 18 L32 14 L48 15 L64 8 L80 5" stroke="#2563EB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUERIES 24H -->
+        <div class="h-[96px] bg-[#FFFFFF] border border-[#E3E8F0] rounded-[12px] p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[11px] font-mono uppercase text-[#5B6B82] font-medium">
+            <span>Queries 24h</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <div class="text-[24px] font-semibold text-[#0F1B2D] tracking-tight leading-none">3,412</div>
+              <div class="text-[11px] font-mono text-[#5B6B82] mt-1.5">up 8.2% vs baseline</div>
+            </div>
+            <!-- Sparkline -->
+            <div class="w-20 h-7 flex items-end pb-0.5">
+              <svg class="w-full h-full overflow-visible" viewBox="0 0 80 24" fill="none">
+                <path d="M0 14 L16 17 L32 11 L48 13 L64 6 L80 3" stroke="#2563EB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- LATENCY P50 -->
+        <div class="h-[96px] bg-[#FFFFFF] border border-[#E3E8F0] rounded-[12px] p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[11px] font-mono uppercase text-[#5B6B82] font-medium">
+            <span>Latency P50</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <div class="text-[24px] font-semibold text-[#0F1B2D] tracking-tight leading-none">6.4ms</div>
+              <div class="text-[11px] font-mono text-[#5B6B82] mt-1.5">down 0.4ms target &lt; 10ms</div>
+            </div>
+            <!-- Sparkline -->
+            <div class="w-20 h-7 flex items-end pb-0.5">
+              <svg class="w-full h-full overflow-visible" viewBox="0 0 80 24" fill="none">
+                <path d="M0 8 L16 9 L32 14 L48 11 L64 19 L80 18" stroke="#2563EB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TWO-COLUMN ROW: LEARNING LOOP & RECENT ACTIVITY (h-[200px]) -->
+      <div class="grid grid-cols-12 gap-3.5 h-[195px] shrink-0">
+        <!-- LEFT: Learning Loop (5 cols) -->
+        <div class="col-span-5 bg-[#FFFFFF] border border-[#E3E8F0] rounded-[12px] p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-[13px] font-semibold text-[#0F1B2D]">Learning Loop</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#DCFCE7] text-[#16A34A]">ONLINE</span>
+              </div>
+              <span class="text-[11px] font-mono text-[#5B6B82]">v14.2 // RAFT</span>
+            </div>
+
+            <!-- Progress Bars -->
+            <div class="space-y-2.5">
+              <!-- Precision -->
+              <div>
+                <div class="flex justify-between text-[11px] font-mono mb-1">
+                  <span class="text-[#5B6B82]">Precision score</span>
+                  <span class="font-medium text-[#0F1B2D]">P 0.828</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#F1F5F9] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#2563EB] rounded-full" style="width: 82.8%"></div>
+                </div>
+              </div>
+
+              <!-- Mutation entropy -->
+              <div>
+                <div class="flex justify-between text-[11px] font-mono mb-1">
+                  <span class="text-[#5B6B82]">Mutation entropy</span>
+                  <span class="font-medium text-[#0F1B2D]">M 0.341</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#F1F5F9] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#2563EB] rounded-full" style="width: 34.1%"></div>
+                </div>
+              </div>
+
+              <!-- Eigen convergence -->
+              <div>
+                <div class="flex justify-between text-[11px] font-mono mb-1">
+                  <span class="text-[#5B6B82]">Eigen convergence</span>
+                  <span class="font-medium text-[#0F1B2D]">E 0.898</span>
+                </div>
+                <div class="h-1.5 w-full bg-[#F1F5F9] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#2563EB] rounded-full" style="width: 89.8%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer line -->
+          <div class="pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] font-mono text-[#5B6B82]">
+            <span>Last relearn 2h ago · v14</span>
+            <div class="flex items-center gap-1.5 text-[#16A34A]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+              <span>CONVERGED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Recent Activity (7 cols) -->
+        <div class="col-span-7 bg-[#FFFFFF] border border-[#E3E8F0] rounded-[12px] p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-[#F1F5F9]">
+            <span class="text-[13px] font-semibold text-[#0F1B2D]">Recent Activity</span>
+            <span class="text-[11px] font-mono text-[#5B6B82]">6 AUDITED OPS</span>
+          </div>
+
+          <!-- 6 exact rows, no wrap -->
+          <div class="space-y-1.5 text-[11px] font-mono">
+            <!-- Row 1 -->
+            <div class="flex items-center justify-between h-5">
+              <div class="flex items-center gap-2.5 truncate">
+                <span class="text-[#5B6B82]">14:32:07Z</span>
+                <span class="px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0F1B2D] border border-[#E2E8F0] font-medium text-[10px]">sub-139</span>
+                <span class="text-[#0F1B2D] font-sans text-[12px] truncate">Compacted vector embedding cache</span>
+              </div>
+              <span class="text-[#5B6B82] shrink-0 ml-3">0x4a1c</span>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="flex items-center justify-between h-5">
+              <div class="flex items-center gap-2.5 truncate">
+                <span class="text-[#5B6B82]">14:30:19Z</span>
+                <span class="px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0F1B2D] border border-[#E2E8F0] font-medium text-[10px]">operator</span>
+                <span class="text-[#0F1B2D] font-sans text-[12px] truncate">Verified Merkle root consistency</span>
+              </div>
+              <span class="text-[#5B6B82] shrink-0 ml-3">0x9f2c</span>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="flex items-center justify-between h-5">
+              <div class="flex items-center gap-2.5 truncate">
+                <span class="text-[#5B6B82]">14:28:44Z</span>
+                <span class="px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0F1B2D] border border-[#E2E8F0] font-medium text-[10px]">sub-141</span>
+                <span class="text-[#0F1B2D] font-sans text-[12px] truncate">Attached semantic ontology edges</span>
+              </div>
+              <span class="text-[#5B6B82] shrink-0 ml-3">0x3e11</span>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="flex items-center justify-between h-5">
+              <div class="flex items-center gap-2.5 truncate">
+                <span class="text-[#5B6B82]">14:25:01Z</span>
+                <span class="px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0F1B2D] border border-[#E2E8F0] font-medium text-[10px]">agent-2</span>
+                <span class="text-[#0F1B2D] font-sans text-[12px] truncate">Pruned unreferenced orphan leaves</span>
+              </div>
+              <span class="text-[#5B6B82] shrink-0 ml-3">0x7b90</span>
+            </div>
+
+            <!-- Row 5 -->
+            <div class="flex items-center justify-between h-5">
+              <div class="flex items-center gap-2.5 truncate">
+                <span class="text-[#5B6B82]">14:21:15Z</span>
+                <span class="px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0F1B2D] border border-[#E2E8F0] font-medium text-[10px]">sub-139</span>
+                <span class="text-[#0F1B2D] font-sans text-[12px] truncate">Executed DuckDB AST index sweep</span>
+              </div>
+              <span class="text-[#5B6B82] shrink-0 ml-3">0x8f2c</span>
+            </div>
+
+            <!-- Row 6 -->
+            <div class="flex items-center justify-between h-5">
+              <div class="flex items-center gap-2.5 truncate">
+                <span class="text-[#5B6B82]">14:18:52Z</span>
+                <span class="px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0F1B2D] border border-[#E2E8F0] font-medium text-[10px]">operator</span>
+                <span class="text-[#0F1B2D] font-sans text-[12px] truncate">Re-indexed symbol schema contracts</span>
+              </div>
+              <span class="text-[#5B6B82] shrink-0 ml-3">0xa18e</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. DOMAIN HEALTH (7 rows, fills the vertical gap flush) -->
+      <div class="flex-1 bg-[#FFFFFF] border border-[#E3E8F0] rounded-[12px] p-4 flex flex-col justify-between overflow-hidden">
+        <div>
+          <!-- Header -->
+          <div class="flex items-center justify-between pb-2.5 border-b border-[#F1F5F9]">
+            <div class="flex items-center gap-2">
+              <span class="text-[13px] font-semibold text-[#0F1B2D]">Domain Health</span>
+              <span class="text-[11px] font-mono text-[#5B6B82]">7 PARTITIONS</span>
+            </div>
+            <div class="flex items-center gap-8 text-[10px] font-mono font-semibold text-[#5B6B82] uppercase pr-2">
+              <span class="w-14 text-center">Status</span>
+              <span class="w-24 text-right">Activity (14D)</span>
+              <span class="w-16 text-right">Nodes</span>
+            </div>
+          </div>
+
+          <!-- Table 7 Rows (each ~34px) -->
+          <div class="divide-y divide-[#F8FAFC]">
+            <!-- P1 -->
+            <div class="h-[35px] flex items-center justify-between px-1 text-[12px] hover:bg-[#F8FAFC] transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-semibold text-[#2563EB] w-7">P1</span>
+                <span class="text-[#0F1B2D] font-medium">Core Runtime Execution & Store</span>
+              </div>
+              <div class="flex items-center gap-8 font-mono text-[11px]">
+                <div class="w-14 flex justify-center">
+                  <span class="px-2 py-0.5 rounded bg-[#DCFCE7] text-[#16A34A] font-semibold text-[10px]">OK</span>
+                </div>
+                <div class="w-24 flex justify-end">
+                  <svg class="w-20 h-4 overflow-visible" viewBox="0 0 60 14" fill="none">
+                    <path d="M0 10 L12 8 L24 11 L36 6 L48 7 L60 3" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <span class="w-16 text-right text-[#0F1B2D] font-medium">3,842</span>
+              </div>
+            </div>
+
+            <!-- P2 -->
+            <div class="h-[35px] flex items-center justify-between px-1 text-[12px] hover:bg-[#F8FAFC] transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-semibold text-[#2563EB] w-7">P2</span>
+                <span class="text-[#0F1B2D] font-medium">Heuristics & Ingestion Catalog</span>
+              </div>
+              <div class="flex items-center gap-8 font-mono text-[11px]">
+                <div class="w-14 flex justify-center">
+                  <span class="px-2 py-0.5 rounded bg-[#DCFCE7] text-[#16A34A] font-semibold text-[10px]">OK</span>
+                </div>
+                <div class="w-24 flex justify-end">
+                  <svg class="w-20 h-4 overflow-visible" viewBox="0 0 60 14" fill="none">
+                    <path d="M0 12 L12 11 L24 8 L36 9 L48 5 L60 4" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <span class="w-16 text-right text-[#0F1B2D] font-medium">2,118</span>
+              </div>
+            </div>
+
+            <!-- P3 -->
+            <div class="h-[35px] flex items-center justify-between px-1 text-[12px] hover:bg-[#F8FAFC] transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-semibold text-[#2563EB] w-7">P3</span>
+                <span class="text-[#0F1B2D] font-medium">Vector Space & KNN Embeddings</span>
+              </div>
+              <div class="flex items-center gap-8 font-mono text-[11px]">
+                <div class="w-14 flex justify-center">
+                  <span class="px-2 py-0.5 rounded bg-[#DCFCE7] text-[#16A34A] font-semibold text-[10px]">OK</span>
+                </div>
+                <div class="w-24 flex justify-end">
+                  <svg class="w-20 h-4 overflow-visible" viewBox="0 0 60 14" fill="none">
+                    <path d="M0 8 L12 9 L24 6 L36 8 L48 4 L60 3" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <span class="w-16 text-right text-[#0F1B2D] font-medium">1,940</span>
+              </div>
+            </div>
+
+            <!-- P4 -->
+            <div class="h-[35px] flex items-center justify-between px-1 text-[12px] bg-[#FFFBEB] hover:bg-[#FEF3C7] transition-colors rounded">
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-semibold text-[#D97706] w-7">P4</span>
+                <span class="text-[#0F1B2D] font-medium">JSON-LD Schema & Invariants</span>
+              </div>
+              <div class="flex items-center gap-8 font-mono text-[11px]">
+                <div class="w-14 flex justify-center">
+                  <span class="px-2 py-0.5 rounded bg-[#FEF3C7] text-[#D97706] font-semibold text-[10px] border border-[#FDE68A]">WARN</span>
+                </div>
+                <div class="w-24 flex justify-end">
+                  <svg class="w-20 h-4 overflow-visible" viewBox="0 0 60 14" fill="none">
+                    <path d="M0 4 L12 5 L24 8 L36 9 L48 12 L60 13" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <span class="w-16 text-right text-[#0F1B2D] font-medium">1,656</span>
+              </div>
+            </div>
+
+            <!-- P5 -->
+            <div class="h-[35px] flex items-center justify-between px-1 text-[12px] hover:bg-[#F8FAFC] transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-semibold text-[#2563EB] w-7">P5</span>
+                <span class="text-[#0F1B2D] font-medium">Consensus, Leases & Fencing</span>
+              </div>
+              <div class="flex items-center gap-8 font-mono text-[11px]">
+                <div class="w-14 flex justify-center">
+                  <span class="px-2 py-0.5 rounded bg-[#DCFCE7] text-[#16A34A] font-semibold text-[10px]">OK</span>
+                </div>
+                <div class="w-24 flex justify-end">
+                  <svg class="w-20 h-4 overflow-visible" viewBox="0 0 60 14" fill="none">
+                    <path d="M0 11 L12 10 L24 9 L36 6 L48 5 L60 2" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <span class="w-16 text-right text-[#0F1B2D] font-medium">1,112</span>
+              </div>
+            </div>
+
+            <!-- P6 -->
+            <div class="h-[35px] flex items-center justify-between px-1 text-[12px] hover:bg-[#F8FAFC] transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-semibold text-[#2563EB] w-7">P6</span>
+                <span class="text-[#0F1B2D] font-medium">Inference Subsumption & Mapping</span>
+              </div>
+              <div class="flex items-center gap-8 font-mono text-[11px]">
+                <div class="w-14 flex justify-center">
+                  <span class="px-2 py-0.5 rounded bg-[#DCFCE7] text-[#16A34A] font-semibold text-[10px]">OK</span>
+                </div>
+                <div class="w-24 flex justify-end">
+                  <svg class="w-20 h-4 overflow-visible" viewBox="0 0 60 14" fill="none">
+                    <path d="M0 13 L12 11 L24 10 L36 8 L48 7 L60 5" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <span class="w-16 text-right text-[#0F1B2D] font-medium">1,280</span>
+              </div>
+            </div>
+
+            <!-- P7 -->
+            <div class="h-[35px] flex items-center justify-between px-1 text-[12px] hover:bg-[#F8FAFC] transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-semibold text-[#2563EB] w-7">P7</span>
+                <span class="text-[#0F1B2D] font-medium">Evaluation & Feedback Loop</span>
+              </div>
+              <div class="flex items-center gap-8 font-mono text-[11px]">
+                <div class="w-14 flex justify-center">
+                  <span class="px-2 py-0.5 rounded bg-[#DCFCE7] text-[#16A34A] font-semibold text-[10px]">OK</span>
+                </div>
+                <div class="w-24 flex justify-end">
+                  <svg class="w-20 h-4 overflow-visible" viewBox="0 0 60 14" fill="none">
+                    <path d="M0 12 L12 11 L24 10 L36 9 L48 6 L60 4" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <span class="w-16 text-right text-[#0F1B2D] font-medium">869</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 5. STATUS BAR (FLUSH AT BOTTOM EDGE, 28px) -->
+    <footer class="h-7 px-6 bg-[#FFFFFF] border-t border-[#E3E8F0] flex items-center justify-between shrink-0 font-mono text-[11px] text-[#5B6B82] uppercase select-none">
+      <div class="flex items-center gap-2">
+        <span>12,847 NODES</span>
+        <span class="text-[#CBD5E1]">·</span>
+        <span>48,203 EDGES</span>
+        <span class="text-[#CBD5E1]">·</span>
+        <span>LAST RELEARN 2H AGO</span>
+        <span class="text-[#CBD5E1]">·</span>
+        <span>V14</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] text-[#5B6B82]">RAFT QUORUM SYNCED</span>
+        <span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

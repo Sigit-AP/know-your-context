@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900">
+  <title>Know Your Soul - Debt Queue (Paper Dark)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#141110',
+            panel: '#1A1713',
+            raised: '#211D17',
+            hairline: 'rgba(217, 164, 65, 0.10)',
+            hairlineBright: 'rgba(217, 164, 65, 0.22)',
+            textPrimary: '#EDE4D3',
+            textSecondary: '#A3947D',
+            accent: '#D9A441',
+            statusOk: '#7FB069',
+            statusWarn: '#E0A458',
+            statusDanger: '#D16666'
+          },
+          fontFamily: {
+            serif: ['Fraunces', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #141110;
+      color: #EDE4D3;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 1440px;
+      height: 900px;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .double-rule {
+      position: relative;
+      border-top: 1px solid rgba(217, 164, 65, 0.25);
+      margin-top: 4px;
+      padding-top: 3px;
+      border-bottom: 1px solid rgba(217, 164, 65, 0.12);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #141110;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(217, 164, 65, 0.18);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="w-[1440px] h-[900px] flex flex-row select-none bg-base text-textPrimary">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-full bg-base border-r border-hairline flex flex-col justify-between shrink-0">
+    <!-- Brand & Navigation -->
+    <div class="flex flex-col">
+      <!-- App Brand header -->
+      <div class="h-14 px-5 border-b border-hairline flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 rounded bg-raised border border-hairlineBright flex items-center justify-center text-accent font-serif font-bold text-xs">
+            K
+          </div>
+          <div class="flex flex-col">
+            <span class="font-serif font-semibold text-sm tracking-wide text-textPrimary leading-none">Know Your Soul</span>
+            <span class="font-mono text-[10px] text-textSecondary mt-0.5 tracking-tight">CLUSTER 01 · V14.2</span>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-statusOk"></div>
+      </div>
+
+      <!-- Nav Items -->
+      <nav class="px-3 py-3 space-y-4 text-xs">
+        <!-- MONITOR -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-mono tracking-widest text-textSecondary uppercase">I // MONITOR</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Activity Log</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+              <span>Graph Explorer</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- ANALYZE -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-mono tracking-widest text-textSecondary uppercase">II // ANALYZE</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <span>Search</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              <span>Metrics</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- GOVERN -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-mono tracking-widest text-textSecondary uppercase">III // GOVERN</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Health</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              <span>Audit Ledger</span>
+            </a>
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span>Proposals</span>
+              </div>
+              <span class="font-mono text-[10px] text-textSecondary px-1.5 py-0.2 bg-panel rounded border border-hairline">3</span>
+            </a>
+            <!-- Active item -->
+            <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded bg-accent/10 border-l-2 border-accent text-accent font-medium transition-colors">
+              <div class="flex items-center gap-2.5">
+                <svg class="w-3.5 h-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-textPrimary font-medium">Debt Queue</span>
+              </div>
+              <span class="font-mono text-[10px] text-accent px-1.5 py-0.2 bg-accent/15 rounded border border-accent/20">14</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- SYSTEM -->
+        <div>
+          <div class="px-2 pb-1 text-[10px] font-mono tracking-widest text-textSecondary uppercase">IV // SYSTEM</div>
+          <div class="space-y-0.5">
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              <span>System</span>
+            </a>
+            <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded text-textSecondary hover:text-textPrimary hover:bg-raised/40 transition-colors">
+              <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>Setup</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer / Operator User Card -->
+    <div class="p-3 border-t border-hairline">
+      <div class="px-3 py-2 rounded bg-panel border border-hairline flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded bg-raised border border-hairlineBright text-accent font-mono font-medium text-xs flex items-center justify-center">
+            SA
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-medium text-textPrimary leading-none">Sigit A.</span>
+            <span class="text-[10px] font-mono text-textSecondary mt-0.5 leading-none">operator</span>
+          </div>
+        </div>
+        <div class="w-1.5 h-1.5 rounded-full bg-statusOk"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER (1192px) -->
+  <main class="w-[1192px] h-full flex flex-col justify-between bg-base overflow-hidden">
+    <!-- Topbar (1 line, flush) -->
+    <header class="h-14 px-6 border-b border-hairline flex items-center justify-between shrink-0 bg-base">
+      <!-- Breadcrumbs -->
+      <div class="flex items-center gap-2 font-mono text-xs">
+        <span class="text-textSecondary">KYS</span>
+        <span class="text-hairlineBright font-light">/</span>
+        <span class="text-textSecondary">Govern</span>
+        <span class="text-hairlineBright font-light">/</span>
+        <span class="text-accent font-medium">Debt Queue</span>
+        <span class="ml-2 px-1.5 py-0.5 text-[10px] bg-panel text-textSecondary rounded border border-hairline">CLUSTER-01</span>
+      </div>
+
+      <!-- Center Search -->
+      <div class="relative w-[440px]">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="w-3.5 h-3.5 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <input type="text" placeholder="Search debt items, nodes, hashes, reasons..." class="w-full h-8 pl-8 pr-9 bg-panel border border-hairline rounded text-xs text-textPrimary placeholder-textSecondary/60 focus:outline-none focus:border-accent/40 font-sans" readonly>
+        <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+          <kbd class="font-mono text-[10px] text-textSecondary px-1.5 py-0.5 rounded bg-raised border border-hairline">⌘K</kbd>
+        </div>
+      </div>
+
+      <!-- Right Chrome: max 4 segments -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-panel border border-hairline font-mono text-[11px] text-textSecondary">
+          <span class="w-1.5 h-1.5 rounded-full bg-statusOk"></span>
+          <span>RAFT QUORUM SYNCED</span>
+        </div>
+        <button class="relative p-1.5 rounded bg-panel border border-hairline text-textSecondary hover:text-textPrimary transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </button>
+        <div class="w-7 h-7 rounded bg-raised border border-hairline text-textPrimary font-mono font-medium text-xs flex items-center justify-center">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Fixed Layout, exactly fills height) -->
+    <div class="flex-1 flex flex-col px-6 pt-4 pb-0 overflow-hidden">
+      <!-- Section Tag + Page Title with Signature Double Rule -->
+      <div class="shrink-0 mb-3">
+        <div class="flex items-baseline justify-between">
+          <div>
+            <div class="font-mono text-[11px] tracking-wider text-accent uppercase font-medium">III.IV // STRUCTURAL ANOMALIES & DEBT</div>
+            <h1 class="font-serif text-[26px] font-medium tracking-tight text-textPrimary mt-0.5 leading-none">Knowledge Graph Debt Queue</h1>
+          </div>
+          <!-- Quick summary badges in title area -->
+          <div class="flex items-center gap-4 text-xs font-mono">
+            <div class="flex items-center gap-1.5 text-textSecondary">
+              <span>ENTROPY MEAN:</span>
+              <span class="text-statusWarn font-semibold">0.742</span>
+            </div>
+            <div class="h-3 w-px bg-hairline"></div>
+            <div class="flex items-center gap-1.5 text-textSecondary">
+              <span>TOKEN BUDGET:</span>
+              <span class="text-accent font-semibold">14.2k</span>
+            </div>
+            <div class="h-3 w-px bg-hairline"></div>
+            <div class="flex items-center gap-1.5 text-textSecondary">
+              <span>BURNDOWN SLA:</span>
+              <span class="text-statusWarn font-semibold">4.2d</span>
+            </div>
+          </div>
+        </div>
+        <!-- Signature thin double rule -->
+        <div class="double-rule"></div>
+      </div>
+
+      <!-- Toolbar: ghost search 'Filter debt…' + pills 'Severity ▾' 'Domain ▾' '30D ▾' -->
+      <div class="h-10 shrink-0 flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <!-- Ghost search -->
+          <div class="relative w-64">
+            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-textSecondary text-xs font-mono">&gt;</span>
+            <input type="text" placeholder="Filter debt…" class="w-full h-8 pl-6 pr-3 bg-panel/60 border border-hairline rounded text-xs text-textPrimary placeholder-textSecondary/50 font-mono focus:outline-none focus:border-accent/40" readonly>
+          </div>
+
+          <!-- Dropdown Pills -->
+          <button class="h-8 px-3 rounded bg-panel border border-hairline hover:border-hairlineBright text-xs text-textSecondary flex items-center gap-1.5 font-sans transition-colors">
+            <span>Severity</span>
+            <span class="text-[10px] text-textSecondary">▾</span>
+          </button>
+          <button class="h-8 px-3 rounded bg-panel border border-hairline hover:border-hairlineBright text-xs text-textSecondary flex items-center gap-1.5 font-sans transition-colors">
+            <span>Domain</span>
+            <span class="text-[10px] text-textSecondary">▾</span>
+          </button>
+          <button class="h-8 px-3 rounded bg-panel border border-hairline hover:border-hairlineBright text-xs text-textSecondary flex items-center gap-1.5 font-sans transition-colors">
+            <span class="font-mono">30D</span>
+            <span class="text-[10px] text-textSecondary">▾</span>
+          </button>
+        </div>
+
+        <!-- Filter Quick Count Pills -->
+        <div class="flex items-center gap-1 bg-panel p-0.5 rounded border border-hairline text-xs font-mono">
+          <button class="px-2.5 py-1 rounded bg-raised text-accent font-semibold border border-hairlineBright">ALL (14)</button>
+          <button class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary">HIGH (3)</button>
+          <button class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary">MED (6)</button>
+          <button class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary">LOW (5)</button>
+        </div>
+      </div>
+
+      <!-- MAIN TABLE (Exactly 14 rows, flush height, generous padding) -->
+      <div class="flex-1 bg-panel border border-hairline rounded flex flex-col overflow-hidden">
+        <!-- Table Header (Uppercase, 1 line) -->
+        <div class="h-9 px-4 bg-raised/70 border-b border-hairline flex items-center text-[11px] font-mono tracking-wider text-textSecondary uppercase shrink-0">
+          <div class="w-8 flex items-center justify-center">
+            <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 focus:ring-offset-0 opacity-60">
+          </div>
+          <div class="w-24 pl-2">SEV</div>
+          <div class="w-56 pl-2">NODE</div>
+          <div class="flex-1 pl-2">REASON</div>
+          <div class="w-36 text-left pl-2">NOTES / FLAGS</div>
+          <div class="w-20 text-right pr-4">AGE</div>
+          <div class="w-20 text-right pr-4">EST</div>
+          <div class="w-24 text-right pr-2">ACTION</div>
+        </div>
+
+        <!-- Table 14 Rows Container -->
+        <div class="flex-1 flex flex-col justify-between divide-y divide-hairline font-sans text-xs">
+
+          <!-- Row 1: store-mutex (HIGH) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusDanger/10 border border-statusDanger/25 text-statusDanger">
+                <span>▲</span><span>HIGH</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">store-mutex</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">missing provenance metadata</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">12d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">2h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 2: embedding-refresh (HIGH) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusDanger/10 border border-statusDanger/25 text-statusDanger">
+                <span>▲</span><span>HIGH</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">embedding-refresh</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">stale 45d</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">45d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">4h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 3: legacy-tag-refs (HIGH) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusDanger/10 border border-statusDanger/25 text-statusDanger">
+                <span>▲</span><span>HIGH</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">legacy-tag-refs</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">orphan edges x3</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">18d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 4: p4-domain (MED) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusWarn/10 border border-statusWarn/25 text-statusWarn">
+                <span>●</span><span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">p4-domain</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">unindexed semantic tag flags</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">8d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">3h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 5: wal-replay (MED) with Tooltip cue chip '2 notes' -->
+          <div class="flex items-center px-4 bg-accent/[0.03] border-l-2 border-accent hover:bg-raised/50 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusWarn/10 border border-statusWarn/25 text-statusWarn">
+                <span>●</span><span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate font-medium">wal-replay</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">uncompacted log segment frames</div>
+            <div class="w-36 pl-2">
+              <!-- Replaced emoji with text chip '2 notes' -->
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-statusWarn/10 border border-statusWarn/30 text-statusWarn font-mono text-[11px] cursor-help" title="Note 1: Checkpoint delayed 14d. Note 2: Operator lock on shard 0x3a.">
+                <span>2 notes</span>
+                <span class="text-[9px] text-textSecondary">[?]</span>
+              </span>
+            </div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">14d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">2h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-accent/40 text-accent hover:bg-accent/10 transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 6: heuristics-catalog (MED) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusWarn/10 border border-statusWarn/25 text-statusWarn">
+                <span>●</span><span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">heuristics-catalog</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">sub-optimal branch density</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">21d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">5h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 7: schema-contract-04 (MED) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusWarn/10 border border-statusWarn/25 text-statusWarn">
+                <span>●</span><span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">schema-contract-04</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">deprecated JSON-LD attributes</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">9d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 8: vector-cache-evictor (MED) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusWarn/10 border border-statusWarn/25 text-statusWarn">
+                <span>●</span><span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">vector-cache-evictor</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">missing LRU threshold bounds</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">15d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">2h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 9: retrieval-core (MED) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-statusWarn/10 border border-statusWarn/25 text-statusWarn">
+                <span>●</span><span>MED</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">retrieval-core</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">cross-partition lock contention</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">6d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">3h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 10: query-planner (LOW) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-panel border border-hairline text-textSecondary">
+                <span>○</span><span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">query-planner</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">unindexed AST sub-clauses</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">24d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 11: scoring-engine (LOW) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-panel border border-hairline text-textSecondary">
+                <span>○</span><span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">scoring-engine</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">redundant cosine evaluation passes</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">11d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">2h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 12: duckdb-compact (LOW) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-panel border border-hairline text-textSecondary">
+                <span>○</span><span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">duckdb-compact</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">unoptimized parquet chunk layout</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">19d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">4h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 13: raft-lease-quorum (LOW) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-panel border border-hairline text-textSecondary">
+                <span>○</span><span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">raft-lease-quorum</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">heartbeat drift margin delta</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">5d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+          <!-- Row 14: cli-adapter (LOW) -->
+          <div class="flex items-center px-4 hover:bg-raised/40 transition-colors h-[39px]">
+            <div class="w-8 flex items-center justify-center">
+              <input type="checkbox" class="rounded bg-base border-hairline text-accent focus:ring-0 opacity-60">
+            </div>
+            <div class="w-24 pl-2">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-panel border border-hairline text-textSecondary">
+                <span>○</span><span>LOW</span>
+              </span>
+            </div>
+            <div class="w-56 pl-2 font-mono text-xs text-textPrimary truncate">cli-adapter</div>
+            <div class="flex-1 pl-2 text-textSecondary truncate">deprecated socket loopback alias</div>
+            <div class="w-36 pl-2 text-textSecondary font-mono text-[11px]">-</div>
+            <div class="w-20 text-right pr-4 font-mono text-textSecondary">31d</div>
+            <div class="w-20 text-right pr-4 font-mono text-accent">1h</div>
+            <div class="w-24 text-right pr-2">
+              <button class="px-2 py-0.5 text-[11px] rounded bg-raised border border-hairline text-textSecondary hover:text-accent hover:border-hairlineBright transition-colors font-mono">Inspect</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer Strip: bulk bar '14 OPEN · 3 HIGH · SELECT: 0' left, ghost button 'Assign' right -->
+        <div class="h-10 px-4 bg-raised/90 border-t border-hairline flex items-center justify-between shrink-0 font-mono text-xs">
+          <div class="flex items-center gap-3">
+            <span class="text-textPrimary font-semibold">14 OPEN</span>
+            <span class="text-hairlineBright">·</span>
+            <span class="text-statusDanger font-medium">3 HIGH</span>
+            <span class="text-hairlineBright">·</span>
+            <span class="text-textSecondary">SELECT: 0</span>
+            <span class="text-hairlineBright">·</span>
+            <span class="text-[11px] text-textSecondary">SHOWING ROWS 1-14 OF 14</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="px-3 py-1 rounded bg-panel border border-hairline text-textSecondary hover:text-textPrimary text-xs font-mono transition-colors">Export CSV</button>
+            <button class="px-3 py-1 rounded bg-raised border border-hairlineBright text-accent hover:bg-accent/10 text-xs font-mono font-medium transition-colors">Assign</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Flush Bottom Status Bar -->
+    <footer class="h-8 px-6 border-t border-hairline flex items-center justify-between shrink-0 bg-base text-[11px] font-mono text-textSecondary">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 text-accent font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+          <span>14 QUEUE ITEMS</span>
+        </span>
+        <span class="text-hairlineBright">·</span>
+        <span>MERKLE: 0x9f2c1ab4</span>
+        <span class="text-hairlineBright">·</span>
+        <span>SHARD: 0x3a</span>
+        <span class="text-hairlineBright">·</span>
+        <span>ENGINE: DETERMINISTIC AST</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span>SYNC: 100% QUORUM</span>
+        <span class="text-hairlineBright">·</span>
+        <span>P90 CADENCE: 3,240/DAY</span>
+        <span class="text-hairlineBright">·</span>
+        <span class="text-statusOk font-medium">CLUSTER ONLINE</span>
+      </div>
+    </footer>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Audit Ledger (Terminal Brutalist)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'JetBrains Mono', monospace !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    body, html {
+      width: 1440px;
+      height: 900px;
+      min-width: 1440px;
+      max-width: 1440px;
+      min-height: 900px;
+      max-height: 900px;
+      overflow: hidden;
+      background-color: #000000;
+      color: #C9F7D4;
+    }
+    .panel-legend {
+      transform: translateY(-50%);
+    }
+  </style>
+</head>
+<body class="bg-black text-[#C9F7D4] flex flex-row w-[1440px] h-[900px] select-none border border-[#1A2E1A]">
+
+  <!-- LEFT SIDEBAR (Width: 248px) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-[#1A2E1A] bg-[#000000] shrink-0">
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-12 border-b border-[#1A2E1A] px-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 bg-[#33FF66] text-black font-bold text-xs flex items-center justify-center rounded-[1px]">K</div>
+          <span class="text-xs font-bold tracking-wider text-[#C9F7D4] uppercase">Know Your Soul</span>
+        </div>
+        <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 py-0.5">v14.2</span>
+      </div>
+
+      <!-- Navigation Hierarchy -->
+      <div class="px-3 py-3 space-y-4">
+        <!-- GROUP 01: MONITOR -->
+        <div>
+          <div class="text-[10px] tracking-widest text-[#5F8F68] uppercase px-2 mb-1.5 font-semibold">01 // MONITOR</div>
+          <div class="space-y-0.5 text-xs">
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> Overview
+            </div>
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> Activity Log
+            </div>
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> Graph Explorer
+            </div>
+          </div>
+        </div>
+
+        <!-- GROUP 02: ANALYZE -->
+        <div>
+          <div class="text-[10px] tracking-widest text-[#5F8F68] uppercase px-2 mb-1.5 font-semibold">02 // ANALYZE</div>
+          <div class="space-y-0.5 text-xs">
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> Search
+            </div>
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> Metrics
+            </div>
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> Analytics
+            </div>
+          </div>
+        </div>
+
+        <!-- GROUP 03: GOVERN (Active Context) -->
+        <div>
+          <div class="text-[10px] tracking-widest text-[#5F8F68] uppercase px-2 mb-1.5 font-semibold">03 // GOVERN</div>
+          <div class="space-y-0.5 text-xs">
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> Health
+            </div>
+            <!-- Active Nav Item -->
+            <div class="px-2.5 py-1.5 bg-[#33FF66]/10 text-[#33FF66] border-l-2 border-[#33FF66] font-semibold flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[#33FF66]">&gt;</span> Audit Ledger
+              </div>
+              <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full animate-pulse"></span>
+            </div>
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[#5F8F68] text-[10px]">::</span> Proposals
+              </div>
+              <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 py-0.2">3</span>
+            </div>
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[#5F8F68] text-[10px]">::</span> Debt Queue
+              </div>
+              <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 py-0.2">12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- GROUP 04: SYSTEM -->
+        <div>
+          <div class="text-[10px] tracking-widest text-[#5F8F68] uppercase px-2 mb-1.5 font-semibold">04 // SYSTEM</div>
+          <div class="space-y-0.5 text-xs">
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> System
+            </div>
+            <div class="px-2.5 py-1.5 text-[#5F8F68] hover:text-[#C9F7D4] hover:bg-[#050805] cursor-pointer flex items-center gap-2">
+              <span class="text-[#5F8F68] text-[10px]">::</span> Setup
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Card Footer -->
+    <div class="border-t border-[#1A2E1A] p-3 flex items-center justify-between bg-[#000000]">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-[#050805] border border-[#1A2E1A] flex items-center justify-center text-[10px] font-bold text-[#33FF66]">
+          SA
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs font-semibold text-[#C9F7D4] leading-tight">Sigit A.</span>
+          <span class="text-[10px] text-[#5F8F68] leading-tight">operator</span>
+        </div>
+      </div>
+      <div class="w-2 h-2 rounded-full bg-[#33FF66]"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN OPERATIONAL VIEWPORT (Width: 1192px, Height: 900px) -->
+  <main class="w-[1192px] h-full flex flex-col justify-between bg-[#000000] overflow-hidden">
+
+    <!-- TOPBAR: EXACTLY 3 ELEMENTS (Breadcrumb left, Search field center, Avatar right), No other chips/bells -->
+    <header class="h-12 border-b border-[#1A2E1A] px-6 flex items-center justify-between shrink-0 bg-[#000000]">
+      <!-- 1. Breadcrumb left styled like a prompt line -->
+      <div class="flex items-center gap-1.5 text-xs font-mono font-medium text-[#33FF66]">
+        <span>kyc://audit-ledger</span>
+        <span class="inline-block w-2 h-3.5 bg-[#33FF66] animate-pulse ml-0.5"></span>
+      </div>
+
+      <!-- 2. Search field with ⌘K hint center -->
+      <div class="relative w-[480px]">
+        <input 
+          type="text" 
+          placeholder="filter ledger events, hashes, actors..." 
+          class="w-full h-7 bg-[#050805] border border-[#1A2E1A] px-3 pr-10 text-xs text-[#C9F7D4] placeholder-[#5F8F68]/70 focus:outline-none focus:border-[#33FF66] rounded-[1px]"
+          readonly
+          value=""
+        />
+        <span class="absolute right-2.5 top-1.5 text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1 bg-[#000000] rounded-[1px]">⌘K</span>
+      </div>
+
+      <!-- 3. Avatar right (clean, no extra bells/chips) with 24px right padding intact -->
+      <div class="flex items-center">
+        <div class="w-6 h-6 border border-[#1A2E1A] bg-[#050805] text-[#33FF66] text-[10px] font-bold flex items-center justify-center rounded-[1px]">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Height: 818px = 900 - 48 topbar - 34 statusbar) -->
+    <div class="flex-1 flex flex-col px-6 pt-3 pb-2 justify-between overflow-hidden">
+
+      <!-- BANNER (Amber, one line) -->
+      <div class="h-8 border border-[#FFD23F]/40 bg-[#FFD23F]/5 px-3 flex items-center justify-between text-xs shrink-0 rounded-[1px]">
+        <div class="flex items-center gap-2">
+          <span class="bg-[#FFD23F] text-black text-[9px] font-bold px-1 py-0.2 uppercase rounded-[1px]">WARN</span>
+          <span class="text-[#FFD23F] font-medium">3 of 1,521 events failed verification — pinned below</span>
+        </div>
+        <button class="text-[11px] text-[#FFD23F] border border-[#FFD23F]/50 px-2 py-0.5 hover:bg-[#FFD23F]/10 uppercase text-[10px] tracking-wide rounded-[1px] cursor-pointer">
+          DOWNLOAD REPORT
+        </button>
+      </div>
+
+      <!-- TOOLBAR / FILTER RAIL (Height: 32px) -->
+      <div class="flex items-center justify-between text-xs shrink-0 my-1">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-[#5F8F68] uppercase font-semibold">FILTER //</span>
+          <div class="border border-[#1A2E1A] bg-[#050805] px-2 py-1 text-[11px] text-[#C9F7D4] flex items-center gap-1.5 cursor-pointer hover:border-[#33FF66]/50 rounded-[1px]">
+            <span>All ops</span>
+            <span class="text-[9px] text-[#5F8F68]">▾</span>
+          </div>
+          <div class="border border-[#1A2E1A] bg-[#050805] px-2 py-1 text-[11px] text-[#C9F7D4] flex items-center gap-1.5 cursor-pointer hover:border-[#33FF66]/50 rounded-[1px]">
+            <span>All actors</span>
+            <span class="text-[9px] text-[#5F8F68]">▾</span>
+          </div>
+          <div class="border border-[#1A2E1A] bg-[#050805] px-2 py-1 text-[11px] text-[#C9F7D4] flex items-center gap-1.5 cursor-pointer hover:border-[#33FF66]/50 rounded-[1px]">
+            <span class="text-[#33FF66]">NOV 4</span>
+            <span class="text-[9px] text-[#5F8F68]">▾</span>
+          </div>
+          <span class="text-[#1A2E1A] mx-1">|</span>
+          <div class="border border-[#FF4D4D]/50 bg-[#FF4D4D]/10 text-[#FF4D4D] text-[10px] px-2 py-0.5 font-bold uppercase rounded-[1px]">
+            STATUS: FAILED (3)
+          </div>
+          <div class="border border-[#1A2E1A] text-[#5F8F68] text-[10px] px-2 py-0.5 font-semibold uppercase rounded-[1px]">
+            STATUS: VERIFIED (1,518)
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 text-[10px] text-[#5F8F68]">
+          <span>CHAIN_PROOF: <span class="text-[#C9F7D4]">SHA256-HMAC</span></span>
+          <span>MERKLE: <span class="text-[#33FF66]">0x9f8a2c3b</span></span>
+          <span>SHARD: <span class="text-[#C9F7D4]">0x3a</span></span>
+        </div>
+      </div>
+
+      <!-- LEDGER TABLE CONTAINER (Fieldset Style Panel Title Sitting on Border) -->
+      <!-- Height calculated to exactly seat 16 rows + header flush without overflow or empty space -->
+      <div class="relative border border-[#1A2E1A] bg-[#050805] flex-1 flex flex-col justify-between overflow-hidden rounded-[1px]">
+        <!-- Fieldset legend title sitting on top border -->
+        <div class="absolute -top-2.5 left-4 bg-[#000000] px-2 py-0 text-[10px] font-bold tracking-widest text-[#33FF66] uppercase border border-[#1A2E1A] z-10">
+          ■ 01 // AUDIT_LEDGER_STREAM [EXACT 16 ENTRIES VISIBLE]
+        </div>
+
+        <!-- TABLE WITH EXACTLY 6 COLUMNS: SEQ, TIME, OP, ACTOR, HASH, STATUS -->
+        <div class="w-full flex-1 flex flex-col justify-between overflow-hidden pt-1">
+          <table class="w-full text-left border-collapse table-fixed">
+            <thead>
+              <tr class="h-[34px] border-b border-[#1A2E1A] text-[10px] text-[#5F8F68] uppercase font-bold tracking-wider bg-[#000000]">
+                <th class="w-[130px] px-4 font-bold">SEQ</th>
+                <th class="w-[240px] px-4 font-bold">TIME (UTC)</th>
+                <th class="w-[140px] px-4 font-bold">OP</th>
+                <th class="w-[180px] px-4 font-bold">ACTOR</th>
+                <th class="w-[300px] px-4 font-bold">HASH (12-HEX)</th>
+                <th class="w-[150px] px-4 font-bold text-right pr-6">STATUS</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#1A2E1A]/40 text-xs">
+
+              <!-- ROW 1 (PINNED FAIL 1) -->
+              <tr class="h-[39px] bg-[#FF4D4D]/10 border-l-[3px] border-l-[#FF4D4D] text-[#FF4D4D]">
+                <td class="px-4 font-medium"><span class="bg-[#FF4D4D] text-black text-[9px] px-1 py-0.2 mr-1.5 font-bold rounded-[1px]">PIN</span>#0001521</td>
+                <td class="px-4 text-[#FF4D4D] font-mono">2026-11-04 14:32:07Z</td>
+                <td class="px-4 font-bold uppercase text-[#FF4D4D]">APPLY</td>
+                <td class="px-4 text-[#C9F7D4]">sub-141</td>
+                <td class="px-4 font-mono text-[#FF4D4D]">c190bb42e7d3</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#FF4D4D] bg-[#FF4D4D]/20 text-[#FF4D4D] text-[10px] font-bold px-2 py-0.5 rounded-[1px]">FAIL</span>
+                </td>
+              </tr>
+
+              <!-- ROW 2 (PINNED FAIL 2) -->
+              <tr class="h-[39px] bg-[#FF4D4D]/10 border-l-[3px] border-l-[#FF4D4D] text-[#FF4D4D]">
+                <td class="px-4 font-medium"><span class="bg-[#FF4D4D] text-black text-[9px] px-1 py-0.2 mr-1.5 font-bold rounded-[1px]">PIN</span>#0001518</td>
+                <td class="px-4 text-[#FF4D4D] font-mono">2026-11-04 14:15:30Z</td>
+                <td class="px-4 font-bold uppercase text-[#FF4D4D]">ROLLBACK</td>
+                <td class="px-4 text-[#C9F7D4]">sub-141</td>
+                <td class="px-4 font-mono text-[#FF4D4D]">3d81b899f4a1</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#FF4D4D] bg-[#FF4D4D]/20 text-[#FF4D4D] text-[10px] font-bold px-2 py-0.5 rounded-[1px]">FAIL</span>
+                </td>
+              </tr>
+
+              <!-- ROW 3 (PINNED FAIL 3) -->
+              <tr class="h-[39px] bg-[#FF4D4D]/10 border-l-[3px] border-l-[#FF4D4D] text-[#FF4D4D]">
+                <td class="px-4 font-medium"><span class="bg-[#FF4D4D] text-black text-[9px] px-1 py-0.2 mr-1.5 font-bold rounded-[1px]">PIN</span>#0001512</td>
+                <td class="px-4 text-[#FF4D4D] font-mono">2026-11-04 13:48:10Z</td>
+                <td class="px-4 font-bold uppercase text-[#FF4D4D]">PROPOSE</td>
+                <td class="px-4 text-[#C9F7D4]">sub-139</td>
+                <td class="px-4 font-mono text-[#FF4D4D]">33190ab78f2c</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#FF4D4D] bg-[#FF4D4D]/20 text-[#FF4D4D] text-[10px] font-bold px-2 py-0.5 rounded-[1px]">FAIL</span>
+                </td>
+              </tr>
+
+              <!-- ROW 4 (NORMAL 1) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001520</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 14:30:19Z</td>
+                <td class="px-4 text-[#38BDF8] font-semibold uppercase">IMPORT</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold">operator</td>
+                <td class="px-4 text-[#5F8F68] font-mono">8a1d440fa012</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 5 (NORMAL 2) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001519</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 14:28:44Z</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold uppercase">QUERY</td>
+                <td class="px-4 text-[#C9F7D4]">sub-141</td>
+                <td class="px-4 text-[#5F8F68] font-mono">77e19cb24a01</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 6 (NORMAL 3) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001517</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 14:21:15Z</td>
+                <td class="px-4 text-[#33FF66] font-semibold uppercase">APPLY</td>
+                <td class="px-4 text-[#C9F7D4]">sub-139</td>
+                <td class="px-4 text-[#5F8F68] font-mono">55c2f0a1c482</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 7 (NORMAL 4) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001516</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 14:18:52Z</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold uppercase">QUERY</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold">operator</td>
+                <td class="px-4 text-[#5F8F68] font-mono">a012e8419f2c</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 8 (NORMAL 5) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001515</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 14:12:08Z</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold uppercase">QUERY</td>
+                <td class="px-4 text-[#C9F7D4]">sub-141</td>
+                <td class="px-4 text-[#5F8F68] font-mono">e4479901dcb1</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 9 (NORMAL 6) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001514</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 14:09:44Z</td>
+                <td class="px-4 text-[#38BDF8] font-semibold uppercase">IMPORT</td>
+                <td class="px-4 text-[#C9F7D4]">sub-139</td>
+                <td class="px-4 text-[#5F8F68] font-mono">43dcb102fe23</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 10 (NORMAL 7) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001513</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 14:05:22Z</td>
+                <td class="px-4 text-[#FFD23F] font-semibold uppercase">PROPOSE</td>
+                <td class="px-4 text-[#C9F7D4]">sub-141</td>
+                <td class="px-4 text-[#5F8F68] font-mono">78fe23a9bca7</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 11 (NORMAL 8) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001511</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 14:02:11Z</td>
+                <td class="px-4 text-[#33FF66] font-semibold uppercase">APPLY</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold">operator</td>
+                <td class="px-4 text-[#5F8F68] font-mono">69bca711e094</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 12 (NORMAL 9) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001510</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 13:58:39Z</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold uppercase">QUERY</td>
+                <td class="px-4 text-[#C9F7D4]">sub-139</td>
+                <td class="px-4 text-[#5F8F68] font-mono">12e094fa82ef</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 13 (NORMAL 10) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001509</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 13:55:04Z</td>
+                <td class="px-4 text-[#38BDF8] font-semibold uppercase">IMPORT</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold">operator</td>
+                <td class="px-4 text-[#5F8F68] font-mono">b82ef455112d</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 14 (NORMAL 11) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001508</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 13:51:28Z</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold uppercase">QUERY</td>
+                <td class="px-4 text-[#C9F7D4]">sub-141</td>
+                <td class="px-4 text-[#5F8F68] font-mono">4e112d7c3319</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 15 (NORMAL 12) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001507</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 13:46:12Z</td>
+                <td class="px-4 text-[#33FF66] font-semibold uppercase">APPLY</td>
+                <td class="px-4 text-[#C9F7D4]">sub-139</td>
+                <td class="px-4 text-[#5F8F68] font-mono">9f2c1ab4e7d3</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+              <!-- ROW 16 (NORMAL 13) -->
+              <tr class="h-[39px] hover:bg-[#1A2E1A]/20">
+                <td class="px-4 text-[#5F8F68] font-mono">#0001506</td>
+                <td class="px-4 text-[#C9F7D4] font-mono">2026-11-04 13:42:01Z</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold uppercase">QUERY</td>
+                <td class="px-4 text-[#C9F7D4] font-semibold">operator</td>
+                <td class="px-4 text-[#5F8F68] font-mono">77e19cb24a01</td>
+                <td class="px-4 text-right pr-6">
+                  <span class="border border-[#33FF66]/50 bg-[#33FF66]/10 text-[#33FF66] text-[10px] font-semibold px-2 py-0.5 rounded-[1px]">VERIFIED</span>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STATUS BAR (Flush at bottom edge of viewport, Height: 34px) -->
+    <footer class="h-[34px] border-t border-[#1A2E1A] bg-[#000000] px-6 flex items-center justify-between text-[11px] font-mono shrink-0">
+      <div class="flex items-center gap-3">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#33FF66]"></span>
+        <span class="text-[#33FF66] font-bold">1,521 EVENTS</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#C9F7D4] font-medium tracking-wide">CHAIN VERIFIED</span>
+        <span class="text-[#5F8F68]">·</span>
+        <span class="text-[#5F8F68]">ANCHOR <span class="text-[#33FF66]">9F2C1AB4</span></span>
+      </div>
+
+      <div class="flex items-center gap-4 text-[10px] text-[#5F8F68]">
+        <span>SUITE: <span class="text-[#C9F7D4]">AUDIT_V14.2</span></span>
+        <span>|</span>
+        <span>REPLAY: <span class="text-[#33FF66]">1.4ms DETERMINISTIC</span></span>
+        <span>|</span>
+        <span>SYNC: <span class="text-[#C9F7D4]">100% DETERMINISTIC</span></span>
+        <span>|</span>
+        <span>VIEWPORT: <span class="text-[#C9F7D4]">1440x900 FLUSH</span></span>
+        <span>|</span>
+        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span><span class="text-[#33FF66]">TERMINAL ONLINE</span></span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, height=900, initial-scale=1.0">
+  <title>Know Your Soul - Debt Queue (Swiss Grid)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace'],
+          },
+          colors: {
+            base: '#FAFAF8',
+            card: '#FFFFFF',
+            hairline: '#E4E4E0',
+            ink: '#111111',
+            secondary: '#6B6B66',
+            accent: '#E03131',
+            ok: '#2F9E6E',
+            warn: '#B8860B',
+            danger: '#C92A2A',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Strict viewport lockdown to 1440x900 */
+    html, body {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background-color: #FAFAF8;
+      color: #111111;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+    .structural-rule-2px {
+      border-bottom: 2px solid #111111;
+    }
+    .kpi-numeral {
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+  </style>
+</head>
+<body class="h-[900px] w-[1440px] flex overflow-hidden font-sans bg-base text-ink">
+
+  <!-- LEFT SIDEBAR (248px width) -->
+  <aside class="w-[248px] h-full flex flex-col justify-between border-r border-hairline bg-base shrink-0 select-none z-20">
+    <div>
+      <!-- Brand Header -->
+      <div class="h-14 px-5 border-b border-hairline flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 bg-ink text-base flex items-center justify-center font-mono font-bold text-xs rounded-[2px]">
+            K
+          </div>
+          <div>
+            <div class="font-sans font-bold text-[13px] tracking-tight leading-none text-ink">Know Your Soul</div>
+            <div class="font-mono text-[10px] text-secondary tracking-wider mt-0.5">CLUSTER 01 // V14.2</div>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-ok" title="Raft Synchronized"></div>
+      </div>
+
+      <!-- Navigation Hierarchy -->
+      <nav class="p-3 space-y-4">
+        <!-- Group 01: MONITOR -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[10px] tracking-wider text-secondary uppercase font-medium">01 // MONITOR</div>
+          <ul class="space-y-0.5 text-[13px]">
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>Overview</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.5"/><circle cx="4" cy="12" r="1.5"/><circle cx="4" cy="18" r="1.5"/></svg>
+                <span>Activity Log</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>Graph Explorer</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Group 02: ANALYZE -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[10px] tracking-wider text-secondary uppercase font-medium">02 // ANALYZE</div>
+          <ul class="space-y-0.5 text-[13px]">
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Search</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Metrics</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>Analytics</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Group 03: GOVERN -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[10px] tracking-wider text-secondary uppercase font-medium">03 // GOVERN</div>
+          <ul class="space-y-0.5 text-[13px]">
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l.77.78L12 20.66l7.65-7.65.77-.78a5.4 5.4 0 0 0 0-7.65z"/></svg>
+                <span>Health</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Audit Ledger</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center justify-between px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+                  <span>Proposals</span>
+                </div>
+                <span class="font-mono text-[10px] text-secondary bg-hairline px-1.5 py-0.5 rounded-[2px]">3</span>
+              </a>
+            </li>
+            <!-- Active item: Debt Queue -->
+            <li>
+              <a href="#" class="flex items-center justify-between px-2 py-1.5 rounded-[4px] bg-[#FCE8E8] text-accent font-semibold transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4 stroke-[2]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  <span>Debt Queue</span>
+                </div>
+                <span class="font-mono text-[11px] font-bold text-accent bg-card px-1.5 py-0.2 rounded-[2px] border border-[#F5C2C2]">14</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Group 04: SYSTEM -->
+        <div>
+          <div class="px-2 pb-1.5 font-mono text-[10px] tracking-wider text-secondary uppercase font-medium">04 // SYSTEM</div>
+          <ul class="space-y-0.5 text-[13px]">
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <span>System</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2 py-1.5 rounded-[4px] text-secondary hover:text-ink hover:bg-[#F2F2EE] transition-colors">
+                <svg class="w-4 h-4 stroke-[1.75]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Setup</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer: Operator user card -->
+    <div class="p-3 border-t border-hairline bg-base">
+      <div class="flex items-center justify-between p-2 rounded-[4px] bg-card border border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-[3px] bg-ink text-base flex items-center justify-center font-mono text-[11px] font-bold tracking-tight">
+            SA
+          </div>
+          <div>
+            <div class="font-sans text-[12px] font-semibold text-ink leading-tight">Sigit A.</div>
+            <div class="font-mono text-[10px] text-secondary leading-none mt-0.5">operator</div>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-ok" title="Online"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER (1192px wide, exactly 900px high) -->
+  <main class="flex-1 h-full flex flex-col overflow-hidden bg-base">
+    
+    <!-- TOPBAR (Thin single line, 56px) -->
+    <header class="h-14 border-b border-hairline px-6 flex items-center justify-between bg-base shrink-0 select-none z-10">
+      <!-- Breadcrumb / Title Left -->
+      <div class="flex items-center gap-3">
+        <div class="font-mono text-[11px] text-secondary tracking-wider uppercase font-medium">KYS / GOVERN /</div>
+        <div class="font-sans text-[14px] font-semibold text-ink tracking-tight">Debt Queue</div>
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-card border border-hairline font-mono text-[10px] text-secondary uppercase ml-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-warn"></span>
+          AUTONOMOUS TRIAGE ACTIVE
+        </span>
+      </div>
+
+      <!-- Search Field Center -->
+      <div class="relative w-[380px]">
+        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-secondary">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <input 
+          type="text" 
+          placeholder="Search debt ID, target node, reason..." 
+          class="w-full h-8 pl-8 pr-12 text-[12px] font-sans bg-card border border-hairline rounded-[3px] placeholder:text-secondary text-ink focus:outline-none focus:border-ink transition-colors"
+          readonly
+        />
+        <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+          <kbd class="font-mono text-[10px] text-secondary border border-hairline px-1.5 py-0.5 rounded-[2px] bg-base">⌘K</kbd>
+        </div>
+      </div>
+
+      <!-- Right Chrome (max 4 segments: cluster pill, bell with dot, operator avatar) -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-2.5 py-1 bg-card border border-hairline rounded-[3px] font-mono text-[11px] text-secondary">
+          <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+          <span>RAFT QUORUM 3/3</span>
+        </div>
+        <button class="relative w-8 h-8 rounded-[3px] bg-card border border-hairline flex items-center justify-center text-ink hover:bg-[#F2F2EE] transition-colors" aria-label="Notifications">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </button>
+        <div class="w-8 h-8 rounded-[3px] bg-ink text-base flex items-center justify-center font-mono text-[11px] font-bold">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Fixed height grid: KPI header, Toolbar, Table with 14 rows, Footer strip flush to bottom) -->
+    <div class="flex-1 flex flex-col px-6 pt-4 pb-0 overflow-hidden justify-between">
+      
+      <!-- 01 // HEADER + BIG KPIS (Strict Swiss Layout with 2px structural rule) -->
+      <div class="shrink-0 mb-3">
+        <div class="flex items-baseline justify-between mb-1.5">
+          <div>
+            <div class="font-mono text-[11px] tracking-wider text-secondary uppercase font-semibold">01 // STRUCTURAL DEBT & RECONCILIATION</div>
+            <h1 class="font-sans text-[26px] font-bold text-ink tracking-tight">Knowledge Debt Queue</h1>
+          </div>
+          <!-- KPI Metrics Row -->
+          <div class="flex items-baseline gap-10">
+            <div class="text-right">
+              <span class="font-mono text-[10px] text-secondary uppercase tracking-wider block font-medium">TOTAL OPEN DEBT</span>
+              <div class="kpi-numeral text-ink">14</div>
+            </div>
+            <div class="text-right">
+              <span class="font-mono text-[10px] text-danger uppercase tracking-wider block font-semibold">CRITICAL SEV 1</span>
+              <div class="kpi-numeral text-danger">03</div>
+            </div>
+            <div class="text-right">
+              <span class="font-mono text-[10px] text-warn uppercase tracking-wider block font-semibold">MEDIUM SEV 2</span>
+              <div class="kpi-numeral text-warn">08</div>
+            </div>
+            <div class="text-right">
+              <span class="font-mono text-[10px] text-secondary uppercase tracking-wider block font-medium">EST WORKLOAD</span>
+              <div class="kpi-numeral text-ink">27<span class="text-[20px] font-mono font-normal text-secondary ml-0.5">h</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- 2px solid structural rule -->
+        <div class="structural-rule-2px w-full"></div>
+      </div>
+
+      <!-- 02 // TOOLBAR -->
+      <div class="shrink-0 flex items-center justify-between py-2 border-b border-hairline mb-2">
+        <div class="flex items-center gap-2">
+          <!-- Ghost search 'Filter debt…' -->
+          <div class="relative w-[240px]">
+            <input 
+              type="text" 
+              placeholder="Filter debt..." 
+              class="w-full h-7 pl-7 pr-3 text-[11px] font-mono bg-card border border-hairline rounded-[3px] text-ink placeholder:text-secondary focus:outline-none focus:border-ink"
+              readonly
+            />
+            <svg class="w-3.5 h-3.5 absolute left-2 top-2 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+
+          <!-- Filter Pills per spec: 'Severity ▾' 'Domain ▾' '30D ▾' -->
+          <div class="flex items-center gap-1.5 ml-1">
+            <button class="h-7 px-2.5 rounded-[3px] bg-card border border-hairline text-ink hover:border-ink text-[11px] font-sans font-medium flex items-center gap-1.5 transition-colors">
+              <span>Severity</span>
+              <span class="text-[9px] text-secondary">▾</span>
+            </button>
+            <button class="h-7 px-2.5 rounded-[3px] bg-card border border-hairline text-ink hover:border-ink text-[11px] font-sans font-medium flex items-center gap-1.5 transition-colors">
+              <span>Domain</span>
+              <span class="text-[9px] text-secondary">▾</span>
+            </button>
+            <button class="h-7 px-2.5 rounded-[3px] bg-card border border-hairline text-ink hover:border-ink text-[11px] font-sans font-medium flex items-center gap-1.5 transition-colors">
+              <span>30D</span>
+              <span class="text-[9px] text-secondary">▾</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="font-mono text-[11px] text-secondary">
+            SHOWING <span class="text-ink font-semibold">14 OF 14</span> ANOMALIES
+          </div>
+          <div class="h-3.5 w-[1px] bg-hairline"></div>
+          <button class="h-7 px-2.5 rounded-[3px] bg-card border border-hairline text-secondary hover:text-ink text-[11px] font-mono flex items-center gap-1.5 transition-colors">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <span>RE-EVALUATE [F5]</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 03 // TABLE CONTAINER (14 precisely calibrated rows, 42px each, perfectly fitting viewport) -->
+      <div class="flex-1 bg-card border border-hairline rounded-[4px] flex flex-col overflow-hidden mb-0">
+        
+        <!-- Table Header (34px height) -->
+        <div class="h-[34px] bg-[#F5F5F2] border-b border-hairline px-4 grid grid-cols-12 items-center font-mono text-[10px] tracking-wider text-secondary uppercase font-semibold shrink-0">
+          <div class="col-span-1 flex items-center gap-2">
+            <input type="checkbox" class="rounded-[2px] border-hairline text-accent focus:ring-0 w-3 h-3 cursor-pointer">
+            <span>SEV</span>
+          </div>
+          <div class="col-span-3">NODE IDENTIFIER</div>
+          <div class="col-span-5">ROOT REASON & ANOMALY SPECIFICATION</div>
+          <div class="col-span-1 text-right">AGE</div>
+          <div class="col-span-1 text-right">EST</div>
+          <div class="col-span-1 text-right pr-2">ACTION</div>
+        </div>
+
+        <!-- 14 Rows list (Total height 14 * 42px = 588px, calibrated to leave exactly 40px for footer strip) -->
+        <div class="flex-1 flex flex-col justify-between divide-y divide-hairline">
+          
+          <!-- ROW 1 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-danger bg-[#FCE8E8] px-1.5 py-0.5 rounded-[2px] border border-[#F5C2C2]">
+                ▲ HIGH
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">store-mutex</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">missing provenance on cross-shard lease revocation</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">12d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">2h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 2 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-danger bg-[#FCE8E8] px-1.5 py-0.5 rounded-[2px] border border-[#F5C2C2]">
+                ▲ HIGH
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">embedding-refresh</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">stale 45d vector embeddings uncompacted</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">45d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">6h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 3 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-danger bg-[#FCE8E8] px-1.5 py-0.5 rounded-[2px] border border-[#F5C2C2]">
+                ▲ HIGH
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">legacy-tag-refs</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">orphan edges x3 pointing to de-allocated AST nodes</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">18d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">3h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 4 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-warn bg-[#FEF3D6] px-1.5 py-0.5 rounded-[2px] border border-[#F7DC94]">
+                ● MED
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">p4-domain</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">uncompacted DuckDB WAL journal segment 04</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">8d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">1h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 5 (SPEC REQUIREMENT: Row 5 shows text chip '2 notes' no emoji tooltip cue) -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center bg-[#FDFCF7] hover:bg-[#FAF7EE] transition-colors group relative border-l-2 border-l-warn">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-warn bg-[#FEF3D6] px-1.5 py-0.5 rounded-[2px] border border-[#F7DC94]">
+                ● MED
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink flex items-center gap-2 truncate">
+              <span>wal-replay</span>
+              <!-- Tooltip cue / chip: '2 notes' -->
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded-[2px] bg-card border border-[#E0D7B8] font-mono text-[10px] font-medium text-warn cursor-help" title="Note 1: Pending Raft quorum replay. Note 2: Operator lock requested.">
+                2 notes
+              </span>
+            </div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">monotonic sequence drift on secondary replica partition</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">14d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">2h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 6 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-warn bg-[#FEF3D6] px-1.5 py-0.5 rounded-[2px] border border-[#F7DC94]">
+                ● MED
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">heuristics-catalog</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">redundant predicate check on JSON-LD ontology ingest</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">21d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">1h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 7 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-warn bg-[#FEF3D6] px-1.5 py-0.5 rounded-[2px] border border-[#F7DC94]">
+                ● MED
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">retrieval-core</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">cyclical inference reference across boundary fence</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">5d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">3h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 8 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-warn bg-[#FEF3D6] px-1.5 py-0.5 rounded-[2px] border border-[#F7DC94]">
+                ● MED
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">projection-sync</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">stale graph projection lag exceeding 400ms target</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">11d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">2h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 9 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-warn bg-[#FEF3D6] px-1.5 py-0.5 rounded-[2px] border border-[#F7DC94]">
+                ● MED
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">shacl-validator</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">deprecated schema version v14.0 rule invocation</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">29d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">1h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 10 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-warn bg-[#FEF3D6] px-1.5 py-0.5 rounded-[2px] border border-[#F7DC94]">
+                ● MED
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">subsume-engine</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">unindexed semantic tag flags pending vacuum run</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">16d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">2h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 11 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-warn bg-[#FEF3D6] px-1.5 py-0.5 rounded-[2px] border border-[#F7DC94]">
+                ● MED
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">knn-subspace</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">sub-optimal Merkle proof branch density on Shard 03a</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">9d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">1h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 12 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-medium text-secondary bg-[#EFEFEA] px-1.5 py-0.5 rounded-[2px] border border-[#DDDDCF]">
+                ○ LOW
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">cli-adapter</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">deprecated schema export flags in local bash profile</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">34d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">1h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 13 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-medium text-secondary bg-[#EFEFEA] px-1.5 py-0.5 rounded-[2px] border border-[#DDDDCF]">
+                ○ LOW
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">ipc-socket-bridge</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">redundant connection keepalive heartbeat frames</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">41d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">1h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+          <!-- ROW 14 -->
+          <div class="h-[41px] px-4 grid grid-cols-12 items-center hover:bg-[#FAF9F5] transition-colors group">
+            <div class="col-span-1 flex items-center gap-2">
+              <input type="checkbox" class="rounded-[2px] border-hairline text-accent w-3 h-3 cursor-pointer">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-medium text-secondary bg-[#EFEFEA] px-1.5 py-0.5 rounded-[2px] border border-[#DDDDCF]">
+                ○ LOW
+              </span>
+            </div>
+            <div class="col-span-3 font-mono text-[12px] font-medium text-ink truncate">telemetry-buffer</div>
+            <div class="col-span-5 font-sans text-[12px] text-secondary truncate">ring buffer eviction threshold set above optimal p95</div>
+            <div class="col-span-1 font-mono text-[12px] text-secondary text-right">22d</div>
+            <div class="col-span-1 font-mono text-[12px] text-ink font-medium text-right">2h</div>
+            <div class="col-span-1 text-right pr-1">
+              <button class="font-mono text-[11px] text-accent hover:underline font-semibold">Triage</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 04 // FOOTER STRIP & STATUS BAR (FLUSH TO BOTTOM EDGE, 40px height) -->
+      <div class="h-10 border-t-2 border-ink bg-base px-2 flex items-center justify-between font-mono text-[11px] select-none shrink-0">
+        <!-- Left: Bulk bar '14 OPEN · 3 HIGH · SELECT: 0' -->
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 font-bold text-ink">
+            <span class="w-2 h-2 rounded-full bg-accent inline-block"></span>
+            <span>14 OPEN</span>
+            <span class="text-secondary font-normal">·</span>
+            <span class="text-danger">3 HIGH</span>
+            <span class="text-secondary font-normal">·</span>
+            <span class="text-secondary font-normal">SELECT: 0</span>
+          </div>
+          <div class="h-3 w-[1px] bg-hairline"></div>
+          <div class="text-secondary text-[10px] uppercase tracking-wider">
+            RECONCILIATION CADENCE: DETERMINISTIC 100%
+          </div>
+        </div>
+
+        <!-- Right: Ghost button 'Assign' + telemetry status metadata -->
+        <div class="flex items-center gap-3">
+          <div class="text-[10px] text-secondary">
+            ENGINE: DUCKB_AST_v14.2 · LATENCY P50: 6.4ms
+          </div>
+          <div class="h-3 w-[1px] bg-hairline"></div>
+          <button class="h-6 px-3 rounded-[3px] bg-card border border-hairline text-ink hover:border-ink hover:bg-[#F2F2EE] font-sans font-medium text-[11px] flex items-center justify-center transition-colors">
+            Assign
+          </button>
+          <button class="h-6 px-3 rounded-[3px] bg-accent text-white font-sans font-semibold text-[11px] flex items-center justify-center hover:bg-[#c92626] transition-colors">
+            Resolve Selected
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

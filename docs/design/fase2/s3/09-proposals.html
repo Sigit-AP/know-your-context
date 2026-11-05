@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Know Your Soul - Proposals (Swiss Grid)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          mono: ['"IBM Plex Mono"', 'monospace'],
+        },
+        colors: {
+          base: '#FAFAF8',
+          card: '#FFFFFF',
+          hairline: '#E4E4E0',
+          rule: '#111111',
+          ink: '#111111',
+          secondary: '#6B6B66',
+          accent: '#E03131',
+          status: {
+            ok: '#2F9E6E',
+            warn: '#B8860B',
+            danger: '#C92A2A',
+          }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: #FAFAF8;
+    color: #111111;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    width: 1440px;
+    height: 900px;
+    max-width: 1440px;
+    max-height: 900px;
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+  }
+  .material-symbols-outlined.fill {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  }
+  /* Swiss Grid crisp rules */
+  .rule-bottom {
+    border-bottom: 2px solid #111111;
+  }
+  .rule-top {
+    border-top: 2px solid #111111;
+  }
+</style>
+</head>
+<body class="flex w-[1440px] h-[900px] bg-base text-ink select-none">
+
+  <!-- LEFT SIDEBAR (248px) -->
+  <aside class="w-[248px] h-[900px] flex-shrink-0 flex flex-col justify-between border-r border-hairline bg-base z-30">
+    <!-- Top Brand & Nav -->
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-14 px-5 flex items-center justify-between border-b border-hairline">
+        <div class="flex items-center gap-2.5">
+          <div class="w-6 h-6 bg-ink text-white font-mono font-bold text-xs flex items-center justify-center rounded-[2px]">K</div>
+          <div>
+            <div class="text-[13px] font-bold tracking-tight text-ink leading-tight">Know Your Soul</div>
+            <div class="text-[10px] font-mono text-secondary tracking-wider uppercase">Cluster 01 // v14.2</div>
+          </div>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-status-ok"></div>
+      </div>
+
+      <!-- Nav Groups -->
+      <nav class="p-3 space-y-4">
+        <!-- 01 // MONITOR -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-secondary">01 // MONITOR</div>
+          <ul class="space-y-0.5">
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">dashboard</span>
+                <span>Overview</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">format_list_bulleted</span>
+                <span>Activity Log</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">hub</span>
+                <span>Graph Explorer</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 02 // ANALYZE -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-secondary">02 // ANALYZE</div>
+          <ul class="space-y-0.5">
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">search</span>
+                <span>Search</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">show_chart</span>
+                <span>Metrics</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">analytics</span>
+                <span>Analytics</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 03 // GOVERN -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-secondary">03 // GOVERN</div>
+          <ul class="space-y-0.5">
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">ecg_heart</span>
+                <span>Health</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">verified_user</span>
+                <span>Audit Ledger</span>
+              </a>
+            </li>
+            <!-- Active Proposals -->
+            <li>
+              <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-[4px] text-[12px] font-medium bg-[#E03131]/10 text-accent">
+                <div class="flex items-center gap-2.5">
+                  <span class="material-symbols-outlined text-[17px] text-accent">rule</span>
+                  <span>Proposals</span>
+                </div>
+                <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center justify-between px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <span class="material-symbols-outlined text-[17px]">hourglass_empty</span>
+                  <span>Debt Queue</span>
+                </div>
+                <span class="text-[10px] font-mono text-secondary px-1 bg-hairline rounded-[2px]">12</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 04 // SYSTEM -->
+        <div>
+          <div class="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-secondary">04 // SYSTEM</div>
+          <ul class="space-y-0.5">
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">dns</span>
+                <span>System</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] text-[12px] text-secondary hover:text-ink hover:bg-black/5 transition-colors">
+                <span class="material-symbols-outlined text-[17px]">settings</span>
+                <span>Setup</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer / Operator User Card -->
+    <div class="p-3 border-t border-hairline bg-base">
+      <div class="flex items-center justify-between px-2.5 py-2 rounded-[4px] hover:bg-black/5 transition-colors">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-[2px] bg-ink text-white font-mono text-[11px] font-semibold flex items-center justify-center">SA</div>
+          <div class="leading-none">
+            <div class="text-[12px] font-semibold text-ink">Sigit A.</div>
+            <div class="text-[10px] font-mono text-secondary mt-0.5">operator</div>
+          </div>
+        </div>
+        <div class="w-1.5 h-1.5 rounded-full bg-status-ok"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER (1192px) -->
+  <main class="w-[1192px] h-[900px] flex-shrink-0 flex flex-col justify-between bg-base">
+
+    <!-- TOPBAR (h-14 / 56px) - Strict 1 line -->
+    <header class="h-14 px-6 flex items-center justify-between border-b border-hairline bg-base flex-shrink-0">
+      <!-- Left: Breadcrumb / Screen Title -->
+      <div class="flex items-center gap-3">
+        <span class="text-[11px] font-mono uppercase text-secondary tracking-wider">KYS / Govern</span>
+        <span class="text-hairline">/</span>
+        <h1 class="text-[14px] font-bold text-ink tracking-tight">Proposals</h1>
+        <span class="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider font-semibold bg-status-ok/10 text-status-ok rounded-[2px] border border-status-ok/20 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+          AUTO-TRIAGE ACTIVE
+        </span>
+      </div>
+
+      <!-- Center: Search with ⌘K -->
+      <div class="relative w-[440px]">
+        <span class="material-symbols-outlined absolute left-3 top-2 text-[18px] text-secondary">search</span>
+        <input type="text" placeholder="Search proposal ID, title, domain, author..." readonly
+          class="w-full h-8 pl-9 pr-14 text-[12px] bg-white border border-hairline rounded-[4px] text-ink placeholder-secondary focus:outline-none cursor-default font-sans">
+        <kbd class="absolute right-2.5 top-1.5 px-1.5 py-0.5 text-[10px] font-mono text-secondary bg-base border border-hairline rounded-[2px]">⌘K</kbd>
+      </div>
+
+      <!-- Right: Max 4 segments (Bell with red dot + Avatar) -->
+      <div class="flex items-center gap-3">
+        <button class="relative w-8 h-8 flex items-center justify-center rounded-[4px] border border-hairline bg-white hover:bg-black/5 text-ink">
+          <span class="material-symbols-outlined text-[18px]">notifications</span>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </button>
+        <div class="w-8 h-8 rounded-[2px] bg-ink text-white font-mono text-[11px] font-semibold flex items-center justify-center">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (fills remaining vertical height exactly down to status bar) -->
+    <div class="flex-1 flex flex-col px-6 pt-5 pb-0 overflow-hidden">
+      
+      <!-- Top Section Header & KPI Strip -->
+      <div class="flex items-end justify-between pb-4 border-b-2 border-rule flex-shrink-0">
+        <div>
+          <div class="text-[11px] font-mono uppercase tracking-wider text-secondary">01 // MUTATION PIPELINE QUEUE</div>
+          <h2 class="text-[26px] font-bold tracking-tight text-ink mt-0.5 leading-tight">Knowledge Graph Proposals</h2>
+        </div>
+        
+        <!-- Big KPI numerals -->
+        <div class="flex items-center gap-8">
+          <div class="flex flex-col text-right">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-secondary">PENDING REVIEW</span>
+            <span class="text-[38px] font-bold font-mono tracking-[-0.02em] leading-none text-ink">09</span>
+          </div>
+          <div class="h-8 w-[1px] bg-hairline"></div>
+          <div class="flex flex-col text-right">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-status-danger font-semibold">CONTESTED / CONFLICT</span>
+            <span class="text-[38px] font-bold font-mono tracking-[-0.02em] leading-none text-status-danger">01</span>
+          </div>
+          <div class="h-8 w-[1px] bg-hairline"></div>
+          <div class="flex flex-col text-right">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-secondary">APPLIED (24H)</span>
+            <span class="text-[38px] font-bold font-mono tracking-[-0.02em] leading-none text-ink">14</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Table (Left, 840px) + Review Signals Panel (Right, 304px) -->
+      <div class="flex-1 flex gap-5 pt-4 pb-0 overflow-hidden">
+        
+        <!-- LEFT: TABLE COLUMN (10 visible rows, comfortable density) -->
+        <div class="w-[830px] flex-shrink-0 flex flex-col bg-white border border-hairline rounded-[4px] overflow-hidden">
+          
+          <!-- Table Header -->
+          <div class="h-9 px-4 flex items-center bg-[#F4F4F0] border-b border-hairline text-[10px] font-mono font-bold uppercase tracking-wider text-secondary">
+            <div class="w-[84px] flex-shrink-0">ID</div>
+            <div class="w-[320px] flex-shrink-0">TITLE</div>
+            <div class="w-[72px] flex-shrink-0 text-center">DOMAIN</div>
+            <div class="w-[184px] flex-shrink-0">SIGNALS</div>
+            <div class="w-[96px] flex-shrink-0">STATUS</div>
+            <div class="w-[74px] flex-shrink-0 text-right">ACTIONS</div>
+          </div>
+
+          <!-- Table Rows Container (Exactly 10 rows filling the table frame) -->
+          <div class="flex-1 flex flex-col justify-between divide-y divide-hairline font-sans text-[12px]">
+            
+            <!-- Row 1: Selected Proposal p-2041 -->
+            <div class="h-[58px] px-4 flex items-center bg-[#E03131]/[0.03] border-l-2 border-accent transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2041</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Promote node retrieval-core to L2</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P1</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.12 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">2 reviews</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">low risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-accent/10 border border-accent/20 text-accent font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  PENDING
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-accent hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="h-[58px] px-4 flex items-center hover:bg-[#FAF9F5] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2040</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Quarantine stale-tag references</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P4</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.08 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">1 review</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">low risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-accent/10 border border-accent/20 text-accent font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  PENDING
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 3: Has inline alert note under title cell -->
+            <div class="h-[58px] px-4 flex items-center bg-status-danger/[0.02] hover:bg-status-danger/[0.04] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2039</div>
+              <div class="w-[320px] flex-shrink-0 pr-3 flex flex-col justify-center">
+                <div class="font-medium text-ink leading-tight truncate">Reindex embedding vector partition P4</div>
+                <div class="flex items-center gap-1 text-[11px] font-mono text-status-danger mt-0.5 leading-none">
+                  <span class="material-symbols-outlined text-[13px] text-status-danger">error</span>
+                  <span>conflicts with p-2038</span>
+                </div>
+              </div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P4</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.34 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">0 reviews</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-status-danger/10 border border-status-danger/20 text-[10px] font-mono text-status-danger">high risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-accent/10 border border-accent/20 text-accent font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  PENDING
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="h-[58px] px-4 flex items-center hover:bg-[#FAF9F5] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2038</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Partition P4 lease fencing renewal</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P4</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.15 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">3 reviews</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">med risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-accent/10 border border-accent/20 text-accent font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  PENDING
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 5 -->
+            <div class="h-[58px] px-4 flex items-center hover:bg-[#FAF9F5] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2037</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Prune orphaned AST schema leaf nodes</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P2</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.04 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">2 reviews</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">low risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-status-ok/10 border border-status-ok/20 text-status-ok font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+                  APPLIED
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 6 -->
+            <div class="h-[58px] px-4 flex items-center hover:bg-[#FAF9F5] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2036</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Enforce strict SHACL invariant contracts</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P3</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.19 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">2 reviews</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">low risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-status-ok/10 border border-status-ok/20 text-status-ok font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+                  APPLIED
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 7 -->
+            <div class="h-[58px] px-4 flex items-center hover:bg-[#FAF9F5] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2035</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Subsume semantic edges into core ontologies</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P6</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.09 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">1 review</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">med risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-black/5 border border-hairline text-secondary font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  REJECTED
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 8 -->
+            <div class="h-[58px] px-4 flex items-center hover:bg-[#FAF9F5] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2034</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Compact DuckDB WAL table segment 04</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P1</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.11 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">2 reviews</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">low risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-accent/10 border border-accent/20 text-accent font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  PENDING
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 9 -->
+            <div class="h-[58px] px-4 flex items-center hover:bg-[#FAF9F5] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2033</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Update consensus threshold for raft quorum</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P5</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.22 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">3 reviews</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">med risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-status-ok/10 border border-status-ok/20 text-status-ok font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+                  APPLIED
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+            <!-- Row 10 -->
+            <div class="h-[58px] px-4 flex items-center hover:bg-[#FAF9F5] transition-colors">
+              <div class="w-[84px] flex-shrink-0 font-mono font-medium text-ink">p-2032</div>
+              <div class="w-[320px] flex-shrink-0 font-medium text-ink pr-3 truncate">Flush stale embedding cache eviction list</div>
+              <div class="w-[72px] flex-shrink-0 text-center font-mono text-[11px] font-semibold text-secondary">P3</div>
+              <div class="w-[184px] flex-shrink-0 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono font-medium text-ink">+0.05 P</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">1 review</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] bg-base border border-hairline text-[10px] font-mono text-secondary">low risk</span>
+              </div>
+              <div class="w-[96px] flex-shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-accent/10 border border-accent/20 text-accent font-mono text-[10px] font-semibold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  PENDING
+                </span>
+              </div>
+              <div class="w-[74px] flex-shrink-0 text-right">
+                <button class="font-medium text-secondary hover:text-ink hover:underline text-[12px]">Review</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: REVIEW SIGNALS PANEL (Selected p-2041, exactly 304px, does not clip table) -->
+        <div class="w-[308px] flex-shrink-0 flex flex-col justify-between bg-white border border-hairline rounded-[4px] p-5 shadow-none">
+          
+          <!-- Panel Header & Metadata -->
+          <div class="flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-hairline">
+              <div class="flex flex-col">
+                <span class="text-[10px] font-mono uppercase tracking-wider text-secondary">02 // INSPECTION</span>
+                <h3 class="text-[14px] font-bold text-ink tracking-tight mt-0.5">Review Signals</h3>
+              </div>
+              <span class="px-2 py-0.5 font-mono text-[12px] font-bold bg-[#E03131]/10 text-accent rounded-[2px] border border-accent/20">
+                p-2041
+              </span>
+            </div>
+
+            <!-- Proposal Overview Snapshot -->
+            <div class="py-4 border-b border-hairline">
+              <div class="text-[11px] font-mono uppercase text-secondary">PROPOSAL TARGET</div>
+              <div class="text-[13px] font-semibold text-ink mt-1">Promote node retrieval-core to L2</div>
+              <div class="text-[11px] font-mono text-secondary mt-1">AUTHOR: sub-139 · DOMAIN: P1</div>
+            </div>
+
+            <!-- 4 Labeled Signal Rows -->
+            <div class="py-3 space-y-3">
+              <!-- Row 1: Impact -->
+              <div class="flex items-center justify-between py-1 border-b border-hairline/60">
+                <span class="text-[12px] text-secondary font-medium">Impact</span>
+                <span class="font-mono text-[13px] font-semibold text-status-ok">+0.12</span>
+              </div>
+
+              <!-- Row 2: Risk -->
+              <div class="flex items-center justify-between py-1 border-b border-hairline/60">
+                <span class="text-[12px] text-secondary font-medium">Risk</span>
+                <span class="inline-flex items-center gap-1 font-mono text-[12px] font-semibold text-status-ok uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+                  low
+                </span>
+              </div>
+
+              <!-- Row 3: Reviews -->
+              <div class="flex items-center justify-between py-1 border-b border-hairline/60">
+                <span class="text-[12px] text-secondary font-medium">Reviews</span>
+                <span class="font-mono text-[12px] font-semibold text-ink">2/2 verified</span>
+              </div>
+
+              <!-- Row 4: Conflicts -->
+              <div class="flex items-center justify-between py-1 border-b border-hairline/60">
+                <span class="text-[12px] text-secondary font-medium">Conflicts</span>
+                <span class="inline-flex items-center gap-1 font-mono text-[12px] font-semibold text-ink">
+                  <span class="w-1.5 h-1.5 rounded-full bg-status-ok"></span>
+                  0 detected
+                </span>
+              </div>
+            </div>
+
+            <!-- Consensus Proof note -->
+            <div class="p-3 bg-base border border-hairline rounded-[2px] mt-2">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-secondary">CRYPTOGRAPHIC PROOF</div>
+              <div class="text-[11px] font-mono text-ink font-medium mt-1 truncate">sha256: 9f2c1ab4e7d38201</div>
+              <div class="text-[10px] font-mono text-status-ok mt-0.5 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[13px]">check_circle</span>
+                <span>Deterministic replay verified</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons: 'Apply' (primary swiss red) + 'Reject' (ghost danger text) -->
+          <div class="pt-4 border-t border-hairline flex flex-col gap-2">
+            <button class="w-full h-9 flex items-center justify-center gap-2 bg-accent hover:bg-[#c92626] active:bg-[#b02121] text-white font-medium text-[12px] rounded-[4px] transition-colors">
+              <span class="material-symbols-outlined text-[16px]">check</span>
+              <span>Apply Proposal</span>
+            </button>
+            <button class="w-full h-8 flex items-center justify-center gap-1 text-status-danger hover:bg-status-danger/5 font-medium text-[12px] rounded-[4px] transition-colors">
+              <span class="material-symbols-outlined text-[16px]">close</span>
+              <span>Reject</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- STATUS BAR (FLUSH AT BOTTOM EDGE, exactly 32px height) -->
+    <footer class="h-8 px-6 flex items-center justify-between border-t border-hairline bg-base text-[11px] font-mono flex-shrink-0">
+      <!-- Status text requested -->
+      <div class="flex items-center gap-2 text-ink font-semibold tracking-tight">
+        <span class="w-2 h-2 rounded-full bg-accent"></span>
+        <span>9 PENDING · 1 CONFLICT · LAST APPLY 3H AGO</span>
+      </div>
+
+      <!-- System Telemetry Right -->
+      <div class="flex items-center gap-4 text-secondary text-[10px] tracking-wider uppercase">
+        <span>RAFT QUORUM SYNCED</span>
+        <span>·</span>
+        <span>LATENCY P50: 6.4ms</span>
+        <span>·</span>
+        <span class="font-bold text-ink">VIEWPORT: 1440x900 FLUSH</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Know Your Soul - Proposals (Terminal Brutalist)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      max-width: 1440px;
+      max-height: 900px;
+      overflow: hidden;
+      background-color: #000000;
+      color: #C9F7D4;
+    }
+    /* CRT Scanline / Terminal aesthetics */
+    .border-terminal {
+      border-color: #1A2E1A;
+    }
+    .text-primary-term {
+      color: #C9F7D4;
+    }
+    .text-secondary-term {
+      color: #5F8F68;
+    }
+    .accent-green {
+      color: #33FF66;
+    }
+    .bg-panel {
+      background-color: #050805;
+    }
+    .legend-title {
+      position: absolute;
+      top: -9px;
+      left: 12px;
+      background-color: #000000;
+      padding: 0 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #5F8F68;
+      text-transform: uppercase;
+    }
+    /* Active Nav */
+    .nav-active {
+      background: rgba(51, 255, 102, 0.10);
+      color: #33FF66;
+      border-left: 2px solid #33FF66;
+    }
+  </style>
+</head>
+<body class="flex flex-row w-[1440px] h-[900px] select-none bg-black text-[#C9F7D4]">
+
+  <!-- SIDEBAR (240px wide) -->
+  <aside class="w-[240px] h-full flex flex-col justify-between border-r border-[#1A2E1A] bg-black shrink-0 z-20">
+    <!-- Header & Nav Groups -->
+    <div class="flex flex-col">
+      <!-- Title Block -->
+      <div class="h-11 px-4 flex items-center justify-between border-b border-[#1A2E1A]">
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 bg-[#33FF66] text-black font-bold text-[10px] flex items-center justify-center rounded-[1px]">K</span>
+          <span class="font-bold text-[12px] tracking-wider text-[#C9F7D4]">KNOW YOUR SOUL</span>
+        </div>
+        <span class="text-[10px] text-[#5F8F68] px-1 border border-[#1A2E1A] rounded-[1px]">v14.2</span>
+      </div>
+
+      <!-- Navigation List -->
+      <div class="px-2 py-3 flex flex-col gap-4 text-[11px]">
+        <!-- Group 01: MONITOR -->
+        <div class="flex flex-col gap-1">
+          <div class="px-2 text-[9px] font-bold tracking-widest text-[#5F8F68]">01 // MONITOR</div>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Overview
+          </a>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Activity Log
+          </a>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Graph Explorer
+          </a>
+        </div>
+
+        <!-- Group 02: ANALYZE -->
+        <div class="flex flex-col gap-1">
+          <div class="px-2 text-[9px] font-bold tracking-widest text-[#5F8F68]">02 // ANALYZE</div>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Search
+          </a>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Metrics
+          </a>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Analytics
+          </a>
+        </div>
+
+        <!-- Group 03: GOVERN -->
+        <div class="flex flex-col gap-1">
+          <div class="px-2 text-[9px] font-bold tracking-widest text-[#5F8F68]">03 // GOVERN</div>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Health
+          </a>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Audit Ledger
+          </a>
+          <!-- ACTIVE ITEM: Proposals -->
+          <a href="#" class="nav-active px-2 py-1.5 flex items-center justify-between font-semibold rounded-[1px]">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-[#33FF66]">&gt;</span> Proposals
+            </div>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+          </a>
+          <a href="#" class="px-2 py-1.5 flex items-center justify-between text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <div class="flex items-center gap-2">
+              <span class="text-[9px] text-[#5F8F68]">::</span> Debt Queue
+            </div>
+            <span class="text-[9px] text-[#5F8F68] bg-[#0A140A] px-1 border border-[#1A2E1A] rounded-[1px]">12</span>
+          </a>
+        </div>
+
+        <!-- Group 04: SYSTEM -->
+        <div class="flex flex-col gap-1">
+          <div class="px-2 text-[9px] font-bold tracking-widest text-[#5F8F68]">04 // SYSTEM</div>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> System
+          </a>
+          <a href="#" class="px-2 py-1.5 flex items-center gap-2 text-[#5F8F68] hover:text-[#C9F7D4] transition-colors rounded-[1px]">
+            <span class="text-[9px] text-[#5F8F68]">::</span> Setup
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Card -->
+    <div class="p-3 border-t border-[#1A2E1A] flex items-center justify-between bg-[#030603]">
+      <div class="flex items-center gap-2.5">
+        <div class="w-6 h-6 border border-[#1A2E1A] bg-[#071107] text-[#33FF66] text-[10px] font-bold flex items-center justify-center rounded-[1px]">
+          SA
+        </div>
+        <div class="flex flex-col leading-tight">
+          <span class="text-[11px] font-semibold text-[#C9F7D4]">Sigit A.</span>
+          <span class="text-[9px] text-[#5F8F68]">operator</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 bg-[#33FF66] rounded-full"></span>
+        <span class="text-[9px] text-[#5F8F68]">ONLINE</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT (1200px wide, 900px tall) -->
+  <main class="flex-1 h-full flex flex-col justify-between overflow-hidden bg-black">
+
+    <!-- TOPBAR (Prompt line 'kyc://proposals _') on ONE line -->
+    <header class="h-11 px-4 flex items-center justify-between border-b border-[#1A2E1A] bg-black shrink-0">
+      <!-- Breadcrumb / Command prompt -->
+      <div class="flex items-center gap-2 text-[12px]">
+        <span class="text-[#33FF66] font-semibold">kyc://proposals</span>
+        <span class="text-[#33FF66] animate-pulse">_</span>
+        <span class="text-[#1A2E1A] mx-2">|</span>
+        <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1.5 py-0.5 rounded-[1px] bg-[#050805]">CLUSTER: cluster-01</span>
+        <span class="text-[10px] text-[#5F8F68] border border-[#1A2E1A] px-1.5 py-0.5 rounded-[1px] bg-[#050805]">QUEUE: 10 VISIBLE</span>
+      </div>
+
+      <!-- Center Search Field with ⌘K -->
+      <div class="w-[420px] h-7 bg-[#050805] border border-[#1A2E1A] rounded-[1px] px-2.5 flex items-center justify-between text-[11px]">
+        <div class="flex items-center gap-2 text-[#5F8F68] overflow-hidden whitespace-nowrap">
+          <span class="text-[#33FF66]">&gt;</span>
+          <span class="text-[#5F8F68]">filter proposals by id, domain, target node...</span>
+        </div>
+        <kbd class="text-[9px] text-[#5F8F68] border border-[#1A2E1A] px-1 rounded-[1px] bg-black">⌘K</kbd>
+      </div>
+
+      <!-- Topbar Right Items (max 4 segments: status, bell with dot, avatar) -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 px-2 py-0.5 border border-[#1A2E1A] bg-[#050805] text-[10px] text-[#33FF66] rounded-[1px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+          <span>RAFT QUORUM 3/3</span>
+        </div>
+        <!-- Bell icon with dot -->
+        <button class="relative w-7 h-7 flex items-center justify-center border border-[#1A2E1A] bg-[#050805] hover:border-[#33FF66] text-[#C9F7D4] rounded-[1px]">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-[#FFD23F] rounded-full"></span>
+        </button>
+        <!-- User Avatar -->
+        <div class="w-7 h-7 border border-[#1A2E1A] bg-[#071107] text-[#33FF66] text-[10px] font-bold flex items-center justify-center rounded-[1px]">
+          SA
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (Fills remaining height exactly down to status bar) -->
+    <div class="flex-1 p-3 flex flex-row gap-3 overflow-hidden">
+
+      <!-- LEFT: PROPOSALS QUEUE TABLE CONTAINER -->
+      <section class="flex-1 relative flex flex-col border border-[#1A2E1A] bg-[#050805] rounded-[1px] overflow-hidden">
+        <!-- Fieldset-style Legend Title -->
+        <div class="legend-title">PROPOSALS QUEUE // BATCH 2026-11-04</div>
+
+        <!-- Filter / Subheader strip -->
+        <div class="h-8 px-3 border-b border-[#1A2E1A] flex items-center justify-between text-[10px] bg-black/40">
+          <div class="flex items-center gap-3">
+            <span class="text-[#5F8F68]">FILTER //</span>
+            <button class="text-[#33FF66] underline decoration-[#33FF66] underline-offset-4">ALL (10)</button>
+            <button class="text-[#5F8F68] hover:text-[#C9F7D4]">PENDING (9)</button>
+            <button class="text-[#5F8F68] hover:text-[#C9F7D4]">APPLIED (1)</button>
+            <button class="text-[#5F8F68] hover:text-[#C9F7D4]">CONFLICTS (1)</button>
+          </div>
+          <div class="flex items-center gap-2 text-[#5F8F68]">
+            <span>SORT:</span>
+            <span class="text-[#C9F7D4]">IMPACT DESC</span>
+            <span class="text-[#1A2E1A]">|</span>
+            <span>SHARD: 0x3a</span>
+          </div>
+        </div>
+
+        <!-- Table Header (34px) -->
+        <div class="h-[34px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] text-[10px] font-bold text-[#5F8F68] uppercase tracking-wider bg-black/60 shrink-0">
+          <div>ID</div>
+          <div>TITLE</div>
+          <div>DOMAIN</div>
+          <div>SIGNALS</div>
+          <div>STATUS</div>
+          <div class="text-right">ACTIONS</div>
+        </div>
+
+        <!-- Exactly 10 Visible Rows (each 68px for row 3 with inline alert, exactly calibrated to fill container height) -->
+        <div class="flex-1 flex flex-col justify-between overflow-hidden">
+
+          <!-- ROW 1 (Selected Row p-2041) -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] bg-[#0B150B] border-l-2 border-l-[#33FF66] transition-colors">
+            <div class="text-[11px] font-bold text-[#33FF66]">p-2041</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Promote node retrieval-core to L2
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P1</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#33FF66] rounded-[1px]">+0.12 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">2 reviews</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">low risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66] text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] font-semibold text-[#33FF66] hover:underline underline-offset-2">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 2 -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] hover:bg-[#071107] transition-colors">
+            <div class="text-[11px] text-[#5F8F68]">p-2040</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Quarantine stale-tag references
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P4</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#33FF66] rounded-[1px]">+0.08 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">1 review</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">low risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66] text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#5F8F68] hover:text-[#33FF66]">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 3 (Inline conflict alert note) -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] bg-[#140A0A]/40 hover:bg-[#140A0A]/70 transition-colors">
+            <div class="text-[11px] text-[#FF4D4D] font-bold">p-2039</div>
+            <div class="flex flex-col justify-center">
+              <span class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">Reindex vector partition P4 with BLAKE3 hash</span>
+              <!-- Inline Alert Note (One line: small red icon + 'conflicts with p-2038') -->
+              <div class="flex items-center gap-1.5 mt-0.5 text-[9px] text-[#FF4D4D]">
+                <svg class="w-3 h-3 text-[#FF4D4D] shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                <span class="font-medium tracking-tight">conflicts with p-2038</span>
+              </div>
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P4</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#FFD23F] rounded-[1px]">+0.22 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">0 reviews</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#FF4D4D]/30 text-[#FF4D4D] rounded-[1px]">high risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#FFD23F] text-[#FFD23F] bg-[#FFD23F]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#FFD23F] hover:underline">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 4 -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] hover:bg-[#071107] transition-colors">
+            <div class="text-[11px] text-[#5F8F68]">p-2038</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Prune dangling edges in vector cluster P4
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P4</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#33FF66] rounded-[1px]">+0.04 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">2 reviews</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">low risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66] text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#5F8F68] hover:text-[#33FF66]">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 5 -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] hover:bg-[#071107] transition-colors">
+            <div class="text-[11px] text-[#5F8F68]">p-2037</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Enforce SHACL invariant on entity-catalog schema
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P2</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#33FF66] rounded-[1px]">+0.19 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">3 reviews</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">med risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66] text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#5F8F68] hover:text-[#33FF66]">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 6 -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] hover:bg-[#071107] transition-colors">
+            <div class="text-[11px] text-[#5F8F68]">p-2036</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Compact DuckDB WAL journal segment seq-829
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P1</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#33FF66] rounded-[1px]">+0.31 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">2 reviews</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">low risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66] text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#5F8F68] hover:text-[#33FF66]">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 7 -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] hover:bg-[#071107] transition-colors">
+            <div class="text-[11px] text-[#5F8F68]">p-2035</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Upgrade Merkle tree root hashing algorithm to BLAKE3
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P5</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#33FF66] rounded-[1px]">+0.15 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">1 review</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">low risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66] text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#5F8F68] hover:text-[#33FF66]">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 8 -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] hover:bg-[#071107] transition-colors">
+            <div class="text-[11px] text-[#5F8F68]">p-2034</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Deprecate legacy heuristics scanner v1.2
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P2</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#33FF66] rounded-[1px]">+0.05 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">2 reviews</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">low risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66] text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#5F8F68] hover:text-[#33FF66]">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 9 -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center border-b border-[#1A2E1A] hover:bg-[#071107] transition-colors">
+            <div class="text-[11px] text-[#5F8F68]">p-2033</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Rebalance Raft lease quorum heartbeat window
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P5</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#33FF66] rounded-[1px]">+0.11 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">4 reviews</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">med risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#33FF66] text-[#33FF66] bg-[#33FF66]/10 rounded-[1px]">PENDING</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#5F8F68] hover:text-[#33FF66]">Review</button>
+            </div>
+          </div>
+
+          <!-- ROW 10 (Applied state) -->
+          <div class="h-[71px] px-3 grid grid-cols-[80px_1fr_64px_210px_90px_70px] items-center hover:bg-[#071107] transition-colors">
+            <div class="text-[11px] text-[#5F8F68]">p-2032</div>
+            <div class="text-[11px] text-[#C9F7D4] whitespace-nowrap overflow-hidden">
+              Re-bind Unix IPC socket to local-daemon listener
+            </div>
+            <div class="text-[10px] text-[#5F8F68]">P3</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">+0.02 P</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#C9F7D4] rounded-[1px]">2 reviews</span>
+              <span class="px-1.5 py-0.5 text-[9px] bg-black border border-[#1A2E1A] text-[#5F8F68] rounded-[1px]">low risk</span>
+            </div>
+            <div>
+              <span class="px-2 py-0.5 text-[9px] font-bold border border-[#4ADE80] text-[#4ADE80] bg-[#4ADE80]/10 rounded-[1px]">APPLIED</span>
+            </div>
+            <div class="text-right">
+              <button class="text-[10px] text-[#5F8F68] hover:text-[#C9F7D4]">View</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- RIGHT: REVIEW SIGNALS PANEL FOR SELECTED PROPOSAL p-2041 (350px wide) -->
+      <aside class="w-[350px] relative border border-[#1A2E1A] bg-[#050805] rounded-[1px] flex flex-col justify-between shrink-0 overflow-hidden">
+        <!-- Fieldset-style Legend Title -->
+        <div class="legend-title">REVIEW SIGNALS // PROPOSAL INSPECTOR</div>
+
+        <div class="p-4 flex flex-col gap-5 pt-5">
+          <!-- Proposal ID & Header -->
+          <div class="flex flex-col gap-1 pb-3 border-b border-[#1A2E1A]">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-[#5F8F68]">SELECTED TARGET</span>
+              <span class="text-[9px] border border-[#33FF66] text-[#33FF66] px-1.5 py-0.5 bg-[#33FF66]/10 font-bold rounded-[1px]">ACTIVE INSPECT</span>
+            </div>
+            <div class="text-[16px] font-bold text-[#33FF66] tracking-tight">p-2041</div>
+            <div class="text-[11px] text-[#C9F7D4] leading-snug">
+              Promote node retrieval-core to L2
+            </div>
+            <div class="text-[10px] text-[#5F8F68] mt-1">
+              DOMAIN: P1 // CORE RUNTIME EXECUTION
+            </div>
+          </div>
+
+          <!-- 4 Labeled Rows: Impact, Risk, Reviews, Conflicts -->
+          <div class="flex flex-col gap-2.5">
+            <div class="text-[10px] font-bold text-[#5F8F68] tracking-widest uppercase">EVALUATION METRICS</div>
+
+            <!-- Row 1: Impact -->
+            <div class="h-9 px-3 border border-[#1A2E1A] bg-black flex items-center justify-between rounded-[1px]">
+              <span class="text-[11px] text-[#5F8F68]">Impact</span>
+              <span class="text-[12px] font-bold text-[#33FF66]">+0.12 P</span>
+            </div>
+
+            <!-- Row 2: Risk -->
+            <div class="h-9 px-3 border border-[#1A2E1A] bg-black flex items-center justify-between rounded-[1px]">
+              <span class="text-[11px] text-[#5F8F68]">Risk</span>
+              <span class="text-[12px] font-semibold text-[#C9F7D4]">low</span>
+            </div>
+
+            <!-- Row 3: Reviews -->
+            <div class="h-9 px-3 border border-[#1A2E1A] bg-black flex items-center justify-between rounded-[1px]">
+              <span class="text-[11px] text-[#5F8F68]">Reviews</span>
+              <div class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#33FF66]"></span>
+                <span class="text-[12px] font-semibold text-[#C9F7D4]">2/2</span>
+              </div>
+            </div>
+
+            <!-- Row 4: Conflicts -->
+            <div class="h-9 px-3 border border-[#1A2E1A] bg-black flex items-center justify-between rounded-[1px]">
+              <span class="text-[11px] text-[#5F8F68]">Conflicts</span>
+              <span class="text-[12px] font-semibold text-[#C9F7D4]">1</span>
+            </div>
+          </div>
+
+          <!-- Context & Spec metadata -->
+          <div class="p-3 border border-[#1A2E1A] bg-black/60 flex flex-col gap-1.5 text-[10px]">
+            <div class="text-[#5F8F68] uppercase font-bold text-[9px]">CONSENSUS GATE</div>
+            <div class="flex justify-between text-[#C9F7D4]">
+              <span>PROPOSER:</span>
+              <span class="text-[#5F8F68]">sub-139</span>
+            </div>
+            <div class="flex justify-between text-[#C9F7D4]">
+              <span>MERKLE HASH:</span>
+              <span class="text-[#33FF66]">9f2c1ab4</span>
+            </div>
+            <div class="flex justify-between text-[#C9F7D4]">
+              <span>EST. ROLLBACK COST:</span>
+              <span class="text-[#5F8F68]">0.8ms p50</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TWO BUTTONS FULLY VISIBLE: Apply (primary) + Reject (ghost danger text) -->
+        <div class="p-4 border-t border-[#1A2E1A] bg-black flex flex-col gap-2 shrink-0">
+          <!-- Apply Primary Button -->
+          <button class="w-full h-9 bg-[#33FF66] text-black font-bold text-[12px] tracking-wide uppercase hover:bg-[#2be059] active:bg-[#22b547] transition-colors rounded-[1px] flex items-center justify-center gap-2">
+            <span>&gt; APPLY PROPOSAL</span>
+          </button>
+          <!-- Reject Ghost Danger Text Button -->
+          <button class="w-full h-8 bg-transparent text-[#FF4D4D] border border-transparent hover:border-[#FF4D4D]/40 font-semibold text-[11px] tracking-wider uppercase transition-colors rounded-[1px] flex items-center justify-center">
+            REJECT (DISCARD MUTATION)
+          </button>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- BOTTOM STATUS BAR (Flush at bottom edge of viewport on ONE line) -->
+    <footer class="h-7 px-4 border-t border-[#1A2E1A] bg-[#050805] flex items-center justify-between text-[10px] shrink-0 font-medium z-10">
+      <!-- Left side: Prompt stats requested -->
+      <div class="flex items-center gap-2 text-[#C9F7D4]">
+        <span class="w-2 h-2 rounded-full bg-[#33FF66] animate-pulse"></span>
+        <span class="font-bold tracking-wider text-[#33FF66]">9 PENDING · 1 CONFLICT · LAST APPLY 3H AGO</span>
+      </div>
+
+      <!-- Right side: System health & telemetry parameters -->
+      <div class="flex items-center gap-4 text-[#5F8F68]">
+        <span>SUITE: PROPOSAL_GOVERN_V14.2</span>
+        <span class="text-[#1A2E1A]">•</span>
+        <span>ENGINE: DETERMINISTIC AST</span>
+        <span class="text-[#1A2E1A]">•</span>
+        <span>SYNC: 100% QUORUM</span>
+        <span class="text-[#1A2E1A]">•</span>
+        <span class="text-[#33FF66]">TERMINAL ONLINE</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>
