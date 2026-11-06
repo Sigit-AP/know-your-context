@@ -21,23 +21,22 @@ HTML = (ASSETS / "index.html").read_text(encoding="utf-8")
 CSS = (ASSETS / "style.css").read_text(encoding="utf-8")
 JS = (ASSETS / "app.js").read_text(encoding="utf-8")
 
+# Merged tabs (SUB-149): Search = Search+Browse modes; System =
+# Health+Store+System panels; Audit = Audit+Ledgers; Metrics = Metrics+Bench.
+# 19 -> 14 tabs; feature coverage is unchanged (test_webview_coverage.py
+# still proves every feature's tab + routes).
 EXPECTED_TABS = [
     "graph",
     "activity",
     "search",
-    "browse",
     "metrics",
-    "health",
     "analytics",
     "audit",
     "proposals",
     "debt",
     "codeintel",
     "extractions",
-    "store",
     "system",
-    "bench",
-    "ledgers",
     "exports",
     "contracts",
     "setup",
@@ -261,7 +260,7 @@ class TestSidebarFidelity:
     """SUB-148 pins: the sidebar must hold the professional standard of
     PATTERNS.md A2/A4 (shell) and I1-I4 (icon system).
 
-    (1) One inline-SVG outline icon set for all 19 nav items (16px grid,
+    (1) One inline-SVG outline icon set for all 14 nav items (16px grid,
     1.5px stroke, round caps, currentColor) — no text/Unicode glyphs.
     (2) Active state = neutral soft-gray pill #F3F4F6 + darker ink; accent
     purple is reserved for small badges, not the active row.
@@ -286,14 +285,14 @@ class TestSidebarFidelity:
     def test_every_nav_item_has_inline_svg_icon(self) -> None:
         nav = self._nav_block()
         buttons = re.findall(r"<button[^>]*nav-item[^>]*>.*?</button>", nav, re.DOTALL)
-        assert len(buttons) == 19
+        assert len(buttons) == 14
         for button in buttons:
             assert "<svg" in button, button[:80]
 
     def test_icons_share_one_outline_spec(self) -> None:
         nav = self._nav_block()
         svgs = re.findall(r"<svg[^>]*>", nav)
-        assert len(svgs) == 19
+        assert len(svgs) == 14
         for svg in svgs:
             assert 'viewBox="0 0 16 16"' in svg
             assert 'fill="none"' in svg
@@ -356,8 +355,9 @@ class TestSidebarFidelity:
 
     def test_nav_item_metrics(self) -> None:
         # Dense-nav deviation, reasoned from the skill's density principle:
-        # 19 items -> 28px rows (skill range for 15+ items: 26-30px) so the
-        # whole set fits at 900px without scrolling.
+        # 14 items -> 28px rows (skill range for 15+ items: 26-30px; kept after
+        # the SUB-149 merge so the rhythm stays stable) — the whole set fits at
+        # 900px without scrolling.
         body = self._css_rule(".nav-item")
         assert "height: 28px" in body
         assert "gap: 10px" in body
@@ -394,6 +394,144 @@ class TestSidebarFidelity:
         promo = HTML.split('class="promo"', 1)[1].split('class="user-row"', 1)[0]
         assert "⌁" not in promo
         assert "<svg" in promo
+
+
+class TestMergedTabs:
+    """SUB-149 pins: the four merges must hold structurally, and every merged
+    surface keeps its own controls (no feature silently dropped)."""
+
+    def test_search_tab_carries_both_modes(self) -> None:
+        for element_id in ("search-seg-search", "search-seg-browse", "search-pane-search", "search-pane-browse"):
+            assert f'id="{element_id}"' in HTML, element_id
+        # Search controls AND browse controls both exist, inside view-search.
+        section = HTML.split('id="view-search"', 1)[1].split("</section>", 1)[0]
+        for element_id in (
+            "search-form",
+            "search-q",
+            "search-kind",
+            "search-lang",
+            "search-results",
+            "browse-table",
+            "browse-filter",
+            "browse-prev",
+            "browse-next",
+            "browse-body",
+        ):
+            assert f'id="{element_id}"' in section, element_id
+
+    def test_system_tab_carries_three_panels(self) -> None:
+        for element_id in (
+            "system-seg-health",
+            "system-seg-store",
+            "system-seg-ops",
+            "system-pane-health",
+            "system-pane-store",
+            "system-pane-ops",
+        ):
+            assert f'id="{element_id}"' in HTML, element_id
+        section = HTML.split('id="view-system"', 1)[1].split("</section>", 1)[0]
+        # Health + Store + System surfaces all live inside the merged tab.
+        for element_id in (
+            "health-body",
+            "store-stats",
+            "store-tables",
+            "store-schema",
+            "system-hardware",
+            "system-relearn",
+            "system-switches",
+            "system-config",
+            "system-routes",
+        ):
+            assert f'id="{element_id}"' in section, element_id
+
+    def test_audit_tab_carries_ledgers(self) -> None:
+        section = HTML.split('id="view-audit"', 1)[1].split("</section>", 1)[0]
+        for element_id in ("audit-verify", "audit-body", "ledgers-health", "ledgers-debt", "ledgers-experience"):
+            assert f'id="{element_id}"' in section, element_id
+        assert "renderLedgers" in JS
+
+    def test_metrics_tab_carries_bench(self) -> None:
+        section = HTML.split('id="view-metrics"', 1)[1].split("</section>", 1)[0]
+        for element_id in ("metrics-hero", "metrics-charts", "metrics-detail"):
+            assert f'id="{element_id}"' in section, element_id
+        assert '"/api/bench"' in JS  # bench data feeds the metrics view
+
+    def test_retired_tab_names_are_gone(self) -> None:
+        for retired in ("browse", "health", "store", "bench", "ledgers"):
+            assert f'data-tab="{retired}"' not in HTML, retired
+            assert f'id="view-{retired}"' not in HTML, retired
+            assert f"refreshers.{retired}" not in JS, retired
+
+    def test_mode_switching_is_wired(self) -> None:
+        assert "wireModes" in JS
+        assert "switchMode" in JS
+        assert 'wireModes("search", ["search", "browse"]' in JS
+        assert 'wireModes("system", ["health", "store", "ops"]' in JS
+
+    def test_merged_refreshers_registered(self) -> None:
+        assert "refreshers.search" in JS
+        assert "refreshers.system" in JS
+        assert "refreshers.audit" in JS
+        assert "refreshers.metrics" in JS
+
+
+class TestVisualFirst:
+    """SUB-149 pins: the visual-first rebuild (PATTERNS bab T) is real —
+    hand-made SVG charts, KPI 4-layer cards, one dark priority card, and no
+    chart library anywhere."""
+
+    def test_no_chart_library(self) -> None:
+        for banned in ("Chart.js", "chart.js", "d3.js", "d3.min", "echarts", "plotly"):
+            assert banned not in JS, banned
+            assert banned not in HTML, banned
+
+    def test_svg_builders_exist(self) -> None:
+        for builder in (
+            "function barChart(",
+            "function lineChart(",
+            "function donut(",
+            "function dotMatrix(",
+            "function kpiCard(",
+        ):
+            assert builder in JS, builder
+
+    def test_kpi_four_layers(self) -> None:
+        for layer in ("kpi-label", "kpi-value", "kpi-delta", "kpi-base"):
+            assert f'"{layer}"' in JS, layer
+        assert "delta-pill" in JS  # T1 delta ganda
+
+    def test_dark_card_is_single_priority_anchor(self) -> None:
+        assert '"kpi" + (opts.dark ? " dark" : "")' in JS
+        assert ".kpi.dark" in CSS
+        # exactly one dark card builder site per render (metrics hero)
+        assert JS.count("dark: true") == 4  # 4 priority branches, one wins
+
+    def test_charts_use_real_endpoints(self) -> None:
+        for endpoint in ('"/api/metrics"', '"/api/metrics/series?limit=30"', '"/api/bench"'):
+            assert endpoint in JS, endpoint
+
+    def test_delta_semantics_agree_by_construction(self) -> None:
+        # T9: arrow, color class and sign derive from one `dir` field.
+        assert "pills[i].dir" in JS
+        assert '"up" ? "▲ " : dir === "down" ? "▼ " : ""' in JS
+
+    def test_empty_states_are_honest(self) -> None:
+        assert "No completed invocations recorded yet" in JS
+        assert "Fewer than 2 daily buckets" in JS
+        assert "the store is empty" in JS
+
+    def test_audit_is_a_timeline(self) -> None:
+        assert '"tl-row"' in JS
+        assert ".tl-row::before" in CSS  # rail dot
+
+    def test_setup_is_a_stepper(self) -> None:
+        assert "stepper-row" in JS
+        assert "progress-fill" in JS  # N6: text + bar
+        assert "svgIconCheck" in JS  # no ✓ text glyph (no-emoji invariant)
+
+    def test_activity_density_dotmatrix(self) -> None:
+        assert "renderActivityDensity" in JS
+        assert 'id="activity-density"' in HTML
 
 
 class TestSyntax:

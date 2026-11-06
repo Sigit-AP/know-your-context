@@ -612,4 +612,123 @@ ref-66: chart empty = "No data available. …choose different filters" + CTA
 | 09 Proposals | R1/R3 alert per proposal + aksi di tempat; J2 disabled sampai form review valid; K1 empty queue | ref-99, ref-74, ref-70 |
 | 10 Debt Queue | R6 badge severity + tooltip; J3 hover baris; K5 konteks penuh saat queue 0 ("0 open debt") | ref-101, ref-63, ref-65 |
 | 11 System | L1–L4 form config berlabel + validasi 3-sinyal; P5 token spacing; N4 target ≥34px | ref-72, ref-74, ref-93 |
-| 12 Setup | K6 onboarding langkah; N6 progress teks+bar; L2 validasi inline; R3 error per-artifact + Retry | ref-67, ref-85, ref-74, ref-98 |
+|| 12 Setup | K6 onboarding langkah; N6 progress teks+bar; L2 validasi inline; R3 error per-artifact + Retry | ref-67, ref-85, ref-74, ref-98 |
+
+---
+
+## T. PELAJARAN DARI FOTO OPERATOR (SUB-149): foto-1 = sales dashboard light-theme; foto-2 = emura.studio analytics (teal)
+
+Sumber baru: dua foto dari operator, dipelajari via vision 3 lintasan (full-frame + 4
+zoom region terukur). Sitasi: `foto-1`, `foto-2`. Foto-1 adalah shot presentasi
+(rotasi ~2°, tepi kanan/bawah terpotong); foto-2 adalah hero shot (browser tilt ~3°,
+chrome glassmorphism — chrome-nya BUKAN pola app, jangan ditiru). Angka px = estimasi
+terukur dari raster (±1–2px), ditandai ≈.
+
+### T1. KPI card 4-lapis — DUA anatomi sah, pilih satu per layar.
+
+- **Anatomi foto-1 (hero/KPI):** label (≈15px/600) → nilai (≈34px/700) → delta ganda
+  (dua pill aksen: `▲ 7.9%` relatif + `$27,335.09` absolut, h≈22 r≈8 teks putih
+  ≈11px/600) → meta baseline (`vs prev. $501,641.73` ≈12px muted + range
+  `Jun 1 – Aug 31, 2023 ⌄`). (foto-1)
+- **Anatomi foto-2 (strip 4 kartu):** glyph ikon ≈14px → label (≈15px/600) →
+  baris delta (panah berwarna + % tebal + frasa muted "Compared to last month") →
+  baris nilai+sparkline (nilai ≈26–30px/700 kiri, sparkline bar kanan). Delta
+  DI ATAS nilai — urutan terbalik vs foto-1 dan sah. (foto-2)
+- **Aturan turunan:** delta ganda (relatif + absolut) lebih informatif dari satu
+  delta; baseline eksplisit ("vs prev. X" / "Compared to last month") wajib ada
+  agar delta bisa diverifikasi pembaca. (foto-1, foto-2)
+
+### T2. Nilai split-tone & unit de-emphasis.
+
+Bagian nilai yang tidak membawa keputusan diturunkan kontrasnya: desimal `.82`
+pada `$528,976.82` dirender ≈24px/600 #C9C6CE vs integer 34px/700 #181419
+(foto-1); suffix `+` dan `%` pada `420 +` / `4,38 %` lebih kecil dan abu (foto-2).
+Aturan: satuan/desimal/suffix = 60–70% ukuran digit utama, warna tertiary. (foto-1,
+foto-2)
+
+### T3. Bar chart tanpa gridline, label = value tag melayang.
+
+- Bar kategori besar: w≈26–30, radius atas ≈8, gap≈20 (rasio w:gap ≈1.4:1);
+  dua treatment fill bergantian — solid #EFEDF2 vs hatch diagonal 45° (stripe
+  1–2px, spasi 6–8px, hitam @8–12% di atas #F4F4F6). Hatch = kategori kedua
+  TANPA hue baru (patuh D1). (foto-1)
+- Value tag: rounded-rect aksen (bukan pill penuh — r≈6, bukan 999), h≈20,
+  pad 0 8px, teks putih ≈11px/600, terpusat di atas bar, melayang 10–16px tanpa
+  konektor. (foto-1)
+- Y-axis boleh di KANAN: label ≈11px muted (#9CA3AF), tanpa axis line, tanpa
+  tick mark; gridline horizontal samar atau tidak ada sama sekali. (foto-1)
+- Marker kategori boleh glyph merek/ikon yang melayang di puncak bar (foto-1
+  memakai logo platform) — untuk data non-merek, ganti label teks kategori.
+
+### T4. Line chart tipis; dua register.
+
+- Register minimal (foto-1 "Sales dynamic"): satu spline halus stroke ≈2px
+  (≈#A34A6B), tanpa dot, tanpa gridline; area tint samar opsional; label sumbu
+  ≈9.5px muted; anotasi event = badge ikon kecil di strip timeline bawah.
+- Register interaktif (foto-2 "Revenue Breakdown"): 2 seri ≈2px (netral gray +
+  aksen teal), area fill aksen lembut, gridline hairline y 0/400/800/1200/1800,
+  end-marker lingkaran berisi; tooltip = kartu putih floating (r≈8, shadow halus)
+  dengan header tanggal + baris legend (dot warna + label + nilai) + crosshair
+  vertikal. (foto-2)
+- Aturan: satu layar satu register; sparkline tetap stroke-only (E4).
+
+### T5. Donut distribusi: ring tebal + badge % di ujung arc.
+
+Ring tebal ≈20–28px (bukan cincin tipis), cap rounded, arc aksen di atas track
+pale (mint/gray); callout % = badge putih kecil (teks gelap ≈11–12px/600) yang
+MENUMPUK ujung arc, bukan teks besar di tengah; legend kanan = bullet kotak aksen
++ label + nilai tebal di bawahnya. (foto-2 — arc atas + badge 36% + legend
+"Electronics 54,071" terbaca; center hole terpotong frame, tidak diklaim)
+
+### T6. Dot-matrix (isotype): stack bottom-up, ramp lightness per baris, sumbu disupresi.
+
+Grid dot uniform: pitch ≈18px, dot Ø≈13–14 (fill ≈75–80% sel); kolom = bucket
+waktu (≈22 kolom terlihat), maks ≈6 baris; tiap kolom terisi dari bawah ∝ nilai;
+warna ditetapkan PER BARIS sebagai ramp satu-hue (bawah jenuh ≈#0E7C86 → atas
+pucat ≈#ECF7F7) sehingga kolom tinggi otomatis "memudar ke atas". Tanpa label
+sumbu, tanpa gridline — hanya header kartu. Cocok untuk distribusi event/aktivitas
+per bucket pada data operasional. (foto-2)
+
+### T7. Dark card = prioritas tunggal, bukan tema.
+
+Satu-satunya objek gelap di foto-1 adalah kartu "Best deal" (#121016): label
+muted #8B8792 + ikon outline kanan, nilai putih ≈18px/700, sub-line muted, tombol
+kontras-terbalik (rounded-square putih 24×24 + chevron hitam). Karena satu-satunya,
+mata mendarat di situ ke-2 setelah angka hero. Aturan: maksimal SATU kartu gelap
+per layar; fungsinya = entitas prioritas (bukan dekorasi); bayangan boleh lebih
+dalam dari kartu putih (≈0 8 24 rgba(18,16,22,.25) vs whisper shadow kartu biasa).
+(foto-1; kontras: foto-2 tanpa dark card sama sekali — sah, tapi tidak ada anchor
+prioritas)
+
+### T8. Hierarki dibaca dari kontras, bukan posisi.
+
+Urutan baca foto-1 direkayasa: angka hero terbesar-tergelap → dark card → pill
+delta aksen → strip/tabel abu → angka ghost (`.82`, `$71,048`, `$501,641.73`)
+yang murni konteks. Setiap kartu memasangkan label abu 11–12px dengan nilai
+semibold hitam; switcher metrik SELALU diberi trailing `⌄`; persen selalu abu dan
+rata kanan; format angka konsisten (ribuan berpemisah, 2 desimal di hero, 0 di
+kartu). (foto-1)
+
+### T9. Konsistensi semantik delta wajib tiga-arah.
+
+Foto-2 memuat cacat mockup: panah merah-turun `↘ 39%` dipasangkan dengan frasa
+"Increased vs last month" — panah, warna, dan kata tidak boleh saling
+bertentangan. Aturan: arah panah ≡ warna (up=hijau/aksen, down=merah) ≡ frasa
+(increased/decreased); triple mismatch = bug, bukan gaya. (foto-2)
+
+### T10. Composition strip: satu track, tanpa divider.
+
+Strip komposisi (foto-1): satu track bg #F3F1F5 h≈34 r≈12 berisi sel
+avatar Ø20 + nilai 13px/600 + share % 12px muted rata kanan; tanpa garis pemisah
+— pemisahan murni whitespace (selaras pola tabel B2: hairline atau ruang, bukan
+keduanya). (foto-1)
+
+### T11. Koreksi diri SUB-149 (loop pembelajaran, dicatat jujur).
+
+Lintasan-1 (full-frame) menghasilkan 3 klaim yang DIKOREKSI oleh zoom:
+(a) "value tag = pill" — SALAH, zoom menunjukkan rounded-rect r≈6 (T3);
+(b) "y-axis kiri" — SALAH untuk kartu Platform value, sumbu di KANAN (T3);
+(c) "donut center + legend anatomy" — TIDAK TERBUKTI, center terpotong frame;
+yang diklaim hanya yang terlihat (T5). Pelajaran meta: klaim geometri komponen
+kecil (≤24px) wajib diverifikasi zoom; klaim pada area terpotong frame wajib
+ditandai, bukan diekstrapolasi. Verdict per domain ilmu ada di laporan tugas.

@@ -671,14 +671,14 @@ WEBVIEW_FEATURES: tuple[dict[str, Any], ...] = (
     {
         "key": "browse",
         "title": "Browse nodes, edges, code-graph edges, symbols",
-        "tab": "browse",
+        "tab": "search",  # merged: Search tab, Browse mode (SUB-149)
         "routes": ("/api/nodes", "/api/edges", "/api/graph/edges", "/api/symbols", "/api/symbols/{id}"),
         "cli": "export",
     },
     {
         "key": "refs",
         "title": "Unresolved references by status",
-        "tab": "browse",
+        "tab": "search",  # merged: Search tab, Browse mode (SUB-149)
         "routes": ("/api/refs", "/api/refs/pending", "/api/refs/failed", "/api/refs/resolved"),
         "cli": "diagnose",
     },
@@ -706,7 +706,7 @@ WEBVIEW_FEATURES: tuple[dict[str, Any], ...] = (
     {
         "key": "health",
         "title": "Diagnostics: findings, checks, detail",
-        "tab": "health",
+        "tab": "system",  # merged: System tab, Health panel (SUB-149)
         "routes": ("/api/health", "/api/health/detail", "/api/health/findings", "/api/health/checks"),
         "cli": "diagnose",
     },
@@ -753,7 +753,7 @@ WEBVIEW_FEATURES: tuple[dict[str, Any], ...] = (
     {
         "key": "store",
         "title": "Store introspection: stats, tables, schema versions",
-        "tab": "store",
+        "tab": "system",  # merged: System tab, Store panel (SUB-149)
         "routes": ("/api/store/stats", "/api/store/tables", "/api/store/tables/{name}", "/api/store/schema"),
         "cli": "migrate plan",
     },
@@ -795,21 +795,21 @@ WEBVIEW_FEATURES: tuple[dict[str, Any], ...] = (
     {
         "key": "bench",
         "title": "Per-operation latency bench from the journal",
-        "tab": "bench",
+        "tab": "metrics",  # merged: Metrics tab, bench section (SUB-149)
         "routes": ("/api/bench", "/api/bench/{operation}"),
         "cli": "bench",
     },
     {
         "key": "ledgers",
         "title": "Hash-chained health and debt ledgers",
-        "tab": "ledgers",
+        "tab": "audit",  # merged: Audit tab, ledgers section (SUB-149)
         "routes": ("/api/ledger/health", "/api/ledger/debt"),
         "cli": "lifecycle trend",
     },
     {
         "key": "experience-rerank",
         "title": "Experience rerank journal + verification",
-        "tab": "ledgers",
+        "tab": "audit",  # merged: Audit tab, ledgers section (SUB-149)
         "routes": ("/api/ledger/experience",),
         "cli": "evaluate",
     },

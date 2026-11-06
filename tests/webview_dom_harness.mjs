@@ -46,7 +46,7 @@ class Elem {
   appendChild(c) { if (c.parentNode) c.parentNode.removeChild(c); c.parentNode = this; this.children.push(c); return c; }
   removeChild(c) { this.children = this.children.filter((x) => x !== c); c.parentNode = null; return c; }
   get firstChild() { return this.children[0] || null; }
-  setAttribute(k, v) { this.attributes[k] = String(v); }
+  setAttribute(k, v) { this.attributes[k] = String(v); if (k === "class") this.className = String(v); }
   getAttribute(k) { return k in this.attributes ? this.attributes[k] : null; }
   addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
   dispatch(type, extra) {
@@ -83,8 +83,8 @@ function register(el, id, cls) {
   return el;
 }
 
-const TABS = ["graph", "activity", "search", "browse", "metrics", "health", "analytics", "audit",
-  "proposals", "debt", "codeintel", "extractions", "store", "system", "bench", "ledgers",
+const TABS = ["graph", "activity", "search", "metrics", "analytics", "audit",
+  "proposals", "debt", "codeintel", "extractions", "system",
   "exports", "contracts", "setup"];
 for (const t of TABS) register(new Elem("button"), null, "tab").setAttribute("data-tab", t);
 for (const t of TABS) register(new Elem("section"), "view-" + t, t === "graph" ? "view active" : "view");
@@ -95,11 +95,28 @@ register(new Elem("button"), "detail-close");
 // index.html pins these classes/ids in the graph HUD strip (SUB-147).
 register(new Elem("div"), "graph-stats", "hud-stats");
 register(new Elem("button"), "graph-chain-verify", "hud-chain");
+// Merged-tab mode controls (SUB-149): registered BEFORE app.js loads because
+// the wiring happens at load time.
+for (const [id, cls] of [["search-seg-search", "seg-btn active"], ["search-seg-browse", "seg-btn"]])
+  register(new Elem("button"), id, cls);
+register(new Elem("div"), "search-pane-search");
+register(new Elem("div"), "search-pane-browse", "hidden");
+register(new Elem("span"), "search-seg-note");
+for (const [id, cls] of [["system-seg-health", "seg-btn active"], ["system-seg-store", "seg-btn"], ["system-seg-ops", "seg-btn"]])
+  register(new Elem("button"), id, cls);
+register(new Elem("div"), "system-pane-health");
+register(new Elem("div"), "system-pane-store", "hidden");
+register(new Elem("div"), "system-pane-ops", "hidden");
+register(new Elem("span"), "system-seg-note");
+register(new Elem("div"), "metrics-hero");
+register(new Elem("div"), "metrics-charts");
+register(new Elem("div"), "metrics-detail");
 
 const documentShim = {
   getElementById(id) { return BY_ID[id] || register(new Elem("div"), id); },
   createElement(tag) { return new Elem(tag); },
   createElementNS(ns, tag) { return new Elem(tag); },
+  createTextNode(text) { const e = new Elem("span"); e.textContent = String(text); return e; },
   querySelectorAll(sel) { return ALL.filter((e) => e.matches(sel)); },
   addEventListener() {},
 };
@@ -141,6 +158,33 @@ function payloadFor(path) {
   if (base.startsWith("/api/hierarchy/")) return { callers: { entries: [] }, callees: { entries: [] } };
   if (base === "/api/activity" || base === "/api/activity/tail") return { entries: [], agents: [] };
   if (base === "/api/leases") return { count: 0, leases: [] };
+  // SUB-149: canned metrics payloads for the visual-first tab assertions.
+  if (base === "/api/metrics") return {
+    counts: { audit_events: 8, domain_events: 6, events_total: 14, journals_complete: 5,
+      journals_in_progress: 0, journals_stale: 0 },
+    health: { score: 7, max_score: 8, components: {} },
+    latency_ms: {},
+    publish_capacity: { cap_bytes: 65536, estimated_bytes: 12000, guard_bytes: 32768,
+      headroom_bytes: 20768, ok: true, utilization_permille: 183 },
+  };
+  if (base === "/api/metrics/series") return {
+    event_series: [
+      { day: "2026-11-01", events: 2 }, { day: "2026-11-02", events: 5 },
+      { day: "2026-11-03", events: 7 },
+    ],
+    health_series: [
+      { recorded_at: "2026-11-02T00:00:00+00:00", score: 6, max_score: 8, event_count: 10 },
+      { recorded_at: "2026-11-03T00:00:00+00:00", score: 7, max_score: 8, event_count: 14 },
+    ],
+    health_history: "ok",
+  };
+  if (base === "/api/bench") return {
+    operations: [
+      { operation: "knowledge.query", count: 3, min_ms: 2, max_ms: 9, mean_ms: 5, p50_ms: 4, p95_ms: 9 },
+      { operation: "knowledge.remember", count: 2, min_ms: 6, max_ms: 12, mean_ms: 9, p50_ms: 9, p95_ms: 12 },
+    ],
+    malformed_outcomes: 0,
+  };
   return {};
 }
 
@@ -261,6 +305,12 @@ byId("detail-panel").classList.add("hidden");
 documentShim.querySelectorAll(".edge-add")[0].click();
 check("edge + keeps the panel closed", !byId("detail-panel").classList.contains("open"));
 check("edge + explains read-only", byId("status").textContent.includes("read-only"));
+// SUB-149: parallel-edge markers use a 26px pitch (22px circles never overlap).
+const markers = documentShim.querySelectorAll(".edge-add");
+const markerDist = Math.hypot(
+  parseFloat(markers[0].style.left) - parseFloat(markers[1].style.left),
+  parseFloat(markers[0].style.top) - parseFloat(markers[1].style.top));
+check("parallel-edge markers never overlap (26px pitch)", markerDist >= 26);
 
 // --- shell: tab switching drives views + breadcrumb ---------------------------
 documentShim.querySelectorAll(".tab").find((b) => b.getAttribute("data-tab") === "activity").click();
@@ -268,6 +318,39 @@ await tick(); await tick();
 check("tab click activates the view", byId("view-activity").classList.contains("active"));
 check("tab click deactivates the old view", !byId("view-graph").classList.contains("active"));
 check("breadcrumb follows the tab", byId("crumb-tab").textContent === "Activity");
+
+// --- SUB-149: merged Search tab = two modes -----------------------------------
+// (mode controls registered before app.js load, above)
+byId("search-seg-browse").click();
+await tick(); await tick();
+check("browse mode activates the browse pane", !byId("search-pane-browse").classList.contains("hidden"));
+check("browse mode hides the search pane", byId("search-pane-search").classList.contains("hidden"));
+check("browse mode marks the seg button active", byId("search-seg-browse").classList.contains("active"));
+byId("system-seg-store").click();
+await tick(); await tick();
+check("store panel activates on segment click", !byId("system-pane-store").classList.contains("hidden"));
+check("health panel hides on segment switch", byId("system-pane-health").classList.contains("hidden"));
+
+// --- SUB-149: metrics visual-first render (canned real payloads) --------------
+documentShim.querySelectorAll(".tab").find((b) => b.getAttribute("data-tab") === "metrics").click();
+await tick(); await tick(); await tick();
+const heroKpis = byId("metrics-hero").querySelectorAll(".kpi");
+check("metrics hero renders 4 KPI cards", heroKpis.length === 4);
+check("exactly one dark priority card", heroKpis.filter((k) => k.classList.contains("dark")).length === 1);
+check("KPI cards carry the 4 layers",
+  heroKpis.every((k) => ["kpi-label", "kpi-value", "kpi-delta", "kpi-base"]
+    .every((cls) => k.querySelectorAll("." + cls).length === 1)));
+check("health KPI shows the real score",
+  byId("metrics-hero").querySelectorAll(".kpi-value").some((v) => textOf(v).includes("7")));
+const charts = byId("metrics-charts");
+const barSvg = charts.querySelectorAll("svg").map((s) => s.querySelectorAll(".viz-bar").length);
+check("bar chart renders one bar per bench op", barSvg.some((n) => n === 2));
+check("bar chart floats accent value tags", charts.querySelectorAll(".viz-tag").length === 2);
+check("donut renders one arc per event kind", charts.querySelectorAll(".viz-arc").length === 2);
+check("donut renders the % badge on the largest arc", charts.querySelectorAll(".viz-pct-badge").length === 1);
+check("line chart draws the thin stroke", charts.querySelectorAll(".viz-line").length === 1);
+check("line chart keeps the soft area tint", charts.querySelectorAll(".viz-area").length === 1);
+check("bench table lands in the detail section", byId("metrics-detail").querySelectorAll("table").length >= 1);
 
 let failed = 0;
 for (const [name, ok] of results) {

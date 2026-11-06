@@ -546,7 +546,10 @@ class TestAssets:
         )
         assert _http(server, "/")[2] == asset.read_bytes()
 
-    @pytest.mark.parametrize("tab", ["Graph", "Search", "Metrics", "Health", "Analytics", "Audit", "Proposals"])
+    # SUB-149: tabs merged 19 -> 14 (Search+Browse, Health+Store+System,
+    # Audit+Ledgers, Metrics+Bench) — the retired names live as modes/panels
+    # inside their merged tab; coverage proof: test_webview_coverage.py.
+    @pytest.mark.parametrize("tab", ["Graph", "Search", "Metrics", "System", "Analytics", "Audit", "Proposals"])
     def test_index_declares_all_tabs(self, server: WebviewServer, tab: str) -> None:
         body = _http(server, "/")[2].decode("utf-8")
         assert f'data-tab="{tab.lower()}"' in body

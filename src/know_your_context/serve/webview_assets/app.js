@@ -81,17 +81,45 @@
   var loadedOnce = {};
 
   var TAB_LABELS = {
-    graph: "Graph", activity: "Activity", search: "Search", browse: "Browse",
-    metrics: "Metrics", health: "Health", analytics: "Analytics", audit: "Audit",
+    graph: "Graph", activity: "Activity", search: "Search",
+    metrics: "Metrics", analytics: "Analytics", audit: "Audit",
     proposals: "Proposals", debt: "Debt", codeintel: "Code Intel",
-    extractions: "Extractions", store: "Store", system: "System", bench: "Bench",
-    ledgers: "Ledgers", exports: "Exports", contracts: "Contracts", setup: "Setup"
+    extractions: "Extractions", system: "System",
+    exports: "Exports", contracts: "Contracts", setup: "Setup"
   };
 
   var PRIMARY_INPUTS = {
-    search: "search-q", browse: "browse-filter", activity: "activity-search",
+    search: "search-q", activity: "activity-search",
     codeintel: "codeintel-symbol", exports: "export-node"
   };
+
+  // ----------------------------------------------------- merged-tab modes
+  // Search+Browse share one tab (two modes); Health/Store/System share one
+  // System tab (three panels). The mode switch swaps panes inside the view;
+  // the refresher for the tab serves whichever pane is visible.
+
+  var SUBMODE = { search: "search", system: "health" };
+
+  function wireModes(prefix, modes, onSwitch) {
+    for (var i = 0; i < modes.length; i++) {
+      (function (mode) {
+        var btn = document.getElementById(prefix + "-seg-" + mode);
+        if (!btn) return;
+        btn.addEventListener("click", function () { switchMode(prefix, mode, modes, onSwitch); });
+      })(modes[i]);
+    }
+  }
+
+  function switchMode(prefix, mode, modes, onSwitch) {
+    SUBMODE[prefix] = mode;
+    for (var i = 0; i < modes.length; i++) {
+      var btn = document.getElementById(prefix + "-seg-" + modes[i]);
+      if (btn) btn.classList.toggle("active", modes[i] === mode);
+      var pane = document.getElementById(prefix + "-pane-" + modes[i]);
+      if (pane) pane.classList.toggle("hidden", modes[i] !== mode);
+    }
+    if (onSwitch) onSwitch(mode);
+  }
 
   function focusPrimaryInput() {
     var id = PRIMARY_INPUTS[ACTIVE_TAB];
@@ -183,6 +211,272 @@
 
   function emptyNote(parent, text) {
     parent.appendChild(el("p", "empty", text));
+  }
+
+  // ---------------------------------------------------- visual primitives
+  // Hand-made SVG charts (SUB-149; PATTERNS bab T). No chart library, no
+  // CDN: every element is createElementNS with attributes only — store data
+  // still never becomes markup (numbers/labels go through setAttribute and
+  // textContent).
+
+  function svgEl(tag, attrs) {
+    var node = document.createElementNS(SVG_NS, tag);
+    if (attrs) {
+      for (var key in attrs) node.setAttribute(key, String(attrs[key]));
+    }
+    return node;
+  }
+
+  function svgRoot(width, height) {
+    var svg = svgEl("svg", { viewBox: "0 0 " + width + " " + height, role: "img" });
+    svg.setAttribute("class", "viz");
+    return svg;
+  }
+
+  function svgText(x, y, text, cls, anchor) {
+    var node = svgEl("text", { x: x, y: y, "text-anchor": anchor || "start" });
+    node.setAttribute("class", cls);
+    node.textContent = String(text);
+    return node;
+  }
+
+  function fmtInt(value) {
+    // Thousands separators (T8); integers only — the store serves int stats.
+    var text = String(Math.round(value));
+    var out = "";
+    while (text.length > 3) {
+      out = "," + text.slice(-3) + out;
+      text = text.slice(0, -3);
+    }
+    return text + out;
+  }
+
+  function fmtBytes(value) {
+    if (value >= 1048576) return (Math.round(value / 104857.6) / 10) + " MiB";
+    if (value >= 1024) return (Math.round(value / 102.4) / 10) + " KiB";
+    return String(value) + " B";
+  }
+
+  // T1: KPI card = label / value(+unit) / delta pills / baseline+period.
+  function kpiCard(opts) {
+    var card = el("div", "kpi" + (opts.dark ? " dark" : ""));
+    card.appendChild(el("div", "kpi-label", opts.label));
+    var value = el("div", "kpi-value");
+    value.appendChild(document.createTextNode(String(opts.value)));
+    if (opts.unit) value.appendChild(el("span", "kpi-unit", opts.unit));
+    card.appendChild(value);
+    var delta = el("div", "kpi-delta");
+    var pills = opts.deltas || [];
+    for (var i = 0; i < pills.length; i++) {
+      // T9: arrow direction, color class and sign agree by construction.
+      var dir = pills[i].dir; // "up" | "down" | "flat"
+      var arrow = dir === "up" ? "▲ " : dir === "down" ? "▼ " : "";
+      delta.appendChild(el("span", "delta-pill " + dir, arrow + pills[i].text));
+    }
+    if (!pills.length) delta.appendChild(el("span", "delta-pill flat", "—")); // R6: em-dash, no fake delta
+    card.appendChild(delta);
+    card.appendChild(el("div", "kpi-base", opts.baseline));
+    if (opts.cta) {
+      var cta = el("button", "kpi-cta", opts.cta.label);
+      cta.type = "button";
+      cta.addEventListener("click", opts.cta.onClick);
+      card.appendChild(cta);
+    }
+    return card;
+  }
+
+  function chartCard(title, metaText) {
+    var card = el("div", "chart-card");
+    var head = el("div", "chart-head");
+    head.appendChild(el("span", "chart-title", title));
+    if (metaText !== null && metaText !== undefined && metaText !== "") head.appendChild(el("span", "chart-meta", metaText));
+    card.appendChild(head);
+    return card;
+  }
+
+  // T3: vertical bars, no gridlines, accent value tags floating above bars,
+  // category labels below. Bars neutral; the tallest carries nothing extra —
+  // emphasis comes from the tags, not hue.
+  function barChart(items, opts) {
+    opts = opts || {};
+    var width = opts.width || 460;
+    var height = opts.height || 180;
+    var top = 26; // room for the value tags
+    var bottom = 18; // category labels
+    var plotH = height - top - bottom;
+    var max = 0;
+    for (var i = 0; i < items.length; i++) max = Math.max(max, items[i].value);
+    var svg = svgRoot(width, height);
+    if (max <= 0) return svg;
+    var slot = width / items.length;
+    var barW = Math.min(34, slot * 0.58); // w:gap ≈ 1.4:1 (foto-1)
+    for (var j = 0; j < items.length; j++) {
+      var item = items[j];
+      var h = Math.max(2, Math.round((item.value / max) * plotH));
+      var x = Math.round(slot * j + (slot - barW) / 2);
+      var y = top + plotH - h;
+      var bar = svgEl("rect", { x: x, y: y, width: barW, height: h, rx: 6 });
+      bar.setAttribute("class", "viz-bar");
+      svg.appendChild(bar);
+      // value tag: rounded rect (r=6, NOT a full pill — T3 correction)
+      var label = (opts.format || fmtInt)(item.value);
+      var tagW = label.length * 6 + 12;
+      var tag = svgEl("rect", {
+        x: Math.round(slot * j + slot / 2 - tagW / 2), y: Math.max(0, y - 22),
+        width: tagW, height: 18, rx: 6
+      });
+      tag.setAttribute("class", "viz-tag");
+      svg.appendChild(tag);
+      svg.appendChild(svgText(Math.round(slot * j + slot / 2), Math.max(0, y - 22) + 12.5, label, "viz-tag-text", "middle"));
+      svg.appendChild(svgText(Math.round(slot * j + slot / 2), height - 5, item.label, "viz-cat", "middle"));
+    }
+    return svg;
+  }
+
+  // T4 minimal register: one thin spline (2px), no dots, no gridlines, soft
+  // area tint, sparse day labels.
+  function lineChart(points, opts) {
+    opts = opts || {};
+    var width = opts.width || 460;
+    var height = opts.height || 150;
+    var top = 10, bottom = 16, padX = 4;
+    var plotW = width - padX * 2, plotH = height - top - bottom;
+    var max = 0;
+    for (var i = 0; i < points.length; i++) max = Math.max(max, points[i].value);
+    var svg = svgRoot(width, height);
+    if (max <= 0 || points.length < 2) return svg;
+    var step = plotW / (points.length - 1);
+    var d = "";
+    var area = "";
+    for (var j = 0; j < points.length; j++) {
+      var x = padX + step * j;
+      var y = top + plotH - (points[j].value / max) * plotH;
+      d += (j === 0 ? "M " : " L ") + x.toFixed(1) + " " + y.toFixed(1);
+    }
+    area = d + " L " + (padX + step * (points.length - 1)).toFixed(1) + " " + (top + plotH) +
+      " L " + padX + " " + (top + plotH) + " Z";
+    var areaPath = svgEl("path", { d: area });
+    areaPath.setAttribute("class", "viz-area");
+    svg.appendChild(areaPath);
+    var line = svgEl("path", { d: d });
+    line.setAttribute("class", "viz-line");
+    svg.appendChild(line);
+    // sparse x labels: first, middle, last
+    var marks = [0, Math.floor((points.length - 1) / 2), points.length - 1];
+    for (var m = 0; m < marks.length; m++) {
+      var idx = marks[m];
+      var anchor = idx === 0 ? "start" : idx === points.length - 1 ? "end" : "middle";
+      svg.appendChild(svgText(padX + step * idx, height - 4, points[idx].label, "viz-cat", anchor));
+    }
+    return svg;
+  }
+
+  // T5: thick-stroke donut (ring ≈ 22px), round caps, % badge overlapping the
+  // end of the largest arc, center total, legend built in DOM beside it.
+  var DONUT_COLORS = ["#7C3AED", "#A78BFA", "#C4B5FD", "#DDD6FE", "#9CA3AF", "#D4D4D8"];
+
+  function donut(segments, opts) {
+    opts = opts || {};
+    var size = opts.size || 150;
+    var radius = (size - 26) / 2;
+    var stroke = 22;
+    var cx = size / 2, cy = size / 2;
+    var total = 0;
+    for (var i = 0; i < segments.length; i++) total += segments[i].value;
+    var svg = svgRoot(size, size);
+    if (total <= 0) return svg;
+    var circumference = 2 * Math.PI * radius;
+    var track = svgEl("circle", { cx: cx, cy: cy, r: radius, "stroke-width": stroke });
+    track.setAttribute("class", "viz-track");
+    svg.appendChild(track);
+    var offset = circumference * 0.25; // start at 12 o'clock
+    var largestIdx = 0;
+    for (var k = 1; k < segments.length; k++) {
+      if (segments[k].value > segments[largestIdx].value) largestIdx = k;
+    }
+    for (var j = 0; j < segments.length; j++) {
+      var frac = segments[j].value / total;
+      var len = Math.max(0, frac * circumference - 2); // 2px gap between arcs
+      var arc = svgEl("circle", {
+        cx: cx, cy: cy, r: radius, "stroke-width": stroke,
+        "stroke-dasharray": len + " " + (circumference - len),
+        "stroke-dashoffset": -offset,
+        stroke: segments[j].color || DONUT_COLORS[j % DONUT_COLORS.length],
+        transform: "rotate(-90 " + cx + " " + cy + ")"
+      });
+      arc.setAttribute("class", "viz-arc");
+      svg.appendChild(arc);
+      if (j === largestIdx) {
+        // % badge at the arc's midpoint, sitting ON the ring (T5).
+        var midAngle = ((offset + frac * circumference / 2) / circumference) * 2 * Math.PI - Math.PI / 2;
+        var bx = cx + Math.cos(midAngle) * radius;
+        var by = cy + Math.sin(midAngle) * radius;
+        var pct = Math.round(frac * 100) + "%";
+        var bw = pct.length * 6 + 10;
+        var badgeRect = svgEl("rect", {
+          x: (bx - bw / 2).toFixed(1), y: (by - 9).toFixed(1), width: bw, height: 18, rx: 9
+        });
+        badgeRect.setAttribute("class", "viz-pct-badge");
+        svg.appendChild(badgeRect);
+        svg.appendChild(svgText(bx.toFixed(1), (by + 3.5).toFixed(1), pct, "viz-pct-text", "middle"));
+      }
+      offset += frac * circumference;
+    }
+    svg.appendChild(svgText(cx, cy + 1, fmtInt(total), "viz-center", "middle"));
+    svg.appendChild(svgText(cx, cy + 14, opts.centerLabel || "total", "viz-center-sub", "middle"));
+    return svg;
+  }
+
+  function donutLegend(segments, total) {
+    var legend = el("div", "donut-legend");
+    for (var i = 0; i < segments.length; i++) {
+      var row = el("div", "lg-row");
+      var swatch = el("span", "lg-swatch");
+      swatch.style.background = segments[i].color || DONUT_COLORS[i % DONUT_COLORS.length];
+      row.appendChild(swatch);
+      row.appendChild(el("span", "lg-label", segments[i].label));
+      row.appendChild(el("span", "lg-value", fmtInt(segments[i].value)));
+      row.appendChild(el("span", "lg-share", total > 0 ? Math.round((segments[i].value / total) * 100) + "%" : "—"));
+      legend.appendChild(row);
+    }
+    return legend;
+  }
+
+  // T6: dot-matrix — columns = buckets, rows filled bottom-up, per-row ramp.
+  function dotMatrix(columns, rowColors, opts) {
+    opts = opts || {};
+    var pitch = opts.pitch || 14;
+    var dotR = opts.dotR || 5;
+    var rows = opts.rows || 6;
+    var width = columns.length * pitch + 8;
+    var height = rows * pitch + 18;
+    var svg = svgRoot(width, height);
+    for (var c = 0; c < columns.length; c++) {
+      var value = Math.min(rows, columns[c].value);
+      for (var r = 0; r < rows; r++) {
+        var cx = 4 + c * pitch + pitch / 2;
+        var cy = 4 + (rows - 1 - r) * pitch + dotR; // bottom-up
+        var color = r < value ? rowColors[Math.min(r, rowColors.length - 1)] : "#F4F4F5";
+        var dot = svgEl("circle", { cx: cx, cy: cy, r: dotR, fill: color });
+        dot.setAttribute("class", "viz-dot");
+        svg.appendChild(dot);
+      }
+      svg.appendChild(svgText(4 + c * pitch + pitch / 2 - 2, height - 4, columns[c].label, "viz-cat", "middle"));
+    }
+    return svg;
+  }
+
+  // Bar-list row (leaderboards): mono label, track, fill, value.
+  function barRow(label, value, max, valueText) {
+    var row = el("div", "barrow");
+    row.appendChild(el("span", "bl", label));
+    var track = el("span", "bt");
+    var fill = el("span", "bf");
+    fill.style.width = (max > 0 ? Math.max(2, (value / max) * 100) : 0) + "%";
+    track.appendChild(fill);
+    row.appendChild(track);
+    row.appendChild(el("span", "bv", valueText || String(value)));
+    return row;
   }
 
   // ----------------------------------------------------------------- graph
@@ -424,7 +718,9 @@
       // the cards and the marker would overlap them (spacing discipline).
       var span = Math.hypot(an.x2 - an.x1, an.y2 - an.y1);
       if (span < 130) continue;
-      var off = lanes[e] * 18;
+      // Markers are 22px circles: the path lane pitch (18px) is tighter than
+      // the diameter, so markers use a wider pitch (26px) to never overlap.
+      var off = lanes[e] * 26;
       var btn = el("button", "edge-add", "+");
       btn.type = "button";
       btn.title = edge.source + " " + edge.kind + " " + edge.target + " (read-only viewer)";
@@ -987,6 +1283,7 @@
     for (var i = 0; i < activity.entries.length; i++) {
       if (entryMatches(activity.entries[i])) visible.push(activity.entries[i]);
     }
+    renderActivityDensity();
     clear(list);
     var groups = groupEntries(visible);
     for (var g = 0; g < groups.length; g++) {
@@ -1002,6 +1299,121 @@
     }
     els.count.textContent = visible.length + " shown · " + activity.entries.length + " buffered";
     maybeAutoscroll();
+  }
+
+  // Activity density (T6 dot-matrix): one column per recent day, stack height
+  // ∝ events that day, per-row teal→violet ramp… here a single-hue accent
+  // ramp scaled from the day's own level mix is overkill — the ramp encodes
+  // volume, and error/warn presence paints the top rows semantically.
+  function renderActivityDensity() {
+    var box = document.getElementById("activity-density");
+    if (!box) return;
+    clear(box);
+    if (!activity.entries.length) return;
+    var days = [];
+    var levelByDay = {};
+    for (var i = 0; i < activity.entries.length; i++) {
+      var entry = activity.entries[i];
+      var day = String(entry.occurred_at || "").slice(0, 10);
+      if (!day) continue;
+      if (!byDaySeen(days, day)) { days.push(day); }
+      levelByDay[day] = levelByDay[day] || { info: 0, warn: 0, error: 0 };
+      levelByDay[day][entry.level] = (levelByDay[day][entry.level] || 0) + 1;
+    }
+    days.sort();
+    var recent = days.slice(-14);
+    var maxDay = 0;
+    for (var d = 0; d < recent.length; d++) {
+      var sum = levelByDay[recent[d]].info + levelByDay[recent[d]].warn + levelByDay[recent[d]].error;
+      maxDay = Math.max(maxDay, sum);
+    }
+    var card = el("div", "density-card");
+    var head = el("div", "chart-head");
+    head.appendChild(el("span", "chart-title", "Activity density"));
+    head.appendChild(el("span", "chart-meta", recent.length + " days · peak " + maxDay + "/day"));
+    card.appendChild(head);
+    // Ramp: level mix of the day picks the TOP row color (error > warn > info),
+    // lower rows stay neutral accent tints — volume up, severity on top.
+    var columns = [];
+    for (var c = 0; c < recent.length; c++) {
+      var levels = levelByDay[recent[c]];
+      var total = levels.info + levels.warn + levels.error;
+      columns.push({
+        label: recent[c].slice(5),
+        value: Math.max(1, Math.ceil((total / Math.max(1, maxDay)) * 4)),
+        topColor: levels.error > 0 ? "#DC2626" : levels.warn > 0 ? "#D97706" : "#7C3AED"
+      });
+    }
+    // Fixed-size svg (viewBox 1:1): class-viz width:100% would stretch the
+    // small matrix and blow up the 9.5px labels (measured: 3.4x scale bug).
+    // NOTE: CSP blocks setAttribute("style") — assign via the style property.
+    var pitch = 26, dotR = 8, rows = 4;
+    var svgW = columns.length * pitch + 8, svgH = rows * pitch + 22;
+    var svg = svgRoot(svgW, svgH);
+    svg.style.width = svgW + "px";
+    svg.style.height = svgH + "px";
+    for (var col = 0; col < columns.length; col++) {
+      for (var r = 0; r < rows; r++) {
+        var cx = 4 + col * pitch + pitch / 2;
+        var cy = 4 + (rows - 1 - r) * pitch + dotR + 2;
+        var color = r < columns[col].value
+          ? (r === columns[col].value - 1 ? columns[col].topColor : "#DDD6FE")
+          : "#F4F4F5";
+        var dot = svgEl("circle", { cx: cx, cy: cy, r: dotR, fill: color });
+        dot.setAttribute("class", "viz-dot");
+        svg.appendChild(dot);
+      }
+      // label every 2nd column when the pitch can't fit a gutter (audit: the
+      // 7 day labels collided into one run at pitch 26)
+      if (pitch >= 40 || col % 2 === 0) {
+        svg.appendChild(svgText(4 + col * pitch + pitch / 2, rows * pitch + 14, columns[col].label, "viz-cat", "middle"));
+      }
+    }
+    var matWrap = el("div", "density-body");
+    matWrap.appendChild(svg);
+    // Right stats column fills the card with real derived numbers (H2).
+    var stats = el("div", "density-stats");
+    var totalAll = 0;
+    for (var s = 0; s < recent.length; s++) {
+      totalAll += levelByDay[recent[s]].info + levelByDay[recent[s]].warn + levelByDay[recent[s]].error;
+    }
+    var peakIdx = 0;
+    for (var pk = 1; pk < recent.length; pk++) {
+      var sumPk = levelByDay[recent[pk]].info + levelByDay[recent[pk]].warn + levelByDay[recent[pk]].error;
+      var sumBest = levelByDay[recent[peakIdx]].info + levelByDay[recent[peakIdx]].warn + levelByDay[recent[peakIdx]].error;
+      if (sumPk > sumBest) peakIdx = pk;
+    }
+    stats.appendChild(kpiCard({
+      label: "Events in window", value: totalAll, deltas: [],
+      baseline: recent.length + " days shown"
+    }));
+    stats.appendChild(kpiCard({
+      label: "Peak day", value: maxDay,
+      unit: " events",
+      deltas: [{ text: recent[peakIdx], dir: "flat" }],
+      baseline: "avg " + (Math.round((totalAll / recent.length) * 10) / 10) + "/day"
+    }));
+    matWrap.appendChild(stats);
+    card.appendChild(matWrap);
+    var legend = el("div", "density-legend");
+    legend.appendChild(dotLegendItem("info", "info only (top dot = worst level)"));
+    legend.appendChild(dotLegendItem("warn", "warnings present"));
+    legend.appendChild(dotLegendItem("error", "errors present"));
+    legend.appendChild(dotLegendItem("dim", "no activity"));
+    card.appendChild(legend);
+    box.appendChild(card);
+  }
+
+  function dotLegendItem(level, label) {
+    var item = el("span", null);
+    item.appendChild(el("span", "sdot " + level));
+    item.appendChild(document.createTextNode(label));
+    return item;
+  }
+
+  function byDaySeen(days, day) {
+    for (var i = 0; i < days.length; i++) if (days[i] === day) return true;
+    return false;
   }
 
   function maybeAutoscroll() {
@@ -1094,8 +1506,12 @@
         results.appendChild(el("p", "empty", "no matches"));
         return;
       }
+      var maxScore = 0;
+      for (var m = 0; m < payload.results.length; m++) {
+        if (typeof payload.results[m].score === "number") maxScore = Math.max(maxScore, payload.results[m].score);
+      }
       for (var i = 0; i < payload.results.length; i++) {
-        results.appendChild(searchHit(payload.results[i]));
+        results.appendChild(searchHit(payload.results[i], maxScore));
       }
     }).catch(function (error) {
       clear(results);
@@ -1103,10 +1519,26 @@
     });
   });
 
-  function searchHit(hit) {
+  function searchHit(hit, maxScore) {
+    // Result card: name, kind chip, mono location, score bar normalized to
+    // the best hit of THIS result set (raw scores are engine-relative).
     var box = el("div", "hit");
-    box.appendChild(el("span", "score", typeof hit.score === "number" ? hit.score.toFixed(3) : ""));
-    box.appendChild(el("div", "name", hit.name));
+    var head = el("div", "rc-head");
+    head.style.display = "flex";
+    head.style.alignItems = "center";
+    head.style.gap = "10px";
+    head.appendChild(el("span", "rc-title", hit.name));
+    head.appendChild(badge("info", hit.kind));
+    var score = typeof hit.score === "number" ? hit.score : 0;
+    var track = el("span", "prio-track");
+    track.style.width = "70px";
+    var fill = el("span", "prio-fill");
+    fill.style.background = "var(--accent)";
+    fill.style.width = (maxScore > 0 ? Math.max(3, (score / maxScore) * 100) : 0) + "%";
+    track.appendChild(fill);
+    head.appendChild(track);
+    head.appendChild(el("span", "muted mono", score ? score.toFixed(3) : ""));
+    box.appendChild(head);
     box.appendChild(el("div", "meta",
       hit.kind + " · " + hit.path + ":" + hit.line + " · via " + hit.source));
     box.addEventListener("click", function () {
@@ -1174,6 +1606,28 @@
     });
   }
 
+  // Browse mode opens with a visual size strip (one KPI card per table).
+  var browseStatsLoaded = false;
+  function loadBrowseStats() {
+    if (browseStatsLoaded) return;
+    browseStatsLoaded = true;
+    var box = document.getElementById("browse-stats");
+    api("/api/store/stats").then(function (stats) {
+      clear(box);
+      var tables = stats.tables || {};
+      var names = Object.keys(tables).sort();
+      if (!names.length) return;
+      var grid = el("div", "kpi-grid");
+      for (var i = 0; i < names.length; i++) {
+        grid.appendChild(kpiCard({
+          label: names[i], value: fmtInt(Number(tables[names[i]]) || 0), deltas: [],
+          baseline: "rows"
+        }));
+      }
+      box.appendChild(grid);
+    }).catch(function () { browseStatsLoaded = false; });
+  }
+
   document.getElementById("browse-table").addEventListener("change", function () {
     browse.offset = 0;
     loadBrowse();
@@ -1193,21 +1647,195 @@
 
   // ---------------------------------------------------- json panel renderers
 
-  function renderMetrics(container, payload) {
-    cardGrid(container, [
-      ["health score", payload.health.score + " / " + payload.health.max_score],
-      ["publish ok", String(payload.publish_capacity.ok)],
-      ["headroom bytes", String(payload.publish_capacity.headroom_bytes)]
-    ]);
+  // ------------------------------------------------------------- metrics
+  // Visual-first (SUB-149; PATTERNS T1-T8): KPI cards 4-layer, bar/line/donut
+  // SVG hand-made, one dark priority card. Every number comes from the real
+  // endpoints: /api/metrics, /api/metrics/series, /api/bench.
+
+  function pctDelta(current, previous) {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
+  }
+
+  function deltaPair(relPct, absText) {
+    // T9: dir drives arrow + color + sign together — never a mismatch.
+    var dir = relPct > 0 ? "up" : relPct < 0 ? "down" : "flat";
+    return [
+      { text: (relPct > 0 ? "+" : "") + relPct + "%", dir: dir },
+      { text: absText, dir: dir }
+    ];
+  }
+
+  function renderMetricsVisual(metrics, series, bench) {
+    var hero = document.getElementById("metrics-hero");
+    var charts = document.getElementById("metrics-charts");
+    var detail = document.getElementById("metrics-detail");
+    clear(hero); clear(charts); clear(detail);
+
+    var counts = metrics.counts || {};
+    var health = metrics.health || { score: 0, max_score: 0 };
+    var cap = metrics.publish_capacity || {};
+    var eventSeries = (series && series.event_series) || [];
+    var healthSeries = (series && series.health_series) || [];
+
+    // ---- KPI 1: health score (delta vs previous recorded snapshot)
+    var prevSnap = healthSeries.length >= 2 ? healthSeries[healthSeries.length - 2] : null;
+    var healthDeltas = [];
+    var healthBase;
+    if (prevSnap) {
+      var diff = health.score - prevSnap.score;
+      healthDeltas = deltaPair(pctDelta(health.score, prevSnap.score || 1), (diff >= 0 ? "+" : "") + diff + " pts");
+      healthBase = "vs prev. " + prevSnap.score + "/" + prevSnap.max_score + " · " +
+        String(prevSnap.recorded_at || "").slice(0, 10);
+    } else {
+      healthBase = healthSeries.length === 1 ? "first snapshot recorded — no baseline yet" :
+        "no health history recorded (state: " + ((series && series.health_history) || "absent") + ")";
+    }
+    // ---- KPI 2: events total (delta last 7d vs prior 7d — real buckets)
+    var eventsDeltas = [];
+    var eventsBase = "no daily buckets yet";
+    if (eventSeries.length >= 2) {
+      var last7 = 0, prior7 = 0;
+      for (var i = 0; i < eventSeries.length; i++) {
+        if (i >= eventSeries.length - 7) last7 += eventSeries[i].events;
+        else if (i >= eventSeries.length - 14) prior7 += eventSeries[i].events;
+      }
+      if (prior7 > 0 || last7 > 0) {
+        var absDiff = last7 - prior7;
+        eventsDeltas = deltaPair(pctDelta(last7, prior7), (absDiff >= 0 ? "+" : "−") + fmtInt(Math.abs(absDiff)));
+        eventsBase = "last 7d vs prior 7d · " + eventSeries.length + " days of history";
+      } else {
+        eventsBase = eventSeries.length + " days of history";
+      }
+    }
+    // ---- KPI 3: publish headroom (baseline = guard; no history exists)
+    var utilPct = Math.round((cap.utilization_permille || 0) / 10);
+    var capDeltas = [
+      { text: "util " + utilPct + "%", dir: cap.ok ? "flat" : "down" },
+      { text: "est " + fmtBytes(cap.estimated_bytes || 0), dir: "flat" }
+    ];
+    // ---- dark priority card (T7: exactly one): worst live signal wins
+    var dark;
+    var goSystem = function () {
+      showTab("system");
+      switchMode("system", "health", ["health", "store", "ops"], loadSystemPanel);
+    };
+    var goAudit = function () { showTab("audit"); };
+    if (health.score < health.max_score) {
+      dark = kpiCard({
+        label: "Priority — health attention", value: health.score, unit: "/ " + health.max_score,
+        deltas: [{ text: (health.max_score - health.score) + " components failing", dir: "down" }],
+        baseline: "worst signal on the board — see System › Health",
+        dark: true, cta: { label: "Open Health ›", onClick: goSystem }
+      });
+    } else if (cap.ok === false) {
+      dark = kpiCard({
+        label: "Priority: publish capacity", value: fmtBytes(Math.abs(cap.headroom_bytes || 0)),
+        unit: " over guard",
+        deltas: [{ text: "guard exceeded", dir: "down" }],
+        baseline: "guard " + fmtBytes(cap.guard_bytes || 0) + " · cap " + fmtBytes(cap.cap_bytes || 0),
+        dark: true, cta: { label: "Open System ›", onClick: goSystem }
+      });
+    } else if ((counts.journals_stale || 0) > 0) {
+      dark = kpiCard({
+        label: "Priority — stale journals", value: counts.journals_stale,
+        deltas: [{ text: "incomplete beyond ttl", dir: "down" }],
+        baseline: counts.journals_in_progress + " in progress · " + counts.journals_complete + " complete",
+        dark: true, cta: { label: "Open Audit ›", onClick: goAudit }
+      });
+    } else {
+      dark = kpiCard({
+        label: "Priority — all nominal", value: health.score, unit: "/ " + health.max_score,
+        deltas: [{ text: "0 failing components", dir: "up" }],
+        baseline: "chain verified from the Audit tab",
+        dark: true, cta: { label: "Verify chain ›", onClick: goAudit }
+      });
+    }
+    var grid = el("div", "kpi-grid");
+    grid.appendChild(dark); // dark first = anchor (T7: eye lands on priority)
+    grid.appendChild(kpiCard({
+      label: "Health score", value: health.score, unit: "/ " + health.max_score,
+      deltas: healthDeltas, baseline: healthBase
+    }));
+    grid.appendChild(kpiCard({
+      label: "Events total", value: fmtInt(counts.events_total || 0),
+      deltas: eventsDeltas, baseline: eventsBase
+    }));
+    grid.appendChild(kpiCard({
+      label: "Publish headroom", value: fmtBytes(cap.headroom_bytes || 0),
+      deltas: capDeltas,
+      baseline: "guard " + fmtBytes(cap.guard_bytes || 0) + " · cap " + fmtBytes(cap.cap_bytes || 0)
+    }));
+    hero.appendChild(grid);
+
+    // ---- charts: bar (latency p50/op) + donut (event kinds) + line (events/day)
+    var chartGrid = el("div", "chart-grid");
+    var ops = (bench && bench.operations) || [];
+    var barCard = chartCard("Latency p50 by operation", "ms · from the invocation journal");
+    if (!ops.length) {
+      barCard.appendChild(el("p", "chart-empty", "No completed invocations recorded yet — run an operation to see latency."));
+    } else {
+      var top = ops.slice().sort(function (a, b) { return (b.p50_ms || 0) - (a.p50_ms || 0); }).slice(0, 8);
+      barCard.appendChild(barChart(top.map(function (op) {
+        return { label: op.operation.replace(/^knowledge\./, "").slice(0, 12), value: op.p50_ms || 0 };
+      }), { width: 400, height: 170 }));
+    }
+    chartGrid.appendChild(barCard);
+
+    var donutCard = chartCard("Event distribution", "audit vs domain");
+    var auditN = counts.audit_events || 0;
+    var domainN = counts.domain_events || 0;
+    var otherN = Math.max(0, (counts.events_total || 0) - auditN - domainN);
+    var segments = [
+      { label: "audit", value: auditN },
+      { label: "domain", value: domainN }
+    ];
+    if (otherN > 0) segments.push({ label: "other", value: otherN });
+    var segTotal = auditN + domainN + otherN;
+    if (segTotal <= 0) {
+      donutCard.appendChild(el("p", "chart-empty", "No events recorded yet — the store is empty."));
+    } else {
+      var donutWrap = el("div", "donut-wrap");
+      donutWrap.appendChild(donut(segments, { centerLabel: "events" }));
+      donutWrap.appendChild(donutLegend(segments, segTotal));
+      donutCard.appendChild(donutWrap);
+    }
+    chartGrid.appendChild(donutCard);
+
+    var lineCard = chartCard("Events per day",
+      eventSeries.length ? eventSeries[0].day + " → " + eventSeries[eventSeries.length - 1].day : "");
+    if (eventSeries.length < 2) {
+      lineCard.appendChild(el("p", "chart-empty",
+        "Fewer than 2 daily buckets — a trend needs at least two days of activity."));
+    } else {
+      lineCard.appendChild(lineChart(eventSeries.map(function (row) {
+        return { label: String(row.day).slice(5), value: row.events };
+      }), { width: 400, height: 150 }));
+    }
+    chartGrid.appendChild(lineCard);
+    charts.appendChild(chartGrid);
+
+    // ---- detail: bench table (dense) + counters + capacity (raw, mono)
+    detail.appendChild(el("h3", "panel-title", "Bench — per-operation latency (ms)"));
+    if (!ops.length) {
+      emptyNote(detail, "(no completed invocations recorded yet)");
+    } else {
+      table(detail, ["operation", "count", "min", "mean", "p50", "p95", "max"],
+        ops.map(function (op) {
+          return [op.operation, op.count, op.min_ms, op.mean_ms, op.p50_ms, op.p95_ms, op.max_ms];
+        }), "dense");
+    }
+    if (bench && bench.malformed_outcomes) {
+      detail.appendChild(el("p", "muted", bench.malformed_outcomes + " malformed outcomes skipped"));
+    }
     var cols = el("div", "cols-2");
-    var countRows = [];
-    var keys = Object.keys(payload.counts).sort();
-    for (var i = 0; i < keys.length; i++) countRows.push([keys[i], payload.counts[keys[i]]]);
     var countsCol = el("div");
-    countsCol.appendChild(el("h3", "panel-title", "Counts"));
-    table(countsCol, ["metric", "value"], countRows);
+    countsCol.appendChild(el("h3", "panel-title", "Counters"));
+    var countRows = [];
+    var keys = Object.keys(counts).sort();
+    for (var c = 0; c < keys.length; c++) countRows.push([keys[c], counts[keys[c]]]);
+    table(countsCol, ["metric", "value"], countRows, "dense");
     cols.appendChild(countsCol);
-    var cap = payload.publish_capacity;
     var capCol = el("div");
     capCol.appendChild(el("h3", "panel-title", "Publish capacity"));
     table(capCol, ["field", "value"], [
@@ -1216,41 +1844,79 @@
       ["headroom_bytes", cap.headroom_bytes],
       ["utilization_permille", cap.utilization_permille],
       ["ok", cap.ok]
-    ]);
+    ], "dense");
     cols.appendChild(capCol);
-    container.appendChild(cols);
-    capCol.appendChild(el("h3", "panel-title", "Latency (ms)"));
-    var ops = Object.keys(payload.latency_ms).sort();
-    if (ops.length === 0) {
-      emptyNote(capCol, "(no completed invocations recorded)");
-    } else {
-      var rows = [];
-      for (var j = 0; j < ops.length; j++) {
-        var s = payload.latency_ms[ops[j]];
-        rows.push([ops[j], s.count, s.min, s.mean, s.p50, s.p95, s.max]);
-      }
-      table(capCol, ["operation", "count", "min", "mean", "p50", "p95", "max"], rows);
-    }
+    detail.appendChild(cols);
+  }
+
+  function loadMetrics() {
+    var body = document.getElementById("metrics-body");
+    // keep the three section shells; only refill on success
+    Promise.all([
+      api("/api/metrics"),
+      api("/api/metrics/series?limit=30"),
+      api("/api/bench")
+    ]).then(function (results) {
+      renderMetricsVisual(results[0], results[1], results[2]);
+      setStatus("");
+    }).catch(function (error) {
+      clear(body);
+      body.appendChild(el("p", "bad-badge", String(error.message || error)));
+      setStatus(String(error.message || error), true);
+    });
   }
 
   function renderHealth(container, payload) {
-    var box = el("p");
-    box.appendChild(badge(payload.ok ? "ok" : "error",
-      payload.ok ? "OK — no error findings" : "ERROR findings present (exit " + payload.exit_code + ")"));
-    container.appendChild(box);
-    container.appendChild(el("p", null,
-      "errors: " + payload.error_count + " · warnings: " + payload.warning_count +
-      " · worst: " + payload.worst_severity));
+    // Visual status panel: hero KPI row (status / errors / warnings / worst),
+    // findings as severity-tinted cards (B4: tint + left border).
+    var grid = el("div", "kpi-grid");
+    var statusCard = el("div", "kpi" + (payload.ok ? "" : " dark"));
+    statusCard.appendChild(el("div", "kpi-label", "Diagnostics status"));
+    var sv = el("div", "kpi-value");
+    sv.appendChild(badge(payload.ok ? "ok" : "error", payload.ok ? "OK" : "ERROR"));
+    sv.style.paddingTop = "2px";
+    statusCard.appendChild(sv);
+    var sd = el("div", "kpi-delta");
+    sd.appendChild(el("span", "delta-pill " + (payload.ok ? "up" : "down"),
+      payload.ok ? "no error findings" : "exit " + payload.exit_code));
+    statusCard.appendChild(sd);
+    statusCard.appendChild(el("div", "kpi-base", "checks: " + (payload.checked || []).join(", ")));
+    grid.appendChild(statusCard);
+    grid.appendChild(kpiCard({
+      label: "Error findings", value: payload.error_count,
+      deltas: [{ text: payload.error_count > 0 ? "action required" : "clean", dir: payload.error_count > 0 ? "down" : "up" }],
+      baseline: "worst severity: " + payload.worst_severity
+    }));
+    grid.appendChild(kpiCard({
+      label: "Warnings", value: payload.warning_count,
+      deltas: [{ text: payload.warning_count > 0 ? "review advised" : "clean", dir: payload.warning_count > 0 ? "down" : "up" }],
+      baseline: "checks: " + (payload.checked || []).length + " ran"
+    }));
+    container.appendChild(grid);
+    var checks = payload.checked || [];
+    if (checks.length) {
+      var checkRow = el("div", null);
+      checkRow.appendChild(el("span", "muted", "checks run: "));
+      for (var ch = 0; ch < checks.length; ch++) checkRow.appendChild(el("span", "chip", checks[ch]));
+      container.appendChild(checkRow);
+    }
     if (payload.findings.length === 0) {
-      emptyNote(container, "(no findings)");
+      emptyNote(container, "(no findings — every check passed)");
       return;
     }
-    var rows = [];
+    container.appendChild(el("h3", "panel-title", "Findings (" + payload.findings.length + ")"));
     for (var i = 0; i < payload.findings.length; i++) {
       var f = payload.findings[i];
-      rows.push([f.severity, f.code, f.message]);
+      var card = el("div", "rcard");
+      var head = el("div", "rc-head");
+      var dot = el("span", "sdot " + (f.severity === "error" ? "error" : f.severity === "warning" ? "warn" : "dim"));
+      head.appendChild(dot);
+      head.appendChild(el("span", "rc-title", f.code));
+      head.appendChild(badge(f.severity === "error" ? "error" : f.severity === "warning" ? "warn" : "dim", f.severity));
+      card.appendChild(head);
+      card.appendChild(el("div", "rc-body", f.message));
+      container.appendChild(card);
     }
-    table(container, ["severity", "code", "message"], rows);
   }
 
   function renderAnalytics(container, payload) {
@@ -1260,55 +1926,144 @@
         " of " + payload.total_nodes + " nodes"));
     }
     var pr = (payload.centrality.global && payload.centrality.global.pagerank) || [];
-    var cols = el("div", "cols-2");
-    var centCol = el("div");
-    centCol.appendChild(el("h3", "panel-title", "Centrality — top by PageRank"));
-    table(centCol, ["node", "pagerank"],
-      pr.slice(0, 15).map(function (entry) { return [entry.node_id, entry.score]; }));
-    cols.appendChild(centCol);
     var comms = payload.communities.communities || [];
-    var commCol = el("div");
-    commCol.appendChild(el("h3", "panel-title", "Communities (" + payload.communities.community_count + ")"));
-    if (comms.length === 0) emptyNote(commCol, "(none)");
-    table(commCol, ["id", "size", "label", "cohesion", "signature"],
-      comms.map(function (c) { return [c.id, c.size, c.label, c.cohesion, c.membership_sig]; }));
-    cols.appendChild(commCol);
-    container.appendChild(cols);
-    container.appendChild(el("h3", "panel-title", "Bridges (surprising connections)"));
     var bridges = payload.bridges.bridges || [];
-    if (bridges.length === 0) emptyNote(container, "(none)");
-    table(container, ["source", "target", "relation", "kind", "surprise"],
-      bridges.map(function (b) { return [b.source, b.target, b.relation, b.kind, b.surprise_score]; }));
+
+    // KPI strip: scale of the analysis at a glance.
+    var grid = el("div", "kpi-grid");
+    grid.appendChild(kpiCard({
+      label: "Nodes analyzed", value: fmtInt(payload.node_count || 0),
+      deltas: payload.partial ? [{ text: "capped", dir: "down" }] : [],
+      baseline: payload.partial ? "of " + fmtInt(payload.total_nodes) + " total" : "full graph"
+    }));
+    grid.appendChild(kpiCard({
+      label: "Communities", value: payload.communities.community_count || 0,
+      deltas: [],
+      baseline: comms.length ? "largest: " + Math.max.apply(null, comms.map(function (c) { return c.size; })) + " members" : "no communities detected"
+    }));
+    grid.appendChild(kpiCard({
+      label: "Bridges", value: bridges.length,
+      deltas: [],
+      baseline: "surprising cross-community connections"
+    }));
+    grid.appendChild(kpiCard({
+      label: "Top PageRank", value: pr.length ? Number(pr[0].score).toFixed(4) : "—",
+      deltas: [],
+      baseline: pr.length ? pr[0].node_id : "no nodes"
+    }));
+    container.appendChild(grid);
+
+    // PageRank leaderboard as a bar-list (visual) — mono ids, tabular values.
+    container.appendChild(el("h3", "panel-title", "Centrality — top by PageRank"));
+    if (!pr.length) {
+      emptyNote(container, "(no nodes)");
+    } else {
+      var top = pr.slice(0, 12);
+      var max = 0;
+      for (var i = 0; i < top.length; i++) max = Math.max(max, Number(top[i].score) || 0);
+      for (var j = 0; j < top.length; j++) {
+        container.appendChild(barRow(top[j].node_id, Number(top[j].score) || 0, max,
+          Number(top[j].score).toFixed(4)));
+      }
+    }
+
+    var cols = el("div", "cols-2");
+    var commCol = el("div");
+    commCol.appendChild(el("h3", "panel-title", "Communities (" + (payload.communities.community_count || 0) + ")"));
+    if (comms.length === 0) {
+      emptyNote(commCol, "(none)");
+    } else {
+      for (var c = 0; c < comms.length; c++) {
+        var comm = comms[c];
+        var card = el("div", "rcard");
+        var head = el("div", "rc-head");
+        head.appendChild(el("span", "rc-title", comm.label || comm.id));
+        head.appendChild(badge("dim", comm.size + " nodes"));
+        card.appendChild(head);
+        var bodyRow = el("div", "rc-body");
+        bodyRow.appendChild(document.createTextNode("cohesion "));
+        var track = el("span", "bt");
+        track.style.display = "inline-block";
+        track.style.width = "120px";
+        track.style.verticalAlign = "middle";
+        var fill = el("span", "bf");
+        fill.style.width = Math.max(0, Math.min(100, (Number(comm.cohesion) || 0) * 100)) + "%";
+        track.appendChild(fill);
+        bodyRow.appendChild(track);
+        bodyRow.appendChild(document.createTextNode(" " + comm.cohesion));
+        card.appendChild(bodyRow);
+        card.appendChild(el("div", "muted mono", "sig " + comm.membership_sig));
+        commCol.appendChild(card);
+      }
+    }
+    cols.appendChild(commCol);
+    var bridgeCol = el("div");
+    bridgeCol.appendChild(el("h3", "panel-title", "Bridges (surprising connections)"));
+    if (bridges.length === 0) {
+      emptyNote(bridgeCol, "(none)");
+    } else {
+      for (var b = 0; b < bridges.length; b++) {
+        var br = bridges[b];
+        var bcard = el("div", "rcard");
+        var bhead = el("div", "rc-head");
+        bhead.appendChild(el("span", "rc-title", br.source + " → " + br.target));
+        bhead.appendChild(badge("info", br.relation));
+        bcard.appendChild(bhead);
+        var bbody = el("div", "rc-body");
+        bbody.appendChild(document.createTextNode("surprise "));
+        var btrack = el("span", "bt");
+        btrack.style.display = "inline-block";
+        btrack.style.width = "120px";
+        btrack.style.verticalAlign = "middle";
+        var bfill = el("span", "bf");
+        bfill.style.width = Math.max(0, Math.min(100, (Number(br.surprise_score) || 0) * 100)) + "%";
+        btrack.appendChild(bfill);
+        bbody.appendChild(btrack);
+        bbody.appendChild(document.createTextNode(" " + br.surprise_score + " · " + br.kind));
+        bcard.appendChild(bbody);
+        bridgeCol.appendChild(bcard);
+      }
+    }
+    cols.appendChild(bridgeCol);
+    container.appendChild(cols);
   }
 
   function renderAudit(container, payload) {
-    container.appendChild(el("p", null, payload.count + " most recent audit events (redacted)"));
+    // Visual chain timeline (T10 rail): seq / type / actor / time / payload,
+    // failures and conflicts tinted with a semantic rail dot (B4).
+    container.appendChild(el("p", "muted",
+      payload.count + " most recent audit events (redacted) · hash-chained, verify above"));
     if (payload.count === 0) {
       emptyNote(container, "(no audit events)");
     } else {
-      var rows = payload.events.map(function (event) {
-        return [nw(String(event.event_seq)), nw(event.event_type), nw(event.actor), nw(event.occurred_at),
-          JSON.stringify(event.payload)];
-      });
-      var tbl = table(container, ["seq", "type", "actor", "at", "payload"], rows);
-      // State rows: failures tint red, conflicts amber, with a left border.
-      var trs = tbl.querySelectorAll("tr");
-      for (var i = 1; i < trs.length; i++) {
-        var typeCell = trs[i].children[1];
-        if (!typeCell) continue;
-        if (/failed/.test(typeCell.textContent)) trs[i].className = "row-error";
-        else if (/conflict/.test(typeCell.textContent)) trs[i].className = "row-warn";
+      var tl = el("div", "tl");
+      for (var i = 0; i < payload.events.length; i++) {
+        var event = payload.events[i];
+        var cls = "tl-row";
+        if (/failed/.test(event.event_type)) cls += " row-error";
+        else if (/conflict/.test(event.event_type)) cls += " row-warn";
+        var row = el("div", cls);
+        row.appendChild(el("span", "tl-seq", "#" + event.event_seq));
+        row.appendChild(el("span", "tl-type", event.event_type));
+        row.appendChild(el("span", "tl-actor", event.actor));
+        row.appendChild(el("span", "tl-time", String(event.occurred_at).replace("T", " ").slice(0, 19)));
+        row.appendChild(el("span", "tl-payload", JSON.stringify(event.payload)));
+        tl.appendChild(row);
       }
+      container.appendChild(tl);
     }
-    var refsBox = el("div");
-    refsBox.appendChild(el("p", "empty", "loading refs…"));
-    container.appendChild(refsBox);
-    api("/api/refs").then(function (refs) {
+    // Refs render after the ledgers (audit chain > journals > diagnostics).
+    var refsBox = document.getElementById("audit-refs");
+    if (refsBox) {
       clear(refsBox);
-      renderRefs(refsBox, refs);
-    }).catch(function () {
-      clear(refsBox);
-    });
+      refsBox.appendChild(el("p", "empty", "loading refs…"));
+      api("/api/refs").then(function (refs) {
+        clear(refsBox);
+        renderRefs(refsBox, refs);
+      }).catch(function () {
+        clear(refsBox);
+      });
+    }
   }
 
   function renderRefs(container, payload) {
@@ -1338,20 +2093,53 @@
   }
 
   function renderProposals(container, payload) {
-    container.appendChild(el("p", null,
+    container.appendChild(el("p", "muted",
       payload.count + " review candidates (proposal-only; nothing here mutates the store)"));
     if (payload.count === 0) {
-      // Skeleton header keeps the table's shape visible in the empty state.
-      table(container, ["signal", "reasons", "nodes", "level"], []);
-      emptyNote(container, "(no candidates)");
+      emptyNote(container, "(no candidates — the review signal scan found nothing)");
       return;
     }
-    var rows = payload.signals.map(function (signal) {
-      return [signal.signal, (signal.reason_codes || []).join(", "),
-        (signal.source_node_ids || []).join(", "),
-        signal.low_confidence ? "hint" : "primary"];
-    });
-    table(container, ["signal", "reasons", "nodes", "level"], rows);
+    var counts = payload.signal_counts || {};
+    var countKeys = Object.keys(counts).sort();
+    if (countKeys.length) {
+      var strip = el("div", "kpi-grid");
+      for (var k = 0; k < countKeys.length; k++) {
+        strip.appendChild(kpiCard({
+          label: countKeys[k], value: counts[countKeys[k]], deltas: [],
+          baseline: "signal count"
+        }));
+      }
+      container.appendChild(strip);
+    }
+    for (var i = 0; i < payload.signals.length; i++) {
+      var signal = payload.signals[i];
+      var card = el("div", "rcard");
+      var head = el("div", "rc-head");
+      head.appendChild(el("span", "rc-title", signal.signal));
+      head.appendChild(badge(signal.low_confidence ? "dim" : "info",
+        signal.low_confidence ? "hint" : "primary"));
+      card.appendChild(head);
+      var body = el("div", "rc-body");
+      var reasons = signal.reason_codes || [];
+      for (var r = 0; r < reasons.length; r++) body.appendChild(el("span", "chip", reasons[r]));
+      card.appendChild(body);
+      var nodes = signal.source_node_ids || [];
+      if (nodes.length) {
+        var nodeRow = el("div", null);
+        for (var n = 0; n < nodes.length; n++) {
+          (function (nodeId) {
+            var link = el("button", "linkish", nodeId);
+            link.type = "button";
+            link.style.display = "inline-block";
+            link.style.marginRight = "10px";
+            link.addEventListener("click", function () { showTab("graph"); selectNode(nodeId); });
+            nodeRow.appendChild(link);
+          })(nodes[n]);
+        }
+        card.appendChild(nodeRow);
+      }
+      container.appendChild(card);
+    }
   }
 
   function renderDebt(container, payload) {
@@ -1359,36 +2147,106 @@
       emptyNote(container, "debt queue disabled: " + (payload.reason || ""));
       return;
     }
-    container.appendChild(el("p", null,
-      payload.candidate_count + " debt candidates (budget " + payload.budget +
-      ", overflow " + payload.overflow_count + ") — proposals only; nothing here mutates the store"));
+    // Visual priority queue: KPI strip (candidates/budget/overflow) + ranked
+    // cards with a proportional priority bar.
+    var grid = el("div", "kpi-grid");
+    grid.appendChild(kpiCard({
+      label: "Debt candidates", value: payload.candidate_count, deltas: [],
+      baseline: "proposals only; nothing here mutates the store"
+    }));
+    grid.appendChild(kpiCard({
+      label: "Budget", value: payload.budget, deltas: [],
+      baseline: "per review pass"
+    }));
+    grid.appendChild(kpiCard({
+      label: "Overflow", value: payload.overflow_count,
+      deltas: [{ text: payload.overflow_count > 0 ? "beyond budget" : "within budget", dir: payload.overflow_count > 0 ? "down" : "up" }],
+      baseline: "candidates past the budget line"
+    }));
+    container.appendChild(grid);
     if (!payload.items || payload.items.length === 0) {
-      table(container, ["rank", "node", "action", "priority", "signals", "merge target"], []);
-      emptyNote(container, "(no debt candidates)");
+      emptyNote(container, "(no debt candidates — the queue is clear)");
       return;
     }
-    var rows = payload.items.map(function (item) {
-      return [item.rank, item.node_id, item.action, item.priority,
-        (item.signals || []).join(", "), item.merge_target || ""];
-    });
-    table(container, ["rank", "node", "action", "priority", "signals", "merge target"], rows);
+    var maxPrio = 0;
+    for (var i = 0; i < payload.items.length; i++) maxPrio = Math.max(maxPrio, Number(payload.items[i].priority) || 0);
+    for (var j = 0; j < payload.items.length; j++) {
+      var item = payload.items[j];
+      var card = el("div", "rcard");
+      var head = el("div", "rc-head");
+      head.appendChild(el("span", "rank-badge", item.rank));
+      head.appendChild(el("span", "rc-title", item.node_id));
+      head.appendChild(badge("dim", item.action));
+      var prioTrack = el("span", "prio-track");
+      var prioFill = el("span", "prio-fill");
+      prioFill.style.width = (maxPrio > 0 ? Math.max(3, (Number(item.priority) / maxPrio) * 100) : 0) + "%";
+      prioTrack.appendChild(prioFill);
+      head.appendChild(prioTrack);
+      head.appendChild(el("span", "muted mono", String(item.priority)));
+      card.appendChild(head);
+      var body = el("div", "rc-body");
+      var signals = item.signals || [];
+      for (var s = 0; s < signals.length; s++) body.appendChild(el("span", "chip", signals[s]));
+      if (item.merge_target) {
+        body.appendChild(el("span", "muted", "merge → "));
+        body.appendChild(el("span", "mono", item.merge_target));
+      }
+      card.appendChild(body);
+      container.appendChild(card);
+    }
   }
 
   function renderExtractions(container, payload) {
-    container.appendChild(el("p", null,
+    // Provenance cards: status badge, confidence reported→effective as a dual
+    // bar (marker = reported), corroboration +/- pills.
+    container.appendChild(el("p", "muted",
       payload.count + " queued submissions (queue size " + payload.queue_size + ")"));
     if (!payload.rows || payload.rows.length === 0) {
-      table(container, ["receipt", "status", "actor", "agent", "size", "confidence", "corroboration"], []);
-      emptyNote(container, "(queue empty)");
+      // K1 empty state: visual + heading + cause + next step.
+      var empty = el("div", "empty-state");
+      empty.appendChild(svgEmptyQueue());
+      empty.appendChild(el("div", "empty-title", "Queue empty"));
+      empty.appendChild(el("div", "empty-body",
+        "No submissions are waiting for review. The queue fills when an agent " +
+        "submits an extraction via the intake contract (v4)."));
+      var hint = el("p", "muted", "Inspect the intake surface: ");
+      hint.appendChild(el("code", null, "know-your-context extraction review"));
+      empty.appendChild(hint);
+      container.appendChild(empty);
       return;
     }
-    var rows = payload.rows.map(function (row) {
-      return [row.receipt_id, row.status, row.actor, row.agent,
-        row.nodes + " nodes / " + row.edges + " edges",
-        row.confidence_reported + " → " + row.confidence_effective,
-        "+" + row.corroborators + " / -" + row.contradictions];
-    });
-    table(container, ["receipt", "status", "actor", "agent", "size", "confidence", "corroboration"], rows);
+    for (var i = 0; i < payload.rows.length; i++) {
+      var row = payload.rows[i];
+      var card = el("div", "rcard");
+      var head = el("div", "rc-head");
+      head.appendChild(el("span", "rc-title", row.receipt_id));
+      head.appendChild(badge(row.status === "accepted" ? "ok" : row.status === "rejected" ? "error" :
+        row.status === "pending" ? "warn" : "dim", row.status));
+      card.appendChild(head);
+      var body = el("div", "rc-body");
+      body.appendChild(el("span", "muted", row.actor + " · " + row.agent + " · " +
+        row.nodes + " nodes / " + row.edges + " edges"));
+      card.appendChild(body);
+      var confRow = el("div", "conf-pair");
+      confRow.appendChild(el("span", "muted", "confidence"));
+      var track = el("span", "conf-track");
+      var fill = el("span", "conf-fill");
+      fill.style.width = Math.max(0, Math.min(100, (Number(row.confidence_effective) || 0) * 100)) + "%";
+      track.appendChild(fill);
+      var mark = el("span", "conf-mark");
+      mark.style.left = Math.max(0, Math.min(100, (Number(row.confidence_reported) || 0) * 100)) + "%";
+      track.appendChild(mark);
+      confRow.appendChild(track);
+      confRow.appendChild(el("span", null, row.confidence_reported + " → " + row.confidence_effective));
+      card.appendChild(confRow);
+      var corr = el("div", "rc-body");
+      corr.appendChild(el("span", "delta-pill up", "+" + row.corroborators + " corroborators"));
+      corr.appendChild(document.createTextNode(" "));
+      corr.appendChild(el("span", "delta-pill " + (row.contradictions > 0 ? "down" : "flat"),
+        "−" + row.contradictions + " contradictions"));
+      card.appendChild(corr);
+      container.appendChild(card);
+    }
   }
 
   function renderStore(container) {
@@ -1503,21 +2361,6 @@
     });
   }
 
-  function renderBench(container, payload) {
-    var ops = payload.operations || [];
-    if (!ops.length) {
-      emptyNote(container, "(no completed invocations recorded yet)");
-      return;
-    }
-    var rows = ops.map(function (op) {
-      return [op.operation, op.count, op.min_ms, op.mean_ms, op.p50_ms, op.p95_ms, op.max_ms];
-    });
-    table(container, ["operation", "count", "min", "mean", "p50", "p95", "max"], rows);
-    if (payload.malformed_outcomes) {
-      container.appendChild(el("p", "muted", payload.malformed_outcomes + " malformed outcomes skipped"));
-    }
-  }
-
   function ledgerTable(box, entries, emptyText) {
     // Generic hash-chain entry rendering: known fields first, the payload as JSON.
     if (!entries.length) {
@@ -1580,18 +2423,35 @@
   }
 
   function renderContracts(container, payload) {
-    var box = el("p");
-    box.appendChild(badge("info", payload.frozen ? "frozen surface" : "live surface"));
-    container.appendChild(box);
+    // Structured panel: surface state KPI row, grouped op chips, rule notes.
+    var grid = el("div", "kpi-grid");
+    grid.appendChild(kpiCard({
+      label: "Surface", value: payload.frozen ? "frozen" : "live",
+      deltas: [{ text: payload.frozen ? "contract-locked" : "mutable", dir: payload.frozen ? "up" : "down" }],
+      baseline: "frozen surface = every change is a contract version"
+    }));
+    grid.appendChild(kpiCard({
+      label: "Knowledge operations", value: payload.knowledge_operations.length, deltas: [],
+      baseline: "the pinned knowledge surface"
+    }));
+    grid.appendChild(kpiCard({
+      label: "Ops operations", value: payload.ops_operations.length, deltas: [],
+      baseline: "operational surface (serve/system)"
+    }));
+    container.appendChild(grid);
     container.appendChild(el("h3", "panel-title",
       "Knowledge operations (" + payload.knowledge_operations.length + ")"));
+    var kwrap = el("div", null);
     for (var i = 0; i < payload.knowledge_operations.length; i++) {
-      container.appendChild(el("span", "chip", payload.knowledge_operations[i]));
+      kwrap.appendChild(el("span", "chip", payload.knowledge_operations[i]));
     }
+    container.appendChild(kwrap);
     container.appendChild(el("h3", "panel-title", "Ops operations (" + payload.ops_operations.length + ")"));
+    var owrap = el("div", null);
     for (var j = 0; j < payload.ops_operations.length; j++) {
-      container.appendChild(el("span", "chip", payload.ops_operations[j]));
+      owrap.appendChild(el("span", "chip", payload.ops_operations[j]));
     }
+    container.appendChild(owrap);
     container.appendChild(el("h3", "panel-title", "Contract rules"));
     for (var n = 0; n < payload.notes.length; n++) {
       container.appendChild(el("p", "muted", payload.notes[n]));
@@ -1605,26 +2465,52 @@
       clear(prefsBox);
       clear(progressBox);
       var progress = payload.progress;
-      var box = el("p");
       var level = progress.state === "done" ? "ok" : progress.state === "failed" ? "error" : "warn";
-      box.appendChild(badge(level, progress.state));
-      if (progress.updated_at) box.appendChild(el("span", "muted", " · updated " + progress.updated_at));
-      progressBox.appendChild(box);
+      // N6: progress twice — status badge text AND a proportional bar.
+      var headRow = el("p", null);
+      headRow.appendChild(badge(level, progress.state));
+      if (progress.updated_at) headRow.appendChild(el("span", "muted", " · updated " + progress.updated_at));
+      progressBox.appendChild(headRow);
       if (!progress.steps || !progress.steps.length) {
         var note = el("p", "empty", "(no install recorded — run: ");
         note.appendChild(el("code", null, "know-your-context setup"));
         note.appendChild(document.createTextNode(")"));
         progressBox.appendChild(note);
       } else {
+        var done = 0;
+        for (var c = 0; c < progress.steps.length; c++) {
+          if (progress.steps[c].status === "done") done++;
+        }
+        var track = el("div", "progress-track");
+        var fill = el("div", "progress-fill");
+        fill.style.width = Math.round((done / progress.steps.length) * 100) + "%";
+        track.appendChild(fill);
+        progressBox.appendChild(track);
+        progressBox.appendChild(el("p", "progress-note",
+          done + " / " + progress.steps.length + " steps done"));
+        // E8 stepper: numbered state circles, SVG check for done.
+        var stepper = el("div", "stepper");
         for (var i = 0; i < progress.steps.length; i++) {
           var step = progress.steps[i];
-          var row = el("div", "step-row");
+          var row = el("div", "stepper-row " + step.status);
+          var ico = el("span", "step-ico");
+          if (step.status === "done") {
+            ico.appendChild(svgIconCheck());
+          } else if (step.status === "failed") {
+            ico.textContent = "×";
+          } else if (step.status === "skipped") {
+            ico.textContent = "–";
+          } else {
+            ico.textContent = String(i + 1);
+          }
+          row.appendChild(ico);
           row.appendChild(el("span", "name", step.name));
           row.appendChild(badge(step.status === "done" ? "ok" : step.status === "failed" ? "error" :
             step.status === "skipped" ? "dim" : "warn", step.status));
           if (step.detail) row.appendChild(el("span", "detail", step.detail));
-          progressBox.appendChild(row);
+          stepper.appendChild(row);
         }
+        progressBox.appendChild(stepper);
       }
       var prefs = payload.prefs;
       table(prefsBox, ["field", "value"], [
@@ -1641,6 +2527,27 @@
     });
   }
 
+  function svgEmptyQueue() {
+    // K1 visual: low-contrast funnel outline (same family as the nav icon).
+    var svg = svgEl("svg", { viewBox: "0 0 48 48", width: 48, height: 48 });
+    svg.appendChild(svgEl("path", {
+      d: "M8 10h32L26 28v10l-6 3V28L8 10Z", fill: "none", stroke: "#D4D4D8",
+      "stroke-width": 2.5, "stroke-linecap": "round", "stroke-linejoin": "round"
+    }));
+    return svg;
+  }
+
+  function svgIconCheck() {
+    // SVG check mark — a text check glyph would trip the no-emoji invariant.
+    var svg = svgEl("svg", { viewBox: "0 0 12 12", width: 12, height: 12 });
+    var path = svgEl("path", {
+      d: "M2.5 6.2 5 8.7 9.5 3.6", fill: "none", stroke: "#fff",
+      "stroke-width": 1.6, "stroke-linecap": "round", "stroke-linejoin": "round"
+    });
+    svg.appendChild(path);
+    return svg;
+  }
+
   // ------------------------------------------------------------------ exports
 
   document.getElementById("export-form").addEventListener("submit", function (event) {
@@ -1649,7 +2556,7 @@
     var domain = document.getElementById("export-domain").value.trim();
     var kind = document.getElementById("export-kind").value;
     var body = document.getElementById("exports-body");
-    clear(body);
+    clear(body); // also drops the static empty state
     var path;
     if (kind === "node") {
       if (!nodeId) {
@@ -1669,14 +2576,22 @@
     body.appendChild(el("p", "empty", "exporting…"));
     api(path).then(function (payload) {
       clear(body);
+      var card = el("div", "rcard");
+      var head = el("div", "rc-head");
+      head.appendChild(el("span", "sdot ok"));
+      head.appendChild(el("span", "rc-title", kind + " export ready"));
+      card.appendChild(head);
       var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       var link = el("a", null, "download " + kind + " export (JSON)");
       link.href = URL.createObjectURL(blob);
       link.download = "kyc-" + kind + "-export.json";
-      body.appendChild(link);
+      var linkRow = el("div", "rc-body");
+      linkRow.appendChild(link);
+      card.appendChild(linkRow);
       var nodeCount = payload.node_count !== undefined ? payload.node_count :
         (payload.nodes ? payload.nodes.length : "?");
-      body.appendChild(el("p", "muted mono", "export built: " + nodeCount + " nodes"));
+      card.appendChild(el("p", "muted mono", "export built: " + nodeCount + " nodes"));
+      body.appendChild(card);
     }).catch(function (error) {
       clear(body);
       body.appendChild(el("p", "bad-badge", String(error.message || error)));
@@ -1687,66 +2602,124 @@
 
   function renderCodeintel(container, op, payload) {
     if (payload.kind && payload.kind.indexOf("analytics.code_intel.") === 0) {
-      container.appendChild(el("p", null, payload.kind + " — nodes " + payload.node_count +
+      container.appendChild(el("p", "muted", payload.kind + " — nodes " + payload.node_count +
         ", edges " + payload.edge_count + (payload.guards && payload.guards.length ?
         " — GUARDS: " + payload.guards.join(", ") : "")));
     }
     if (op === "callers" || op === "callees" || op === "impact") {
+      // Result diagram: root card + one lane per depth (chips, accent left rail).
       if (payload.root) {
-        container.appendChild(el("p", null, "root: " + payload.root.name + " (" + payload.root.kind +
-          ") — " + payload.root.path + ":" + payload.root.line + " — total " + payload.total));
+        var rootCard = el("div", "ci-root-card",
+          payload.root.name + " (" + payload.root.kind + ") — " + payload.root.path + ":" + payload.root.line +
+          " — total " + payload.total);
+        container.appendChild(rootCard);
       }
       if (payload.impacted_files) {
-        container.appendChild(el("p", null, "impacted files (" + payload.impacted_file_count + "): " +
+        container.appendChild(el("p", "muted", "impacted files (" + payload.impacted_file_count + "): " +
           payload.impacted_files.join(", ")));
       }
-      var rows = (payload.entries || []).map(function (entry) {
-        return ["d" + entry.depth, entry.name, entry.kind, entry.path + ":" + entry.line,
-          entry.via_edge_kind + (entry.via_line ? " @ " + entry.via_line : "")];
-      });
-      if (rows.length === 0) {
+      var entries = payload.entries || [];
+      if (entries.length === 0) {
         emptyNote(container, op === "callers" ? "(no callers)" : op === "callees" ? "(no callees)" : "(no impacted nodes)");
         return;
       }
-      table(container, ["depth", "name", "kind", "location", "via"], rows);
+      var lanes = el("div", "ci-lanes");
+      var byDepth = {};
+      var depths = [];
+      for (var i = 0; i < entries.length; i++) {
+        var d = entries[i].depth;
+        if (!byDepth[d]) { byDepth[d] = []; depths.push(d); }
+        byDepth[d].push(entries[i]);
+      }
+      depths.sort(function (a, b) { return a - b; });
+      for (var j = 0; j < depths.length; j++) {
+        var lane = el("div", "ci-lane");
+        lane.appendChild(el("div", "ci-lane-title", "depth " + depths[j]));
+        var list = byDepth[depths[j]];
+        for (var k = 0; k < list.length; k++) {
+          var chip = el("div", "ci-chip");
+          var chipHead = el("div", "rc-head");
+          chipHead.appendChild(el("span", "rc-title", list[k].name));
+          chipHead.appendChild(badge("info", list[k].kind));
+          chip.appendChild(chipHead);
+          var meta = el("div", "meta");
+          meta.appendChild(el("span", "chip", list[k].path + ":" + list[k].line));
+          meta.appendChild(el("span", "chip", "via " + list[k].via_edge_kind +
+            (list[k].via_line ? " @ " + list[k].via_line : "")));
+          chip.appendChild(meta);
+          lane.appendChild(chip);
+        }
+        lanes.appendChild(lane);
+      }
+      container.appendChild(lanes);
       return;
     }
     if (op === "path") {
-      if (!payload.paths || payload.paths.length === 0) {
+      if (!payload.paths || !payload.paths.length) {
         emptyNote(container, "(no dependency path)");
         return;
       }
+      // Each path renders as a horizontal node chain with arrows.
       payload.paths.forEach(function (p) {
-        container.appendChild(el("p", null, "cost " + p.cost + ": " + p.node_ids.join(" → ")));
+        container.appendChild(el("p", "muted", "cost " + p.cost));
+        var chain = el("div", "ci-path");
+        for (var i = 0; i < p.node_ids.length; i++) {
+          if (i > 0) chain.appendChild(el("span", "ci-arrow", "→"));
+          chain.appendChild(el("span", "ci-chip", p.node_ids[i]));
+        }
+        container.appendChild(chain);
       });
       return;
     }
     if (op === "co-change") {
-      container.appendChild(el("p", null, payload.change_set_count + " change sets, " +
+      container.appendChild(el("p", "muted", payload.change_set_count + " change sets, " +
         payload.total_pairs + " pairs"));
-      var pairs = (payload.pairs || []).map(function (pair) {
-        return [pair.support, pair.file_a, pair.file_b, pair.confidence_a_to_b, pair.confidence_b_to_a];
-      });
+      var pairs = payload.pairs || [];
       if (pairs.length === 0) {
         emptyNote(container, "(no co-change pairs above the support threshold)");
         return;
       }
-      table(container, ["support", "file a", "file b", "conf a→b", "conf b→a"], pairs);
+      var maxConf = 0;
+      for (var m = 0; m < pairs.length; m++) {
+        maxConf = Math.max(maxConf, Number(pairs[m].confidence_a_to_b) || 0, Number(pairs[m].confidence_b_to_a) || 0);
+      }
+      for (var q = 0; q < pairs.length; q++) {
+        var pair = pairs[q];
+        var card = el("div", "rcard");
+        var head = el("div", "rc-head");
+        head.appendChild(el("span", "rc-title", pair.file_a + " ↔ " + pair.file_b));
+        head.appendChild(badge("dim", "support " + pair.support));
+        card.appendChild(head);
+        var body = el("div", "rc-body");
+        body.appendChild(barRow("a→b", Number(pair.confidence_a_to_b) || 0, maxConf, String(pair.confidence_a_to_b)));
+        body.appendChild(barRow("b→a", Number(pair.confidence_b_to_a) || 0, maxConf, String(pair.confidence_b_to_a)));
+        card.appendChild(body);
+        container.appendChild(card);
+      }
       return;
     }
     if (op === "boundary") {
-      container.appendChild(el("p", null, payload.total_violations + " violations, " +
+      container.appendChild(el("p", "muted", payload.total_violations + " violations, " +
         payload.unlayered_nodes + " unlayered nodes, " + payload.skipped_unlayered_edges +
         " skipped edges"));
-      var violations = (payload.violations || []).map(function (violation) {
-        return [violation.from_layer + " → " + violation.to_layer, violation.edge_kind,
-          violation.source_path, violation.target_path];
-      });
+      var violations = payload.violations || [];
       if (violations.length === 0) {
         emptyNote(container, "(no boundary violations)");
         return;
       }
-      table(container, ["flow", "kind", "source", "target"], violations);
+      for (var v = 0; v < violations.length; v++) {
+        var violation = violations[v];
+        var vcard = el("div", "rcard");
+        var vhead = el("div", "rc-head");
+        vhead.appendChild(el("span", "sdot error"));
+        vhead.appendChild(el("span", "rc-title",
+          violation.from_layer + " → " + violation.to_layer));
+        vhead.appendChild(badge("error", violation.edge_kind));
+        vcard.appendChild(vhead);
+        vcard.appendChild(el("div", "rc-body mono",
+          violation.source_path + " → " + violation.target_path));
+        container.appendChild(vcard);
+      }
     }
   }
 
@@ -1778,6 +2751,16 @@
 
   document.getElementById("codeintel-form").addEventListener("submit", runCodeintel);
 
+  // ------------------------------------------------------------- system tab
+  // Health + Store + System merged into one tab with three panels (SUB-149).
+
+  function loadSystemPanel(mode) {
+    mode = mode || SUBMODE.system;
+    if (mode === "health") loadPanel("health-body", "/api/health", renderHealth);
+    else if (mode === "store") renderStore();
+    else renderSystem();
+  }
+
   // ------------------------------------------------------------------- audit
 
   document.getElementById("audit-verify").addEventListener("click", function () {
@@ -1800,23 +2783,40 @@
     if (quiet && activity.lastSeq > 0) activityPoll();
     else activityLoad();
   };
-  refreshers.search = function () { /* interactive; polls nothing */ };
-  refreshers.browse = function () { loadBrowse(); };
-  refreshers.metrics = function () { loadPanel("metrics-body", "/api/metrics", renderMetrics); };
-  refreshers.health = function () { loadPanel("health-body", "/api/health", renderHealth); };
+  refreshers.search = function () {
+    // merged tab: the active mode decides what refreshes
+    if (SUBMODE.search === "browse") loadBrowse();
+    // search mode is interactive; it polls nothing
+  };
+  refreshers.metrics = function () { loadMetrics(); };
   refreshers.analytics = function () { loadPanel("analytics-body", "/api/analytics", renderAnalytics); };
-  refreshers.audit = function () { loadPanel("audit-body", "/api/audit?limit=100", renderAudit); };
+  refreshers.audit = function () {
+    loadPanel("audit-body", "/api/audit?limit=100", renderAudit);
+    renderLedgers();
+  };
   refreshers.proposals = function () { loadPanel("proposals-body", "/api/proposals", renderProposals); };
   refreshers.debt = function () { loadPanel("debt-body", "/api/debt", renderDebt); };
   refreshers.codeintel = function () { /* interactive form; runs on submit */ };
   refreshers.extractions = function () { loadPanel("extractions-body", "/api/extractions", renderExtractions); };
-  refreshers.store = function () { renderStore(); };
-  refreshers.system = function () { renderSystem(); };
-  refreshers.bench = function () { loadPanel("bench-body", "/api/bench", renderBench); };
-  refreshers.ledgers = function () { renderLedgers(); };
+  refreshers.system = function () { loadSystemPanel(); };
   refreshers.exports = function () { /* interactive form; runs on submit */ };
   refreshers.contracts = function () { loadPanel("contracts-body", "/api/contracts", renderContracts); };
   refreshers.setup = function () { renderSetup(); };
+
+  // Merged-tab mode wiring: Search = search|browse; System = health|store|ops.
+  wireModes("search", ["search", "browse"], function (mode) {
+    if (mode === "browse") { loadBrowseStats(); loadBrowse(); }
+    document.getElementById("search-seg-note").textContent = mode === "browse" ?
+      "paged raw tables: nodes, relations, code edges, symbols, refs" :
+      "symbol search across the code graph · browse paged tables";
+  });
+  wireModes("system", ["health", "store", "ops"], function (mode) {
+    loadSystemPanel(mode);
+    document.getElementById("system-seg-note").textContent =
+      mode === "health" ? "diagnostics: findings, checks, severity" :
+      mode === "store" ? "store introspection: stats, tables, schema versions" :
+      "runtime: hardware, relearn gate, switches, config, routes";
+  });
 
   var tabButtons = document.querySelectorAll(".tab");
   for (var t = 0; t < tabButtons.length; t++) {
