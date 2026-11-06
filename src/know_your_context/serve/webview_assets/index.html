@@ -77,7 +77,6 @@
       <section id="view-graph" class="view active">
         <div class="toolbar subbar" id="graph-toolbar">
           <span class="subbar-title">Knowledge graph</span>
-          <span id="graph-stats" class="muted"></span>
           <span class="subbar-right">
             <button id="graph-fit" type="button">Fit to view</button>
             <button id="graph-reload" type="button">Reload</button>
@@ -100,6 +99,11 @@
               <span class="hud-zoom" id="graph-zoom-label">100%</span>
               <button id="graph-zoom-in" type="button" title="Zoom in">+</button>
               <button id="graph-hud-fit" type="button" title="Fit to view">Fit</button>
+            </div>
+            <div class="hud-stats" id="graph-stats">
+              <span>Nodes: <b id="graph-stat-nodes">–</b></span>
+              <span>Edges: <b id="graph-stat-edges">–</b></span>
+              <span>Chain: <button id="graph-chain-verify" type="button" class="hud-chain">verify</button></span>
             </div>
           </div>
         </div>

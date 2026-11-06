@@ -205,6 +205,7 @@
     edges: document.getElementById("graph-edges")
   };
   var graphNodeEls = {}; // node id -> card element
+  var graphTileStyles = {}; // node id -> tile background (deterministic identity)
   var graphEdgeButtons = [];
   var graphSelectedId = null;
   var GNODE_W = 232;
@@ -223,6 +224,64 @@
   function shortScore(raw) {
     var value = parseFloat(raw);
     return isNaN(value) ? String(raw) : value.toFixed(2);
+  }
+
+  // ------------------------------------------------------- tile identity
+  // Curated gradient palette (foto-1 language): each node gets a unique
+  // gradient so cards carry visual identity. Hierarchy endpoints (kind root
+  // = chain start, kind leaf = terminal) stay dark ink — the anchor signal.
+  var GTILE_DARK = "#1F2937";
+  var GTILE_GRADIENTS = [
+    ["#A855F7", "#EC4899", "#F59E0B"], // violet → pink → amber
+    ["#3B82F6", "#F97316"], // blue → orange
+    ["#34D399", "#8B5CF6"], // teal → violet
+    ["#D946EF", "#8B5CF6"], // magenta → violet
+    ["#EC4899", "#A78BFA"], // pink → lavender
+    ["#FBBF24", "#F97316", "#EF4444"], // amber → orange → red
+    ["#22D3EE", "#6366F1"], // cyan → indigo
+    ["#84CC16", "#14B8A6"], // lime → teal
+    ["#F472B6", "#FB923C"], // rose → orange
+    ["#60A5FA", "#34D399"] // sky → emerald
+  ];
+
+  function gnodeTileIsDark(node) {
+    var kind = String(node.kind || "leaf").toLowerCase();
+    return kind === "root" || kind === "leaf";
+  }
+
+  // FNV-1a 32-bit — the same stable hash foto-1 uses for sha8; pure function
+  // of the node id, so the identity survives re-layouts and reloads.
+  function fnv1a(text) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = (h * 0x01000193) >>> 0;
+    }
+    return h >>> 0;
+  }
+
+  // Deterministic per-graph assignment: hash(node.id) picks the base slot;
+  // collisions probe forward in ascending id order, so two distinct nodes
+  // never share a gradient while the palette has free slots (palette reuse
+  // only when nodes > palette size — documented ceiling).
+  function assignTileGradients(nodes) {
+    var styles = {};
+    var taken = {};
+    var sorted = nodes.slice().sort(function (a, b) {
+      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+    });
+    for (var i = 0; i < sorted.length; i++) {
+      var node = sorted[i];
+      if (gnodeTileIsDark(node)) {
+        styles[node.id] = GTILE_DARK;
+        continue;
+      }
+      var slot = fnv1a(node.id) % GTILE_GRADIENTS.length;
+      while (taken[slot]) slot = (slot + 1) % GTILE_GRADIENTS.length;
+      taken[slot] = true;
+      styles[node.id] = "linear-gradient(135deg, " + GTILE_GRADIENTS[slot].join(", ") + ")";
+    }
+    return styles;
   }
 
   // Node (x, y) from the server layout is the card CENTER (same semantics as
@@ -403,12 +462,19 @@
   function gnodeElement(node) {
     var card = el("div", "gnode");
     card.setAttribute("data-node-id", node.id);
-    card.appendChild(el("span", "gnode-tile", node.domain || "?"));
+    var tile = el("span", "gnode-tile", node.domain || "?");
+    // Deterministic identity (see assignTileGradients): a unique curated
+    // gradient per node; hierarchy endpoints (root/leaf) stay dark ink.
+    tile.style.background = graphTileStyles[node.id] || GTILE_DARK;
+    card.appendChild(tile);
     var text = el("div", "gnode-text");
     text.appendChild(el("div", "gnode-eyebrow",
       (node.domain || "") + " · " + (node.kind || "leaf") + " · " + (node.lifecycle_status || "active")));
     text.appendChild(el("div", "gnode-title", node.label || node.id));
     card.appendChild(text);
+    // Card affordance is always visible (foto-1), never hover-gated.
+    var menu = el("span", "gnode-menu", "···");
+    card.appendChild(menu);
 
     // Expanded body (foto-2): full summary content block + meta badges.
     var body = el("div", "gnode-body");
@@ -455,6 +521,7 @@
     }
     graphNodeEls = {};
     if (!graphData) return;
+    graphTileStyles = assignTileGradients(graphData.nodes);
     for (var i = 0; i < graphData.nodes.length; i++) {
       var card = gnodeElement(graphData.nodes[i]);
       graphNodeEls[graphData.nodes[i].id] = card;
@@ -536,10 +603,12 @@
     return api("/api/graph").then(function (payload) {
       var hadData = graphData !== null;
       graphData = payload;
-      var stats = document.getElementById("graph-stats");
-      stats.textContent = payload.total_nodes + " nodes · " + payload.total_edges + " edges · layout " +
-        payload.layout.mode + (payload.truncated ? " · TRUNCATED" : "");
-      stats.className = "muted mono";
+      // Stats live in the bottom HUD strip next to the zoom pill (foto-1),
+      // not in the toolbar — the canvas owns its own telemetry.
+      document.getElementById("graph-stat-nodes").textContent = String(payload.total_nodes);
+      document.getElementById("graph-stat-edges").textContent = String(payload.total_edges);
+      document.getElementById("graph-stats").title =
+        "layout " + payload.layout.mode + (payload.truncated ? " · TRUNCATED (showing a capped subset)" : "");
       buildGraph();
       if (!hadData) fitView();
       setStatus("");
@@ -633,6 +702,22 @@
     applyGraphTransform();
   });
   document.getElementById("graph-hud-fit").addEventListener("click", fitView);
+  // Chain verification is a heavy, explicitly user-initiated call (the same
+  // endpoint the Audit tab uses); the HUD pill starts unverified and reports
+  // the honest result.
+  document.getElementById("graph-chain-verify").addEventListener("click", function (event) {
+    event.stopPropagation();
+    var pill = document.getElementById("graph-chain-verify");
+    pill.textContent = "verifying…";
+    pill.className = "hud-chain";
+    api("/api/audit/verify").then(function (payload) {
+      pill.textContent = payload.ok ? "valid · " + payload.checked : "BROKEN @ seq " + payload.first_bad_seq;
+      pill.className = "hud-chain " + (payload.ok ? "hud-chain-ok" : "hud-chain-bad");
+    }).catch(function (error) {
+      pill.textContent = String(error.message || error);
+      pill.className = "hud-chain hud-chain-bad";
+    });
+  });
   document.getElementById("graph-fit").addEventListener("click", fitView);
   document.getElementById("graph-reload").addEventListener("click", function () { loadGraph(); });
   window.addEventListener("resize", resizeCanvas);
@@ -708,19 +793,41 @@
       }
 
       var relations = dpSection(body, "Relations");
-      if (node.relations.length === 0) emptyNote(relations, "(none)");
+      var seenRel = {};
       for (var r = 0; r < node.relations.length; r++) {
+        seenRel[node.relations[r].kind + "→" + node.relations[r].target] = true;
         relations.appendChild(relationButton(node.relations[r]));
       }
+      // The node API lists outgoing non-parent relations only; merge the
+      // graph-level edges so the panel reports the same connection set the
+      // expanded card shows (parent_of and incoming edges included).
+      if (graphData) {
+        for (var g = 0; g < graphData.edges.length; g++) {
+          var edge = graphData.edges[g];
+          if (edge.source === nodeId) {
+            if (seenRel[edge.kind + "→" + edge.target]) continue;
+            seenRel[edge.kind + "→" + edge.target] = true;
+            relations.appendChild(relationButton({ kind: edge.kind, target: edge.target }));
+          } else if (edge.target === nodeId) {
+            if (seenRel[edge.kind + "←" + edge.source]) continue;
+            seenRel[edge.kind + "←" + edge.source] = true;
+            relations.appendChild(relationButton({ kind: edge.kind, target: edge.source, incoming: true }));
+          }
+        }
+      }
+      if (relations.children.length === 1) emptyNote(relations, "(none)"); // heading only
 
       var hierarchy = dpSection(body, "Hierarchy (callers / callees)");
-      hierarchy.appendChild(el("p", "empty", "loading…"));
+      var hierarchyLoading = el("p", "empty", "loading…");
+      hierarchy.appendChild(hierarchyLoading);
       api("/api/hierarchy/" + encodeURIComponent(node.node_id) + "?depth=1").then(function (hier) {
-        clear(hierarchy);
+        // Remove ONLY the loading note — clearing the section would wipe the
+        // eyebrow heading (the panel lost "Hierarchy" entirely that way).
+        if (hierarchyLoading.parentNode) hierarchyLoading.parentNode.removeChild(hierarchyLoading);
         hierarchy.appendChild(hierarchyList("Callers", hier.callers.entries));
         hierarchy.appendChild(hierarchyList("Callees", hier.callees.entries));
       }).catch(function () {
-        clear(hierarchy);
+        if (hierarchyLoading.parentNode) hierarchyLoading.parentNode.removeChild(hierarchyLoading);
         hierarchy.appendChild(el("p", "empty", "(no call-graph entry for this node)"));
       });
     }).catch(function (error) {
@@ -730,7 +837,7 @@
   }
 
   function relationButton(rel) {
-    var btn = el("button", "linkish", rel.kind + " → " + rel.target);
+    var btn = el("button", "linkish", rel.kind + (rel.incoming ? " ← " : " → ") + rel.target);
     btn.type = "button";
     btn.addEventListener("click", function () { selectNode(rel.target); });
     return btn;

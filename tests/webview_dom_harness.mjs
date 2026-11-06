@@ -92,6 +92,9 @@ register(new Elem("aside"), "detail-panel", "hidden");
 register(new Elem("div"), "detail-body");
 register(new Elem("span"), "detail-title");
 register(new Elem("button"), "detail-close");
+// index.html pins these classes/ids in the graph HUD strip (SUB-147).
+register(new Elem("div"), "graph-stats", "hud-stats");
+register(new Elem("button"), "graph-chain-verify", "hud-chain");
 
 const documentShim = {
   getElementById(id) { return BY_ID[id] || register(new Elem("div"), id); },
@@ -133,6 +136,7 @@ function payloadFor(path) {
   const base = path.split("?")[0];
   if (base === "/api/setup") return { live_refresh_seconds: 0 };
   if (base === "/api/graph") return GRAPH;
+  if (base === "/api/audit/verify") return { ok: true, checked: 12 };
   if (base.startsWith("/api/node/")) return NODE_DETAIL;
   if (base.startsWith("/api/hierarchy/")) return { callers: { entries: [] }, callees: { entries: [] } };
   if (base === "/api/activity" || base === "/api/activity/tail") return { entries: [], agents: [] };
@@ -155,7 +159,9 @@ require("../src/know_your_context/serve/webview_assets/app.js");
 await tick(); await tick();
 
 const byId = (id) => documentShim.getElementById(id);
-const gnodes = () => documentShim.querySelectorAll(".gnode");
+// A reload detaches old cards (parentNode null) but the shim's global
+// registry keeps them — always read the LIVE tree (attached to a parent).
+const gnodes = () => documentShim.querySelectorAll(".gnode").filter((e) => e.parentNode);
 const gnode = (id) => gnodes().find((e) => e.getAttribute("data-node-id") === id);
 const paths = () => byId("graph-edges").children;
 
@@ -167,9 +173,26 @@ check("graph renders one svg path per edge", paths().length === 3);
 check("edges are cubic beziers", [...paths()].every((p) => (p.getAttribute("d") || "").includes(" C ")));
 check("parallel edges bend apart", paths()[1].getAttribute("d") !== paths()[2].getAttribute("d"));
 check("edge-add markers only on edges with room", documentShim.querySelectorAll(".edge-add").length === 2);
-check("stats line populated", byId("graph-stats").textContent.includes("4 nodes"));
+// Stats live in the bottom HUD strip (SUB-147), not the toolbar.
+check("hud stats populated", byId("graph-stat-nodes").textContent === "4" && byId("graph-stat-edges").textContent === "3");
+check("hud stats element is the graph-stats id", byId("graph-stats").classList.contains("hud-stats"));
 check("fit-to-view applied a transform", (byId("graph-canvas").style.transform || "").includes("scale("));
 check("zoom label set", /%$/.test(byId("graph-zoom-label").textContent));
+
+// --- tile identity: deterministic unique gradient per node, dark anchors ---
+const tileOf = (id) => gnode(id).querySelectorAll(".gnode-tile")[0];
+check("root node tile stays dark ink", tileOf("n1").style.background === "#1F2937");
+check("child node tiles carry gradients",
+  ["n2", "n3", "n4"].every((id) => (tileOf(id).style.background || "").startsWith("linear-gradient(135deg")));
+const gradSet = new Set(["n2", "n3", "n4"].map((id) => tileOf(id).style.background));
+check("distinct nodes get distinct gradients", gradSet.size === 3);
+check("every card shows the always-visible menu", gnodes().every((g) => g.querySelectorAll(".gnode-menu").length === 1));
+// Reload must reproduce the identical assignment (deterministic from node id).
+const gradBefore = ["n1", "n2", "n3", "n4"].map((id) => tileOf(id).style.background).join("|");
+byId("graph-reload").click();
+await tick(); await tick();
+check("reload keeps one live card per node", gnodes().length === 4);
+check("tile identity stable across reload", ["n1", "n2", "n3", "n4"].map((id) => tileOf(id).style.background).join("|") === gradBefore);
 
 // --- click node: expand + panel slides in ---------------------------------
 const before = paths()[0].getAttribute("d");
@@ -186,6 +209,17 @@ check("panel not hidden", !byId("detail-panel").classList.contains("hidden"));
 check("panel title shows the summary", byId("detail-title").textContent === "alpha lesson");
 check("panel has structured kv rows", byId("detail-body").querySelectorAll(".dp-kv").length >= 5);
 check("panel has score bars", byId("detail-body").querySelectorAll(".scorebar").length === 5);
+// Panel completeness (SUB-147): Relations merges graph edges (parent_of +
+// incoming), so it matches the card's connection list — n1 has supports→n2
+// plus parent_of→n3 and supports→n3.
+check("panel relations match the card connections",
+  byId("detail-body").querySelectorAll(".dp-section")[3].querySelectorAll(".linkish").length === 3);
+// The hierarchy heading must survive the async resolve (clear() used to wipe it).
+await tick(); await tick();
+const eyebrows = byId("detail-body").querySelectorAll(".dp-eyebrow").map((e) => e.textContent);
+check("hierarchy heading survives async load", eyebrows.includes("Hierarchy (callers / callees)"));
+const textOf = (e) => (e.textContent || "") + e.children.map(textOf).join("");
+check("hierarchy empty state is honest", textOf(byId("detail-body")).includes("(none)"));
 check("hot edges highlight the selection", [...paths()].some((p) => p.getAttribute("class") === "hot"));
 check("edges re-bend after expand", paths()[0].getAttribute("d") !== before);
 check("expanded card never covers a neighbour", !intersects(boxOf(gnode("n1")), boxOf(gnode("n4"))));
@@ -215,6 +249,12 @@ const labelBefore = byId("graph-zoom-label").textContent;
 byId("graph-zoom-in").click();
 check("zoom-in updates the label", byId("graph-zoom-label").textContent !== labelBefore);
 check("zoom-in updates the transform", byId("graph-canvas").style.transform.includes("scale("));
+
+// --- chain verification pill is wired to the real audit/verify endpoint ------
+byId("graph-chain-verify").click();
+await tick(); await tick();
+check("chain pill reports the verified chain", byId("graph-chain-verify").textContent === "valid · 12");
+check("chain pill takes the ok styling", byId("graph-chain-verify").classList.contains("hud-chain-ok"));
 
 // --- edge midpoint marker is inert but honest --------------------------------
 byId("detail-panel").classList.add("hidden");

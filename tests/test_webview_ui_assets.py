@@ -204,6 +204,59 @@ class TestGraphMechanics:
         assert "dp-eyebrow" in JS
 
 
+class TestGraphFidelity:
+    """SUB-147 pins: the three measured fidelity gaps must stay closed.
+
+    (1) deterministic per-node gradient tile identity, (2) hairline cards
+    with an always-visible menu affordance, (3) stats in the bottom HUD
+    strip next to the zoom pill.
+    """
+
+    def test_tile_identity_is_deterministic_from_node_id(self) -> None:
+        assert "assignTileGradients" in JS
+        assert "fnv1a" in JS  # stable hash of the node id, same family as foto-1 sha8
+        assert "GTILE_GRADIENTS" in JS
+        assert "linear-gradient(135deg" in JS
+        assert "tile.style.background = graphTileStyles[node.id]" in JS
+
+    def test_hierarchy_endpoints_stay_dark(self) -> None:
+        assert 'kind === "root" || kind === "leaf"' in JS
+        assert '"#1F2937"' in JS  # GTILE_DARK
+
+    def test_cards_have_no_shadow_only_hairline(self) -> None:
+        block = re.search(r"\.gnode\s*\{(?P<body>[^}]*)\}", CSS)
+        assert block is not None
+        assert "box-shadow: none" in block.group("body")
+        assert ".gnode:hover { box-shadow" not in CSS
+        assert ".gnode.selected {" in CSS and "0 0 0 3px" not in CSS
+
+    def test_card_menu_always_visible(self) -> None:
+        assert 'el("span", "gnode-menu"' in JS
+        menu_rules = re.findall(r"\.gnode-menu[^{]*\{[^}]*\}", CSS)
+        assert menu_rules, "gnode-menu rule missing"
+        for rule in menu_rules:
+            assert ":hover" not in rule
+            assert "display: none" not in rule
+
+    def test_stats_live_in_bottom_hud_not_toolbar(self) -> None:
+        assert 'id="graph-stats" class="muted"' not in HTML  # gone from the toolbar
+        assert 'class="hud-stats" id="graph-stats"' in HTML
+        for element_id in ("graph-stat-nodes", "graph-stat-edges", "graph-chain-verify"):
+            assert f'id="{element_id}"' in HTML, element_id
+        assert 'class="hud" id="graph-hud"' in HTML
+        hud_block = HTML.split('class="hud" id="graph-hud"', 1)[1]
+        assert "hud-stats" in hud_block.split("</section>", 1)[0]
+        assert "/api/audit/verify" in JS  # chain pill is wired, not decorative
+
+    def test_panel_lists_one_row_per_relation(self) -> None:
+        # linkish buttons must be block-level: inline flow concatenated the
+        # relations rows ("supports → n-deltaparent_of → n-delta").
+        block = re.search(r"\.linkish\s*\{(?P<body>[^}]*)\}", CSS)
+        assert block is not None
+        assert "display: block" in block.group("body")
+        assert 'classList.add("open")' in JS  # panel still slides open
+
+
 class TestSyntax:
     def test_app_js_parses(self) -> None:
         node = shutil.which("node") or shutil.which("node", path="/root/.hermes/tools/node-26.12.1-linux-x64/bin")
