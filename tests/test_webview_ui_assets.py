@@ -257,6 +257,145 @@ class TestGraphFidelity:
         assert 'classList.add("open")' in JS  # panel still slides open
 
 
+class TestSidebarFidelity:
+    """SUB-148 pins: the sidebar must hold the professional standard of
+    PATTERNS.md A2/A4 (shell) and I1-I4 (icon system).
+
+    (1) One inline-SVG outline icon set for all 19 nav items (16px grid,
+    1.5px stroke, round caps, currentColor) — no text/Unicode glyphs.
+    (2) Active state = neutral soft-gray pill #F3F4F6 + darker ink; accent
+    purple is reserved for small badges, not the active row.
+    (3) Section labels: 11px TITLE CASE (not uppercase), muted #98A2B3,
+    aligned with the icon column (sidebar-nav-design hard rule).
+    (4) Item metrics: 32px tall, 34px pitch, 8px radius, 10px padding,
+    10px icon gap.
+    (5) Logo row = bordered switcher pill (38px, radius 10px) aligned to
+    the icon column; gradient brand tile; small tidy badge.
+    """
+
+    @staticmethod
+    def _nav_block() -> str:
+        return HTML.split('id="tabs"', 1)[1].split("</nav>", 1)[0]
+
+    @staticmethod
+    def _css_rule(selector: str) -> str:
+        block = re.search(re.escape(selector) + r"\s*\{(?P<body>[^}]*)\}", CSS)
+        assert block is not None, f"rule missing: {selector}"
+        return block.group("body")
+
+    def test_every_nav_item_has_inline_svg_icon(self) -> None:
+        nav = self._nav_block()
+        buttons = re.findall(r"<button[^>]*nav-item[^>]*>.*?</button>", nav, re.DOTALL)
+        assert len(buttons) == 19
+        for button in buttons:
+            assert "<svg" in button, button[:80]
+
+    def test_icons_share_one_outline_spec(self) -> None:
+        nav = self._nav_block()
+        svgs = re.findall(r"<svg[^>]*>", nav)
+        assert len(svgs) == 19
+        for svg in svgs:
+            assert 'viewBox="0 0 16 16"' in svg
+            assert 'fill="none"' in svg
+            assert 'stroke="currentColor"' in svg
+            assert 'stroke-width="1.5"' in svg
+            assert 'stroke-linecap="round"' in svg
+            assert 'stroke-linejoin="round"' in svg
+
+    def test_no_text_glyph_icons_left_in_nav(self) -> None:
+        nav = self._nav_block()
+        for glyph in "◈⌕≡≣↗⌗□◷⇥∑▤⌁▦§⇓¶◐▸":
+            assert glyph not in nav, f"legacy glyph {glyph} still in nav"
+        assert re.search(r">\s*\+\s*<", nav) is None  # bare "+" was Health
+
+    def test_icons_render_at_16px_fixed_box(self) -> None:
+        body = self._css_rule(".nav-ico")
+        assert "width: 16px" in body
+        assert "height: 16px" in body
+        svg_body = self._css_rule(".nav-ico svg")
+        assert "display: block" in svg_body
+
+    def test_active_state_is_neutral_pill_not_accent(self) -> None:
+        body = self._css_rule(".nav-item.active")
+        assert "background: var(--active-bg)" in body
+        assert "color: var(--text-primary)" in body
+        assert "--accent-soft" not in body
+        assert "var(--accent)" not in body
+        ico = self._css_rule(".nav-item.active .nav-ico")
+        assert "var(--accent)" not in ico
+        assert "color: var(--text-primary)" in ico
+
+    def test_active_pill_token_is_soft_gray(self) -> None:
+        assert "--active-bg: #F3F4F6" in CSS
+        assert "--text-primary: #101828" in CSS
+        assert "--text-nav: #344054" in CSS
+        assert "--icon: #667085" in CSS
+        assert "--text-muted: #98A2B3" in CSS
+
+    def test_accent_survives_only_as_small_badges(self) -> None:
+        # The logo badge keeps the one accent moment (foto-1 CEO badge).
+        badge = self._css_rule(".logo-badge")
+        assert "var(--accent)" in badge
+        assert "border-radius: 999px" in badge
+
+    def test_section_label_spec(self) -> None:
+        body = self._css_rule(".nav-label")
+        assert "font-size: 11px" in body
+        assert "font-weight: 500" in body
+        assert "letter-spacing: 0.015em" in body
+        assert "color: var(--text-muted)" in body
+        assert "text-transform" not in body  # title case, NOT uppercase
+        assert "margin: 10px 0 4px 10px" in body  # left edge = icon column
+
+    def test_no_divider_lines_between_sections(self) -> None:
+        body = self._css_rule(".nav-label")
+        assert "border" not in body
+        # .nav-section carries no visual chrome at all (whitespace only).
+        block = re.search(r"\.nav-section\s*\{[^}]*\}", CSS)
+        assert block is None or "border" not in block.group(0)
+
+    def test_nav_item_metrics(self) -> None:
+        # Dense-nav deviation, reasoned from the skill's density principle:
+        # 19 items -> 28px rows (skill range for 15+ items: 26-30px) so the
+        # whole set fits at 900px without scrolling.
+        body = self._css_rule(".nav-item")
+        assert "height: 28px" in body
+        assert "gap: 10px" in body
+        assert "padding: 0 10px" in body
+        assert "border-radius: 7px" in body
+        assert "font-size: 13.5px" in body
+        assert "color: var(--text-nav)" in body
+        gap = self._css_rule(".nav-item + .nav-item")
+        assert "margin-top: 2px" in gap  # 28px + 2px = 30px pitch
+
+    def test_icon_color_token(self) -> None:
+        body = self._css_rule(".nav-ico")
+        assert "width: 16px" in body
+        assert "height: 16px" in body
+        assert "color: var(--icon)" in body
+
+    def test_logo_row_is_switcher_pill_aligned_to_icons(self) -> None:
+        body = self._css_rule(".logo-row")
+        assert "height: 38px" in body
+        assert "border-radius: 10px" in body
+        assert "border: 1px solid var(--border-strong)" in body
+        assert "margin: 8px 10px 4px" in body
+        assert "padding: 0 10px" in body  # 10+10 = 20px = icon column
+        mark = self._css_rule(".logo-mark")
+        assert "linear-gradient(135deg" in mark  # brand tile gradient
+        badge = self._css_rule(".logo-badge")
+        assert "font-size: 9.5px" in badge
+
+    def test_nav_scrollbar_is_slim_not_native_arrows(self) -> None:
+        assert ".nav::-webkit-scrollbar" in CSS
+        assert ".nav::-webkit-scrollbar-button" in CSS  # kills the ▲▼ chrome
+
+    def test_promo_icon_is_svg_not_glyph(self) -> None:
+        promo = HTML.split('class="promo"', 1)[1].split('class="user-row"', 1)[0]
+        assert "⌁" not in promo
+        assert "<svg" in promo
+
+
 class TestSyntax:
     def test_app_js_parses(self) -> None:
         node = shutil.which("node") or shutil.which("node", path="/root/.hermes/tools/node-26.12.1-linux-x64/bin")

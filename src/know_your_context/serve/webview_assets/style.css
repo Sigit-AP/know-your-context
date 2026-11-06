@@ -34,6 +34,12 @@
   --shadow-float: 0 8px 30px rgba(0,0,0,0.08);
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
   --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* sidebar-nav-design tokens (measured from professional reference) */
+  --text-primary: #101828;
+  --text-nav: #344054;
+  --text-muted: #98A2B3;
+  --icon: #667085;
+  --active-bg: #F3F4F6;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
@@ -49,63 +55,83 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ============ SIDEBAR ============ */
 .sidebar {
-  width: 208px; flex-shrink: 0;
+  width: 224px; flex-shrink: 0;
   background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column;
 }
 .logo-row {
-  height: 48px; display: flex; align-items: center; gap: 8px;
-  padding: 0 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  height: 38px; display: flex; align-items: center; gap: 8px;
+  margin: 8px 10px 4px; padding: 0 10px;
+  border: 1px solid var(--border-strong); border-radius: 10px; flex-shrink: 0;
 }
 .logo-mark {
   width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hot));
   position: relative;
 }
 .logo-mark::after {
   content: ""; position: absolute; inset: 5px;
   border: 1.5px solid #fff; border-radius: 3px;
 }
-.logo-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+.logo-name {
+  font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+  white-space: nowrap; overflow: hidden;
+}
 .logo-badge {
-  font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; line-height: 1.3;
+  text-transform: uppercase;
   background: var(--accent); color: #fff;
-  padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+  padding: 2px 7px; border-radius: 999px; flex-shrink: 0;
 }
-.nav { flex: 1; overflow-y: auto; padding: 12px 8px; scrollbar-width: thin; }
-.nav-section { margin-bottom: 16px; }
+/* Chrome honors ::-webkit-scrollbar ONLY when the standard
+ * scrollbar-width/scrollbar-color are absent (measured: 8px webkit vs 10px
+ * standard path on this engine), so the slim no-button styling lives on the
+ * webkit path alone; Firefox falls back to its native thin scrollbar. */
+.nav { flex: 1; overflow-y: auto; padding: 2px 10px 6px; }
+.nav::-webkit-scrollbar { width: 8px; }
+.nav::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.nav::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 999px; }
+.nav::-webkit-scrollbar-track { background: transparent; }
+/* Section separation is pure whitespace — no divider lines. */
 .nav-label {
-  font-size: 10.5px; color: var(--text-3);
-  padding: 0 8px; margin-bottom: 4px; letter-spacing: 0.04em; text-transform: uppercase;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.015em; color: var(--text-muted);
+  margin: 10px 0 4px 10px;  /* left edge = icon column; dense-nav rhythm */
 }
+.nav-section:first-child .nav-label { margin-top: 6px; }
+/* 19 items = dense nav: 28px rows (principle: 15+ items -> 26-30px so the
+ * set fits without scrolling at 900px), still a button, not a table row. */
 .nav-item {
-  display: flex; align-items: center; gap: 9px;
-  height: 28px; padding: 0 8px; border-radius: 7px;
-  font-size: 13px; font-weight: 500; color: var(--text-2);
+  display: flex; align-items: center; gap: 10px;
+  height: 28px; padding: 0 10px; border-radius: 7px;
+  font-size: 13.5px; line-height: 20px; font-weight: 500; color: var(--text-nav);
   width: 100%; text-align: left; background: none; border: none;
   transition: background 0.12s;
   white-space: nowrap;
 }
+.nav-item + .nav-item { margin-top: 2px; }
 .nav-item:hover { background: var(--fill-hover); }
-.nav-item.active { background: var(--accent-soft); color: var(--accent); }
-.nav-ico { width: 15px; text-align: center; font-size: 12px; color: var(--text-3); flex-shrink: 0; }
-.nav-item.active .nav-ico { color: var(--accent); }
+.nav-item.active { background: var(--active-bg); color: var(--text-primary); }
+.nav-item.active:hover { background: var(--active-bg); }
+.nav-ico { width: 16px; height: 16px; color: var(--icon); flex-shrink: 0; }
+.nav-ico svg { width: 16px; height: 16px; display: block; }
+.nav-item.active .nav-ico { color: var(--text-primary); }
 
 .promo {
-  margin: 0 10px 10px; padding: 10px;
-  border: 1px solid var(--border-strong); border-radius: 10px; flex-shrink: 0;
+  margin: 0 10px 8px; padding: 8px 12px;
+  border: 1px solid var(--border-strong); border-radius: 12px; flex-shrink: 0;
 }
-.promo-head { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.promo-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .promo-icon {
   width: 24px; height: 24px; border-radius: 7px; background: var(--ink); color: #fff;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.promo-title { font-size: 11.5px; font-weight: 600; }
+.promo-icon svg { width: 13px; height: 13px; display: block; }
+.promo-title { font-size: 12px; font-weight: 600; white-space: nowrap; }
 .promo-new {
   font-size: 8.5px; font-weight: 700; background: var(--accent-soft);
-  color: var(--accent); padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em;
-  text-transform: uppercase; white-space: nowrap;
+  color: var(--accent); padding: 2px 6px; border-radius: 999px; letter-spacing: 0.05em;
+  text-transform: uppercase; white-space: nowrap; margin-left: auto;
 }
 .promo-new.frozen { background: var(--fill-muted); color: var(--text-3); }
 .promo-desc { font-size: 10.5px; color: var(--text-2); line-height: 1.45; }
@@ -115,8 +141,8 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .user-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; border-top: 1px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 20px; border-top: 1px solid var(--border); flex-shrink: 0;
 }
 .avatar {
   width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
@@ -124,7 +150,7 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 10px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
-.user-name { font-size: 12px; font-weight: 500; }
+.user-name { font-size: 13px; font-weight: 500; }
 .user-menu { margin-left: auto; color: var(--text-3); font-weight: 700; letter-spacing: 1px; }
 
 /* ============ MAIN + TOPBAR ============ */
