@@ -534,6 +534,85 @@ class TestVisualFirst:
         assert 'id="activity-density"' in HTML
 
 
+class TestVisualComplex:
+    """SUB-150 pins: the complex-visual layer (PATTERNS T + foto-2 interactive
+    register) is real — interactive multi-series line, dot-matrix heatmap,
+    proportion bars, funnels, heatmap table cells, sparklines, segmented
+    controls — all hand-made, all wired to real endpoints."""
+
+    def test_complex_builders_exist(self) -> None:
+        for builder in (
+            "function multiLineChart(",
+            "function dotHeatmap(",
+            "function proportionBar(",
+            "function funnelChart(",
+            "function sparkline(",
+            "function segControl(",
+            "function heatmapCols(",
+            "function makeTooltip(",
+        ):
+            assert builder in JS, builder
+
+    def test_interaction_states_exist(self) -> None:
+        # Hover is real behaviour, not a promise: mousemove shows, mouseleave hides.
+        assert '"mousemove"' in JS
+        assert '"mouseleave"' in JS
+        assert ".viz-tip" in CSS  # floating tooltip card
+        assert "mls-cross" in JS  # crosshair
+        assert "mls-off" in JS  # legend dim toggle
+
+    def test_complex_visuals_use_real_endpoints(self) -> None:
+        for endpoint in (
+            '"/api/improvements"',
+            '"/api/extractions/summary"',
+            '"/api/refs/pending?limit=200"',
+            '"/api/refs/resolved?limit=200"',
+            '"/api/refs/failed?limit=200"',
+        ):
+            assert endpoint in JS, endpoint
+
+    def test_heatmap_is_dot_matrix_with_ramp_and_error_ring(self) -> None:
+        assert "HEAT_RAMP" in JS
+        assert "dh-dot" in JS and ".dh-dot" in CSS
+        assert "dh-ring" in JS and ".dh-ring" in CSS  # error ring, semantic red
+        assert 'id="activity-density"' in HTML  # W19 pin still holds
+
+    def test_funnel_and_proportion_share_tokens(self) -> None:
+        assert "FUNNEL_COLORS" in JS
+        assert "funnel-bar" in JS and ".funnel-bar" in CSS
+        assert "pb-seg" in JS and ".pb-seg" in CSS
+        assert "pb-avatar" in JS and ".pb-avatar" in CSS  # agent avatars in legend
+
+    def test_sparkline_is_stroke_only(self) -> None:
+        assert "spark-line" in JS and ".spark-line" in CSS
+        spark_rule = re.search(r"\.kpi-spark \.spark-line\s*\{(?P<body>[^}]*)\}", CSS)
+        assert spark_rule is not None
+        assert "fill: none" in spark_rule.group("body")
+
+    def test_segmented_control_skin(self) -> None:
+        assert "chart-seg" in JS and ".chart-seg" in CSS
+        assert "data-seg" in JS
+
+    def test_dual_axis_is_explicit(self) -> None:
+        # Two units (events/day vs health score) never share one silent scale.
+        assert "axisMax" in JS
+        assert "axis: 1" in JS
+
+    def test_heatmap_table_uses_cssom_not_setattribute_style(self) -> None:
+        assert "heatmapCols" in JS
+        assert 'td.style.background = "rgba(124, 58, 237, "' in JS
+        # CSP lesson (SUB-149): no real setAttribute("style", ...) call — the
+        # doc-comment mention (no comma) is allowed.
+        assert 'setAttribute("style",' not in JS
+
+    def test_barrow_fill_is_block_level(self) -> None:
+        # W20 audit catch: .bf is a span inside a non-flex track; inline
+        # elements ignore width/height, so the fill rendered 0px wide.
+        block = re.search(r"\.barrow \.bf\s*\{(?P<body>[^}]*)\}", CSS)
+        assert block is not None
+        assert "display: block" in block.group("body")
+
+
 class TestSyntax:
     def test_app_js_parses(self) -> None:
         node = shutil.which("node") or shutil.which("node", path="/root/.hermes/tools/node-26.12.1-linux-x64/bin")

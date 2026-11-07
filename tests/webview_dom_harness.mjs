@@ -156,7 +156,14 @@ function payloadFor(path) {
   if (base === "/api/audit/verify") return { ok: true, checked: 12 };
   if (base.startsWith("/api/node/")) return NODE_DETAIL;
   if (base.startsWith("/api/hierarchy/")) return { callers: { entries: [] }, callees: { entries: [] } };
-  if (base === "/api/activity" || base === "/api/activity/tail") return { entries: [], agents: [] };
+  if (base === "/api/activity") return { entries: [
+    // 2 days x mixed dayparts/levels so the heatmap has real cells (SUB-150).
+    { seq: 1, level: "info", agent: "agent-1", action: "recall", description: "recall ok", nodes: [], sha8: "a1b2c3d4", occurred_at: "2026-11-05T09:15:00+00:00" },
+    { seq: 2, level: "warn", agent: "agent-2", agent_name: "agent-2", action: "publish", description: "budget near", nodes: [], sha8: "b2c3d4e5", occurred_at: "2026-11-05T14:40:00+00:00" },
+    { seq: 3, level: "error", agent: "agent-2", action: "publish", description: "budget exceeded", nodes: ["n1"], sha8: "c3d4e5f6", occurred_at: "2026-11-06T10:05:00+00:00" },
+    { seq: 4, level: "info", agent: "agent-1", action: "remember", description: "stored", nodes: ["n2"], sha8: "d4e5f6a7", occurred_at: "2026-11-06T22:30:00+00:00" }
+  ], agents: ["agent-1", "agent-2"] };
+  if (base === "/api/activity/tail") return { entries: [], agents: [] };
   if (base === "/api/leases") return { count: 0, leases: [] };
   // SUB-149: canned metrics payloads for the visual-first tab assertions.
   if (base === "/api/metrics") return {
@@ -185,6 +192,42 @@ function payloadFor(path) {
     ],
     malformed_outcomes: 0,
   };
+  // SUB-150: canned payloads for the complex-visual endpoints.
+  if (base === "/api/proposals") return {
+    count: 1,
+    signals: [{ signal: "isolated_node", low_confidence: false, reason_codes: ["ISOLATED_NODE"], source_node_ids: ["n3"] }],
+    signal_counts: { isolated_node: 1, low_confidence_edge: 2 },
+  };
+  if (base === "/api/improvements") return {
+    count: 3,
+    proposals: [
+      { proposal_id: "imp-1", node_id: "n1", impact: "medium", proposed_at: "2026-11-01T00:00:00Z", status: "applied" },
+      { proposal_id: "imp-2", node_id: "n2", impact: "low", proposed_at: "2026-11-02T00:00:00Z", status: "proposed" },
+      { proposal_id: "imp-3", node_id: "n3", impact: "low", proposed_at: "2026-11-03T00:00:00Z", status: "proposed" },
+    ],
+  };
+  if (base === "/api/extractions") return { count: 0, queue_size: 4, rows: [] };
+  if (base === "/api/extractions/summary") return {
+    state: "ok", queue_size: 4,
+    counts: { applied: 1, pending_review: 1, rejected: 2 },
+  };
+  if (base === "/api/ledger/health") return {
+    state: "ok",
+    snapshots: [
+      { recorded_at: "2026-11-05T00:00:00+00:00", score: 6, max_score: 8, event_count: 10, hash: "abc123def456" },
+      { recorded_at: "2026-11-06T00:00:00+00:00", score: 7, max_score: 8, event_count: 14, hash: "def456abc123" },
+    ],
+  };
+  if (base === "/api/ledger/debt") return { state: "ok", entries: [] };
+  if (base === "/api/ledger/experience") return { state: "ok", entries: [], verification: { ok: true, checked: 0 } };
+  if (base === "/api/audit") return { count: 0, events: [] };
+  if (base === "/api/refs") return { pending: 1, resolved: 2, failed: 1, total: 4, top_failed: [], failed_samples: [] };
+  if (base === "/api/refs/pending") return { status: "pending", total: 1, refs: [{ ref_id: 1, source_node_id: "n1", target_name: "gamma_fn", name_tail: "gamma_fn", kind: "calls", status: "pending", attempts: 1, failure_reason: null, first_seen: "2026-11-05" }] };
+  if (base === "/api/refs/resolved") return { status: "resolved", total: 2, refs: [
+    { ref_id: 2, source_node_id: "n1", target_name: "eta_mod", name_tail: "eta_mod", kind: "imports", status: "resolved", attempts: 1, failure_reason: null, first_seen: "2026-11-05" },
+    { ref_id: 3, source_node_id: "n2", target_name: "kappa_fn", name_tail: "kappa_fn", kind: "calls", status: "resolved", attempts: 1, failure_reason: null, first_seen: "2026-11-05" },
+  ] };
+  if (base === "/api/refs/failed") return { status: "failed", total: 1, refs: [{ ref_id: 4, source_node_id: "n2", target_name: "delta_fn", name_tail: "delta_fn", kind: "calls", status: "failed", attempts: 2, failure_reason: "no_match", first_seen: "2026-11-05" }] };
   return {};
 }
 
@@ -348,9 +391,100 @@ check("bar chart renders one bar per bench op", barSvg.some((n) => n === 2));
 check("bar chart floats accent value tags", charts.querySelectorAll(".viz-tag").length === 2);
 check("donut renders one arc per event kind", charts.querySelectorAll(".viz-arc").length === 2);
 check("donut renders the % badge on the largest arc", charts.querySelectorAll(".viz-pct-badge").length === 1);
-check("line chart draws the thin stroke", charts.querySelectorAll(".viz-line").length === 1);
-check("line chart keeps the soft area tint", charts.querySelectorAll(".viz-area").length === 1);
 check("bench table lands in the detail section", byId("metrics-detail").querySelectorAll("table").length >= 1);
+
+// --- SUB-150: interactive multi-series trend replaces the flat line ---------
+// NOTE: the shim matches only #id / .class / TAG — no descendant or compound
+// selectors — so composed queries go through closest() filters.
+const segButtons = (root) => root.querySelectorAll("button").filter((b) => b.closest(".chart-seg"));
+const legendButtons = (root) => root.querySelectorAll("button").filter((b) => b.closest(".mls-legend"));
+check("multi-line renders both series", charts.querySelectorAll(".mls-line").length === 2);
+check("multi-line keeps the soft area tint on series 1", charts.querySelectorAll(".mls-area").length === 1);
+check("multi-line marks series endpoints", charts.querySelectorAll(".mls-enddot").length === 2);
+check("multi-line has a crosshair (hidden until hover)", charts.querySelectorAll(".mls-cross").length === 1);
+check("multi-line has a floating tooltip host", charts.querySelectorAll(".viz-tip").length === 1);
+check("multi-line legend has one button per series", legendButtons(charts).length === 2);
+check("trend card has the segmented control (Both/Events/Health)", segButtons(charts).length === 3);
+check("y gridlines are hairlines with labels", charts.querySelectorAll(".mls-grid").length === 4);
+// Segmented control: Events mode keeps only the events series.
+segButtons(charts).find((b) => b.getAttribute("data-seg") === "events").click();
+await tick();
+check("seg 'Events' re-renders with one series", charts.querySelectorAll(".mls-line").length === 1);
+check("seg 'Events' keeps the events series", charts.querySelectorAll(".mls-line")[0].getAttribute("data-series") === "events");
+segButtons(charts).find((b) => b.getAttribute("data-seg") === "both").click();
+await tick();
+check("seg 'Both' restores both series", charts.querySelectorAll(".mls-line").length === 2);
+// Legend toggle dims its series without deleting it.
+legendButtons(charts)[1].click();
+check("legend toggle dims the series (mls-off)", charts.querySelectorAll(".mls-line")[1].classList.contains("mls-off"));
+legendButtons(charts)[1].click();
+check("legend re-toggle restores the series", !charts.querySelectorAll(".mls-line")[1].classList.contains("mls-off"));
+// Hover: crosshair + tooltip appear with real values, then hide on leave.
+const hit = charts.querySelectorAll(".mls-hit")[0];
+hit.dispatch("mousemove", { clientX: 600 }); // snaps to the middle day (all series non-null)
+check("hover shows the crosshair", charts.querySelectorAll(".mls-cross")[0].style.display !== "none");
+const tip = charts.querySelectorAll(".viz-tip")[0];
+check("hover shows the tooltip", tip.style.display !== "none");
+check("tooltip carries the day header", tip.querySelectorAll(".tip-head")[0].textContent.length === 10);
+check("tooltip lists one row per series", tip.querySelectorAll(".tip-row").length === 2);
+hit.dispatch("mouseleave", {});
+check("mouseleave hides the tooltip", tip.style.display === "none");
+check("mouseleave hides the crosshair", charts.querySelectorAll(".mls-cross")[0].style.display === "none");
+// Sparklines ride the health + events KPI cards (foto-2 strip anatomy).
+check("KPI cards carry sparklines", byId("metrics-hero").querySelectorAll(".kpi-spark").length === 2);
+check("sparkline is stroke-only with an end dot", byId("metrics-hero").querySelectorAll(".spark-line").length === 2);
+// Bench table numeric columns are heat-mapped (hottest cell bold).
+check("bench latency cells carry intensity", byId("metrics-detail").querySelectorAll(".heat").length === 10);
+check("bench hottest cell per column is bold", byId("metrics-detail").querySelectorAll(".heat-hi").length === 5);
+
+// --- SUB-150: activity dot-matrix heatmap ------------------------------------
+const density = byId("activity-density");
+check("heatmap renders one dot per daypart x day cell", density.querySelectorAll(".dh-dot").length === 8); // 4 x 2 days
+check("heatmap rings cells containing errors", density.querySelectorAll(".dh-ring").length === 1);
+check("heatmap has the Daily/Hourly segmented control", segButtons(density).length === 2);
+check("heatmap stat cards carry per-day sparklines", density.querySelectorAll(".kpi-spark").length === 2);
+check("agent share bar renders one segment per agent", density.querySelectorAll(".pb-seg").length === 2);
+check("agent share legend carries avatars", density.querySelectorAll(".pb-avatar").length === 2);
+check("agent share legend reports values + %", density.querySelectorAll(".pb-value").length === 2 && density.querySelectorAll(".pb-share").length === 2);
+// Hover a dot: tooltip shows the exact count + level mix.
+const firstDot = density.querySelectorAll(".dh-dot")[0];
+firstDot.dispatch("mousemove", {});
+const dTip = density.querySelectorAll(".viz-tip")[0];
+check("dot hover shows the cell tooltip", dTip.style.display !== "none");
+check("dot tooltip reports count and level mix", dTip.querySelectorAll(".tip-row").length === 2);
+firstDot.dispatch("mouseleave", {});
+check("dot leave hides the tooltip", dTip.style.display === "none");
+// Hourly mode: 7 weekdays x 24 hours.
+segButtons(density).find((b) => b.getAttribute("data-seg") === "hourly").click();
+check("hourly mode renders the weekday x hour grid", density.querySelectorAll(".dh-dot").length === 168);
+segButtons(density).find((b) => b.getAttribute("data-seg") === "daily").click();
+check("daily mode restores the daypart grid", density.querySelectorAll(".dh-dot").length === 8);
+
+// --- SUB-150: proposals funnel + signal mix ----------------------------------
+documentShim.querySelectorAll(".tab").find((b) => b.getAttribute("data-tab") === "proposals").click();
+await tick(); await tick(); await tick();
+const proposalsBody = byId("proposals-body");
+check("proposals funnel renders proposed -> applied tiers", proposalsBody.querySelectorAll(".funnel-bar").length === 2);
+check("proposals funnel shows the conversion gap", proposalsBody.querySelectorAll(".funnel-conv").length === 1);
+check("proposals funnel conversion is honest (1/3 = 33%)", textOf(proposalsBody.querySelectorAll(".funnel-conv")[0]).includes("33%"));
+check("signal mix proportion bar renders per-signal segments", proposalsBody.querySelectorAll(".pb-seg").length === 2);
+
+// --- SUB-150: extractions funnel ---------------------------------------------
+documentShim.querySelectorAll(".tab").find((b) => b.getAttribute("data-tab") === "extractions").click();
+await tick(); await tick(); await tick();
+const extractionsBody = byId("extractions-body");
+check("extractions funnel renders submitted -> decided -> applied", extractionsBody.querySelectorAll(".funnel-bar").length === 3);
+check("extractions funnel reports two conversion gaps", extractionsBody.querySelectorAll(".funnel-conv").length === 2);
+
+// --- SUB-150: audit refs mix + kind x status matrix + health history ---------
+documentShim.querySelectorAll(".tab").find((b) => b.getAttribute("data-tab") === "audit").click();
+await tick(); await tick(); await tick(); await tick(); await tick();
+const refsBody = byId("audit-refs");
+check("refs resolution mix renders semantic segments", refsBody.querySelectorAll(".pb-seg").length === 3);
+check("refs matrix renders all three tables", refsBody.querySelectorAll("table").length === 3);
+check("refs matrix covers both kinds", textOf(refsBody).includes("calls") && textOf(refsBody).includes("imports"));
+check("refs matrix cells carry intensity", refsBody.querySelectorAll(".heat").length >= 3);
+check("health ledger shows the score history line", byId("ledgers-health").querySelectorAll(".viz-line").length === 1);
 
 let failed = 0;
 for (const [name, ok] of results) {

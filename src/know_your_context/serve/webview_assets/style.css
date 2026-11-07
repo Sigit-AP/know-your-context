@@ -617,8 +617,9 @@ table.data.dense th, table.data.dense td { padding: 3px 8px; }
 .chart-card {
   background: var(--surface); border: 1px solid var(--border-strong);
   border-radius: var(--radius-card); padding: 12px 14px; box-shadow: var(--shadow-card);
-  min-width: 0;
+  min-width: 0; position: relative; /* tooltip anchor (W20) */
 }
+.chart-card.wide { grid-column: 1 / -1; } /* full-width chart (W20 multi-line) */
 .chart-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
 .chart-title { font-size: 12px; font-weight: 600; color: var(--text-1); }
 .chart-meta { font-size: 10.5px; color: var(--text-3); margin-left: auto; font-family: var(--mono); white-space: nowrap; }
@@ -638,6 +639,108 @@ svg.viz { display: block; width: 100%; height: auto; }
 .viz-pct-text { fill: var(--text-1); font-size: 9.5px; font-weight: 600; font-family: var(--sans); }
 .viz-dot { stroke: none; }
 
+/* ============ W20: COMPLEX VISUALS (SUB-150) ============ */
+/* Sparkline in KPI cards (foto-2 anatomy: value left, sparkline right) */
+.kpi-value-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.kpi-spark { flex-shrink: 0; display: block; }
+.kpi-spark .spark-line { fill: none; stroke: var(--accent-hot); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.kpi-spark .spark-dot { fill: var(--accent); }
+
+/* Multi-series interactive line (T4 interactive register, foto-2 Revenue Breakdown) */
+.mls-wrap { position: relative; }
+.mls-grid { stroke: var(--border-strong); stroke-width: 1; }
+.mls-ylabel { fill: var(--text-3); font-size: 9.5px; font-family: var(--sans); }
+.mls-line { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: opacity 0.15s; }
+.mls-area { opacity: 0.08; transition: opacity 0.15s; }
+.mls-enddot { stroke: var(--surface); stroke-width: 1.5; }
+.mls-off { opacity: 0.12; }
+.mls-cross { stroke: var(--text-3); stroke-width: 1; stroke-dasharray: 3 3; }
+.mls-hit { fill: transparent; }
+.mls-focus { stroke: var(--surface); stroke-width: 1.5; }
+.mls-legend { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+.mls-legend button {
+  display: inline-flex; align-items: center; gap: 6px; border: none; background: none;
+  font-size: 11.5px; color: var(--text-2); padding: 2px 4px; border-radius: 6px;
+}
+.mls-legend button:hover { background: var(--fill-hover); }
+.mls-legend button.off { opacity: 0.45; }
+.mls-legend .mls-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.mls-legend .mls-latest { font-family: var(--mono); font-weight: 600; color: var(--text-1); font-variant-numeric: tabular-nums; }
+
+/* Floating tooltip (shared by multi-line + heatmap): DOM card, positioned via CSSOM */
+.viz-tip {
+  position: absolute; z-index: 30; pointer-events: none;
+  background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px;
+  box-shadow: var(--shadow-float); padding: 8px 10px; min-width: 120px;
+  font-size: 11px; line-height: 1.5;
+}
+.viz-tip .tip-head { font-weight: 600; color: var(--text-1); font-size: 11px; margin-bottom: 4px; font-family: var(--mono); }
+.viz-tip .tip-row { display: flex; align-items: center; gap: 6px; color: var(--text-2); white-space: nowrap; }
+.viz-tip .tip-row .mls-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.viz-tip .tip-val { margin-left: auto; font-family: var(--mono); font-weight: 600; color: var(--text-1); padding-left: 12px; font-variant-numeric: tabular-nums; }
+
+/* Dot-matrix heatmap (T6 + GitHub intensity): dots, single-hue ramp, hover tooltip */
+.dotheat { position: relative; }
+.dotheat .dh-dot { cursor: default; transition: opacity 0.12s; }
+.dotheat .dh-dot:hover { opacity: 0.85; }
+.dotheat .dh-ring { fill: none; stroke-width: 1.5; }
+.dotheat .dh-row-label { fill: var(--text-3); font-size: 9.5px; font-family: var(--sans); }
+.dotheat .dh-col-label { fill: var(--text-3); font-size: 9px; font-family: var(--sans); }
+.dotheat-legend { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--text-3); margin-top: 6px; flex-wrap: wrap; }
+.dotheat-legend .dh-cell { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+
+/* Stacked proportion bar + inline legend (T10 composition strip, stacked) */
+.propbar-card { min-width: 0; position: relative; }
+.propbar {
+  display: flex; height: 16px; border-radius: 8px; overflow: hidden;
+  background: var(--fill-muted); position: relative;
+}
+.propbar .pb-seg { display: block; height: 100%; transition: opacity 0.15s; cursor: default; position: relative; }
+.propbar:hover .pb-seg { opacity: 0.45; }
+.propbar .pb-seg:hover { opacity: 1; }
+.propbar-legend { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.propbar-legend .pb-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.propbar-legend .pb-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; border: 1px solid var(--border-strong); }
+.propbar-legend .pb-avatar {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #fff;
+}
+.propbar-legend .pb-label { color: var(--text-2); flex: 1; min-width: 0; overflow-wrap: break-word; }
+.propbar-legend .pb-value { font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.propbar-legend .pb-share { color: var(--text-3); font-size: 11px; width: 42px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+/* Tiered funnel (proposals -> applied, extractions queue) */
+.funnel { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+.funnel-tier { position: relative; display: flex; justify-content: center; }
+.funnel-bar {
+  height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px; color: #fff; min-width: 120px;
+  transition: filter 0.12s, transform 0.12s; cursor: default;
+}
+.funnel-bar:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.funnel-bar .fb-label { font-size: 11.5px; font-weight: 600; }
+.funnel-bar .fb-value { font-family: var(--mono); font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.funnel-conv {
+  align-self: center; font-size: 11px; color: var(--text-2); font-weight: 600; font-family: var(--mono);
+  padding: 3px 0; display: flex; align-items: center; gap: 6px;
+}
+.funnel-conv .conv-arrow { color: var(--text-3); }
+
+/* Heatmap table (numeric cells carry intensity) */
+table.data td.heat { font-variant-numeric: tabular-nums; }
+table.data td.heat-hi { font-weight: 700; }
+
+/* In-card segmented control (reuses .seg skin at card scale) */
+.chart-seg { margin-left: auto; display: inline-flex; gap: 2px; padding: 2px; background: var(--fill-muted); border-radius: 8px; }
+.chart-seg button {
+  height: 22px; padding: 0 10px; border: none; border-radius: 6px; background: none;
+  color: var(--text-3); font-size: 11px; font-weight: 500;
+}
+.chart-seg button:hover { color: var(--text-1); }
+.chart-seg button.active { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-card); }
+.chart-head .chart-seg + .chart-meta { margin-left: 10px; }
+
 /* donut legend (T5: square bullet + label + bold value) */
 .donut-wrap { display: flex; align-items: center; gap: 18px; }
 .donut-wrap svg.viz { width: 150px; flex-shrink: 0; }
@@ -652,7 +755,10 @@ svg.viz { display: block; width: 100%; height: auto; }
 .barrow { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 12px; }
 .barrow .bl { flex: 0 0 220px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); font-size: 11.5px; color: var(--text-1); }
 .barrow .bt { flex: 1; height: 8px; background: var(--fill-muted); border-radius: 4px; overflow: hidden; }
-.barrow .bf { height: 100%; background: var(--accent); border-radius: 4px; }
+/* display: block is load-bearing: .bf is a span inside a non-flex track, and
+ * inline elements ignore width/height — without it the fill renders 0px wide
+ * (W20 audit catch; the prio/conf fills already carry display:block). */
+.barrow .bf { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
 .barrow .bv { flex: 0 0 auto; font-family: var(--mono); font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; }
 
 /* ============ TIMELINE (audit chain, T10 rail) ============ */
@@ -705,6 +811,7 @@ svg.viz { display: block; width: 100%; height: auto; }
 .density-card {
   border: 1px solid var(--border-strong); border-radius: var(--radius-card);
   padding: 10px 14px; box-shadow: var(--shadow-card); background: var(--surface);
+  position: relative; /* heatmap tooltip anchor (W20) */
 }
 .density-body { display: flex; gap: 24px; align-items: flex-start; }
 .density-stats { display: grid; grid-template-columns: repeat(2, minmax(160px, 220px)); gap: 10px; flex: 1; }

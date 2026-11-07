@@ -213,6 +213,10 @@
     parent.appendChild(el("p", "empty", text));
   }
 
+  function plural(n, singular, pluralForm) {
+    return n === 1 ? singular : (pluralForm || singular + "s");
+  }
+
   // ---------------------------------------------------- visual primitives
   // Hand-made SVG charts (SUB-149; PATTERNS bab T). No chart library, no
   // CDN: every element is createElementNS with attributes only — store data
@@ -258,13 +262,22 @@
   }
 
   // T1: KPI card = label / value(+unit) / delta pills / baseline+period.
+  // W20: optional spark = number series rendered stroke-only at the right of
+  // the value row (foto-2 strip anatomy: value left, sparkline right).
   function kpiCard(opts) {
     var card = el("div", "kpi" + (opts.dark ? " dark" : ""));
     card.appendChild(el("div", "kpi-label", opts.label));
     var value = el("div", "kpi-value");
     value.appendChild(document.createTextNode(String(opts.value)));
     if (opts.unit) value.appendChild(el("span", "kpi-unit", opts.unit));
-    card.appendChild(value);
+    if (opts.spark && opts.spark.length >= 2) {
+      var valueRow = el("div", "kpi-value-row");
+      valueRow.appendChild(value);
+      valueRow.appendChild(sparkline(opts.spark));
+      card.appendChild(valueRow);
+    } else {
+      card.appendChild(value);
+    }
     var delta = el("div", "kpi-delta");
     var pills = opts.deltas || [];
     for (var i = 0; i < pills.length; i++) {
@@ -334,7 +347,9 @@
   }
 
   // T4 minimal register: one thin spline (2px), no dots, no gridlines, soft
-  // area tint, sparse day labels.
+  // area tint, sparse day labels. W20 fix: the domain is padded (8% headroom,
+  // or ±1 for a flat series) so a constant line never pins to the plot edge,
+  // and min/max carry small muted labels so the magnitude stays readable.
   function lineChart(points, opts) {
     opts = opts || {};
     var width = opts.width || 460;
@@ -342,15 +357,25 @@
     var top = 10, bottom = 16, padX = 4;
     var plotW = width - padX * 2, plotH = height - top - bottom;
     var max = 0;
-    for (var i = 0; i < points.length; i++) max = Math.max(max, points[i].value);
+    var min = Infinity;
+    for (var i = 0; i < points.length; i++) {
+      max = Math.max(max, points[i].value);
+      min = Math.min(min, points[i].value);
+    }
     var svg = svgRoot(width, height);
     if (max <= 0 || points.length < 2) return svg;
+    if (min === Infinity) min = 0;
+    var dataMax = max, dataMin = min;
+    var span = max - min;
+    if (span <= 0) { max = max + 1; min = Math.max(0, min - 1); span = max - min; }
+    else { max += span * 0.08; min = Math.max(0, min - span * 0.08); span = max - min; }
     var step = plotW / (points.length - 1);
+    function yOf(v) { return top + plotH - ((v - min) / span) * plotH; }
     var d = "";
     var area = "";
     for (var j = 0; j < points.length; j++) {
       var x = padX + step * j;
-      var y = top + plotH - (points[j].value / max) * plotH;
+      var y = yOf(points[j].value);
       d += (j === 0 ? "M " : " L ") + x.toFixed(1) + " " + y.toFixed(1);
     }
     area = d + " L " + (padX + step * (points.length - 1)).toFixed(1) + " " + (top + plotH) +
@@ -361,6 +386,11 @@
     var line = svgEl("path", { d: d });
     line.setAttribute("class", "viz-line");
     svg.appendChild(line);
+    // min/max magnitude labels (right edge, muted) — a flat line still reads.
+    svg.appendChild(svgText(width - 2, yOf(dataMax) + 3, fmtInt(dataMax), "viz-cat", "end"));
+    if (dataMin !== dataMax) {
+      svg.appendChild(svgText(width - 2, yOf(dataMin) + 3, fmtInt(dataMin), "viz-cat", "end"));
+    }
     // sparse x labels: first, middle, last
     var marks = [0, Math.floor((points.length - 1) / 2), points.length - 1];
     for (var m = 0; m < marks.length; m++) {
@@ -477,6 +507,455 @@
     row.appendChild(track);
     row.appendChild(el("span", "bv", valueText || String(value)));
     return row;
+  }
+
+  // ------------------------------------------------ W20 complex visuals
+  // SUB-150: the complex layer above the T1-T6 primitives — interactive
+  // multi-series line (crosshair + tooltip + legend toggle), dot-matrix
+  // heatmap with per-cell tooltip, stacked proportion bar with inline
+  // legend, tiered funnel, heatmap table cells, KPI sparklines. All
+  // hand-made SVG/DOM; store data still flows through textContent and
+  // setAttribute only, and dynamic geometry goes through CSSOM style
+  // properties (the CSP blocks setAttribute("style")).
+
+  // Shared floating tooltip card. Parent must be position:relative.
+  function makeTooltip(parent) {
+    var tip = el("div", "viz-tip");
+    tip.style.display = "none";
+    parent.appendChild(tip);
+    return {
+      show: function (x, y, header, rows) {
+        clear(tip);
+        tip.appendChild(el("div", "tip-head", header));
+        for (var i = 0; i < rows.length; i++) {
+          var row = el("div", "tip-row");
+          if (rows[i].color) {
+            var sw = el("span", "mls-swatch");
+            sw.style.background = rows[i].color;
+            row.appendChild(sw);
+          }
+          row.appendChild(el("span", null, rows[i].label));
+          row.appendChild(el("span", "tip-val", rows[i].value));
+          tip.appendChild(row);
+        }
+        tip.style.display = "block";
+        // Flip near the right/bottom edge so the card never clips out.
+        var pw = parent.clientWidth || 600, ph = parent.clientHeight || 300;
+        var tw = tip.offsetWidth || 140, th = tip.offsetHeight || 60;
+        tip.style.left = Math.max(0, Math.min(x + 14, pw - tw - 4)) + "px";
+        tip.style.top = Math.max(0, Math.min(y + 10, ph - th - 4)) + "px";
+      },
+      hide: function () { tip.style.display = "none"; }
+    };
+  }
+
+  // E4 sparkline: stroke-only, no axes, end dot on the last value.
+  function sparkline(values, opts) {
+    opts = opts || {};
+    var width = opts.width || 88, height = opts.height || 24;
+    var svg = svgRoot(width, height);
+    svg.setAttribute("class", "kpi-spark");
+    svg.style.width = width + "px";
+    svg.style.height = height + "px";
+    if (!values || values.length < 2) return svg;
+    var max = values[0], min = values[0];
+    for (var i = 0; i < values.length; i++) {
+      max = Math.max(max, values[i]);
+      min = Math.min(min, values[i]);
+    }
+    var span = max - min || 1;
+    var step = (width - 4) / (values.length - 1);
+    var d = "";
+    var lastX = 0, lastY = 0;
+    for (var j = 0; j < values.length; j++) {
+      var x = 2 + step * j;
+      var y = 2 + (height - 5) * (1 - (values[j] - min) / span);
+      d += (j === 0 ? "M " : " L ") + x.toFixed(1) + " " + y.toFixed(1);
+      lastX = x; lastY = y;
+    }
+    var line = svgEl("path", { d: d });
+    line.setAttribute("class", "spark-line");
+    svg.appendChild(line);
+    var dot = svgEl("circle", { cx: lastX.toFixed(1), cy: lastY.toFixed(1), r: 2.2 });
+    dot.setAttribute("class", "spark-dot");
+    svg.appendChild(dot);
+    return svg;
+  }
+
+  // In-card segmented control (chart-scale skin of the merged-tab .seg).
+  function segControl(modes, active, onSwitch) {
+    var seg = el("span", "chart-seg");
+    for (var i = 0; i < modes.length; i++) {
+      (function (mode) {
+        var btn = el("button", mode.key === active ? "active" : null, mode.label);
+        btn.type = "button";
+        btn.setAttribute("data-seg", mode.key);
+        btn.addEventListener("click", function () {
+          var buttons = seg.querySelectorAll("button");
+          for (var b = 0; b < buttons.length; b++) {
+            buttons[b].classList.toggle("active", buttons[b] === btn);
+          }
+          onSwitch(mode.key);
+        });
+        seg.appendChild(btn);
+      })(modes[i]);
+    }
+    return seg;
+  }
+
+  // T4 interactive register: multi-series line with hairline y-grid, crosshair,
+  // floating tooltip (header + one row per series) and a clickable legend.
+  // series: [{ key, label, color, values: [number|null per xLabel], axis: 0|1 }]
+  // Axis 1 (right side) exists only when a series declares it — two series
+  // with different units (events/day vs health score) each get an honest scale.
+  function multiLineChart(xLabels, series, opts) {
+    opts = opts || {};
+    var width = opts.width || 920, height = opts.height || 210;
+    var hasAxis1 = false;
+    for (var a = 0; a < series.length; a++) if (series[a].axis === 1) hasAxis1 = true;
+    var padL = 34, padR = hasAxis1 ? 34 : 10, padT = 12, padB = 20;
+    var plotW = width - padL - padR, plotH = height - padT - padB;
+    var axisMax = [0, 0];
+    for (var s = 0; s < series.length; s++) {
+      var ax = series[s].axis === 1 ? 1 : 0;
+      for (var i = 0; i < series[s].values.length; i++) {
+        if (series[s].values[i] !== null && series[s].values[i] !== undefined) {
+          axisMax[ax] = Math.max(axisMax[ax], series[s].values[i]);
+        }
+      }
+    }
+    var wrap = el("div", "mls-wrap");
+    var svg = svgRoot(width, height);
+    svg.style.width = "100%";
+    svg.style.height = "auto";
+    wrap.appendChild(svg);
+    if (xLabels.length < 2 || axisMax[0] + axisMax[1] <= 0) return wrap;
+    var stepX = plotW / (xLabels.length - 1);
+    function xAt(i) { return padL + stepX * i; }
+    function yAt(v, ax) { return padT + plotH - (v / (axisMax[ax] || 1)) * plotH; }
+    // y grid: 4 hairlines; left labels = axis 0, right labels = axis 1 (T3).
+    for (var g = 0; g <= 3; g++) {
+      var gy = padT + plotH - (plotH / 3) * g;
+      var grid = svgEl("line", { x1: padL, y1: gy, x2: width - padR, y2: gy });
+      grid.setAttribute("class", "mls-grid");
+      svg.appendChild(grid);
+      if (axisMax[0] > 0) {
+        svg.appendChild(svgText(2, gy + 3, fmtInt(Math.round((axisMax[0] / 3) * g)), "mls-ylabel", "start"));
+      }
+      if (hasAxis1 && axisMax[1] > 0) {
+        svg.appendChild(svgText(width - 2, gy + 3, fmtInt(Math.round((axisMax[1] / 3) * g)), "mls-ylabel", "end"));
+      }
+    }
+    // sparse x labels: first, middle, last
+    var marks = [0, Math.floor((xLabels.length - 1) / 2), xLabels.length - 1];
+    for (var m = 0; m < marks.length; m++) {
+      var anchor = marks[m] === 0 ? "start" : marks[m] === xLabels.length - 1 ? "end" : "middle";
+      svg.appendChild(svgText(xAt(marks[m]), height - 5, xLabels[marks[m]], "viz-cat", anchor));
+    }
+    var seriesEls = [];
+    for (var k = 0; k < series.length; k++) {
+      var ser = series[k];
+      var serAxis = ser.axis === 1 ? 1 : 0;
+      var d = "";
+      var lastIdx = -1;
+      for (var j = 0; j < ser.values.length; j++) {
+        var v = ser.values[j];
+        if (v === null || v === undefined) continue;
+        d += (d.length ? " L " : " M ") + xAt(j).toFixed(1) + " " + yAt(v, serAxis).toFixed(1);
+        lastIdx = j;
+      }
+      var groupEls = { line: null, area: null, dot: null };
+      if (d.length) {
+        if (k === 0) {
+          var areaD = d + " L " + xAt(lastIdx).toFixed(1) + " " + (padT + plotH) +
+            " L " + xAt(firstIdx(ser.values)).toFixed(1) + " " + (padT + plotH) + " Z";
+          var area = svgEl("path", { d: areaD, fill: ser.color });
+          area.setAttribute("class", "mls-area");
+          svg.appendChild(area);
+          groupEls.area = area;
+        }
+        var line = svgEl("path", { d: d, stroke: ser.color });
+        line.setAttribute("class", "mls-line");
+        line.setAttribute("data-series", ser.key);
+        svg.appendChild(line);
+        groupEls.line = line;
+        var end = svgEl("circle", { cx: xAt(lastIdx).toFixed(1), cy: yAt(ser.values[lastIdx], serAxis).toFixed(1), r: 3.5, fill: ser.color });
+        end.setAttribute("class", "mls-enddot");
+        svg.appendChild(end);
+        groupEls.dot = end;
+      }
+      seriesEls.push(groupEls);
+    }
+    // crosshair + focus dots (hidden until hover)
+    var cross = svgEl("line", { x1: 0, y1: padT, x2: 0, y2: padT + plotH });
+    cross.setAttribute("class", "mls-cross");
+    cross.style.display = "none";
+    svg.appendChild(cross);
+    var focusDots = [];
+    for (var f = 0; f < series.length; f++) {
+      var fd = svgEl("circle", { r: 4, fill: series[f].color });
+      fd.setAttribute("class", "mls-focus");
+      fd.style.display = "none";
+      svg.appendChild(fd);
+      focusDots.push(fd);
+    }
+    var tip = makeTooltip(wrap);
+    // Transparent hit rect over the plot: nearest-x snap on mousemove.
+    var hit = svgEl("rect", { x: padL, y: padT, width: plotW, height: plotH });
+    hit.setAttribute("class", "mls-hit");
+    svg.appendChild(hit);
+    function nearestIndex(event) {
+      var rect = svg.getBoundingClientRect();
+      var scaleX = rect.width ? width / rect.width : 1;
+      var px = (event.clientX - rect.left) * scaleX;
+      return Math.max(0, Math.min(xLabels.length - 1, Math.round((px - padL) / stepX)));
+    }
+    hit.addEventListener("mousemove", function (event) {
+      var idx = nearestIndex(event);
+      cross.setAttribute("x1", xAt(idx).toFixed(1));
+      cross.setAttribute("x2", xAt(idx).toFixed(1));
+      cross.style.display = "";
+      var rows = [];
+      for (var s2 = 0; s2 < series.length; s2++) {
+        var val = series[s2].values[idx];
+        if (val === null || val === undefined) {
+          focusDots[s2].style.display = "none";
+          continue;
+        }
+        focusDots[s2].setAttribute("cx", xAt(idx).toFixed(1));
+        focusDots[s2].setAttribute("cy", yAt(val, series[s2].axis === 1 ? 1 : 0).toFixed(1));
+        focusDots[s2].style.display = "";
+        rows.push({ color: series[s2].color, label: series[s2].label, value: fmtInt(val) });
+      }
+      var rect2 = svg.getBoundingClientRect();
+      var scaleX2 = rect2.width ? rect2.width / width : 1;
+      tip.show(xAt(idx) * scaleX2, 10, xLabels[idx], rows);
+    });
+    hit.addEventListener("mouseleave", function () {
+      cross.style.display = "none";
+      for (var h = 0; h < focusDots.length; h++) focusDots[h].style.display = "none";
+      tip.hide();
+    });
+    // Legend: swatch + label + latest value; click toggles the series.
+    var legend = el("div", "mls-legend");
+    for (var l = 0; l < series.length; l++) {
+      (function (idx) {
+        var ser = series[idx];
+        var latest = null;
+        for (var b = ser.values.length - 1; b >= 0; b--) {
+          if (ser.values[b] !== null && ser.values[b] !== undefined) { latest = ser.values[b]; break; }
+        }
+        var btn = el("button", null);
+        btn.type = "button";
+        var sw = el("span", "mls-swatch");
+        sw.style.background = ser.color;
+        btn.appendChild(sw);
+        btn.appendChild(document.createTextNode(ser.label + " "));
+        btn.appendChild(el("span", "mls-latest", latest === null ? "—" : fmtInt(latest)));
+        btn.addEventListener("click", function () {
+          var off = btn.classList.toggle("off");
+          var els = seriesEls[idx];
+          for (var key in els) {
+            if (els[key]) els[key].classList.toggle("mls-off", off);
+          }
+        });
+        legend.appendChild(btn);
+      })(l);
+    }
+    wrap.appendChild(legend);
+    return wrap;
+  }
+  function firstIdx(values) {
+    for (var i = 0; i < values.length; i++) {
+      if (values[i] !== null && values[i] !== undefined) return i;
+    }
+    return 0;
+  }
+
+  // T6 + intensity heatmap: dots on a rows x cols grid, 5-step single-hue
+  // ramp by count, error ring for cells containing errors, hover tooltip
+  // with the exact count + level mix. Row labels left, column labels below.
+  var HEAT_RAMP = ["#F4F4F5", "#EDE9FE", "#C4B5FD", "#A78BFA", "#7C3AED"];
+
+  function dotHeatmap(config, opts) {
+    opts = opts || {};
+    var pitch = opts.pitch || 22, dotR = opts.dotR || 7;
+    var rows = config.rowLabels.length, cols = config.colLabels.length;
+    var labelW = opts.labelWidth || 56;
+    var width = labelW + cols * pitch + 6;
+    var height = rows * pitch + 20;
+    var max = 1;
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) max = Math.max(max, config.cells[r][c].count);
+    }
+    var wrap = el("div", "dotheat");
+    var svg = svgRoot(width, height);
+    svg.style.width = width + "px";
+    svg.style.height = height + "px";
+    wrap.appendChild(svg);
+    var tip = makeTooltip(wrap);
+    for (var rr = 0; rr < rows; rr++) {
+      svg.appendChild(svgText(labelW - 8, rr * pitch + pitch / 2 + 3.5, config.rowLabels[rr], "dh-row-label", "end"));
+      for (var cc = 0; cc < cols; cc++) {
+        var cell = config.cells[rr][cc];
+        var cx = labelW + cc * pitch + pitch / 2;
+        var cy = rr * pitch + pitch / 2;
+        var step = cell.count <= 0 ? 0 : Math.min(4, 1 + Math.floor((cell.count / max) * 3.999));
+        var dot = svgEl("circle", { cx: cx, cy: cy, r: dotR, fill: HEAT_RAMP[step] });
+        dot.setAttribute("class", "dh-dot");
+        (function (cellData, px, py) {
+          dot.addEventListener("mousemove", function () {
+            tip.show(px + 8, py - 6, cellData.title, [
+              { label: "events", value: String(cellData.count) },
+              { label: "info / warn / error", value: cellData.info + " / " + cellData.warn + " / " + cellData.error }
+            ]);
+          });
+          dot.addEventListener("mouseleave", function () { tip.hide(); });
+        })(cell, cx, cy);
+        svg.appendChild(dot);
+        if (cell.error > 0) {
+          var ring = svgEl("circle", { cx: cx, cy: cy, r: dotR + 2.5 });
+          ring.setAttribute("class", "dh-ring");
+          ring.setAttribute("stroke", "#DC2626");
+          svg.appendChild(ring);
+        }
+      }
+    }
+    var every = opts.colLabelEvery || Math.ceil(cols / 10);
+    for (var lc = 0; lc < cols; lc += every) {
+      svg.appendChild(svgText(labelW + lc * pitch + pitch / 2, height - 5, config.colLabels[lc], "dh-col-label", "middle"));
+    }
+    return wrap;
+  }
+
+  function dotHeatLegend() {
+    var legend = el("div", "dotheat-legend");
+    legend.appendChild(document.createTextNode("less"));
+    for (var i = 0; i < HEAT_RAMP.length; i++) {
+      var cellEl = el("span", "dh-cell");
+      cellEl.style.background = HEAT_RAMP[i];
+      legend.appendChild(cellEl);
+    }
+    legend.appendChild(document.createTextNode("more"));
+    var ringNote = el("span", null);
+    var ring = el("span", "dh-cell");
+    ring.style.background = "transparent";
+    ring.style.border = "1.5px solid #DC2626";
+    ringNote.appendChild(ring);
+    ringNote.appendChild(document.createTextNode(" errors present"));
+    legend.appendChild(ringNote);
+    return legend;
+  }
+
+  // Stacked proportion bar + inline legend (T10 anatomy, stacked): swatch,
+  // optional avatar, label, mono value, right-aligned share %. Hover on a
+  // segment spotlights it and floats the exact numbers.
+  function proportionBar(segments, opts) {
+    opts = opts || {};
+    var total = 0;
+    for (var i = 0; i < segments.length; i++) total += segments[i].value;
+    var wrap = el("div", "propbar-card");
+    var tip = makeTooltip(wrap);
+    var bar = el("div", "propbar");
+    for (var s = 0; s < segments.length; s++) {
+      (function (seg) {
+        if (seg.value <= 0 || total <= 0) return;
+        var part = el("span", "pb-seg");
+        part.style.width = (seg.value / total) * 100 + "%";
+        part.style.background = seg.color;
+        part.addEventListener("mousemove", function (event) {
+          var rect = wrap.getBoundingClientRect();
+          tip.show(event.clientX - rect.left, 20, seg.label, [
+            { color: seg.color, label: "count", value: fmtInt(seg.value) },
+            { label: "share", value: Math.round((seg.value / total) * 100) + "%" }
+          ]);
+        });
+        part.addEventListener("mouseleave", function () { tip.hide(); });
+        bar.appendChild(part);
+      })(segments[s]);
+    }
+    wrap.appendChild(bar);
+    var legend = el("div", "propbar-legend");
+    for (var l = 0; l < segments.length; l++) {
+      var seg2 = segments[l];
+      var row = el("div", "pb-row");
+      if (opts.avatars && seg2.avatar) {
+        var av = el("span", "pb-avatar", seg2.avatar);
+        av.style.background = seg2.color;
+        row.appendChild(av);
+      } else {
+        var sw = el("span", "pb-swatch");
+        sw.style.background = seg2.color;
+        row.appendChild(sw);
+      }
+      row.appendChild(el("span", "pb-label", seg2.label));
+      row.appendChild(el("span", "pb-value", fmtInt(seg2.value)));
+      row.appendChild(el("span", "pb-share", total > 0 ? Math.round((seg2.value / total) * 100) + "%" : "—"));
+      legend.appendChild(row);
+    }
+    wrap.appendChild(legend);
+    return wrap;
+  }
+
+  // Tiered funnel: centered bars, width proportional to the stage value,
+  // conversion % on the gaps. Non-monotonic input is reported honestly
+  // (a stage bigger than its parent gets the parent width and a note).
+  // Deep ramp: white text stays >= AA on every tier (auditor caught ~3:1 on
+  // the light tier).
+  var FUNNEL_COLORS = ["#5B21B6", "#6D28D9", "#7C3AED", "#8B5CF6"];
+
+  function funnelChart(stages, opts) {
+    opts = opts || {};
+    var wrap = el("div", "funnel");
+    var max = 0;
+    for (var i = 0; i < stages.length; i++) max = Math.max(max, stages[i].value);
+    if (max <= 0) return wrap;
+    for (var s = 0; s < stages.length; s++) {
+      if (s > 0) {
+        var prev = stages[s - 1].value;
+        var conv = el("div", "funnel-conv");
+        conv.appendChild(el("span", "conv-arrow", "↓"));
+        conv.appendChild(document.createTextNode(
+          prev > 0 ? Math.round((stages[s].value / prev) * 100) + "% of " + stages[s - 1].label : "—"));
+        wrap.appendChild(conv);
+      }
+      var tier = el("div", "funnel-tier");
+      var bar = el("div", "funnel-bar");
+      bar.style.width = Math.max(12, (stages[s].value / max) * 100) + "%";
+      bar.style.background = FUNNEL_COLORS[Math.min(s, FUNNEL_COLORS.length - 1)];
+      bar.appendChild(el("span", "fb-label", stages[s].label));
+      bar.appendChild(el("span", "fb-value", fmtInt(stages[s].value)));
+      tier.appendChild(bar);
+      wrap.appendChild(tier);
+    }
+    return wrap;
+  }
+
+  // Heatmap table post-pass: numeric columns get an accent-alpha intensity
+  // background proportional to the column max; the hottest cell goes bold.
+  function heatmapCols(tbl, colIndexes) {
+    var rows = tbl.querySelectorAll("tr");
+    if (rows.length < 2) return;
+    for (var c = 0; c < colIndexes.length; c++) {
+      var col = colIndexes[c];
+      var max = 0;
+      var cells = [];
+      for (var r = 1; r < rows.length; r++) {
+        var td = rows[r].children[col];
+        if (!td) continue;
+        var v = parseFloat(td.textContent);
+        if (isNaN(v)) continue;
+        cells.push({ td: td, v: v });
+        max = Math.max(max, v);
+      }
+      for (var k = 0; k < cells.length; k++) {
+        var ratio = max > 0 ? cells[k].v / max : 0;
+        cells[k].td.classList.add("heat");
+        // 0.06..0.34 alpha: per-cell steps stay visible at table scale.
+        cells[k].td.style.background = "rgba(124, 58, 237, " + (0.06 + ratio * 0.28).toFixed(3) + ")";
+        if (ratio >= 0.999) cells[k].td.classList.add("heat-hi");
+      }
+    }
   }
 
   // ----------------------------------------------------------------- graph
@@ -1301,119 +1780,155 @@
     maybeAutoscroll();
   }
 
-  // Activity density (T6 dot-matrix): one column per recent day, stack height
-  // ∝ events that day, per-row teal→violet ramp… here a single-hue accent
-  // ramp scaled from the day's own level mix is overkill — the ramp encodes
-  // volume, and error/warn presence paints the top rows semantically.
+  // Activity density (W20): dot-matrix HEATMAP — rows = dayparts (or weekdays
+  // in hourly mode), columns = recent days (or hours), dot intensity = event
+  // count on a 5-step single-hue ramp, red ring = errors present in the cell,
+  // hover = floating tooltip with the exact count + level mix. A segmented
+  // control switches granularity. The right rail keeps two KPI cards (with
+  // sparklines) and an agent proportion bar (avatar / label / value / %).
+  var densityMode = "daily";
+
   function renderActivityDensity() {
     var box = document.getElementById("activity-density");
     if (!box) return;
     clear(box);
     if (!activity.entries.length) return;
+    var DAYPARTS = ["00–06", "06–12", "12–18", "18–24"];
+    var WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    var daySet = {};
     var days = [];
     var levelByDay = {};
+    var byPart = {}; // day -> [4 cells]
+    var byHour = {}; // weekday 0-6 -> [24 cells]
+    var perAgent = {};
+    function blankCell() { return { count: 0, info: 0, warn: 0, error: 0 }; }
     for (var i = 0; i < activity.entries.length; i++) {
       var entry = activity.entries[i];
-      var day = String(entry.occurred_at || "").slice(0, 10);
+      var stamp = String(entry.occurred_at || "");
+      var day = stamp.slice(0, 10);
       if (!day) continue;
-      if (!byDaySeen(days, day)) { days.push(day); }
-      levelByDay[day] = levelByDay[day] || { info: 0, warn: 0, error: 0 };
+      if (!daySet[day]) {
+        daySet[day] = true;
+        days.push(day);
+        levelByDay[day] = { info: 0, warn: 0, error: 0 };
+        byPart[day] = [blankCell(), blankCell(), blankCell(), blankCell()];
+      }
       levelByDay[day][entry.level] = (levelByDay[day][entry.level] || 0) + 1;
+      var hour = parseInt(stamp.slice(11, 13), 10);
+      var date = new Date(stamp);
+      var wd = isNaN(date.getTime()) ? 0 : (date.getDay() + 6) % 7; // Mon = 0
+      if (!isNaN(hour)) {
+        var part = Math.min(3, Math.floor(hour / 6));
+        byPart[day][part].count += 1;
+        byPart[day][part][entry.level] = (byPart[day][part][entry.level] || 0) + 1;
+        if (!byHour[wd]) {
+          byHour[wd] = [];
+          for (var h = 0; h < 24; h++) byHour[wd].push(blankCell());
+        }
+        byHour[wd][hour].count += 1;
+        byHour[wd][hour][entry.level] = (byHour[wd][hour][entry.level] || 0) + 1;
+      }
+      perAgent[entry.agent] = (perAgent[entry.agent] || 0) + 1;
     }
     days.sort();
-    var recent = days.slice(-14);
-    var maxDay = 0;
-    for (var d = 0; d < recent.length; d++) {
-      var sum = levelByDay[recent[d]].info + levelByDay[recent[d]].warn + levelByDay[recent[d]].error;
-      maxDay = Math.max(maxDay, sum);
-    }
+    var recent = days.slice(-21);
+
     var card = el("div", "density-card");
     var head = el("div", "chart-head");
-    head.appendChild(el("span", "chart-title", "Activity density"));
-    head.appendChild(el("span", "chart-meta", recent.length + " days · peak " + maxDay + "/day"));
+    head.appendChild(el("span", "chart-title", "Activity heatmap"));
+    var seg = segControl(
+      [{ key: "daily", label: "Daily" }, { key: "hourly", label: "Hourly" }],
+      densityMode,
+      function (mode) { densityMode = mode; renderActivityDensity(); });
+    head.appendChild(seg);
+    var peak = 0;
+    for (var p = 0; p < recent.length; p++) {
+      var sum = levelByDay[recent[p]].info + levelByDay[recent[p]].warn + levelByDay[recent[p]].error;
+      peak = Math.max(peak, sum);
+    }
+    head.appendChild(el("span", "chart-meta", recent.length + " days · peak " + peak + "/day"));
     card.appendChild(head);
-    // Ramp: level mix of the day picks the TOP row color (error > warn > info),
-    // lower rows stay neutral accent tints — volume up, severity on top.
-    var columns = [];
-    for (var c = 0; c < recent.length; c++) {
-      var levels = levelByDay[recent[c]];
-      var total = levels.info + levels.warn + levels.error;
-      columns.push({
-        label: recent[c].slice(5),
-        value: Math.max(1, Math.ceil((total / Math.max(1, maxDay)) * 4)),
-        topColor: levels.error > 0 ? "#DC2626" : levels.warn > 0 ? "#D97706" : "#7C3AED"
-      });
-    }
-    // Fixed-size svg (viewBox 1:1): class-viz width:100% would stretch the
-    // small matrix and blow up the 9.5px labels (measured: 3.4x scale bug).
-    // NOTE: CSP blocks setAttribute("style") — assign via the style property.
-    var pitch = 26, dotR = 8, rows = 4;
-    var svgW = columns.length * pitch + 8, svgH = rows * pitch + 22;
-    var svg = svgRoot(svgW, svgH);
-    svg.style.width = svgW + "px";
-    svg.style.height = svgH + "px";
-    for (var col = 0; col < columns.length; col++) {
-      for (var r = 0; r < rows; r++) {
-        var cx = 4 + col * pitch + pitch / 2;
-        var cy = 4 + (rows - 1 - r) * pitch + dotR + 2;
-        var color = r < columns[col].value
-          ? (r === columns[col].value - 1 ? columns[col].topColor : "#DDD6FE")
-          : "#F4F4F5";
-        var dot = svgEl("circle", { cx: cx, cy: cy, r: dotR, fill: color });
-        dot.setAttribute("class", "viz-dot");
-        svg.appendChild(dot);
-      }
-      // label every 2nd column when the pitch can't fit a gutter (audit: the
-      // 7 day labels collided into one run at pitch 26)
-      if (pitch >= 40 || col % 2 === 0) {
-        svg.appendChild(svgText(4 + col * pitch + pitch / 2, rows * pitch + 14, columns[col].label, "viz-cat", "middle"));
-      }
-    }
+
     var matWrap = el("div", "density-body");
-    matWrap.appendChild(svg);
-    // Right stats column fills the card with real derived numbers (H2).
+    if (densityMode === "daily") {
+      var cells = [];
+      for (var r = 0; r < 4; r++) {
+        var rowCells = [];
+        for (var c = 0; c < recent.length; c++) {
+          var cell = byPart[recent[c]][r];
+          rowCells.push({
+            count: cell.count, info: cell.info, warn: cell.warn, error: cell.error,
+            title: recent[c] + " · " + DAYPARTS[r]
+          });
+        }
+        cells.push(rowCells);
+      }
+      matWrap.appendChild(dotHeatmap({
+        rowLabels: DAYPARTS, colLabels: recent.map(function (d) { return d.slice(5); }),
+        cells: cells
+      }, { pitch: 22, dotR: 7, labelWidth: 48, colLabelEvery: 2 }));
+    } else {
+      var hCells = [];
+      var hLabels = [];
+      for (var hh = 0; hh < 24; hh++) hLabels.push(String(hh));
+      for (var wr = 0; wr < 7; wr++) {
+        var wRow = [];
+        for (var hc = 0; hc < 24; hc++) {
+          var hCell = (byHour[wr] || [])[hc] || blankCell();
+          wRow.push({
+            count: hCell.count, info: hCell.info, warn: hCell.warn, error: hCell.error,
+            title: WEEKDAYS[wr] + " · " + hc + ":00–" + (hc + 1) + ":00"
+          });
+        }
+        hCells.push(wRow);
+      }
+      matWrap.appendChild(dotHeatmap({
+        rowLabels: WEEKDAYS, colLabels: hLabels, cells: hCells
+      }, { pitch: 18, dotR: 5.5, labelWidth: 40, colLabelEvery: 2 }));
+    }
+
+    // Right rail: two KPI cards (with per-day sparkline) + agent share bar.
     var stats = el("div", "density-stats");
     var totalAll = 0;
+    var dayCounts = [];
     for (var s = 0; s < recent.length; s++) {
-      totalAll += levelByDay[recent[s]].info + levelByDay[recent[s]].warn + levelByDay[recent[s]].error;
+      var daySum = levelByDay[recent[s]].info + levelByDay[recent[s]].warn + levelByDay[recent[s]].error;
+      totalAll += daySum;
+      dayCounts.push(daySum);
     }
     var peakIdx = 0;
     for (var pk = 1; pk < recent.length; pk++) {
-      var sumPk = levelByDay[recent[pk]].info + levelByDay[recent[pk]].warn + levelByDay[recent[pk]].error;
-      var sumBest = levelByDay[recent[peakIdx]].info + levelByDay[recent[peakIdx]].warn + levelByDay[recent[peakIdx]].error;
-      if (sumPk > sumBest) peakIdx = pk;
+      if (dayCounts[pk] > dayCounts[peakIdx]) peakIdx = pk;
     }
     stats.appendChild(kpiCard({
       label: "Events in window", value: totalAll, deltas: [],
-      baseline: recent.length + " days shown"
+      baseline: recent.length + " days shown", spark: dayCounts
     }));
     stats.appendChild(kpiCard({
-      label: "Peak day", value: maxDay,
-      unit: " events",
+      label: "Peak day (events)", value: peak,
       deltas: [{ text: recent[peakIdx], dir: "flat" }],
-      baseline: "avg " + (Math.round((totalAll / recent.length) * 10) / 10) + "/day"
+      baseline: "avg " + (Math.round((totalAll / recent.length) * 10) / 10) + "/day",
+      spark: dayCounts
     }));
+    var agentNames = Object.keys(perAgent).sort();
+    if (agentNames.length) {
+      var AGENT_COLORS = ["#7C3AED", "#A78BFA", "#C4B5FD", "#DDD6FE", "#9CA3AF", "#D4D4D8"];
+      var agentCard = el("div", "kpi");
+      agentCard.appendChild(el("div", "kpi-label", "Events by agent"));
+      agentCard.appendChild(proportionBar(agentNames.map(function (name, idx) {
+        return {
+          label: agentLabel(agentNames[idx]) + " · " + agentNames[idx],
+          value: perAgent[agentNames[idx]],
+          color: AGENT_COLORS[idx % AGENT_COLORS.length],
+          avatar: String(idx + 1)
+        };
+      }), { avatars: true }));
+      stats.appendChild(agentCard);
+    }
     matWrap.appendChild(stats);
     card.appendChild(matWrap);
-    var legend = el("div", "density-legend");
-    legend.appendChild(dotLegendItem("info", "info only (top dot = worst level)"));
-    legend.appendChild(dotLegendItem("warn", "warnings present"));
-    legend.appendChild(dotLegendItem("error", "errors present"));
-    legend.appendChild(dotLegendItem("dim", "no activity"));
-    card.appendChild(legend);
+    card.appendChild(dotHeatLegend());
     box.appendChild(card);
-  }
-
-  function dotLegendItem(level, label) {
-    var item = el("span", null);
-    item.appendChild(el("span", "sdot " + level));
-    item.appendChild(document.createTextNode(label));
-    return item;
-  }
-
-  function byDaySeen(days, day) {
-    for (var i = 0; i < days.length; i++) if (days[i] === day) return true;
-    return false;
   }
 
   function maybeAutoscroll() {
@@ -1753,13 +2268,18 @@
     }
     var grid = el("div", "kpi-grid");
     grid.appendChild(dark); // dark first = anchor (T7: eye lands on priority)
+    // W20: sparklines from the real series (health snapshots, daily events).
+    var healthSpark = [];
+    for (var hs = 0; hs < healthSeries.length; hs++) healthSpark.push(healthSeries[hs].score);
+    var eventSpark = [];
+    for (var es = 0; es < eventSeries.length; es++) eventSpark.push(eventSeries[es].events);
     grid.appendChild(kpiCard({
       label: "Health score", value: health.score, unit: "/ " + health.max_score,
-      deltas: healthDeltas, baseline: healthBase
+      deltas: healthDeltas, baseline: healthBase, spark: healthSpark
     }));
     grid.appendChild(kpiCard({
       label: "Events total", value: fmtInt(counts.events_total || 0),
-      deltas: eventsDeltas, baseline: eventsBase
+      deltas: eventsDeltas, baseline: eventsBase, spark: eventSpark
     }));
     grid.appendChild(kpiCard({
       label: "Publish headroom", value: fmtBytes(cap.headroom_bytes || 0),
@@ -1768,8 +2288,59 @@
     }));
     hero.appendChild(grid);
 
-    // ---- charts: bar (latency p50/op) + donut (event kinds) + line (events/day)
+    // ---- charts: multi-line trend (events + health, W20 interactive) + bar
+    // (latency p50/op) + donut (event kinds)
     var chartGrid = el("div", "chart-grid");
+
+    // W20: interactive multi-series trend (T4 interactive register). X = day;
+    // events on the left axis, health score on the right axis (honest scales).
+    var trendCard = chartCard("Activity & health over time", "");
+    trendCard.classList.add("wide");
+    var trendHost = el("div", null);
+    trendCard.appendChild(trendHost);
+    var daySet = {};
+    var xDays = [];
+    for (var ed = 0; ed < eventSeries.length; ed++) {
+      if (!daySet[eventSeries[ed].day]) { daySet[eventSeries[ed].day] = true; xDays.push(eventSeries[ed].day); }
+    }
+    var healthByDay = {};
+    for (var hd = 0; hd < healthSeries.length; hd++) {
+      var hDay = String(healthSeries[hd].recorded_at || "").slice(0, 10);
+      healthByDay[hDay] = healthSeries[hd].score;
+      if (hDay && !daySet[hDay]) { daySet[hDay] = true; xDays.push(hDay); }
+    }
+    xDays.sort();
+    var trendEvents = [], trendHealth = [];
+    for (var xd = 0; xd < xDays.length; xd++) {
+      var found = null;
+      for (var ef = 0; ef < eventSeries.length; ef++) {
+        if (eventSeries[ef].day === xDays[xd]) { found = eventSeries[ef].events; break; }
+      }
+      trendEvents.push(found);
+      trendHealth.push(healthByDay[xDays[xd]] !== undefined ? healthByDay[xDays[xd]] : null);
+    }
+    function trendSeries(mode) {
+      var out = [];
+      if (mode !== "health") out.push({ key: "events", label: "events / day", color: "#7C3AED", values: trendEvents, axis: 0 });
+      if (mode !== "events") out.push({ key: "health", label: "health score", color: "#9CA3AF", values: trendHealth, axis: 1 });
+      return out;
+    }
+    function renderTrend(mode) {
+      clear(trendHost);
+      if (xDays.length < 2) {
+        trendHost.appendChild(el("p", "chart-empty",
+          "Fewer than 2 daily buckets — a trend needs at least two days of activity."));
+        return;
+      }
+      trendHost.appendChild(multiLineChart(xDays, trendSeries(mode), { width: 920, height: 210 }));
+    }
+    var trendSeg = segControl(
+      [{ key: "both", label: "Both" }, { key: "events", label: "Events" }, { key: "health", label: "Health" }],
+      "both", renderTrend);
+    trendCard.children[0].appendChild(trendSeg); // children[0] = .chart-head
+    renderTrend("both");
+    chartGrid.appendChild(trendCard);
+
     var ops = (bench && bench.operations) || [];
     var barCard = chartCard("Latency p50 by operation", "ms · from the invocation journal");
     if (!ops.length) {
@@ -1801,29 +2372,21 @@
       donutCard.appendChild(donutWrap);
     }
     chartGrid.appendChild(donutCard);
-
-    var lineCard = chartCard("Events per day",
-      eventSeries.length ? eventSeries[0].day + " → " + eventSeries[eventSeries.length - 1].day : "");
-    if (eventSeries.length < 2) {
-      lineCard.appendChild(el("p", "chart-empty",
-        "Fewer than 2 daily buckets — a trend needs at least two days of activity."));
-    } else {
-      lineCard.appendChild(lineChart(eventSeries.map(function (row) {
-        return { label: String(row.day).slice(5), value: row.events };
-      }), { width: 400, height: 150 }));
-    }
-    chartGrid.appendChild(lineCard);
     charts.appendChild(chartGrid);
 
-    // ---- detail: bench table (dense) + counters + capacity (raw, mono)
+    // ---- detail: bench table (dense, heat-mapped numeric columns) + counters
+    // + capacity (raw, mono)
     detail.appendChild(el("h3", "panel-title", "Bench — per-operation latency (ms)"));
     if (!ops.length) {
       emptyNote(detail, "(no completed invocations recorded yet)");
     } else {
-      table(detail, ["operation", "count", "min", "mean", "p50", "p95", "max"],
+      var benchTbl = table(detail, ["operation", "count", "min", "mean", "p50", "p95", "max"],
         ops.map(function (op) {
           return [op.operation, op.count, op.min_ms, op.mean_ms, op.p50_ms, op.p95_ms, op.max_ms];
         }), "dense");
+      // W20: latency cells carry per-column intensity (hottest = bold) — the
+      // slow column/row pops without reading every number.
+      heatmapCols(benchTbl, [2, 3, 4, 5, 6]);
     }
     if (bench && bench.malformed_outcomes) {
       detail.appendChild(el("p", "muted", bench.malformed_outcomes + " malformed outcomes skipped"));
@@ -1953,6 +2516,30 @@
     }));
     container.appendChild(grid);
 
+    // W20: community size share as a proportion bar (sizes were badge text).
+    if (comms.length) {
+      var totalSize = 0;
+      for (var cs = 0; cs < comms.length; cs++) totalSize += comms[cs].size || 0;
+      if (totalSize > 0) {
+        var sizeCard = chartCard("Community size share", totalSize + " members across " + comms.length + " communities");
+        var sorted = comms.slice().sort(function (x, y) { return (y.size || 0) - (x.size || 0); });
+        var segs = [];
+        var topN = Math.min(5, sorted.length);
+        for (var si = 0; si < topN; si++) {
+          segs.push({
+            label: sorted[si].label || sorted[si].id,
+            value: sorted[si].size || 0,
+            color: DONUT_COLORS[si % DONUT_COLORS.length]
+          });
+        }
+        var rest = 0;
+        for (var sr = topN; sr < sorted.length; sr++) rest += sorted[sr].size || 0;
+        if (rest > 0) segs.push({ label: "other (" + (sorted.length - topN) + ")", value: rest, color: "#D4D4D8" });
+        sizeCard.appendChild(proportionBar(segs));
+        container.appendChild(sizeCard);
+      }
+    }
+
     // PageRank leaderboard as a bar-list (visual) — mono ids, tabular values.
     container.appendChild(el("h3", "panel-title", "Centrality — top by PageRank"));
     if (!pr.length) {
@@ -2067,15 +2654,61 @@
   }
 
   function renderRefs(container, payload) {
+    // W20: the raw status/count table becomes (1) a stacked proportion bar
+    // with semantic colors + inline legend, and (2) a kind × status heatmap
+    // matrix built from the three paged status endpoints (real rows).
+    var mixCard = chartCard("Resolution mix", payload.total + " refs tracked");
+    if (payload.total > 0) {
+      mixCard.appendChild(proportionBar([
+        { label: "resolved", value: payload.resolved, color: "#059669" },
+        { label: "pending", value: payload.pending, color: "#D97706" },
+        { label: "failed", value: payload.failed, color: "#DC2626" }
+      ]));
+    } else {
+      emptyNote(mixCard, "(no unresolved references tracked)");
+    }
+    container.appendChild(mixCard);
+
+    var matrixCard = chartCard("Refs by kind × status", "count per cell · intensity = share of column");
+    var matrixHost = el("div", null);
+    matrixHost.appendChild(el("p", "empty", "loading matrix…"));
+    matrixCard.appendChild(matrixHost);
+    container.appendChild(matrixCard);
+    Promise.all([
+      api("/api/refs/pending?limit=200"),
+      api("/api/refs/resolved?limit=200"),
+      api("/api/refs/failed?limit=200")
+    ]).then(function (results) {
+      clear(matrixHost);
+      var kinds = {};
+      var matrix = {}; // kind -> {pending, resolved, failed}
+      var STATUSES = ["pending", "resolved", "failed"];
+      for (var r = 0; r < 3; r++) {
+        var refs = results[r].refs || [];
+        for (var i = 0; i < refs.length; i++) {
+          var kind = refs[i].kind || "?";
+          if (!matrix[kind]) { matrix[kind] = { pending: 0, resolved: 0, failed: 0 }; kinds[kind] = true; }
+          matrix[kind][STATUSES[r]] += 1;
+        }
+      }
+      var names = Object.keys(kinds).sort();
+      if (!names.length) {
+        emptyNote(matrixHost, "(no refs in the window)");
+        return;
+      }
+      var rows = names.map(function (kind) {
+        var m = matrix[kind];
+        return [kind, m.pending, m.resolved, m.failed, m.pending + m.resolved + m.failed];
+      });
+      var tbl = table(matrixHost, ["kind", "pending", "resolved", "failed", "total"], rows, "dense");
+      heatmapCols(tbl, [1, 2, 3]);
+    }).catch(function () {
+      clear(matrixHost);
+      emptyNote(matrixHost, "(matrix unavailable — paged ref endpoints failed)");
+    });
+
     var cols = el("div", "cols-2");
     var left = el("div");
-    left.appendChild(el("h3", "panel-title", "Unresolved references"));
-    table(left, ["status", "count"], [
-      ["pending", payload.pending],
-      ["resolved", payload.resolved],
-      ["failed", payload.failed],
-      ["total", payload.total]
-    ]);
     left.appendChild(el("h3", "panel-title", "Top failed name tails"));
     if (payload.top_failed.length === 0) emptyNote(left, "(none)");
     table(left, ["name_tail", "count"],
@@ -2092,9 +2725,35 @@
     container.appendChild(cols);
   }
 
-  function renderProposals(container, payload) {
+  function renderProposals(container, payload, improvements) {
     container.appendChild(el("p", "muted",
-      payload.count + " review candidates (proposal-only; nothing here mutates the store)"));
+      payload.count + " review " + plural(payload.count, "candidate") + " (proposal-only; nothing here mutates the store)"));
+
+    // W20: improvement pipeline funnel — proposed → applied, from the event
+    // log (/api/improvements is part of this tab's feature contract).
+    var proposed = improvements && improvements.count || 0;
+    var applied = 0;
+    if (improvements && improvements.proposals) {
+      for (var a = 0; a < improvements.proposals.length; a++) {
+        if (improvements.proposals[a].status === "applied") applied += 1;
+      }
+    }
+    var pipeCard = chartCard("Improvement pipeline", "proposed → applied (event log)");
+    if (proposed > 0) {
+      pipeCard.appendChild(funnelChart([
+        { label: "proposed", value: proposed },
+        { label: "applied", value: applied }
+      ]));
+      pipeCard.appendChild(el("p", "muted",
+        payload.count + " open review " + plural(payload.count, "signal") +
+        " below may become the next " + plural(payload.count, "proposal")));
+    } else {
+      pipeCard.appendChild(el("p", "chart-empty",
+        "No improvement proposals in the event log yet — the funnel fills when " +
+        "knowledge.propose_improvement events land."));
+    }
+    container.appendChild(pipeCard);
+
     if (payload.count === 0) {
       emptyNote(container, "(no candidates — the review signal scan found nothing)");
       return;
@@ -2102,14 +2761,13 @@
     var counts = payload.signal_counts || {};
     var countKeys = Object.keys(counts).sort();
     if (countKeys.length) {
-      var strip = el("div", "kpi-grid");
-      for (var k = 0; k < countKeys.length; k++) {
-        strip.appendChild(kpiCard({
-          label: countKeys[k], value: counts[countKeys[k]], deltas: [],
-          baseline: "signal count"
-        }));
-      }
-      container.appendChild(strip);
+      // W20: signal mix as a stacked proportion bar (was: plain KPI cards).
+      var mixCard = chartCard("Signal mix", payload.count + " " + plural(payload.count, "candidate"));
+      var SIGNAL_COLORS = ["#7C3AED", "#A78BFA", "#C4B5FD", "#DDD6FE", "#9CA3AF"];
+      mixCard.appendChild(proportionBar(countKeys.map(function (key, idx) {
+        return { label: key, value: counts[key], color: SIGNAL_COLORS[idx % SIGNAL_COLORS.length] };
+      })));
+      container.appendChild(mixCard);
     }
     for (var i = 0; i < payload.signals.length; i++) {
       var signal = payload.signals[i];
@@ -2168,6 +2826,21 @@
       emptyNote(container, "(no debt candidates — the queue is clear)");
       return;
     }
+    // W20: action mix as a proportion bar (was implicit in per-card badges).
+    var actionCounts = {};
+    for (var ac = 0; ac < payload.items.length; ac++) {
+      var act = payload.items[ac].action || "?";
+      actionCounts[act] = (actionCounts[act] || 0) + 1;
+    }
+    var actionNames = Object.keys(actionCounts).sort();
+    if (actionNames.length > 1) {
+      var ACTION_COLORS = ["#7C3AED", "#A78BFA", "#C4B5FD", "#DDD6FE", "#9CA3AF"];
+      var actionCard = chartCard("Candidates by action", payload.items.length + " items");
+      actionCard.appendChild(proportionBar(actionNames.map(function (name, idx) {
+        return { label: name, value: actionCounts[name], color: ACTION_COLORS[idx % ACTION_COLORS.length] };
+      })));
+      container.appendChild(actionCard);
+    }
     var maxPrio = 0;
     for (var i = 0; i < payload.items.length; i++) maxPrio = Math.max(maxPrio, Number(payload.items[i].priority) || 0);
     for (var j = 0; j < payload.items.length; j++) {
@@ -2182,7 +2855,8 @@
       prioFill.style.width = (maxPrio > 0 ? Math.max(3, (Number(item.priority) / maxPrio) * 100) : 0) + "%";
       prioTrack.appendChild(prioFill);
       head.appendChild(prioTrack);
-      head.appendChild(el("span", "muted mono", String(item.priority)));
+      // 12-dp quantized priority is storage detail; 4dp keeps the ranking readable.
+      head.appendChild(el("span", "muted mono", Number(item.priority).toFixed(4)));
       card.appendChild(head);
       var body = el("div", "rc-body");
       var signals = item.signals || [];
@@ -2196,11 +2870,39 @@
     }
   }
 
-  function renderExtractions(container, payload) {
+  function renderExtractions(container, payload, summary) {
+    // W20: queue funnel from /api/extractions/summary — submitted → reviewed →
+    // applied (reviewed = applied + rejected; the in-review remainder is a
+    // note, not a fake stage, because partitions are not stages).
+    if (summary && summary.state === "ok" && summary.queue_size > 0) {
+      var counts = summary.counts || {};
+      var inReview = (counts.pending_review || 0) + (counts.corroborated || 0) + (counts.contradiction_flagged || 0);
+      var reviewed = (counts.applied || 0) + (counts.rejected || 0);
+      var funnelCard = chartCard("Review queue funnel", "extraction intake (contract v4)");
+      funnelCard.appendChild(funnelChart([
+        { label: "submitted", value: summary.queue_size },
+        { label: "decided", value: reviewed },
+        { label: "applied", value: counts.applied || 0 }
+      ]));
+      // The funnel's stage-to-stage gaps are joined by the end-to-end number
+      // here — the headline rate belongs next to the funnel, not nowhere.
+      var endToEnd = summary.queue_size > 0
+        ? Math.round(((counts.applied || 0) / summary.queue_size) * 100) : 0;
+      funnelCard.appendChild(el("p", "muted",
+        "end-to-end: " + (counts.applied || 0) + "/" + summary.queue_size + " applied (" + endToEnd + "%)" +
+        (inReview > 0 ?
+          " · " + inReview + " still in review (" +
+          (counts.pending_review || 0) + " pending · " +
+          (counts.corroborated || 0) + " corroborated · " +
+          (counts.contradiction_flagged || 0) + " flagged)" : "") +
+        (counts.rejected ? " · " + counts.rejected + " rejected at review" : "")));
+      container.appendChild(funnelCard);
+    }
     // Provenance cards: status badge, confidence reported→effective as a dual
     // bar (marker = reported), corroboration +/- pills.
     container.appendChild(el("p", "muted",
-      payload.count + " queued submissions (queue size " + payload.queue_size + ")"));
+      payload.count + " " + plural(payload.count, "submission") +
+      " across all statuses (queue size " + payload.queue_size + ")"));
     if (!payload.rows || payload.rows.length === 0) {
       // K1 empty state: visual + heading + cause + next step.
       var empty = el("div", "empty-state");
@@ -2220,12 +2922,14 @@
       var card = el("div", "rcard");
       var head = el("div", "rc-head");
       head.appendChild(el("span", "rc-title", row.receipt_id));
-      head.appendChild(badge(row.status === "accepted" ? "ok" : row.status === "rejected" ? "error" :
-        row.status === "pending" ? "warn" : "dim", row.status));
+      head.appendChild(badge(
+        row.status === "applied" ? "ok" : row.status === "corroborated" ? "info" :
+        row.status === "rejected" || row.status === "contradiction_flagged" ? "error" :
+        row.status === "pending_review" ? "warn" : "dim", row.status));
       card.appendChild(head);
       var body = el("div", "rc-body");
       body.appendChild(el("span", "muted", row.actor + " · " + row.agent + " · " +
-        row.nodes + " nodes / " + row.edges + " edges"));
+        row.nodes + " " + plural(row.nodes, "node") + " / " + row.edges + " " + plural(row.edges, "edge")));
       card.appendChild(body);
       var confRow = el("div", "conf-pair");
       confRow.appendChild(el("span", "muted", "confidence"));
@@ -2237,13 +2941,17 @@
       mark.style.left = Math.max(0, Math.min(100, (Number(row.confidence_reported) || 0) * 100)) + "%";
       track.appendChild(mark);
       confRow.appendChild(track);
-      confRow.appendChild(el("span", null, row.confidence_reported + " → " + row.confidence_effective));
+      // 12-dp quantized strings are storage detail; the UI shows 2dp.
+      confRow.appendChild(el("span", null,
+        Number(row.confidence_reported).toFixed(2) + " → " + Number(row.confidence_effective).toFixed(2)));
       card.appendChild(confRow);
       var corr = el("div", "rc-body");
-      corr.appendChild(el("span", "delta-pill up", "+" + row.corroborators + " corroborators"));
+      // Zero evidence is neutral, not a gain (auditor: "+0" in green lies).
+      corr.appendChild(el("span", "delta-pill " + (row.corroborators > 0 ? "up" : "flat"),
+        "+" + row.corroborators + " " + plural(row.corroborators, "corroborator")));
       corr.appendChild(document.createTextNode(" "));
       corr.appendChild(el("span", "delta-pill " + (row.contradictions > 0 ? "down" : "flat"),
-        "−" + row.contradictions + " contradictions"));
+        "−" + row.contradictions + " " + plural(row.contradictions, "contradiction")));
       card.appendChild(corr);
       container.appendChild(card);
     }
@@ -2262,11 +2970,33 @@
         ["journal mode", stats.journal_mode]
       ];
       var tables = stats.tables || {};
-      Object.keys(tables).sort().slice(0, 8).forEach(function (name) {
-        var count = Number(tables[name]);
-        pairs.push([name, String(tables[name]) + (count === 1 ? " row" : " rows")]);
+      // W20 fix (audit): cards rank by rows desc — the biggest tables earn the
+      // cards, not the alphabet (unresolved_refs used to lose to 1-row tables).
+      var byRows = Object.keys(tables).map(function (name) {
+        return { name: name, rows: Number(tables[name]) || 0 };
+      }).sort(function (a, b) { return b.rows - a.rows; });
+      byRows.slice(0, 8).forEach(function (entry) {
+        pairs.push([entry.name, String(entry.rows) + (entry.rows === 1 ? " row" : " rows")]);
       });
       cardGrid(statsBox, pairs);
+      // W20: table size share as a proportion bar above the raw tables list —
+      // the store's weight distribution at a glance (top 6 + other).
+      var tablePairs = byRows;
+      var totalRows = 0;
+      for (var tr = 0; tr < tablePairs.length; tr++) totalRows += tablePairs[tr].rows;
+      if (totalRows > 0) {
+        var shareCard = chartCard("Table size share", fmtInt(totalRows) + " rows across " + tablePairs.length + " tables");
+        var segs = [];
+        var topN = Math.min(6, tablePairs.length);
+        for (var ti = 0; ti < topN; ti++) {
+          segs.push({ label: tablePairs[ti].name, value: tablePairs[ti].rows, color: DONUT_COLORS[ti % DONUT_COLORS.length] });
+        }
+        var restRows = 0;
+        for (var ri = topN; ri < tablePairs.length; ri++) restRows += tablePairs[ri].rows;
+        if (restRows > 0) segs.push({ label: "other (" + (tablePairs.length - topN) + ")", value: restRows, color: "#D4D4D8" });
+        shareCard.appendChild(proportionBar(segs));
+        statsBox.appendChild(shareCard);
+      }
     }).catch(function (error) {
       statsBox.appendChild(el("p", "bad-badge", String(error.message || error)));
     });
@@ -2390,6 +3120,17 @@
         return [snap.recorded_at, snap.score + " / " + snap.max_score, snap.event_count,
           String(snap.hash || "").slice(0, 12)];
       });
+      // W20: a score-history line above the table (T4 minimal register) — nine
+      // identical rows read instantly as a flat line; a dip would pop.
+      var snaps = payload.snapshots || [];
+      if (snaps.length >= 2) {
+        var histCard = chartCard("Health score history",
+          String(snaps[0].recorded_at).slice(0, 10) + " → " + String(snaps[snaps.length - 1].recorded_at).slice(0, 10));
+        histCard.appendChild(lineChart(snaps.map(function (snap) {
+          return { label: String(snap.recorded_at).slice(5, 10), value: snap.score };
+        }), { width: 640, height: 120 }));
+        healthBox.appendChild(histCard);
+      }
       if (!rows.length) {
         table(healthBox, ["recorded at", "score", "events", "hash"], []); // skeleton header
         emptyNote(healthBox, "(no health history recorded — state: " + payload.state + ")");
@@ -2615,8 +3356,13 @@
         container.appendChild(rootCard);
       }
       if (payload.impacted_files) {
-        container.appendChild(el("p", "muted", "impacted files (" + payload.impacted_file_count + "): " +
-          payload.impacted_files.join(", ")));
+        // W20: impacted files as chips (was one comma-joined text run).
+        var filesNote = el("div", null);
+        filesNote.appendChild(el("span", "muted", "impacted files (" + payload.impacted_file_count + "): "));
+        for (var fi = 0; fi < payload.impacted_files.length; fi++) {
+          filesNote.appendChild(el("span", "chip", payload.impacted_files[fi]));
+        }
+        container.appendChild(filesNote);
       }
       var entries = payload.entries || [];
       if (entries.length === 0) {
@@ -2794,10 +3540,38 @@
     loadPanel("audit-body", "/api/audit?limit=100", renderAudit);
     renderLedgers();
   };
-  refreshers.proposals = function () { loadPanel("proposals-body", "/api/proposals", renderProposals); };
+  refreshers.proposals = function () {
+    // W20: the tab needs both payloads — signals + the improvement lifecycle.
+    var container = document.getElementById("proposals-body");
+    clear(container);
+    container.appendChild(el("p", "empty", "loading…"));
+    Promise.all([api("/api/proposals"), api("/api/improvements")]).then(function (results) {
+      clear(container);
+      renderProposals(container, results[0], results[1]);
+      setStatus("");
+    }).catch(function (error) {
+      clear(container);
+      container.appendChild(el("p", "bad-badge", String(error.message || error)));
+      setStatus(String(error.message || error), true);
+    });
+  };
   refreshers.debt = function () { loadPanel("debt-body", "/api/debt", renderDebt); };
   refreshers.codeintel = function () { /* interactive form; runs on submit */ };
-  refreshers.extractions = function () { loadPanel("extractions-body", "/api/extractions", renderExtractions); };
+  refreshers.extractions = function () {
+    // W20: cards + the queue-status summary for the funnel.
+    var container = document.getElementById("extractions-body");
+    clear(container);
+    container.appendChild(el("p", "empty", "loading…"));
+    Promise.all([api("/api/extractions"), api("/api/extractions/summary")]).then(function (results) {
+      clear(container);
+      renderExtractions(container, results[0], results[1]);
+      setStatus("");
+    }).catch(function (error) {
+      clear(container);
+      container.appendChild(el("p", "bad-badge", String(error.message || error)));
+      setStatus(String(error.message || error), true);
+    });
+  };
   refreshers.system = function () { loadSystemPanel(); };
   refreshers.exports = function () { /* interactive form; runs on submit */ };
   refreshers.contracts = function () { loadPanel("contracts-body", "/api/contracts", renderContracts); };
