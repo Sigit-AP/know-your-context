@@ -26,7 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
@@ -450,14 +450,22 @@ class _Audited:
         write: Callable[[], T],
         *,
         linked_domain_event_id: Callable[[T], str | None] | None = None,
+        post_write: Callable[[T], Mapping[str, Any] | None] | None = None,
     ) -> tuple[T, str, int]:
+        extra: Mapping[str, Any] | None = None
         try:
             result = write()
+            if post_write is not None:
+                # Disk-mode auto-review seam (SUB-151): runs inside the audit
+                # boundary; a raising reviewer fails the invocation with
+                # exactly one failure audit (never a second audit event).
+                extra = post_write(result)
         except Exception as error:
-            self._audit.complete(
+            failure_receipt = self._audit.complete(
                 self.invocation.invocation_id,
                 failure_outcome(self.invocation, self._started, error),
             )
+            error.audit_event_id = failure_receipt.audit_event_id  # type: ignore[attr-defined]
             raise
         link = linked_domain_event_id(result) if linked_domain_event_id is not None else None
         final = self._audit.complete(
@@ -465,7 +473,7 @@ class _Audited:
             success_outcome(
                 self.invocation,
                 self._started,
-                result_references={"operation": self.invocation.operation},
+                result_references={"operation": self.invocation.operation, **dict(extra or {})},
                 linked_domain_event_id=link,
             ),
         )
@@ -481,8 +489,15 @@ def apply_improvement(
     at: datetime | None = None,
     actor: str = "operator",
     idempotency_key: str | None = None,
+    post_write: Callable[[Node, int, DomainReceipt], Mapping[str, Any] | None] | None = None,
 ) -> ImprovementReceipt:
-    """Apply a proposal: approval and regression gate run before any write."""
+    """Apply a proposal: approval and regression gate run before any write.
+
+    ``post_write`` (disk-mode auto-review seam, SUB-151) receives
+    ``(applied_node, from_version, domain_receipt)`` after the write, inside
+    the audit boundary; a raising reviewer fails the invocation with exactly
+    one failure audit.
+    """
     at = at or _utcnow()
     audited = _Audited(
         store,
@@ -545,7 +560,9 @@ def apply_improvement(
         return after, node.version, domain
 
     (after, from_version, domain), audit_event_id, audit_event_seq = audited.run(
-        write, linked_domain_event_id=lambda result: result[2].domain_event_id
+        write,
+        linked_domain_event_id=lambda result: result[2].domain_event_id,
+        post_write=(lambda result: post_write(*result)) if post_write is not None else None,
     )
     return ImprovementReceipt(
         proposal_id=proposal.proposal_id,

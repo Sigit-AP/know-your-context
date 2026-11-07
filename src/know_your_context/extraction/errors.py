@@ -10,9 +10,12 @@ event has been appended, mirroring the service's ``KnowledgeError`` discipline
 
 from __future__ import annotations
 
+from typing import Any
+
 __all__ = [
     "ConfidenceNotDecimalError",
     "ConfidenceOutOfRangeError",
+    "ExtractionAutoRejectedError",
     "ExtractionDuplicateError",
     "ExtractionError",
     "ExtractionNotFoundError",
@@ -107,3 +110,24 @@ class ExtractionQueueFullError(ExtractionError):
     """The durable review queue reached its fail-closed row cap."""
 
     code = "EXTRACTION_QUEUE_FULL"
+
+
+class ExtractionAutoRejectedError(ExtractionError):
+    """Disk-mode: the post-write auto-review rejected the submission.
+
+    The queue row is marked ``rejected`` with the typed reason codes as its
+    note; nothing reaches the canonical graph (or is compensated out of it).
+    """
+
+    code = "EXTRACTION_AUTO_REJECTED"
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        reasons: tuple[str, ...] = (),
+        audit_references: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.reasons = tuple(reasons)
+        self.audit_references = dict(audit_references or {})

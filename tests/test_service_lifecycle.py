@@ -29,6 +29,7 @@ from know_your_context.contracts import (
 )
 from know_your_context.improvement import DiffOp, DiffOperation
 from know_your_context.scoring import ScoreEngine
+from know_your_context.service import KnowledgeService
 from test_service import _evidence, _seeded
 
 AT = datetime(2026, 10, 20, 12, tzinfo=UTC)
@@ -221,8 +222,11 @@ def test_apply_high_impact_requires_an_approval_record(tmp_path: Path) -> None:
         )
     )
     assert projection.proposal.impact == "high"
+    # The approval gate is the legacy manual mode (disk-mode auto-approves
+    # and lets the post-write auto-review gate instead).
+    manual = KnowledgeService(service._store, projector, manual_gates=True)  # noqa: SLF001 - test wiring
     with pytest.raises(ApprovalRequiredError) as excinfo:
-        service.apply_improvement(ApplyImprovementRequest(proposal_id=projection.proposal.proposal_id))
+        manual.apply_improvement(ApplyImprovementRequest(proposal_id=projection.proposal.proposal_id))
     assert excinfo.value.code == "APPROVAL_REQUIRED"
     assert excinfo.value.audit_event_id
 

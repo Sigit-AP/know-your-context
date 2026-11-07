@@ -2729,6 +2729,39 @@
     container.appendChild(el("p", "muted",
       payload.count + " review " + plural(payload.count, "candidate") + " (proposal-only; nothing here mutates the store)"));
 
+    // SUB-151 disk-mode: the tab leads with the auto-review history — every
+    // write's mandatory post-write verdict (pass/reject), never an approval
+    // queue. Rejects carry their typed reason codes and compensation link.
+    var reviews = (payload && payload.autoreviews) || [];
+    var reviewCounts = (payload && payload.autoreview_counts) || {};
+    var reviewCard = chartCard("Auto-review history",
+      (reviewCounts.pass || 0) + " pass · " + (reviewCounts.reject || 0) + " reject (automatic, per write)");
+    if (reviews.length) {
+      for (var rv = reviews.length - 1; rv >= 0; rv--) {
+        var review = reviews[rv];
+        var rcard = el("div", "rcard");
+        var rhead = el("div", "rc-head");
+        rhead.appendChild(el("span", "rc-title", String(review.operation || "?") + " → " + String(review.target || "?")));
+        rhead.appendChild(badge(review.verdict === "pass" ? "ok" : "error", review.verdict === "pass" ? "pass" : "reject"));
+        rcard.appendChild(rhead);
+        var rbody = el("div", "rc-body");
+        rbody.appendChild(el("span", "chip", "actor " + String(review.actor || "?")));
+        rbody.appendChild(el("span", "chip", review.roundtrip_ok ? "roundtrip ok" : "roundtrip FAILED"));
+        var rreasons = review.reasons || [];
+        for (var rr = 0; rr < rreasons.length; rr++) rbody.appendChild(el("span", "chip chip-reject", rreasons[rr]));
+        if (review.compensation_event_id) {
+          rbody.appendChild(el("span", "chip", "compensated " + String(review.compensation_event_id).slice(0, 8)));
+        }
+        rcard.appendChild(rbody);
+        reviewCard.appendChild(rcard);
+      }
+    } else {
+      reviewCard.appendChild(el("p", "chart-empty",
+        "No auto-review verdicts yet — every disk-mode write (log_event, record_outcome, apply_improvement, " +
+        "submit_extraction, ingest) journals one here."));
+    }
+    container.appendChild(reviewCard);
+
     // W20: improvement pipeline funnel — proposed → applied, from the event
     // log (/api/improvements is part of this tab's feature contract).
     var proposed = improvements && improvements.count || 0;

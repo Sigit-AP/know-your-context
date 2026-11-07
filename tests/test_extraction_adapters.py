@@ -34,6 +34,15 @@ from test_http_api import asgi_call
 _JSON = [(b"content-type", b"application/json")]
 
 
+@pytest.fixture(autouse=True)
+def _manual_gates(monkeypatch: pytest.MonkeyPatch):
+    """The contract-v4 adapter tests pin the frozen queue-only submit
+    semantics (review surface, typed codes); the legacy mode is selected
+    explicitly. Disk-mode adapter behavior is covered in
+    tests/test_disk_mode_autoreview.py."""
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_MANUAL_GATES", "1")
+
+
 def _post(
     app: Any, path: str, payload: Any, *, headers: list[tuple[bytes, bytes]] | None = None
 ) -> tuple[int, dict[str, Any]]:

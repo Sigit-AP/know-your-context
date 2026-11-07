@@ -82,9 +82,17 @@ def failure_outcome(
     projection_outcome: str = "skipped",
     linked_domain_event_id: str | None = None,
 ) -> InvocationOutcome:
-    """The spec 7.7 failure outcome: typed error plus the same chain fields."""
+    """The spec 7.7 failure outcome: typed error plus the same chain fields.
+
+    An error carrying an ``audit_references`` mapping (the disk-mode
+    auto-review verdict journal convention) has it recorded as the outcome's
+    ``result_references``, so a rejected write's verdict is queryable from
+    the failure audit itself.
+    """
+    references = getattr(error, "audit_references", None)
     return InvocationOutcome(
         status="failure",
+        result_references=dict(references) if isinstance(references, Mapping) else {},
         error=f"{type(error).__name__}: {error}",
         projection_outcome=projection_outcome,
         duration_ms=int((time.monotonic() - started) * 1000),

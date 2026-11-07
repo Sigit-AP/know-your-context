@@ -70,6 +70,7 @@ from pathlib import Path
 from typing import Any
 
 from know_your_context.audit import AuditLog, failure_outcome, success_outcome
+from know_your_context.autoreview import AutoReviewVerdict, manual_gates_enabled, scan_text
 from know_your_context.domain import canonical_json
 from know_your_context.events import Invocation
 from know_your_context.graph_model import (
@@ -89,6 +90,7 @@ __all__ = [
     "EXTRACTION_VERSION_FALLBACK",
     "ExtractorUnavailableError",
     "FileReport",
+    "IngestionAutoReviewRejected",
     "IngestionBudget",
     "IngestionBudgetError",
     "IngestionError",
@@ -265,6 +267,27 @@ class ResolverUnavailableError(NotImplementedError):
     """The SUB-88 resolver module has not landed and none was injected."""
 
     code = "RESOLVER_UNAVAILABLE"
+
+
+class IngestionAutoReviewRejected(IngestionError):
+    """Disk-mode: the post-commit auto-review rejected an ingested file.
+
+    The offending file's rows are removed (the bounded cascade) before this
+    is raised, so the store holds nothing the reviewer rejected.
+    """
+
+    code = "INGEST_AUTO_REVIEW_REJECTED"
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        reasons: tuple[str, ...] = (),
+        audit_references: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.reasons = tuple(reasons)
+        self.audit_references = dict(audit_references or {})
 
 
 # ------------------------------------------------------------------ languages
@@ -566,6 +589,7 @@ class IngestionPipeline:
         budget: IngestionBudget | None = None,
         split_thresholds: SplitThresholds | None = None,
         actor: str = "operator",
+        manual_gates: bool | None = None,
     ) -> None:
         self._store = store
         self._extractor = extractor
@@ -574,6 +598,10 @@ class IngestionPipeline:
         self._split_thresholds = split_thresholds
         self._actor = actor
         self._audit = AuditLog(store)
+        # Disk-mode (docs/recovery/disk-mode-autoreview.md): rows commit
+        # immediately and the post-commit auto-review below replaces any
+        # human gate. ``manual_gates=True`` restores the legacy behavior.
+        self._manual_gates = manual_gates if manual_gates is not None else manual_gates_enabled()
 
     # ------------------------------------------------------------ public API
 
@@ -603,16 +631,22 @@ class IngestionPipeline:
             actor=self._actor,
         )
         self._audit.begin(invocation)
+        auto_review: Mapping[str, Any] | None = None
         try:
             report = self._run(raw, incremental=incremental, recursive=recursive, resolve=resolve, started=started)
+            if not self._manual_gates:
+                auto_review = self._auto_review(report, operation=invocation.operation)
         except (IngestionError, ExtractorUnavailableError) as error:
             outcome = failure_outcome(invocation, started, error=_typed(error))
             self._audit.complete(invocation.invocation_id, outcome)
             raise
+        references = dict(self._audit_references(report))
+        if auto_review is not None:
+            references["auto_review"] = dict(auto_review)
         outcome = success_outcome(
             invocation,
             started,
-            result_references=self._audit_references(report),
+            result_references=references,
             projection_outcome="skipped",
         )
         receipt = self._audit.complete(invocation.invocation_id, outcome)
@@ -1217,6 +1251,62 @@ class IngestionPipeline:
             digest.update(f"{relpath}\0DELETED\n".encode())
             deleted += 1
         return deleted
+
+    # ----------------------------------------------------------- auto-review
+
+    def _auto_review(self, report: IngestionReport, *, operation: str) -> Mapping[str, Any]:
+        """Post-commit review of what the run wrote (round-trip + badness).
+
+        Round-trip: every ``proposed`` file must read back with the same
+        sha256. Badness: the v3 tables store structure, not raw content, so
+        the scan covers exactly what is stored — the path and the symbol
+        names (the document lane derives node names from headings). A reject
+        removes the offending files' rows (the bounded cascade) before the
+        typed error, so the store never holds what the reviewer rejected.
+        Returns the verdict references for the invocation's final audit.
+        """
+        reasons: list[str] = []
+        offenders: set[str] = set()
+        for entry in report.files:
+            if entry.status != "proposed":
+                continue
+            tracked = self._store.get_file(entry.relpath)
+            if tracked is None or tracked.sha256 != entry.sha256:
+                reasons.append(f"roundtrip:file-mismatch:{entry.relpath}")
+                offenders.add(entry.relpath)
+                continue
+            file_reasons = set(scan_text(entry.relpath))
+            with self._store.read() as conn:
+                rows = conn.execute(
+                    "SELECT name FROM symbols WHERE path = ? ORDER BY node_id", (entry.relpath,)
+                ).fetchall()
+            for row in rows:
+                file_reasons.update(scan_text(str(row["name"])))
+            if file_reasons:
+                offenders.add(entry.relpath)
+                reasons.extend(f"{entry.relpath}:{reason}" for reason in sorted(file_reasons))
+        verdict = AutoReviewVerdict(
+            operation=operation,
+            target=report.input_path,
+            verdict="pass" if not reasons else "reject",
+            reasons=tuple(sorted(set(reasons))),
+            roundtrip_ok=not any(reason.startswith("roundtrip:") for reason in reasons),
+        )
+        if verdict.verdict == "pass":
+            return verdict.as_references()
+        for relpath in sorted(offenders):
+            self._undo_file(relpath)
+        raise IngestionAutoReviewRejected(
+            f"auto-review rejected {operation} of {report.input_path!r}: {', '.join(verdict.reasons)}",
+            reasons=verdict.reasons,
+            audit_references={"auto_review": verdict.as_references()},
+        )
+
+    def _undo_file(self, relpath: str) -> None:
+        """Remove one file's rows (the bounded cascade plus the commit marker)."""
+        with self._store.transaction() as conn:
+            self._cascade_file(conn, relpath)
+            conn.execute("DELETE FROM files WHERE path = ?", (relpath,))
 
     # ---------------------------------------------------- proposal summary
 

@@ -5,6 +5,47 @@ API surfaces: observability, health/readiness, backup/restore, projection
 recovery, and the security posture. The HTTP/Unix-socket server
 (`http_api.py`) builds on the pure policies documented here.
 
+## Disk-mode writes and auto-review (SUB-151)
+
+Default mode: **the store is a disk**. Every write (`log_event`,
+`record_outcome`, `propose_improvement`/`apply_improvement`,
+`submit_extraction`, `ingest`) lands immediately — no human approval queue
+anywhere. The mandatory replacement is a deterministic post-write
+auto-review (`src/know_your_context/autoreview.py`), running **inside the
+write's own audit boundary** (`store.commit(post_write=…)`), so the
+one-final-audit-per-invocation invariant is unchanged and the verdict rides
+the write's audit as `result_references.auto_review`:
+
+1. **Round-trip** — the written node/evidence/file rows are read back and
+   verified against the intent (existence, version, content fingerprint).
+2. **Badness scan** — deterministic patterns (no model): prompt-injection
+   phrasing (`ignore/disregard/… previous instructions`, persona hijack,
+   prompt exfiltration, chat-template markers, jailbreak keywords), secret
+   shapes (the pinned `SECRET_PATTERNS` over the raw text and the security
+   match view), and active markup (`<script>`, `javascript:`, `on*=`).
+
+A reject compensates append-only before the failure audit closes: a
+pre-existing node is restored to its prior revision (a new `rollback`
+revision); a node the rejected write created is retired and tombstoned; a
+bad extraction submission is never applied (queue row `rejected` with the
+typed reason codes); a bad ingested file's rows are removed by the bounded
+cascade. Typed errors: `AUTO_REVIEW_REJECTED` (service, HTTP 422),
+`EXTRACTION_AUTO_REJECTED` (422), `INGEST_AUTO_REVIEW_REJECTED`. Writing
+quality is the writer's business — the reviewer only verifies the write
+landed as intended and carries nothing dangerous.
+
+**Legacy mode**: `KNOW_YOUR_CONTEXT_MANUAL_GATES=1` (strict boolean parse;
+an invalid value fails closed at configuration time) restores the frozen
+contract-v4 behavior byte-for-byte: extraction submissions queue as
+`pending_review` for the operator `extraction approve|reject` surface, and
+high-impact improvement applies require an operator `ApprovalRecord`. The
+relearn gate (frozen `docs/contracts/relearn-contract.md`) is
+operator-gated in both modes.
+
+The webview **Proposals** tab leads with the auto-review history
+(pass/reject badges, typed reason codes, compensation links), read from the
+audit trail — a journal, never an approval queue.
+
 ## Security posture
 
 Least privilege by default (`src/know_your_context/security.py`):

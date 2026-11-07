@@ -30,6 +30,7 @@ import hashlib
 import json
 import threading
 import time
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -38,6 +39,14 @@ from typing import Any, Literal
 from pydantic import ValidationError
 
 from know_your_context.audit import AuditLog, failure_outcome, success_outcome
+from know_your_context.autoreview import (
+    AutoReviewRejected,
+    AutoReviewVerdict,
+    compensate_node_write,
+    manual_gates_enabled,
+    review_node_write,
+    scan_value,
+)
 from know_your_context.contracts import (
     ACCESS_ONLY_TOKEN_CAP,
     DEFAULT_MAX_TOKEN_BUDGET,
@@ -91,6 +100,7 @@ from know_your_context.domain import Event, EventKind, Evidence, Node, canonical
 from know_your_context.events import Invocation, InvocationOutcome, WriteReceipt
 from know_your_context.importer import DEFAULT_PARSER_VERSIONS
 from know_your_context.improvement import (
+    ApprovalRecord,
     ApprovalRequired,
     ProposalValidationError,
     RegressionGateFailure,
@@ -226,6 +236,7 @@ class KnowledgeService:
         default_actor: str = "operator",
         publish_capacity_bytes: int | None = None,
         repair_cooldown_seconds: float = 1.0,
+        manual_gates: bool | None = None,
     ) -> None:
         self._store = store
         self._projector = projector
@@ -233,6 +244,11 @@ class KnowledgeService:
         self._validator = validator if validator is not None else ReadModelValidator()
         self._max_token_budget = max_token_budget
         self._default_actor = default_actor
+        # Disk-mode (operator decision, docs/recovery/disk-mode-autoreview.md):
+        # writes land immediately and the mandatory deterministic post-write
+        # auto-review replaces the human approval gates.
+        # ``KNOW_YOUR_CONTEXT_MANUAL_GATES=1`` restores the legacy behavior.
+        self._manual_gates = manual_gates if manual_gates is not None else manual_gates_enabled()
         # F-3: the write-side publish-capacity guard. The publish cap itself
         # (ARTIFACT_MAX_BYTES, per artifact) lives in the projection; the
         # service refuses log_event writes whose conservative size estimate
@@ -349,10 +365,12 @@ class KnowledgeService:
 
     def _finish_failure(self, invocation: Invocation, started: float, error: BaseException) -> None:
         code = error.code if isinstance(error, KnowledgeError) else f"{type(error).__name__}: {error}"
+        references = getattr(error, "audit_references", None)
         self._audit.complete(
             invocation.invocation_id,
             InvocationOutcome(
                 status="failure",
+                result_references=dict(references) if isinstance(references, Mapping) else {},
                 error=code,
                 projection_outcome="skipped",
                 duration_ms=int((time.monotonic() - started) * 1000),
@@ -1244,25 +1262,140 @@ class KnowledgeService:
         actor: str | None = None,
         idempotency_key: str | None = None,
         expected_version: int | None = None,
+        _auto_review: bool = True,
     ) -> WriteReceipt:
-        """Record structured content as a node upsert through ``store.commit``."""
+        """Record structured content as a node upsert through ``store.commit``.
+
+        Disk-mode: the write lands immediately; afterwards the mandatory
+        synchronous auto-review verifies the round-trip and scans the stored
+        content. A reject is compensated append-only (restore the prior
+        revision, or retire a node the rejected write created) and surfaced
+        as a typed :class:`AutoReviewRejected`. ``_auto_review=False`` is the
+        internal batch-apply seam (the extraction engine reviews the whole
+        submission once — per-node reviews would duplicate it).
+        """
         started = time.monotonic()
+        actor = actor or self._default_actor
         event = Event(
             kind=EventKind.NODE_UPSERT,
             node_id=node.node_id,
             domain=node.domain,
             node=node,
             source_version_id=node.source_version_id,
-            actor=actor or self._default_actor,
+            actor=actor,
         )
         invocation = Invocation.create(
             "knowledge.log_event",
             request_hash=self._request_hash(event.model_dump(mode="json")),
-            actor=actor or self._default_actor,
+            actor=actor,
             idempotency_key=idempotency_key,
         )
         self._assert_publish_capacity(node, invocation, started)
-        return self._store.commit(event, invocation=invocation, expected_version=expected_version)
+        review = _auto_review and not self._manual_gates
+        prior_version = expected_version
+        if review and prior_version is None:
+            existing = self._store.current_node(node.node_id)
+            prior_version = existing.version if existing is not None else None
+
+        def _review(receipt: Any) -> dict[str, Any] | None:
+            if not review:
+                return None
+            return self._review_node_write(
+                operation="knowledge.log_event",
+                node_id=node.node_id,
+                # A replay wrote nothing: the content check ran on the
+                # original write; re-verifying existence and version is the
+                # honest round-trip (a fresh node object's volatile fields —
+                # e.g. created_at — must not fail the stored content).
+                expected_fingerprint=None if receipt.idempotent_replay else content_fingerprint(node),
+                expected_version=receipt.node_version,
+                prior_version=prior_version,
+                actor=actor,
+                invocation_id=invocation.invocation_id,
+            )
+
+        return self._store.commit(event, invocation=invocation, expected_version=expected_version, post_write=_review)
+
+    def _review_node_write(
+        self,
+        *,
+        operation: str,
+        node_id: str,
+        expected_fingerprint: str | None,
+        expected_version: int | None,
+        prior_version: int | None,
+        actor: str,
+        invocation_id: str,
+    ) -> dict[str, Any]:
+        """The mandatory post-write review: round-trip + badness scan.
+
+        Runs inside the write's audit boundary (``store.commit(post_write=…)``):
+        a pass verdict's references ride the write's single final audit; a
+        reject compensates the write append-only and raises the typed
+        rejection — ``failure_outcome`` records the verdict (and the
+        compensation event id) from the error's ``audit_references``.
+        """
+        verdict, _ = review_node_write(
+            self._store,
+            operation=operation,
+            node_id=node_id,
+            expected_fingerprint=expected_fingerprint,
+            expected_version=expected_version,
+        )
+        if verdict.verdict == "pass":
+            return {"auto_review": verdict.as_references()}
+        compensation_id: str | None = None
+        try:
+            compensation = compensate_node_write(
+                self._store,
+                node_id=node_id,
+                prior_version=prior_version,
+                actor=actor,
+                idempotency_key=f"auto-review:{invocation_id}",
+            )
+            compensation_id = compensation.domain_event_id
+        except StoreError:
+            pass  # the failure audit names the verdict; never mask the reject
+        raise AutoReviewRejected(
+            f"auto-review rejected the {operation} write of {node_id!r}: {', '.join(verdict.reasons)}",
+            reasons=verdict.reasons,
+            audit_references={"auto_review": {**verdict.as_references(), "compensation_event_id": compensation_id}},
+        )
+
+    def _refuse_write(self, operation: str, payload: Any, actor: str | None, error: StoreError) -> None:
+        """Journal one audited refusal of a write rejected before it lands."""
+        invocation = self._begin(operation, payload, actor, None)
+        started = time.monotonic()
+        self._finish_failure(invocation, started, error)
+        error.audit_event_id = invocation.audit_event_id  # type: ignore[attr-defined]
+
+    def _prescan_evidence(self, evidence: Evidence, actor: str) -> None:
+        """Refuse bad evidence before it lands (the frozen event model has no
+        evidence-retraction verb, so pre-write refusal is the fail-closed)."""
+        reasons = scan_value(
+            {
+                "evidence_id": evidence.evidence_id,
+                "source_uri": evidence.source_uri,
+                "independence_key": evidence.independence_key,
+                "context_tags": list(evidence.context_tags),
+            }
+        )
+        if not reasons:
+            return
+        verdict = AutoReviewVerdict(
+            operation="knowledge.record_outcome",
+            target=evidence.evidence_id,
+            verdict="reject",
+            reasons=reasons,
+            roundtrip_ok=False,
+        )
+        error = AutoReviewRejected(
+            f"auto-review rejected the evidence write for {evidence.node_id!r}: {', '.join(reasons)}",
+            reasons=reasons,
+            audit_references={"auto_review": verdict.as_references()},
+        )
+        self._refuse_write("knowledge.record_outcome", evidence.model_dump(mode="json"), actor, error)
+        raise error
 
     def record_outcome(
         self,
@@ -1271,22 +1404,51 @@ class KnowledgeService:
         actor: str | None = None,
         idempotency_key: str | None = None,
     ) -> WriteReceipt:
-        """Append one outcome evidence item through ``store.commit``."""
+        """Append one outcome evidence item through ``store.commit``.
+
+        Disk-mode: the frozen event model has no evidence-retraction verb, so
+        the badness scan refuses bad evidence *before* the write (fail
+        closed, one audited refusal); after the commit the round-trip
+        verifies the row landed.
+        """
+        actor = actor or self._default_actor
+        if not self._manual_gates:
+            self._prescan_evidence(evidence, actor)
         event = Event(
             kind=EventKind.EVIDENCE_APPEND,
             node_id=evidence.node_id,
             domain=self._evidence_domain(evidence),
             evidence=evidence,
             source_version_id=evidence.source_version_id,
-            actor=actor or self._default_actor,
+            actor=actor,
         )
         invocation = Invocation.create(
             "knowledge.record_outcome",
             request_hash=self._request_hash(event.model_dump(mode="json")),
-            actor=actor or self._default_actor,
+            actor=actor,
             idempotency_key=idempotency_key,
         )
-        return self._store.commit(event, invocation=invocation)
+
+        def _review(_receipt: Any) -> dict[str, Any] | None:
+            if self._manual_gates:
+                return None
+            landed = self._store.get_evidence(evidence.evidence_id) is not None
+            verdict = AutoReviewVerdict(
+                operation="knowledge.record_outcome",
+                target=evidence.evidence_id,
+                verdict="pass" if landed else "reject",
+                reasons=() if landed else ("roundtrip:evidence-missing",),
+                roundtrip_ok=landed,
+            )
+            if landed:
+                return {"auto_review": verdict.as_references()}
+            raise AutoReviewRejected(
+                f"auto-review could not read back evidence {evidence.evidence_id!r}",
+                reasons=("roundtrip:evidence-missing",),
+                audit_references={"auto_review": verdict.as_references()},
+            )
+
+        return self._store.commit(event, invocation=invocation, post_write=_review)
 
     def _evidence_domain(self, evidence: Evidence):
         node = self._store.current_node(evidence.node_id)
@@ -1726,6 +1888,31 @@ class KnowledgeService:
 
     # ------------------------------------------------------ propose / apply / rollback
 
+    def _prescan_proposal(self, request: Any, actor: str) -> None:
+        """Refuse a proposal whose free-text is bad before the event lands."""
+        reasons = scan_value(
+            {
+                "rationale": request.rationale,
+                "diff": [operation.model_dump(mode="json") for operation in request.diff],
+            }
+        )
+        if not reasons:
+            return
+        verdict = AutoReviewVerdict(
+            operation="knowledge.propose_improvement",
+            target=request.node_id,
+            verdict="reject",
+            reasons=reasons,
+            roundtrip_ok=False,
+        )
+        error = AutoReviewRejected(
+            f"auto-review rejected the proposal for {request.node_id!r}: {', '.join(reasons)}",
+            reasons=reasons,
+            audit_references={"auto_review": verdict.as_references()},
+        )
+        self._refuse_write("knowledge.propose_improvement", request.model_dump(mode="json"), actor, error)
+        raise error
+
     def propose_improvement(
         self,
         request: ProposeImprovementRequest | None = None,
@@ -1738,11 +1925,7 @@ class KnowledgeService:
         actor: str | None = None,
         idempotency_key: str | None = None,
     ) -> ProposalResponse:
-        """Persist one structured diff proposal (zero knowledge weight).
-
-        Accepts a validated :class:`ProposeImprovementRequest` or the same
-        fields as keyword arguments (CLI/API/MCP adapters).
-        """
+        """Persist one structured diff proposal (zero knowledge weight)."""
         if not isinstance(request, ProposeImprovementRequest):
             if node_id is None or diff is None or rationale is None:
                 raise InvalidProposal("propose_improvement requires node_id, diff and rationale")
@@ -1755,6 +1938,12 @@ class KnowledgeService:
             )
         started = time.monotonic()
         payload = request.model_dump(mode="json")
+        actor = actor or self._default_actor
+        if not self._manual_gates:
+            # Disk-mode: the proposal event itself is a write; scan its
+            # free-text (rationale + diff values) before it lands. The graph
+            # mutation it describes is reviewed again at apply time.
+            self._prescan_proposal(request, actor)
         try:
             record = propose(
                 self._store,
@@ -1762,7 +1951,7 @@ class KnowledgeService:
                 diff=request.diff,
                 rationale=request.rationale,
                 base_version=request.base_version,
-                actor=actor or self._default_actor,
+                actor=actor,
                 at=request.at,
                 idempotency_key=idempotency_key,
             )
@@ -1782,6 +1971,37 @@ class KnowledgeService:
             audit_event_seq=record.audit_event_seq,
             node_version=record.node_version,
             knowledge_seq=record.knowledge_seq,
+        )
+
+    def _review_apply(self, applied: Node, from_version: int, domain: Any, actor: str) -> dict[str, Any] | None:
+        """The apply's post-write review hook (runs inside the apply's audit
+        boundary): pass → verdict references on the success audit; reject →
+        compensate (restore the exact pre-apply content) and raise, so the
+        failure audit carries the verdict and the compensation event id."""
+        if self._manual_gates:
+            return None
+        verdict, _ = review_node_write(
+            self._store,
+            operation="knowledge.apply_improvement",
+            node_id=applied.node_id,
+            expected_fingerprint=content_fingerprint(applied),
+            expected_version=domain.node_version,
+        )
+        if verdict.verdict == "pass":
+            return {"auto_review": verdict.as_references()}
+        compensation = rollback_improvement(
+            self._store,
+            node_id=applied.node_id,
+            to_version=from_version,
+            actor=actor,
+            idempotency_key=f"auto-review:apply:{applied.node_id}:{from_version}",
+        )
+        raise AutoReviewRejected(
+            f"auto-review rejected the apply on {applied.node_id!r}: {', '.join(verdict.reasons)}",
+            reasons=verdict.reasons,
+            audit_references={
+                "auto_review": {**verdict.as_references(), "compensation_event_id": compensation.domain_event_id}
+            },
         )
 
     def apply_improvement(
@@ -1806,18 +2026,39 @@ class KnowledgeService:
             request = ApplyImprovementRequest(proposal_id=resolved, approval=approval, at=at)
         started = time.monotonic()
         payload = request.model_dump(mode="json")
+        actor = actor or self._default_actor
+
         try:
             proposal = get_proposal(self._store, request.proposal_id)
             if proposal is None:
                 raise UnknownImprovement(f"no proposal {request.proposal_id!r} in the event log")
+            effective_approval = request.approval
+            if not self._manual_gates and effective_approval is None:
+                # Disk-mode: no human approval queue. The deterministic
+                # post-write auto-review (wired as the apply's post_write
+                # hook) is the gate; the synthesized record keeps the
+                # engine's audit trail honest about who authorized the apply.
+                effective_approval = ApprovalRecord(
+                    proposal_id=proposal.proposal_id,
+                    approved_by="auto-review",
+                    decision="approved",
+                    decided_at=request.at or datetime.now(UTC),
+                )
             receipt = apply_improvement(
                 self._store,
                 proposal,
-                approval=request.approval,
+                approval=effective_approval,
                 at=request.at,
-                actor=actor or self._default_actor,
+                actor=actor,
                 idempotency_key=idempotency_key,
+                post_write=lambda applied, from_version, domain: self._review_apply(
+                    applied, from_version, domain, actor
+                ),
             )
+        except AutoReviewRejected:
+            # Already audited by the apply invocation's failure audit — never
+            # journal a second one.
+            raise
         except StoreError as error:
             typed = self._audit_lifecycle_failure("knowledge.apply_improvement", payload, actor, error, started)
             raise typed from error

@@ -387,6 +387,9 @@ a { color: var(--accent); }
   border: 1px solid var(--border-strong); background: var(--surface); margin: 2px 4px 2px 0;
   font-family: var(--mono); color: var(--text-2); word-break: break-all;
 }
+.chip-reject {
+  border-color: #DC2626; color: #B91C1C; background: #FEF2F2;
+}
 .detail-h, .panel-title {
   font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-3); margin: 16px 0 8px; font-weight: 600;

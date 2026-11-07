@@ -696,7 +696,7 @@ def build_parser() -> argparse.ArgumentParser:
     # convention as the fourteen frozen operations.
     submit_extraction_parser = subparsers.add_parser(
         "submit-extraction",
-        help="knowledge.submit_extraction: queue an external extraction for review (contract v4, proposal-only)",
+        help="knowledge.submit_extraction: submit an external extraction (disk-mode; MANUAL_GATES=1 queues it)",
     )
     submit_extraction_parser.add_argument(
         "payload",
@@ -858,14 +858,12 @@ def _extraction_verb_command(args: argparse.Namespace) -> int:
     """
     import json as _json
 
-    from know_your_context.audit import AuditLog
     from know_your_context.extraction import ExtractionError
-    from know_your_context.store import EventStore
 
     payload_text: str = args.payload if args.payload is not None else "{}"
     if payload_text == "-":
         payload_text = sys.stdin.read()
-    store = EventStore(args.store)
+    stack = build_stack(args.store, args.output_root, ops_root=args.ops_root)
     try:
         try:
             arguments = _json.loads(payload_text)
@@ -873,12 +871,13 @@ def _extraction_verb_command(args: argparse.Namespace) -> int:
             _print_usage_error(f"payload is not valid JSON: {error}")
             return 2
         payload = run_extraction_verb(
-            store,
-            AuditLog(store),
+            stack.store,
+            stack.audit,
             "submit_extraction",
             arguments,
             actor=args.actor,
             extraction_root=os.getcwd(),
+            service=stack.service,
         )
     except ExtractionError as error:
         envelope = {
@@ -895,7 +894,7 @@ def _extraction_verb_command(args: argparse.Namespace) -> int:
         _print_error(error)
         return 1
     finally:
-        store.close()
+        stack.close()
     print(canonical_json(payload))
     return 0
 

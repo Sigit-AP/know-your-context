@@ -974,6 +974,7 @@ class _Adapter:
                 args,
                 actor=self._actor,
                 extraction_root=self._root,
+                service=self._service,
             )
         except ExtractionError as error:
             # The engine journaled the invocation's single audit event itself

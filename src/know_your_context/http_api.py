@@ -919,6 +919,7 @@ _EXTRACTION_STATUS_BY_CODE: dict[str, int] = {
     "EXTRACTION_NOT_FOUND": 404,
     "EXTRACTION_STATE": 409,
     "EXTRACTION_QUEUE_FULL": 503,
+    "EXTRACTION_AUTO_REJECTED": 422,
 }
 
 
@@ -930,6 +931,7 @@ def run_extraction_verb(
     *,
     actor: str,
     extraction_root: str | Path,
+    service: Any | None = None,
 ) -> dict[str, Any]:
     """Run the contract-v4 ``submit_extraction`` verb through the engine.
 
@@ -938,7 +940,9 @@ def run_extraction_verb(
     root is fixed at startup by the calling surface (CLI: the process working
     directory; HTTP: the stack's ops root; MCP: the startup graph root). The
     engine journals exactly one final audit event per invocation; only the
-    not-a-mapping adapter rejection is journaled here.
+    not-a-mapping adapter rejection is journaled here. Disk-mode submit
+    applies through the service, so *service* is the stack's
+    :class:`KnowledgeService` whenever the caller has one.
     """
     from know_your_context.extraction import ExtractionEngine
 
@@ -950,7 +954,7 @@ def run_extraction_verb(
         error.audit_event_id = _journal_ingest_rejection(audit, verb, arguments, "VALIDATION_ERROR", actor, started)
         raise error
     engine = ExtractionEngine(store, audit)
-    return engine.submit(arguments, actor=actor, extraction_root=extraction_root)
+    return engine.submit(arguments, actor=actor, extraction_root=extraction_root, service=service)
 
 
 def _extraction_error_envelope(error: ExtractionError) -> dict[str, Any]:
@@ -975,7 +979,9 @@ def _handle_extraction_sync(stack: LocalStack, verb: str, body: bytes, actor: st
             f"request body is not valid JSON: {error}", audit_event_id=audit_event_id
         ) from error
     extraction_root = stack.ops_root if stack.ops_root is not None else Path(stack.store.db_path).resolve().parent
-    return run_extraction_verb(stack.store, stack.audit, verb, payload, actor=actor, extraction_root=extraction_root)
+    return run_extraction_verb(
+        stack.store, stack.audit, verb, payload, actor=actor, extraction_root=extraction_root, service=stack.service
+    )
 
 
 def _handle_ingest_sync(stack: LocalStack, verb: str, body: bytes, actor: str) -> dict[str, Any]:

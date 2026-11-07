@@ -91,7 +91,12 @@ def seed_root(tmp_path: Path) -> Path:
 
 
 def seed_engine(tmp_path: Path, *, actor: str = "tester"):
-    """A store + service + audit + engine over a fresh scratch dir."""
+    """A store + service + audit + engine over a fresh scratch dir.
+
+    The contract-v4 tests pin the frozen queue-only submit semantics, so the
+    engine runs with ``manual_gates=True`` (the legacy mode); disk-mode
+    behavior lives in tests/test_disk_mode_autoreview.py.
+    """
     from know_your_context.extraction import ExtractionEngine, ExtractionQueue
 
     store = EventStore(tmp_path / "soul.sqlite3")
@@ -99,7 +104,7 @@ def seed_engine(tmp_path: Path, *, actor: str = "tester"):
     service = KnowledgeService(store, projector)
     audit = AuditLog(store)
     queue = ExtractionQueue.for_store(store)
-    engine = ExtractionEngine(store, audit, queue=queue)
+    engine = ExtractionEngine(store, audit, queue=queue, manual_gates=True)
     return engine, service, store, queue, actor
 
 

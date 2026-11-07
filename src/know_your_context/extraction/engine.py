@@ -35,10 +35,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from know_your_context.audit import AuditLog, failure_outcome, success_outcome
+from know_your_context.autoreview import (
+    AutoReviewVerdict,
+    compensate_node_write,
+    manual_gates_enabled,
+    scan_value,
+)
 from know_your_context.domain import Event, EventKind, PrimaryDomain, Relation, RelationKind, canonical_json
 from know_your_context.events import Invocation
 from know_your_context.extraction.corroboration import compare_payloads, recompute_group
 from know_your_context.extraction.errors import (
+    ExtractionAutoRejectedError,
     ExtractionDuplicateError,
     ExtractionError,
     ExtractionNotFoundError,
@@ -99,12 +106,30 @@ def _receipt_for(row: QueueRow, *, duplicate: bool) -> dict[str, Any]:
 
 
 class ExtractionEngine:
-    """The submit/review/approve/reject orchestration over the queue."""
+    """The submit/review/approve/reject orchestration over the queue.
 
-    def __init__(self, store: EventStore, audit: AuditLog, *, queue: ExtractionQueue | None = None) -> None:
+    Disk-mode (default; operator decision — see
+    ``docs/recovery/disk-mode-autoreview.md``): a passing submission is
+    applied to the canonical graph inside the submit invocation (no human
+    queue); the mandatory post-write auto-review scans the stored payload
+    and round-trip-verifies the applied nodes, rejecting (and compensating)
+    on any typed reason. ``manual_gates=True`` (or
+    ``KNOW_YOUR_CONTEXT_MANUAL_GATES=1``) restores the frozen contract-v4
+    behavior: queue-only submit, operator-gated approve.
+    """
+
+    def __init__(
+        self,
+        store: EventStore,
+        audit: AuditLog,
+        *,
+        queue: ExtractionQueue | None = None,
+        manual_gates: bool | None = None,
+    ) -> None:
         self._store = store
         self._audit = audit
         self._queue = queue if queue is not None else ExtractionQueue.for_store(store)
+        self._manual_gates = manual_gates if manual_gates is not None else manual_gates_enabled()
 
     @property
     def queue(self) -> ExtractionQueue:
@@ -118,35 +143,108 @@ class ExtractionEngine:
         *,
         actor: str,
         extraction_root: str | Path | None = None,
+        service: KnowledgeService | None = None,
     ) -> dict[str, Any]:
-        """Run one ``knowledge.submit_extraction`` invocation (contract v4)."""
+        """Run one ``knowledge.submit_extraction`` invocation (contract v4).
+
+        Disk-mode adds the automatic decision: after the row lands, the
+        stored payload is scanned; a passing submission is applied through
+        the same audited write path ``approve`` uses and the row is marked
+        ``applied`` by ``auto-review``; a bad one is marked ``rejected`` with
+        the typed reason codes and raises :class:`ExtractionAutoRejectedError`.
+        ``service`` is required in disk-mode (the apply rides its audited
+        ``log_event``).
+        """
         started = time.monotonic()
         invocation = Invocation.create(_SUBMIT_OPERATION, request_hash=_request_hash(arguments), actor=actor)
         self._audit.begin(invocation)
+        auto_review: dict[str, Any] | None = None
         try:
             submission = validate_submission(arguments)
             self._verify_source_binding(submission, extraction_root)
             receipt, duplicate = self._insert_or_replay(submission, actor)
+            if not duplicate and not self._manual_gates:
+                receipt, auto_review = self._auto_decide(receipt, submission, actor=actor, service=service)
         except Exception as error:
             audit_receipt = self._audit.complete(invocation.invocation_id, failure_outcome(invocation, started, error))
             if isinstance(error, ExtractionError):
                 error.audit_event_id = audit_receipt.audit_event_id
             raise
+        references: dict[str, Any] = {
+            "receipt_id": receipt["receipt_id"],
+            "source_sha256": receipt["source_sha256"],
+            "payload_sha256": receipt["payload_sha256"],
+            "nodes": receipt["nodes"],
+            "edges": receipt["edges"],
+            "duplicate": duplicate,
+            "status": receipt["status"],
+        }
+        if auto_review is not None:
+            references["auto_review"] = auto_review
         outcome = success_outcome(
             invocation,
             started,
-            result_references={
-                "receipt_id": receipt["receipt_id"],
-                "source_sha256": receipt["source_sha256"],
-                "payload_sha256": receipt["payload_sha256"],
-                "nodes": receipt["nodes"],
-                "edges": receipt["edges"],
-                "duplicate": duplicate,
-            },
+            result_references=references,
             projection_outcome="skipped",
         )
         audit_receipt = self._audit.complete(invocation.invocation_id, outcome)
         return {**receipt, "audit_event_id": audit_receipt.audit_event_id}
+
+    def _auto_decide(
+        self,
+        receipt: dict[str, Any],
+        submission: Submission,
+        *,
+        actor: str,
+        service: KnowledgeService | None,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """The disk-mode decision: scan, apply, round-trip — never a human.
+
+        The scan reads the *stored* (sanitized, canonical) payload — exactly
+        what would be applied. A reject marks the row ``rejected`` with the
+        typed reasons and raises (the verdict rides the failure audit via the
+        error's ``audit_references``); nothing reaches the graph. An apply
+        whose nodes fail the round-trip is compensated (each created node
+        retired and tombstoned, append-only) before the typed rejection.
+        """
+        receipt_id = str(receipt["receipt_id"])
+        row = self._queue.get(receipt_id)
+        assert row is not None  # the row was inserted in this invocation
+        reasons = scan_value(row.payload)
+        if reasons:
+            note = ";".join(reasons)
+            self._queue.mark_decided(receipt_id, "rejected", decided_by="auto-review", note=note)
+            raise _auto_reject(
+                receipt_id, f"auto-review rejected extraction {receipt_id!r}: {note}", reasons, roundtrip_ok=True
+            )
+        if service is None:
+            raise ExtractionStateError(
+                "disk-mode submit requires the service (the apply rides the audited log_event path)"
+            )
+        applied_nodes, _applied_edges = self._apply(row, submission, operator=f"auto-review:{actor}", service=service)
+        missing = [node_id for node_id in applied_nodes if self._store.current_node(node_id) is None]
+        if missing:
+            roundtrip_reasons = tuple(f"roundtrip:node-missing:{node_id}" for node_id in missing)
+            for node_id in applied_nodes:
+                if self._store.current_node(node_id) is not None:
+                    compensate_node_write(
+                        self._store,
+                        node_id=node_id,
+                        prior_version=None,
+                        actor=actor,
+                        idempotency_key=f"auto-review:extraction:{receipt_id}:{node_id}",
+                    )
+            self._queue.mark_decided(receipt_id, "rejected", decided_by="auto-review", note=";".join(roundtrip_reasons))
+            raise _auto_reject(
+                receipt_id,
+                f"auto-review could not read back {len(missing)} applied node(s) of extraction {receipt_id!r}",
+                roundtrip_reasons,
+                roundtrip_ok=False,
+            )
+        self._queue.mark_decided(receipt_id, "applied", decided_by="auto-review", note=None)
+        stored = self._queue.get(receipt_id)
+        assert stored is not None
+        return _receipt_for(stored, duplicate=False), _pass_verdict(receipt_id)
 
     def _verify_source_binding(self, submission: Submission, extraction_root: str | Path | None) -> None:
         """Re-hash the bound file; the claim must match ``source_sha256``."""
@@ -350,10 +448,14 @@ class ExtractionEngine:
                 confidence_effective=confidence,
                 corroborators=row.corroborators,
             )
+            # The submission-level auto-review (disk-mode submit) is the
+            # review of record — per-node reviews would duplicate it, so the
+            # batch apply rides the internal seam.
             service.log_event(
                 stamped,
                 actor=operator,
                 idempotency_key=f"extraction:{row.receipt_id}:node:{node.key[0]}:{node.key[1]}",
+                _auto_review=False,
             )
             applied_ids.append(stamped.node_id)
         edges = sorted(submission.payload.edges, key=lambda edge: (edge.relation, edge.source, edge.target))
@@ -409,6 +511,32 @@ class ExtractionEngine:
             "status": "rejected",
             "audit_event_id": audit_receipt.audit_event_id,
         }
+
+
+def _pass_verdict(receipt_id: str) -> dict[str, Any]:
+    """The pass verdict references of one auto-applied submission."""
+    return AutoReviewVerdict(
+        operation=_SUBMIT_OPERATION, target=receipt_id, verdict="pass", reasons=(), roundtrip_ok=True
+    ).as_references()
+
+
+def _auto_reject(
+    receipt_id: str, message: str, reasons: tuple[str, ...], *, roundtrip_ok: bool
+) -> ExtractionAutoRejectedError:
+    """The typed disk-mode rejection with the verdict bound for the audit."""
+    return ExtractionAutoRejectedError(
+        message,
+        reasons=reasons,
+        audit_references={
+            "auto_review": AutoReviewVerdict(
+                operation=_SUBMIT_OPERATION,
+                target=receipt_id,
+                verdict="reject",
+                reasons=reasons,
+                roundtrip_ok=roundtrip_ok,
+            ).as_references()
+        },
+    )
 
 
 def _row_submission(row: QueueRow) -> Submission:

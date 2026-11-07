@@ -29,7 +29,7 @@ import sqlite3
 import threading
 import time
 import weakref
-from collections.abc import Iterable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -1421,6 +1421,7 @@ class EventStore:
         invocation: Invocation,
         expected_version: int | None = None,
         audit_log: AuditLog | None = None,
+        post_write: Callable[[DomainReceipt], Mapping[str, Any] | None] | None = None,
     ) -> WriteReceipt:
         """Journal, append one domain event, then close with exactly one final audit.
 
@@ -1433,6 +1434,12 @@ class EventStore:
         The final audit receipt is asserted against the requested outcome; on a
         mismatch a typed :class:`AuditOutcomeMismatch` is raised carrying both
         outcomes, chained to the original error (ruling C1).
+
+        ``post_write`` (disk-mode auto-review seam, SUB-151) runs after the
+        domain append, inside the audit boundary: its returned mapping is
+        merged into the success outcome's ``result_references``; when it
+        raises, the invocation closes with exactly one failure audit (a
+        raising reviewer rejects the write — never a second audit event).
         """
         from know_your_context.audit import AuditLog, failure_outcome, success_outcome
 
@@ -1440,10 +1447,13 @@ class EventStore:
         audit = audit_log if audit_log is not None else AuditLog(self)
         audit.begin(invocation)
         idempotency_key = invocation.idempotency_key or invocation.invocation_id
+        extra_references: Mapping[str, Any] | None = None
         try:
             self.refresh_journal_heartbeat(invocation.invocation_id)
             domain = self.append_domain(event, idempotency_key=idempotency_key, expected_version=expected_version)
             self.refresh_journal_heartbeat(invocation.invocation_id)
+            if post_write is not None:
+                extra_references = post_write(domain)
         except Exception as error:
             # A rejected domain write is still a valid invocation: it receives
             # exactly one final failure audit before the error propagates.
@@ -1463,13 +1473,14 @@ class EventStore:
                     f"commit requested audit status 'failure' for invocation {invocation.invocation_id!r} "
                     f"but the final audit records {failure_receipt.status!r}"
                 ) from error
+            error.audit_event_id = failure_receipt.audit_event_id  # type: ignore[attr-defined]
             raise
         receipt = audit.complete(
             invocation.invocation_id,
             success_outcome(
                 invocation,
                 started,
-                result_references={"operation": invocation.operation},
+                result_references={"operation": invocation.operation, **dict(extra_references or {})},
                 linked_domain_event_id=domain.domain_event_id,
             ),
         )

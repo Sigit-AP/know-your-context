@@ -197,6 +197,14 @@ function payloadFor(path) {
     count: 1,
     signals: [{ signal: "isolated_node", low_confidence: false, reason_codes: ["ISOLATED_NODE"], source_node_ids: ["n3"] }],
     signal_counts: { isolated_node: 1, low_confidence_edge: 2 },
+    autoreviews: [
+      { event_seq: 11, occurred_at: "2026-11-01T00:00:00Z", actor: "agent-1", operation: "knowledge.log_event",
+        target: "n1", verdict: "pass", reasons: [], roundtrip_ok: true, compensation_event_id: null },
+      { event_seq: 12, occurred_at: "2026-11-01T00:00:01Z", actor: "agent-2", operation: "knowledge.log_event",
+        target: "n-bad", verdict: "reject", reasons: ["prompt-injection:override-instructions"],
+        roundtrip_ok: true, compensation_event_id: "abcd1234ef" },
+    ],
+    autoreview_counts: { pass: 1, reject: 1 },
   };
   if (base === "/api/improvements") return {
     count: 3,
@@ -468,6 +476,14 @@ check("proposals funnel renders proposed -> applied tiers", proposalsBody.queryS
 check("proposals funnel shows the conversion gap", proposalsBody.querySelectorAll(".funnel-conv").length === 1);
 check("proposals funnel conversion is honest (1/3 = 33%)", textOf(proposalsBody.querySelectorAll(".funnel-conv")[0]).includes("33%"));
 check("signal mix proportion bar renders per-signal segments", proposalsBody.querySelectorAll(".pb-seg").length === 2);
+// SUB-151: the tab leads with the auto-review history (pass/reject verdicts).
+check("auto-review history renders one card per verdict", proposalsBody.querySelectorAll(".rcard").length >= 2);
+check("auto-review pass badge", textOf(proposalsBody).includes("pass"));
+check("auto-review reject badge", textOf(proposalsBody).includes("reject"));
+check("auto-review reject shows the typed reason code",
+  textOf(proposalsBody).includes("prompt-injection:override-instructions"));
+check("auto-review reject shows the compensation link", textOf(proposalsBody).includes("compensated abcd1234"));
+check("auto-review header carries both counts", textOf(proposalsBody).includes("1 pass · 1 reject"));
 
 // --- SUB-150: extractions funnel ---------------------------------------------
 documentShim.querySelectorAll(".tab").find((b) => b.getAttribute("data-tab") === "extractions").click();

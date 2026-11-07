@@ -21,6 +21,7 @@ from know_your_context.extraction.engine import ExtractionEngine
 from know_your_context.extraction.errors import (
     ConfidenceNotDecimalError,
     ConfidenceOutOfRangeError,
+    ExtractionAutoRejectedError,
     ExtractionDuplicateError,
     ExtractionError,
     ExtractionNotFoundError,
@@ -68,6 +69,7 @@ __all__ = [
     "TIER_CAP",
     "ConfidenceNotDecimalError",
     "ConfidenceOutOfRangeError",
+    "ExtractionAutoRejectedError",
     "ExtractionDuplicateError",
     "ExtractionEngine",
     "ExtractionError",

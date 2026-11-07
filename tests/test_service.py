@@ -604,6 +604,15 @@ def test_every_operation_returns_an_audit_event_id(tmp_path: Path) -> None:
     ]
     assert len(set(receipts)) == 5
     assert all(receipts)
+    # Disk-mode: the auto-review verdict rides each write's own final audit
+    # (result_references.auto_review) — the one-final-audit-per-invocation
+    # invariant is unchanged.
+    with store.read() as conn:
+        verdicts = conn.execute(
+            "SELECT COUNT(*) AS n FROM event_log WHERE kind = 'audit' "
+            "AND json_extract(payload_json, '$.result_references.auto_review.verdict') IS NOT NULL"
+        ).fetchone()
+    assert int(verdicts["n"]) == 2  # log_event + record_outcome
     assert store.audit_event_count() == audits_before + 5
     assert store.verify_chain().ok
 

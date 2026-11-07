@@ -10,7 +10,11 @@ the codegraph ``ui-server`` security model (RESEARCH-COVERAGE-AUDIT §4.5):
 * **Token auth in the URL.** A per-start random token (``?token=``) gates
   every byte — assets and API alike — compared with
   :func:`hmac.compare_digest`. The token is never echoed in responses or
-  embedded in served assets.
+  embedded in served assets. API clients may instead present the token in a
+  header — ``Authorization: Bearer <token>`` (case-insensitive scheme, RFC
+  6750) or ``X-API-Key: <token>`` — so it stays out of URLs and logs (W21,
+  parity with graphify's HTTP transport); header auth never mints the
+  session cookie.
 * **Read-only store.** Only ``GET``/``HEAD`` exist (everything else is 405);
   the app runs ``SELECT`` queries and the existing read APIs
   (:mod:`know_your_context.retrieval_v2`, :mod:`know_your_context.ops`,
@@ -79,8 +83,10 @@ import hashlib
 import hmac
 import json
 import math
+import os
 import re
 import secrets
+import signal
 import sys
 import threading
 import time
@@ -88,6 +94,7 @@ import webbrowser
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from email.message import Message
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -151,6 +158,7 @@ __all__ = [
     "main",
     "origin_allowed",
     "route_class_for",
+    "security_notes",
 ]
 
 SCHEMA_VERSION = 1
@@ -513,7 +521,10 @@ def origin_allowed(origin: str | None, port: int) -> bool:
     if parts.scheme not in ("http", "https"):
         return False
     hostname = (parts.hostname or "").lower()
-    if hostname not in DEFAULT_HOST_ALLOWLIST:
+    allowed = {entry.lower() for entry in DEFAULT_HOST_ALLOWLIST} | {
+        h.strip().lower() for h in os.environ.get("KNOW_YOUR_CONTEXT_HOST_ALLOWLIST", "").split(",") if h.strip()
+    }
+    if hostname not in allowed:
         return False
     try:
         return parts.port == port
@@ -523,6 +534,82 @@ def origin_allowed(origin: str | None, port: int) -> bool:
 
 def _valid_token(token: str) -> bool:
     return len(token) >= _TOKEN_MIN_LENGTH and _TOKEN_RE.fullmatch(token) is not None
+
+
+def _auth_disabled() -> bool:
+    """Dev/verification mode: ``KNOW_YOUR_CONTEXT_WEBVIEW_NO_AUTH=1`` disables
+    the token gate entirely. Off by default; never set in a production or
+    shared deployment."""
+    return os.environ.get("KNOW_YOUR_CONTEXT_WEBVIEW_NO_AUTH") == "1"
+
+
+def _session_cookie_token(headers: Message) -> str | None:
+    """The session cookie issued when the page itself was authenticated via
+    ``?token=`` (static assets/API calls carry no query token; the cookie is
+    HttpOnly + SameSite=Strict)."""
+    for part in headers.get("Cookie", "").split(";"):
+        name, _, value = part.strip().partition("=")
+        if name == "kys_token":
+            return value
+    return None
+
+
+def _header_token(headers: Message) -> str | None:
+    """The token presented via header (W21, parity with graphify's HTTP
+    transport, ``serve.py:2769-2794``): ``X-API-Key``, or ``Authorization:
+    Bearer`` with a case-insensitive scheme (RFC 6750) and a stripped
+    credential. Header auth serves API clients whose token must stay out of
+    URLs and logs; it never mints a cookie."""
+    api_key = headers.get("X-API-Key")
+    if api_key is not None:
+        return api_key
+    authorization = headers.get("Authorization", "")
+    scheme, _, credentials = authorization.partition(" ")
+    if scheme.lower() == "bearer" and credentials.strip():
+        return credentials.strip()
+    return None
+
+
+def _bind_host() -> str:
+    """Public bind is opt-in (``KNOW_YOUR_CONTEXT_WEBVIEW_HOST``); the default
+    stays loopback-only — the DNS-rebinding guard and token gate still apply."""
+    return os.environ.get("KNOW_YOUR_CONTEXT_WEBVIEW_HOST", "127.0.0.1")
+
+
+def _extended_host_allowlist(base: Sequence[str]) -> tuple[str, ...]:
+    """The host allowlist plus ``KNOW_YOUR_CONTEXT_HOST_ALLOWLIST`` extras."""
+    extra = tuple(
+        h.strip().lower() for h in os.environ.get("KNOW_YOUR_CONTEXT_HOST_ALLOWLIST", "").split(",") if h.strip()
+    )
+    return tuple(base) + extra
+
+
+def security_notes(bind_host: str, *, auth_disabled: bool) -> tuple[str, ...]:
+    """Operator-facing warnings about the effective bind/auth posture (W21).
+
+    Parity with graphify's HTTP transport (``graphify/serve.py``), which warns
+    on stderr when binding a wildcard address and always states the auth state
+    in its startup banner. Quiet by design when the posture is the safe
+    default (loopback bind + token required).
+    """
+    notes: list[str] = []
+    if auth_disabled:
+        notes.append(
+            "WARNING: authentication is disabled (KNOW_YOUR_CONTEXT_WEBVIEW_NO_AUTH=1); "
+            "anyone who can reach the port can read the store"
+        )
+    if bind_host not in ("127.0.0.1", "::1", "localhost"):
+        notes.append(
+            f"WARNING: binding {bind_host!r} exposes the viewer beyond loopback; "
+            "the token gate and Host allowlist still apply"
+        )
+    return tuple(notes)
+
+
+def _sigterm_as_keyboard_interrupt(signum: int, frame: Any) -> None:
+    """Fold SIGTERM into the KeyboardInterrupt path so ``main()`` drains once
+    (uvicorn gives graphify's HTTP transport the same SIGTERM semantics)."""
+    raise KeyboardInterrupt
 
 
 def _like_escape(text: str) -> str:
@@ -1194,6 +1281,47 @@ class WebviewApp:
             )
         return {"schema_version": SCHEMA_VERSION, "count": len(events), "events": events}
 
+    def _autoreview_history(self) -> list[dict[str, Any]]:
+        """The journaled auto-review verdicts (disk-mode write history).
+
+        Read-only: every disk-mode write records its verdict in the write
+        invocation's own final audit (``result_references.auto_review`` —
+        success and failure alike), so this view never waits on a human and
+        never writes.
+        """
+        with self._store.read() as conn:
+            rows = conn.execute(
+                "SELECT event_seq, event_type, actor, occurred_at, payload_json FROM event_log "
+                "WHERE kind = 'audit' ORDER BY event_seq LIMIT ?",
+                (self._knob_int("webview.improvements_scan_max"),),
+            ).fetchall()
+        entries: list[dict[str, Any]] = []
+        for row in rows:
+            try:
+                payload = json.loads(str(row["payload_json"]))
+            except json.JSONDecodeError:
+                continue  # an unreadable payload is skipped, never guessed
+            references = payload.get("result_references")
+            if not isinstance(references, dict):
+                continue
+            verdict = references.get("auto_review")
+            if not isinstance(verdict, dict) or "verdict" not in verdict:
+                continue
+            entries.append(
+                {
+                    "event_seq": int(row["event_seq"]),
+                    "occurred_at": str(row["occurred_at"]),
+                    "actor": str(row["actor"]),
+                    "operation": verdict.get("operation", row["event_type"]),
+                    "target": verdict.get("target"),
+                    "verdict": verdict.get("verdict"),
+                    "reasons": verdict.get("reasons", []),
+                    "roundtrip_ok": verdict.get("roundtrip_ok"),
+                    "compensation_event_id": verdict.get("compensation_event_id"),
+                }
+            )
+        return entries
+
     def proposals_payload(self) -> dict[str, Any]:
         nodes, links, _, _ = self._read_model(cap=self._knob_int("webview.analytics_max_nodes"))
         communities = detect_communities([{"id": node["id"], "label": node["label"]} for node in nodes], links)
@@ -1203,11 +1331,20 @@ class WebviewApp:
             communities=communities.get("communities", []),
         )
         items = report.get("items", [])
+        autoreviews = self._autoreview_history()
+        counts = {"pass": 0, "reject": 0}
+        for entry in autoreviews:
+            if entry["verdict"] in counts:
+                counts[str(entry["verdict"])] += 1
         return {
             "schema_version": SCHEMA_VERSION,
             "count": len(items),
             "signals": items,
             "signal_counts": report.get("signal_counts", {}),
+            # Disk-mode: the tab is the auto-review history — an automatic
+            # pass/reject record, never an approval queue.
+            "autoreviews": autoreviews,
+            "autoreview_counts": counts,
         }
 
     def extractions_payload(self) -> dict[str, Any]:
@@ -2853,6 +2990,19 @@ def _error_payload(code: str, message: str) -> dict[str, Any]:
 class WebviewServer:
     """The loopback-only viewer server; one token per instance."""
 
+    class _HTTPServer(ThreadingHTTPServer):
+        """Threading server with a flood-sized listen backlog.
+
+        The stdlib default ``request_queue_size`` is 5: a connection-per-
+        request burst overflows the listen backlog and clients eat ~1s TCP
+        SYN retransmits (measured: flood p99 1023ms). 128 matches the
+        viewer's real concurrency envelope (uvicorn, graphify's HTTP server,
+        defaults to 2048); accepts stay prompt and the tail stays flat.
+        """
+
+        daemon_threads = True
+        request_queue_size = 128
+
     def __init__(
         self,
         store_path: str | Path,
@@ -2876,7 +3026,7 @@ class WebviewServer:
         self._knobs = knobs if knobs is not None else load_knobs()
         self._app = WebviewApp(store_path, knobs=self._knobs)
         self._token = resolved_token
-        self._host_allowlist = tuple(host_allowlist)
+        self._host_allowlist = _extended_host_allowlist(host_allowlist)
         self._request_id_factory = request_id_factory or (lambda: secrets.token_hex(8))
         # W13 middleware layer: timing + typed error mapping are server-level;
         # the capability gate binds per request (it needs the handler's
@@ -2901,8 +3051,7 @@ class WebviewServer:
             }
         )
         handler = self._make_handler()
-        self._httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
-        self._httpd.daemon_threads = True
+        self._httpd = self._HTTPServer((_bind_host(), port), handler)
         self._thread: threading.Thread | None = None
         self._serving = False
         self._closed = False
@@ -3003,20 +3152,18 @@ class WebviewServer:
 
             def _token_authorized(self) -> bool:
                 """The session-token capability decision (pure check + fresh mark)."""
+                if _auth_disabled():
+                    return True
                 query = parse_qs(urlsplit(self.path).query)
                 provided = query.get("token", [None])[-1]
                 if provided is not None and hmac.compare_digest(str(provided), server_ref._token):
                     self._fresh_token = True  # mark: issue the session cookie
                     return True
-                # Fall back to the session cookie issued when the page itself
-                # was authenticated (static assets/API calls carry no query
-                # token; the cookie is HttpOnly + SameSite=Strict).
-                cookie_header = self.headers.get("Cookie", "")
-                for part in cookie_header.split(";"):
-                    name, _, value = part.strip().partition("=")
-                    if name == "kys_token" and hmac.compare_digest(value, server_ref._token):
-                        return True
-                return False
+                cookie = _session_cookie_token(self.headers)
+                if cookie is not None and hmac.compare_digest(cookie, server_ref._token):
+                    return True
+                presented = _header_token(self.headers)
+                return presented is not None and hmac.compare_digest(presented, server_ref._token)
 
             def _capability_gate(self) -> CapabilityGateMiddleware:
                 """The token check as an explicit middleware layer (W13)."""
@@ -3523,18 +3670,31 @@ def main(argv: Sequence[str] | None = None) -> int:
     except WebviewError as error:
         print(f"webview: {error}", file=sys.stderr)
         return 2
-    print(f"webview: {server.url}", flush=True)
-    if args.open_browser:
-        webbrowser.open(server.url)
-    if args.serve_once:
-        server.shutdown()
-        return 0
+    bind_host = _bind_host()
+    auth_disabled = _auth_disabled()
+    # SIGTERM folds into the KeyboardInterrupt path so systemd/`kill` drains
+    # through the same shutdown() as Ctrl-C (graphify gets this from uvicorn).
+    # Armed BEFORE the URL banner is printed: a client that can read the
+    # banner is guaranteed to face the graceful path, never the raw signal.
+    installed_sigterm = False
+    previous_sigterm: Any = None
+    if threading.current_thread() is threading.main_thread():
+        previous_sigterm = signal.signal(signal.SIGTERM, _sigterm_as_keyboard_interrupt)
+        installed_sigterm = True
     try:
-        server.serve_forever()
+        for note in security_notes(bind_host, auth_disabled=auth_disabled):
+            print(f"webview: {note}", file=sys.stderr)
+        print(f"webview: {server.url}", flush=True)
+        if args.open_browser:
+            webbrowser.open(server.url)
+        if not args.serve_once:
+            server.serve_forever()
     except KeyboardInterrupt:
-        pass
+        pass  # SIGINT or SIGTERM: the finally below is the single drain path
     finally:
-        server.shutdown()
+        if installed_sigterm:
+            signal.signal(signal.SIGTERM, previous_sigterm)
+        server.shutdown()  # idempotent; the --serve-once path lands here too
     return 0
 
 

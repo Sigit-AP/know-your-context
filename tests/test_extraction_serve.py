@@ -25,6 +25,14 @@ from know_your_context.serve.superpower import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _manual_gates(monkeypatch: pytest.MonkeyPatch):
+    """The contract-v4 daemon test pins the frozen queue-only submit
+    semantics; the legacy mode is selected explicitly (disk-mode coverage
+    lives in tests/test_disk_mode_autoreview.py)."""
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_MANUAL_GATES", "1")
+
+
 class TestLanePlacement:
     def test_submit_extraction_is_a_write_tool(self) -> None:
         assert "knowledge_submit_extraction" in WRITE_TOOLS
