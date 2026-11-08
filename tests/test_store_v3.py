@@ -640,7 +640,10 @@ def test_v3_store_migrates_to_v4_without_losing_a_row(tmp_path: Path, monkeypatc
                 # backfilled deterministically; every prior value intact.
                 assert [row[:-1] for row in after[name]] == [tuple(row) for row in rows]
                 if name == "files":
-                    assert all(row[-1] == row[0][::-1] for row in after[name])
+                    assert all(
+                        row[-1] == str(tuple(row)[0])[::-1]  # type: ignore[index]
+                        for row in after[name]
+                    )
             elif name == "schema_versions":
                 assert [tuple(row) for row in rows] == [r for r in after[name] if r[0] not in (4, 5, 6)]
             else:

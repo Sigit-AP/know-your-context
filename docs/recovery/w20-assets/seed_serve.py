@@ -73,7 +73,9 @@ def node(nid, domain, parent=None, summary=None, scores=None):
     return Node(
         node_id=nid,
         parent_id=parent,
-        kind=NodeKind.ROOT if parent is None and nid == "n-root" else (NodeKind.PRIMARY if parent == "n-root" else NodeKind.CHILD),
+        kind=NodeKind.ROOT
+        if parent is None and nid == "n-root"
+        else (NodeKind.PRIMARY if parent == "n-root" else NodeKind.CHILD),
         domain=domain,
         summary=summary or nid,
         provenance=("context://corpus/lesson.md",),
@@ -118,11 +120,25 @@ store.append_domain(
         domain=PrimaryDomain.P1,
         evidence=Evidence.model_validate(
             {
-                "evidence_id": "ev-alpha-1", "node_id": "n-alpha", "source_version_id": "sv-w20",
-                "source_uri": "context://corpus/lesson.md", "observed_at": NOW, "independence_key": "indep-1",
-                "outcome": "0.5", "correctness": "1", "reliability": "1", "reproducibility": "1",
-                "scope_fit": "1", "successful_use": "1", "utilization_u": "0.5", "task_coverage": "0.5",
-                "quality_at_use": "0.5", "contradiction": "0", "latency_ms": 1, "compute_ms": 1, "output_chars": 4,
+                "evidence_id": "ev-alpha-1",
+                "node_id": "n-alpha",
+                "source_version_id": "sv-w20",
+                "source_uri": "context://corpus/lesson.md",
+                "observed_at": NOW,
+                "independence_key": "indep-1",
+                "outcome": "0.5",
+                "correctness": "1",
+                "reliability": "1",
+                "reproducibility": "1",
+                "scope_fit": "1",
+                "successful_use": "1",
+                "utilization_u": "0.5",
+                "task_coverage": "0.5",
+                "quality_at_use": "0.5",
+                "contradiction": "0",
+                "latency_ms": 1,
+                "compute_ms": 1,
+                "output_chars": 4,
             }
         ),
         occurred_at=NOW,
@@ -131,8 +147,12 @@ store.append_domain(
 )
 
 # Code side: files, symbols, call edges, refs across kinds + statuses.
-store.upsert_file(path="a.py", sha256="a" * 64, size=10, mtime=1, language="python", generated_hint=False, extraction_version=1)
-store.upsert_file(path="b.js", sha256="b" * 64, size=10, mtime=1, language="javascript", generated_hint=False, extraction_version=1)
+store.upsert_file(
+    path="a.py", sha256="a" * 64, size=10, mtime=1, language="python", generated_hint=False, extraction_version=1
+)
+store.upsert_file(
+    path="b.js", sha256="b" * 64, size=10, mtime=1, language="javascript", generated_hint=False, extraction_version=1
+)
 store.upsert_symbol(node_id="function:aaa", name="alpha_fn", kind="function", path="a.py", line=1)
 store.upsert_symbol(node_id="function:bbb", name="beta_fn", kind="function", path="b.js", line=2)
 store.upsert_symbol(node_id="class:ccc", name="AlphaClass", kind="class", path="a.py", line=9)
@@ -151,7 +171,7 @@ ref_specs = [
     ("function:aaa", "iota_mod", "imports", "failed"),
     ("function:bbb", "kappa_fn", "calls", "resolved"),
 ]
-for index, (src, target, kind, want) in enumerate(ref_specs):
+for src, target, kind, want in ref_specs:
     ref_id = store.insert_unresolved_ref(source_node_id=src, target_name=target, kind=kind)
     if want == "failed":
         store.record_resolution_attempt(ref_id, outcome="failed", reason="no_match")
@@ -198,6 +218,7 @@ for days_ago in range(20, -1, -1):
             )
         seq += 1
 
+
 # Improvement proposals (domain events with markers): 5 proposed, 2 applied —
 # drives the proposals funnel (signals -> proposed -> applied).
 def improvement(seq_id, event_type, key, marker, days_ago):
@@ -217,11 +238,21 @@ def improvement(seq_id, event_type, key, marker, days_ago):
 
 
 for i, nid in enumerate(["n-alpha", "n-beta", "n-gamma", "n-delta", "n-eps"]):
-    improvement(i, "knowledge.propose_improvement", "improvement_proposal",
-                {"proposal_id": f"imp-{i:03d}", "node_id": nid, "impact": "medium"}, days_ago=6 - i)
+    improvement(
+        i,
+        "knowledge.propose_improvement",
+        "improvement_proposal",
+        {"proposal_id": f"imp-{i:03d}", "node_id": nid, "impact": "medium"},
+        days_ago=6 - i,
+    )
 for i in (0, 2):
-    improvement(10 + i, "knowledge.apply_improvement", "improvement_apply",
-                {"proposal_id": f"imp-{i:03d}", "node_id": ["n-alpha", "n-gamma"][i // 2]}, days_ago=1)
+    improvement(
+        10 + i,
+        "knowledge.apply_improvement",
+        "improvement_apply",
+        {"proposal_id": f"imp-{i:03d}", "node_id": ["n-alpha", "n-gamma"][i // 2]},
+        days_ago=1,
+    )
 
 # Bench: completed invocations with real integer durations.
 bench_ops = {
@@ -248,7 +279,9 @@ for operation, durations in bench_ops.items():
                 payload={"operation": operation},
                 idempotency_key=f"w20:inv:{operation}:{i}",
             )
-            store.complete_journal(conn, inv.invocation_id, outcome={"duration_ms": duration, "ok": True}, audit_event_seq=row.event_seq)
+            store.complete_journal(
+                conn, inv.invocation_id, outcome={"duration_ms": duration, "ok": True}, audit_event_seq=row.event_seq
+            )
 
 # One active lease for the leases panel.
 leases = LeaseRegistry(store)
@@ -292,7 +325,12 @@ with conn:
                 "agent-2" if receipt_id.endswith(("1", "3", "5", "7")) else "agent-4",
                 json.dumps({"extractor": "markdown-structure", "version": 3}),
                 "f" * 16,
-                json.dumps({"nodes": [{"id": f"n-{receipt_id}"}, {"id": f"n-{receipt_id}-b"}], "edges": [{"source": "a", "target": "b"}]}),
+                json.dumps(
+                    {
+                        "nodes": [{"id": f"n-{receipt_id}"}, {"id": f"n-{receipt_id}-b"}],
+                        "edges": [{"source": "a", "target": "b"}],
+                    }
+                ),
                 "d" * 64,
                 conf_rep,
                 conf_eff,

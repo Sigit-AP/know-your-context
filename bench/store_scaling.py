@@ -34,13 +34,12 @@ from pathlib import Path
 # against a clean-HEAD worktree without copying this script into it).
 sys.path.insert(0, os.environ.get("STORE_SCALING_SRC", str(Path(__file__).resolve().parents[1] / "src")))
 
-from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain  # noqa: E402
-from know_your_context.store import EventStore  # noqa: E402
-
 # A/B helper: opening a newer-schema store with older code fails closed by
 # design; the cap shim exists so measurement-only before/after runs can open
 # the SAME store file with both revisions (tests monkeypatch the same global).
 import know_your_context.store as _store_module  # noqa: E402
+from know_your_context.domain import Event, EventKind, Node, NodeKind, PrimaryDomain  # noqa: E402
+from know_your_context.store import EventStore  # noqa: E402
 
 if _cap := os.environ.get("STORE_SCALING_SCHEMA_CAP"):
     _store_module.SCHEMA_VERSION = int(_cap)
