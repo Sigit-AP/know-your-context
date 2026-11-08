@@ -137,14 +137,17 @@ class FrameReader:
     def read(self) -> dict[str, Any] | None:
         """The next frame, or None on a clean EOF at a frame boundary.
 
+        The cap bounds the frame *content*; the newline delimiter is not
+        counted, so a content payload of exactly ``max_bytes`` is accepted.
         ``readline(limit)`` returning a full unterminated buffer means the
         peer is streaming past the cap: that is rejected typed, never
         truncated-and-parsed.
         """
-        line = self._source.readline(self._max_bytes + 1)
+        # +2: one byte for the delimiter, one to detect content past the cap.
+        line = self._source.readline(self._max_bytes + 2)
         if not line:
             return None
-        if len(line) > self._max_bytes:
+        if len(line) > self._max_bytes + 1:
             raise ProtocolError(
                 PAYLOAD_TOO_LARGE,
                 f"frame exceeds the {self._max_bytes}-byte cap",

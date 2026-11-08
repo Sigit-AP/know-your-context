@@ -86,6 +86,29 @@ class TestFrameReader:
             reader.read()
         assert info.value.code == protocol.PAYLOAD_TOO_LARGE
 
+    def test_frame_content_at_exact_cap_is_accepted(self) -> None:
+        # F1: the cap bounds the JSON content; the newline delimiter is not
+        # counted, so a frame whose content is exactly ``max_bytes`` must pass.
+        content = b'{"d":"' + b"x" * (1024 - len(b'{"d":""}')) + b'"}'
+        assert len(content) == 1024
+        reader = protocol.FrameReader(io.BytesIO(content + b"\n"), max_bytes=1024)
+        assert reader.read() == {"d": "x" * (1024 - len(b'{"d":""}'))}
+
+    def test_frame_content_one_byte_over_cap_is_rejected(self) -> None:
+        content = b'{"d":"' + b"x" * (1025 - len(b'{"d":""}')) + b'"}'
+        assert len(content) == 1025
+        reader = protocol.FrameReader(io.BytesIO(content + b"\n"), max_bytes=1024)
+        with pytest.raises(protocol.ProtocolError) as info:
+            reader.read()
+        assert info.value.code == protocol.PAYLOAD_TOO_LARGE
+
+    def test_frame_content_at_cap_without_newline_is_truncated(self) -> None:
+        content = b'{"d":"' + b"x" * (1024 - len(b'{"d":""}')) + b'"}'
+        reader = protocol.FrameReader(io.BytesIO(content), max_bytes=1024)
+        with pytest.raises(protocol.ProtocolError) as info:
+            reader.read()
+        assert info.value.code == protocol.MALFORMED_REQUEST
+
     def test_write_message_appends_newline(self) -> None:
         sink = io.BytesIO()
         protocol.write_message(sink, {"ok": True})
