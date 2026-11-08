@@ -38,8 +38,9 @@ besok — tidak ada yang dinilai, berversi, atau teraudit.
 
 Know Your Context adalah memori yang memperbaiki keduanya. Ia menjawab dari graph
 lokal, bukan dari korpus mentah (**terukur: 466× lebih sedikit token pada korpus
-campuran 52 file**), setiap jawaban membawa provenance dan id audit, dan setiap
-perubahan graph melewati proposal yang kamu setujui — dengan rollback byte-exact.
+campuran 52 file**), setiap jawaban membawa provenance dan id audit, dan store
+berperilaku seperti disk — tulisan langsung mendarat dan lolos auto-review
+pasca-tulis yang wajib dan deterministik, dengan rollback byte-exact.
 
 Batasannya keras dan ditegakkan saat runtime: tidak ada model, embedding, atau
 panggilan provider di dalam. AI tetap di sisi agent. Ini bagian yang tidak
@@ -48,7 +49,8 @@ pernah menebak.
 > Agent dengan model vision tidak dikunci keluar: mereka membaca gambar atau
 > PDF hasil scan di sisi mereka, lalu men-submit hasil ekstraksi lewat kontrak
 > `submit_extraction` — terikat hash file sumber, bertanda `agent-extracted`,
-> digate oleh review. Produknya sendiri tidak pernah memanggil model.
+> disaring oleh auto-review deterministik. Produknya sendiri tidak pernah
+> memanggil model.
 
 Know Your Context memberi agent konteksnya dari tiga pilar:
 
@@ -94,7 +96,7 @@ know-your-context --store demo.sqlite3 rebuild
 know-your-context --store demo.sqlite3 query \
   '{"purpose":"verify before claiming done","token_budget":400}'
 
-# ingest kode dan dokumen (proposal-only, kontrak v3)
+# ingest kode dan dokumen (tulisan disk-mode, kontrak v3/v5)
 know-your-context ingest-directory ./my-project
 know-your-context watch ./my-project --interval 2
 
@@ -142,7 +144,8 @@ berubah, inputnya yang berubah.
 **Ingestion pengetahuan.** Markdown structure-aware, text layer PDF, dan teks
 biasa. PDF hasil scan ditandai jujur (`no_text_layer`), tidak dipalsukan, dan
 agent dengan model vision men-submit ekstraksi gambar/scan lewat
-`submit_extraction` — terikat hash, digate review, tidak pernah auto-promote.
+`submit_extraction` — terikat hash, ter-auto-review, terbatas di tier
+`agent-extracted`.
 
 **Code intelligence.** Sembilan belas bahasa pemrograman via tree-sitter:
 kernel Rust di jalur panas dan fallback Python byte-identik menutup sisanya.
@@ -154,10 +157,17 @@ tunggal, turun ke kedalaman arbitrer, dan terhubung ke primary lain lewat
 bridge. Graph memberitahumu kapan subtree anak butuh perbaikan — sebagai
 proposal, tidak pernah menulis ulang diam-diam.
 
+**Tulisan disk-mode, ter-auto-review.** Tulisan langsung mendarat — tanpa
+antrian approval. Setiap perubahan lolos auto-review pasca-tulis yang wajib
+(kontrak v5): verifikasi round-trip plus pemindaian deterministik untuk prompt
+injection, secret, dan markup aktif. Reject dikompensasi append-only; verdict
+tercatat di audit trail. Alur approval lama kembali dengan
+`KNOW_YOUR_CONTEXT_MANUAL_GATES=1`.
+
 **Ekstraksi eksternal, bertingkat jujur.** Agent men-submit ekstraksi
 vision/LLM lewat `submit_extraction`: terikat sha256 file sumber, bertanda
-`agent-extracted` dengan plafon confidence lebih rendah, dikoroborasi atau
-dikontradiksi agent lain, dan tidak pernah dipromosikan tanpa persetujuan.
+`agent-extracted` dengan plafon confidence lebih rendah, dan dikoroborasi atau
+dikontradiksi agent lain.
 
 **Superpower server.** Satu daemon detached per store melayani hingga 50 agent:
 read pool di atas snapshot WAL, writer tunggal dengan group commit, token bucket
@@ -189,7 +199,7 @@ sesi setelah load pertama, anti DNS-rebinding, tanpa CORS). Tujuh tab:
 | Health | 11 self-check fail-closed dengan severity |
 | Analytics | Centrality, communities, bridges atas graph live |
 | Audit | Log event berantai-hash, teredaksi |
-| Proposals | Antrian review: saran split, antrian ekstraksi, sinyal review |
+| Proposals | Jurnal auto-review: verdict pass/reject, saran split, sinyal review |
 
 <p align="center">
   <img src="docs/assets/screenshots/tab-analytics.png" alt="Tab Analytics" width="700"/>
@@ -209,9 +219,12 @@ sumber (kode, dokumen, pengetahuan) ──▶ extractor (kernel Rust / fallback 
               superpower server: 50 agent, jalur, kuota, group commit
 ```
 
-Tulisan tidak pernah langsung masuk ke graph. Ia mendarat sebagai event
-teraudit, menjadi proposal, dan di-apply lewat alur operator-gated. Rollback
-memulihkan hash dan skor persis seperti sebelum apply.
+Tulisan langsung mendarat sebagai event teraudit (disk-mode, kontrak v5).
+Auto-review pasca-tulis yang wajib memverifikasi setiap perubahan — round-trip
+baca-ulang plus pemindaian deterministik injeksi/secret/markup aktif; reject
+dikompensasi append-only. Rollback memulihkan hash dan skor persis seperti
+sebelum apply. Alur proposal/approval lama tetap tersedia lewat
+`KNOW_YOUR_CONTEXT_MANUAL_GATES=1`.
 
 ## Referensi CLI
 
@@ -220,9 +233,9 @@ memulihkan hash dan skor persis seperti sebelum apply.
 | `query` / `get-node` / `get-subtree` | Baca graph pengetahuan (berbatas token) |
 | `path` / `explain` / `affected` / `god-nodes` | Verb traversal dan analisis |
 | `log-event` / `record-outcome` / `evaluate` / `review` | Siklus tulis + penilaian |
-| `propose-improvement` / `apply-improvement` / `rollback` | Alur mutasi ter-gate |
-| `ingest-file` / `ingest-directory` / `ingest` | Ingestion kode/dokumen (kontrak v3, proposal-only) |
-| `submit-extraction` / `extraction review\|approve\|reject` | Ekstraksi agent eksternal (kontrak v4) |
+| `propose-improvement` / `apply-improvement` / `rollback` | Alur mutasi + rollback |
+| `ingest-file` / `ingest-directory` / `ingest` | Ingestion kode/dokumen (kontrak v3/v5, disk-mode) |
+| `submit-extraction` / `extraction review\|approve\|reject` | Ekstraksi agent eksternal (kontrak v4/v5) |
 | `watch` | Watcher polling, re-ingestion incremental |
 | `export` / `analytics` / `report` | Format, metrik dalam, laporan komposit |
 | `serve --daemon\|--proxy\|--socket\|--http` | Superpower server + adapter |
@@ -244,6 +257,8 @@ Berlapis: defaults → file TOML → environment variable (`KNOW_YOUR_CONTEXT_*`
 flag CLI. `config describe` mencetak setiap key dengan provenance-nya; secret
 teredaksi di semua permukaan. Kill switch tersedia untuk setiap optimasi
 (`KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT`, `KYS_DISABLE_RUST_KERNEL`, …).
+`KNOW_YOUR_CONTEXT_MANUAL_GATES=1` mengembalikan alur tulis ter-gate approval
+lama (kontrak v4); default-nya adalah disk-mode (kontrak v5).
 
 ## Keamanan
 

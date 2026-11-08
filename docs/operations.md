@@ -5,9 +5,10 @@ API surfaces: observability, health/readiness, backup/restore, projection
 recovery, and the security posture. The HTTP/Unix-socket server
 (`http_api.py`) builds on the pure policies documented here.
 
-## Disk-mode writes and auto-review (SUB-151)
+## Disk-mode writes and auto-review (SUB-151, contract v5)
 
-Default mode: **the store is a disk**. Every write (`log_event`,
+The binding contract is `docs/contracts/write-contract-v5.md`. Default mode:
+**the store is a disk**. Every write (`log_event`,
 `record_outcome`, `propose_improvement`/`apply_improvement`,
 `submit_extraction`, `ingest`) lands immediately — no human approval queue
 anywhere. The mandatory replacement is a deterministic post-write
@@ -447,6 +448,7 @@ The product's provenance URI scheme is `context://`. The previous `soul://`
 scheme survives only inside byte-frozen artifacts that must never drift:
 the frozen v1/v2 measurement fixtures (`tests/fixtures/*.json`) and the
 digest-pinned contracts (`docs/contracts/*.md`, sha256-pinned by
-`tests/test_contract_v3_shape.py` and `tests/test_extraction_contract_v4_shape.py`).
+`tests/test_contract_v3_shape.py`, `tests/test_extraction_contract_v4_shape.py`
+and `tests/test_write_contract_v5_shape.py`).
 Those files are historical records; new data and new code use `context://`
 exclusively.

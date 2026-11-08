@@ -38,8 +38,9 @@ versioned, or auditable.
 
 Know Your Context is the memory that fixes both. It answers from a local graph
 instead of the raw corpus (**measured: 466× fewer tokens on a 52-file mixed
-corpus**), every answer carries provenance and an audit id, and every change
-to the graph goes through a proposal you approve — with byte-exact rollback.
+corpus**), every answer carries provenance and an audit id, and the store
+behaves like a disk — writes land immediately and pass a mandatory,
+deterministic post-write auto-review, with byte-exact rollback.
 
 The boundary is hard and enforced at runtime: no model, no embeddings, no
 provider calls inside. The AI stays on the agent side. This is the part that
@@ -47,8 +48,8 @@ never guesses.
 
 > Agents with vision models are not locked out: they read images or scanned
 > PDFs on their side, then submit the extraction through the `submit_extraction`
-> contract — hash-bound to the source file, tagged `agent-extracted`, gated by
-> review. The product itself never calls a model.
+> contract — hash-bound to the source file, tagged `agent-extracted`, screened
+> by the deterministic auto-review. The product itself never calls a model.
 
 Know Your Context gives an agent its context from three pillars:
 
@@ -93,7 +94,7 @@ know-your-context --store demo.sqlite3 rebuild
 know-your-context --store demo.sqlite3 query \
   '{"purpose":"verify before claiming done","token_budget":400}'
 
-# ingest code and documents (proposal-only, contract v3)
+# ingest code and documents (disk-mode writes, contracts v3/v5)
 know-your-context ingest-directory ./my-project
 know-your-context watch ./my-project --interval 2
 
@@ -141,7 +142,8 @@ number changes, the input changed.
 **Knowledge ingestion.** Structure-aware markdown, PDF text layers, and plain
 text. Scanned PDFs are flagged honestly (`no_text_layer`) instead of being
 faked, and agents with vision models submit image/scanned extractions through
-`submit_extraction` — hash-bound, review-gated, never auto-promoted.
+`submit_extraction` — hash-bound, auto-reviewed, capped at the
+`agent-extracted` tier.
 
 **Code intelligence.** Nineteen programming languages via tree-sitter: a Rust
 kernel does the hot path and a byte-identical Python fallback covers the rest.
@@ -153,10 +155,17 @@ descend to arbitrary depth, and connect to other primaries through bridges.
 The graph tells you when a child subtree needs improvement — as a proposal,
 never a silent rewrite.
 
+**Disk-mode writes, auto-reviewed.** Writes land immediately — no approval
+queue. Every change passes a mandatory post-write auto-review (contract v5):
+a round-trip verify plus a deterministic scan for prompt injection, secrets,
+and active markup. A reject is compensated append-only; the verdicts journal
+in the audit trail. The legacy approval flow returns with
+`KNOW_YOUR_CONTEXT_MANUAL_GATES=1`.
+
 **External extraction, honestly tiered.** Agents submit vision/LLM extractions
 through `submit_extraction`: bound to the source file's sha256, tagged
-`agent-extracted` with a lower confidence ceiling, corroborated or contradicted
-by other agents, and never promoted without approval.
+`agent-extracted` with a lower confidence ceiling, and corroborated or
+contradicted by other agents.
 
 **Superpower server.** One detached daemon per store serves up to 50 agents:
 a read pool on WAL snapshots, a single writer with group commit, per-agent
@@ -188,7 +197,7 @@ cookie after first load, anti-DNS-rebinding, no CORS). Seven tabs:
 | Health | 11 fail-closed self-checks with severity |
 | Analytics | Centrality, communities, bridges over the live graph |
 | Audit | The hash-chained event log, redacted |
-| Proposals | Pending review: split suggestions, extraction queue, review signals |
+| Proposals | Auto-review journal: pass/reject verdicts, split suggestions, review signals |
 
 <p align="center">
   <img src="docs/assets/screenshots/tab-analytics.png" alt="Analytics tab" width="700"/>
@@ -208,9 +217,12 @@ sources (code, docs, knowledge) ──▶ extractors (Rust kernel / Python fallb
               superpower server: 50 agents, lanes, quotas, group commit
 ```
 
-Writes never go straight to the graph. They land as audited events, become
-proposals, and are applied through the operator-gated flow. Rollback restores
-exact pre-apply hashes and scores.
+Writes land immediately as audited events (disk-mode, contract v5). A
+mandatory post-write auto-review verifies every change — a round-trip read-back
+plus a deterministic injection/secret/active-markup scan; a reject is
+compensated append-only. Rollback restores exact pre-apply hashes and scores.
+The legacy proposal/approval flow stays available under
+`KNOW_YOUR_CONTEXT_MANUAL_GATES=1`.
 
 ## CLI Reference
 
@@ -219,9 +231,9 @@ exact pre-apply hashes and scores.
 | `query` / `get-node` / `get-subtree` | Read the knowledge graph (token-bounded) |
 | `path` / `explain` / `affected` / `god-nodes` | Traversal and analysis verbs |
 | `log-event` / `record-outcome` / `evaluate` / `review` | Write + scoring lifecycle |
-| `propose-improvement` / `apply-improvement` / `rollback` | Gated mutation flow |
-| `ingest-file` / `ingest-directory` / `ingest` | Code/document ingestion (contract v3, proposal-only) |
-| `submit-extraction` / `extraction review\|approve\|reject` | External agent extraction (contract v4) |
+| `propose-improvement` / `apply-improvement` / `rollback` | Mutation + rollback flow |
+| `ingest-file` / `ingest-directory` / `ingest` | Code/document ingestion (contracts v3/v5, disk-mode) |
+| `submit-extraction` / `extraction review\|approve\|reject` | External agent extraction (contracts v4/v5) |
 | `watch` | Polling watcher, incremental re-ingestion |
 | `export` / `analytics` / `report` | Formats, deep metrics, composite report |
 | `serve --daemon\|--proxy\|--socket\|--http` | Superpower server + adapters |
@@ -243,6 +255,8 @@ Layered: defaults → TOML file → environment variables (`KNOW_YOUR_CONTEXT_*`
 CLI flags. `config describe` prints every key with its provenance; secrets are
 redacted on every surface. Kill switches exist for every optimization
 (`KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT`, `KYS_DISABLE_RUST_KERNEL`, …).
+`KNOW_YOUR_CONTEXT_MANUAL_GATES=1` restores the legacy approval-gated write
+flow (contract v4); the default is disk-mode (contract v5).
 
 ## Security
 
