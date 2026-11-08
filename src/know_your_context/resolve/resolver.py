@@ -172,6 +172,17 @@ def _escape_like(value: str) -> str:
     return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+def _escape_glob(value: str) -> str:
+    """GLOB escaping (no ESCAPE clause exists): bracket the wildcards."""
+    return value.replace("[", "[[]").replace("*", "[*]").replace("?", "[?]")
+
+
+def _ascii_lower(value: str) -> str:
+    """ASCII-only case fold — exactly SQLite ``lower()``/``LIKE`` semantics
+    (non-ASCII bytes are never folded by either)."""
+    return "".join(chr(ord(char) + 32) if "A" <= char <= "Z" else char for char in value)
+
+
 def _file_row(row: sqlite3.Row) -> FileRow:
     return FileRow(
         path=str(row["path"]),
@@ -360,6 +371,15 @@ class ReferenceResolver:
         return target_name.startswith(".") or "/" in target_name
 
     def _tail_candidates(self, store: EventStore, tail: str) -> list[SymbolRow]:
+        # v6 index path: a separator-free tail equals the materialized
+        # ``name_tail`` exactly when the legacy exact/LIKE union would match —
+        # ``name_tail(name) = segment after the last '.'/'::'``, so
+        # ``name_tail = tail`` ⟺ ``name = tail OR name ends '.tail' OR name
+        # ends '::tail'`` for any tail without '.'/'::'. Tails containing a
+        # separator (e.g. markdown link tails like "README.md") keep the
+        # legacy scan byte-for-byte.
+        if "." not in tail and "::" not in tail:
+            return store.symbols_with_tail(tail)
         found: dict[str, SymbolRow] = {symbol.node_id: symbol for symbol in store.symbols_named(tail)}
         like = _escape_like(tail)
         with store.read() as conn:
@@ -380,10 +400,15 @@ class ReferenceResolver:
         exact = store.get_file(rel)
         if exact is not None:
             return ("hit", exact)
+        # v6 index path (R2): ``path LIKE '%/rel'`` ⟺ ``reverse(path)`` starts
+        # with ``reverse('/' + rel)``; the reversed prefix is a GLOB prefix
+        # against ``lower(path_rev)`` (SQLite lower() folds ASCII only — LIKE's
+        # exact case semantics), which seeks ``idx_files_path_rev``.
+        pattern = _escape_glob(_ascii_lower(("/" + rel)[::-1])) + "*"
         with store.read() as conn:
             rows = conn.execute(
-                "SELECT * FROM files WHERE path LIKE ? ESCAPE '\\' ORDER BY path",
-                (f"%/{_escape_like(rel)}",),
+                "SELECT * FROM files WHERE lower(path_rev) GLOB ? ORDER BY path",
+                (pattern,),
             ).fetchall()
         if not rows:
             return ("miss", None)

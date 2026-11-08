@@ -198,6 +198,46 @@ class TestLikeFallback:
         assert results[0].name == "xxalphabetayy"
 
 
+class TestLikeScanCap:
+    """TASK2 WS-B Q2 (SUB-160): the LIKE channel is hard-capped like the fuzzy
+    channel, so a miss on a huge store cannot scan/materialize unbounded rows."""
+
+    def test_default_like_scan_cap(self) -> None:
+        assert LookupConfig().like_scan_cap == 5000
+
+    def test_like_scan_cap_validated(self) -> None:
+        with pytest.raises(LookupError):
+            LookupConfig(like_scan_cap=0)
+        with pytest.raises(LookupError):
+            LookupConfig(like_scan_cap=True)  # type: ignore[arg-type]
+
+    def test_like_cap_truncates_deterministically(self, store: EventStore) -> None:
+        lookup = SymbolLookup(LookupConfig(like_scan_cap=2, enable_fuzzy=False))
+        add_symbol(store, "xauthx1", "function", "a.py", 1)
+        add_symbol(store, "xauthx2", "function", "b.py", 1)
+        add_symbol(store, "xauthx3", "function", "c.py", 1)
+        results = lookup.search(store, "auth")
+        # canonical (path, line, col, node_id) order, capped: the first two
+        assert names(results) == ["xauthx1", "xauthx2"]
+        assert all(result.source == "like" for result in results)
+
+    def test_uncapped_like_order_preserved_below_cap(self, store: EventStore) -> None:
+        lookup = SymbolLookup(LookupConfig(like_scan_cap=10, enable_fuzzy=False))
+        add_symbol(store, "xauth", "function", "a.py", 1)
+        add_symbol(store, "yzauthzz", "function", "b.py", 1)
+        results = lookup.search(store, "auth")
+        assert results[0].name == "xauth"  # scoring ladder untouched by the cap
+
+    def test_fuzzy_never_outranks_like(self, store: EventStore) -> None:
+        lookup = SymbolLookup(LookupConfig(like_scan_cap=5, enable_fuzzy=True))
+        add_symbol(store, "xauthx", "function", "a.py", 1)
+        # fuzzy-distance-1 decoy that neither FTS (prefix) nor LIKE (substring) match
+        add_symbol(store, "aoth", "function", "b.py", 1)
+        results = lookup.search(store, "auth")
+        assert results
+        assert all(result.source == "like" for result in results)
+
+
 class TestFuzzyFallback:
     def test_typo_found_via_fuzzy(self, store: EventStore, lookup: SymbolLookup) -> None:
         add_symbol(store, "authenticate", "function", "a.py", 1)

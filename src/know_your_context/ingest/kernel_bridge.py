@@ -168,11 +168,12 @@ def _map_kernel_error(error: BaseException) -> BaseException:
     """Map a kernel error onto the reference extractor's exception classes.
 
     Only the pre-extraction contract errors map one-to-one; ``EXTRACTION_ERROR``
-    is deliberately *not* mapped — it means the walk itself failed (e.g. the
-    kernel's empty-name guard on dot-only relative imports, which the fixed
-    Python reference handles by falling through to the imported name), and the
+    is deliberately *not* mapped — it means the walk itself failed, and the
     caller's fallback re-runs the Python walker so the observable behaviour
-    is exactly the reference's.
+    is exactly the reference's. (WS-C/B1: the historical trigger — the
+    empty-name guard on dot-only relative imports — is now handled in-kernel
+    with the reference's field fall-through, proven by the pinned-corpus
+    parity tests; the guard stays as a fail-closed mirror of NodeIdError.)
     """
     args = getattr(error, "args", ())
     if len(args) >= 3 and isinstance(args[0], str) and isinstance(args[2], dict):

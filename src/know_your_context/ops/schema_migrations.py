@@ -29,6 +29,7 @@ by tests, so the two cannot drift.
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -56,7 +57,7 @@ VERSIONS_DIR = Path(__file__).resolve().parent.parent / "migrations" / "versions
 MIN_SQLITE_FOR_DROP_COLUMN = (3, 35, 0)
 
 #: Rollback stops at the file-migration era (v1/v2 have no down scripts).
-SUPPORTED_DOWN_TARGETS: frozenset[int] = frozenset({2, 3, 4})
+SUPPORTED_DOWN_TARGETS: frozenset[int] = frozenset({2, 3, 4, 5})
 
 #: Tables the v3 migration owns (dropped by its down script).
 _V3_TABLES: tuple[str, ...] = ("files", "symbols", "graph_edges", "unresolved_refs")
@@ -70,15 +71,35 @@ class SchemaMigrationError(RuntimeError):
         self.code = code
 
 
+_TRIGGER_START_RE = re.compile(r"^\s*CREATE\s+TRIGGER\b", re.IGNORECASE)
+_TRIGGER_END_RE = re.compile(r"\bEND\s*$", re.IGNORECASE)
+
+
 def _split_statements(sql_text: str) -> tuple[str, ...]:
     """Split a canonical SQL artifact into statements (``;``-separated,
-    ``--`` comments stripped first). Only for our own controlled artifacts."""
+    ``--`` comments stripped first). Only for our own controlled artifacts.
+
+    Trigger-aware (v6): a ``CREATE TRIGGER ... BEGIN <stmts>; END`` block
+    contains inner semicolons and must stay ONE statement — the body ends at
+    the ``END`` keyword.
+    """
     lines = [line for line in sql_text.splitlines() if not line.strip().startswith("--")]
     statements: list[str] = []
+    buffer = ""
+    in_trigger = False
     for chunk in "\n".join(lines).split(";"):
-        statement = chunk.strip()
-        if statement:
-            statements.append(statement)
+        buffer = f"{buffer};{chunk}" if buffer else chunk
+        stripped = buffer.strip()
+        if not in_trigger and _TRIGGER_START_RE.match(stripped):
+            in_trigger = True
+        if in_trigger and not _TRIGGER_END_RE.search(stripped):
+            continue
+        in_trigger = False
+        if stripped:
+            statements.append(stripped)
+        buffer = ""
+    if buffer.strip():
+        statements.append(buffer.strip())
     return tuple(statements)
 
 
@@ -147,6 +168,20 @@ MIGRATIONS: tuple[Migration, ...] = (
         up_file="0005_up.sql",
         down_file="0005_down.sql",
         data_guard_sql="SELECT COUNT(*) FROM node_leases",
+    ),
+    Migration(
+        version=6,
+        name="retrieval_scale_indexes",
+        description=(
+            "symbols.name_tail + files.path_rev materialized columns with indexes, the trigger-driven "
+            "symbols_watch change counter, and the invocation_journal effective-idempotency-key index "
+            "(TASK2 WS-B)"
+        ),
+        up_file="0006_up.sql",
+        down_file="0006_down.sql",
+        # Every v6 object is derived/recomputable (columns) or structural
+        # (indexes/triggers/counter): rollback loses no user data.
+        data_guard_sql=None,
     ),
 )
 
@@ -232,6 +267,16 @@ def verify_schema(path: str | Path) -> dict[str, Any]:
             problems.append("schema_versions records v5 but the node_leases table is missing")
         if _MIN_EXPLICIT_VERSION <= recorded < 5 and has_node_leases:
             problems.append("node_leases exists without a v5 schema_versions record")
+        has_name_tail = _table_exists(conn, "symbols") and _column_exists(conn, "symbols", "name_tail")
+        has_watch = _table_exists(conn, "symbols_watch")
+        if recorded >= 6 and not has_name_tail:
+            problems.append("schema_versions records v6 but symbols.name_tail is missing")
+        if recorded >= 6 and not has_watch:
+            problems.append("schema_versions records v6 but the symbols_watch table is missing")
+        if _MIN_EXPLICIT_VERSION <= recorded < 6 and has_name_tail:
+            problems.append("symbols.name_tail exists without a v6 schema_versions record")
+        if _MIN_EXPLICIT_VERSION <= recorded < 6 and has_watch:
+            problems.append("symbols_watch exists without a v6 schema_versions record")
         return {
             "recorded_version": recorded,
             "versions": versions,

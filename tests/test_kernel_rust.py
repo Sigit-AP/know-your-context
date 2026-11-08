@@ -336,3 +336,178 @@ def test_cross_engine_store_byte_identical(tmp_path: Path, monkeypatch: pytest.M
         f"with-kernel sha256={hashlib.sha256(with_kernel.encode()).hexdigest()[:16]} "
         f"vs no-kernel sha256={hashlib.sha256(without_kernel.encode()).hexdigest()[:16]}"
     )
+
+
+# --------------------------------------------------------------------- WS-C
+# TASK2-PLAN WS-C (B1/B2/B3/K4): the parity proof must cover the pinned real
+# corpus — per-language fixtures alone missed the dot-only relative import
+# fall-through (F-SUB94-1) that diverges the kernel on 5/36 requests files.
+
+#: Pinned vendored corpus (psf/requests @ v2.32.4, canonical repack — the
+#: bytes cannot drift behind the pin, see bench/codebase/run.py).
+REQUESTS_ARCHIVE = REPO_ROOT / "bench" / "codebase" / "data" / "requests.tar.gz"
+
+
+def _requests_corpus_sources() -> dict[str, str]:
+    """``{member_name: source}`` for every ``.py`` file of the pinned corpus."""
+    import tarfile
+
+    if not REQUESTS_ARCHIVE.is_file():
+        return {}
+    members: dict[str, str] = {}
+    with tarfile.open(REQUESTS_ARCHIVE, "r:gz") as tar:
+        for member in tar.getmembers():
+            if member.isfile() and member.name.endswith(".py"):
+                data = tar.extractfile(member)
+                if data is not None:
+                    members[member.name] = data.read().decode("utf-8")
+    return dict(sorted(members.items()))
+
+
+#: Read once at import: the tarball is pinned, 3.9 MiB, and parametrization
+#: needs the member list at collection time anyway.
+REQUESTS_CORPUS: dict[str, str] = _requests_corpus_sources()
+
+
+def test_dot_only_relative_import_falls_through_to_name_field() -> None:
+    """B1/K1 minimal repro: ``from . import x`` must not diverge the kernel.
+
+    The Python reference (F-SUB94-1, extractor.py ``_emit_import``) strips each
+    ``target_fields`` candidate and skips one with an empty name tail
+    (``from . import sessions`` yields module_name ``"."``), falling through to
+    the imported-name field. The kernel must mirror that fall-through instead
+    of aborting with ``EXTRACTION_ERROR: name must be a non-empty string``.
+    """
+    _kernel_required()
+    source = "from . import sessions\nfrom .. import utils\n"
+    python_result = TreeSitterExtractor(get_spec("python")).extract("pkg/mod.py", source)
+    rust_result = kernel_bridge.extract_source_via_kernel("pkg/mod.py", source, language="python")
+    assert rust_result == python_result, "raw ExtractionResult mismatch (order or content)"
+    assert rust_result.canonical_json() == python_result.canonical_json()
+
+
+@pytest.mark.skipif(not REQUESTS_CORPUS, reason="pinned corpus bench/codebase/data/requests.tar.gz missing")
+@pytest.mark.parametrize("member", sorted(REQUESTS_CORPUS))
+def test_requests_corpus_byte_identical(member: str) -> None:
+    """K4: parity over the pinned real corpus — 36 files, zero divergence.
+
+    Per-language fixtures alone missed the dot-only relative import
+    fall-through; the kernel must equal the pure-Python walker (raw dataclass
+    equality, emission order included) on every real file of the vendored
+    requests tree.
+    """
+    _kernel_required()
+    source = REQUESTS_CORPUS[member]
+    python_result = TreeSitterExtractor(get_spec("python")).extract(member, source)
+    rust_result = kernel_bridge.extract_source_via_kernel(member, source, language="python")
+    assert rust_result == python_result, f"{member}: raw ExtractionResult mismatch (order or content)"
+    assert rust_result.canonical_json() == python_result.canonical_json(), f"{member}: canonical JSON mismatch"
+
+
+@pytest.mark.parametrize("language", PYTHON_FALLBACK_LANGUAGES)
+def test_engine_python_language_never_attempts_kernel(language: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """B2/K3: ``spec.engine == "python"`` routes straight to the reference walker.
+
+    Today ``extract_source`` tries the kernel first for every language; the 16
+    python-engine languages always raise inside the kernel and fall back,
+    paying a measured +27% per file. After the fix the kernel must see zero
+    attempts for these languages while the observable result stays the
+    reference walker's, byte-identically.
+    """
+    _kernel_required()
+    attempts: list[str] = []
+    real = kernel_bridge.extract_source_via_kernel
+
+    def spy(*args: object, **kwargs: object) -> object:
+        attempts.append(str(args[0]) if args else str(kwargs.get("path", "?")))
+        return real(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(kernel_bridge, "extract_source_via_kernel", spy)
+    relative = _fixture_rel(language)
+    expected = _python_walker_reference(relative)
+    from know_your_context.ingest.extractor import extract_source
+
+    source = (FIXTURES / relative).read_text(encoding="utf-8")
+    result = extract_source(relative, source, language=language)
+    assert result == expected
+    assert result.canonical_json() == expected.canonical_json()
+    assert attempts == [], f"kernel attempted for engine='python' language {language}: {attempts}"
+
+
+def test_engine_rust_language_still_routes_to_kernel(monkeypatch: pytest.MonkeyPatch) -> None:
+    """B2 routing must not starve served languages: python keeps the kernel."""
+    _kernel_required()
+    attempts: list[str] = []
+    real = kernel_bridge.extract_source_via_kernel
+
+    def spy(*args: object, **kwargs: object) -> object:
+        attempts.append(str(args[0]) if args else "?")
+        return real(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(kernel_bridge, "extract_source_via_kernel", spy)
+    from know_your_context.ingest.extractor import extract_source
+
+    result = extract_source("src/app.py", "def f():\n    return 1\n", language="python")
+    assert attempts == ["src/app.py"], f"kernel not attempted for engine='rust' language: {attempts}"
+    assert any(node.name == "f" for node in result.nodes)
+
+
+def test_kernel_extraction_releases_gil() -> None:
+    """B3/K2: the PyO3 wrapper must release the GIL around parse+walk.
+
+    Mechanism probe, not a throughput race: a wall-clock speedup ratio on a
+    shared 2-vCPU host is dominated by free cores (measured swinging
+    0.83–1.52x under sibling load), which made the first version of this test
+    flaky — a flake is a failed gate (K4 kill criteria). Instead the test
+    measures *overlap*: while one thread sits inside a single long kernel
+    call, the main thread runs a pure-Python spin loop. GIL held ⇒ the main
+    thread gets ~2% of its solo loop rate for the whole call (measured
+    pre-fix); GIL released ⇒ it runs at ~full speed (measured 160%+). The
+    threshold sits an order of magnitude above the held signature.
+    """
+    _kernel_required()
+    import threading
+    import time
+
+    kernel = kernel_bridge.kernel_module()
+    # ~74 KiB of valid python: one extraction lasts ~150-400 ms here, long
+    # enough for the OS scheduler to interleave the main thread many times.
+    source = "".join(f"def func_{i}(x):\n    return x + {i}\n\n" for i in range(2000))
+    kernel.extract_source("big.py", source, "python", False)  # warm up
+
+    t0 = time.perf_counter()
+    kernel.extract_source("big.py", source, "python", False)
+    if time.perf_counter() - t0 < 0.05:
+        pytest.skip("host extracts the probe file in <50 ms; overlap window too short")
+
+    solo_start = time.perf_counter()
+    solo_iters = 0
+    while time.perf_counter() - solo_start < 0.15:
+        solo_iters += 1
+    solo_rate = solo_iters / 0.15
+
+    best_overlap = 0.0
+    for _ in range(3):
+        done = threading.Event()
+
+        def work(event: threading.Event = done) -> None:
+            try:
+                kernel.extract_source("big.py", source, "python", False)
+            finally:
+                event.set()
+
+        thread = threading.Thread(target=work)
+        started = time.perf_counter()
+        thread.start()
+        probe_iters = 0
+        while not done.is_set():
+            probe_iters += 1
+        thread.join()
+        wall = time.perf_counter() - started
+        best_overlap = max(best_overlap, (probe_iters / wall) / solo_rate)
+
+    assert best_overlap > 0.25, (
+        f"GIL still held during kernel extraction: main thread reached only "
+        f"{best_overlap:.1%} of its solo loop rate while a worker sat inside "
+        f"one kernel call (held-GIL signature is ~2%)"
+    )

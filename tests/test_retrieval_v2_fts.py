@@ -102,6 +102,76 @@ class TestLifecycle:
             second.close()
 
 
+class TestEventDrivenFreshness:
+    """TASK2 WS-B (SUB-160): the freshness check is O(1) — driven by the
+    trigger-maintained ``symbols_watch`` counter, never by re-scanning the
+    ``symbols`` table. The legacy fingerprint SCAN only runs as the arbiter
+    when the counter moved (and a rebuild only happens when it confirms
+    drift)."""
+
+    @staticmethod
+    def _watch_seq(store: EventStore) -> int:
+        with store.read() as conn:
+            return int(conn.execute("SELECT seq FROM symbols_watch WHERE id = 1").fetchone()[0])
+
+    def test_fast_path_never_computes_fingerprint(self, store: EventStore, monkeypatch: pytest.MonkeyPatch) -> None:
+        add_symbol(store, "alpha", "function", "a.py", 1)
+        assert ensure_fts_index(store) is True
+
+        def _boom(conn: object) -> str:
+            raise AssertionError("fingerprint SCAN must not run while symbols_watch is unchanged")
+
+        monkeypatch.setattr("know_your_context.retrieval_v2.fts._fingerprint", _boom)
+        assert ensure_fts_index(store) is False
+
+    def test_unrelated_event_does_not_rebuild(self, store: EventStore, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Writes that never touch ``symbols`` (files, event_log, journals, ...)
+        must not move the freshness token — the reason the event watermark
+        alone is NOT the token (it both over- and under-triggers)."""
+        add_file(store, "a.py")
+        add_symbol(store, "alpha", "function", "a.py", 1)
+        assert ensure_fts_index(store) is True
+
+        def _boom(conn: object) -> str:
+            raise AssertionError("fingerprint SCAN must not run for unrelated writes")
+
+        monkeypatch.setattr("know_your_context.retrieval_v2.fts._fingerprint", _boom)
+        add_file(store, "b.py")
+        assert ensure_fts_index(store) is False
+
+    def test_raw_sql_insert_still_rebuilds(self, store: EventStore) -> None:
+        """Write paths bypassing the store helpers (pipeline batch SQL) move the
+        counter via the trigger — freshness cannot be forgotten by a caller."""
+        add_symbol(store, "alpha", "function", "a.py", 1)
+        assert ensure_fts_index(store) is True
+        with store.transaction() as conn:
+            conn.execute(
+                "INSERT INTO symbols (node_id, name, kind, path, line, col, name_tail) "
+                "VALUES ('function:zz:0', 'beta', 'function', 'b.py', 1, 0, 'beta')"
+            )
+        assert ensure_fts_index(store) is True
+        with store.read() as conn:
+            rows = conn.execute(f"SELECT name FROM {FTS_TABLE} WHERE {FTS_TABLE} MATCH 'beta'").fetchall()
+        assert len(rows) == 1
+
+    def test_watch_move_without_drift_does_not_rebuild(self, store: EventStore) -> None:
+        """A no-op rewrite (upsert with identical values) moves the counter but
+        not the fingerprint: the arbiter suppresses the rebuild."""
+        nid = add_symbol(store, "alpha", "function", "a.py", 1)
+        assert ensure_fts_index(store) is True
+        store.upsert_symbol(node_id=nid, name="alpha", kind="function", path="a.py", line=1, col=0)
+        assert self._watch_seq(store) > 0
+        assert ensure_fts_index(store) is False
+
+    def test_meta_records_watch_seq(self, store: EventStore) -> None:
+        add_symbol(store, "alpha", "function", "a.py", 1)
+        rebuild_fts_index(store)
+        with store.read() as conn:
+            row = conn.execute(f"SELECT value FROM {META_TABLE} WHERE key = 'watch_seq'").fetchone()  # nosec B608 -- constant table name
+        assert row is not None
+        assert int(str(row[0])) == self._watch_seq(store)
+
+
 class TestMatch:
     def test_name_token_match(self, store: EventStore) -> None:
         add_symbol(store, "authenticate", "function", "a.py", 1)

@@ -1,0 +1,15 @@
+{
+ "with_triggers": [
+  7.368,
+  8.566,
+  8.485
+ ],
+ "without_triggers": [
+  7.276,
+  9.748,
+  7.776
+ ],
+ "best_with": 7.368,
+ "best_without": 7.276,
+ "overhead_pct": 1.26
+}

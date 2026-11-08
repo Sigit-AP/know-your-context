@@ -69,6 +69,7 @@ __all__ = [
     "UnresolvedRefError",
     "UnresolvedRefRow",
     "VersionConflict",
+    "symbol_name_tail",
 ]
 
 DEFAULT_MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
@@ -78,7 +79,7 @@ DEFAULT_MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
 # applied transactionally from Python and recorded in ``schema_versions``
 # (codegraph pattern, RESEARCH-STORAGE.md §1.4) so a failed migration rolls
 # back atomically instead of leaving half-created objects behind.
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 # Only these kinds create a new node revision and bump the node version.
 _VERSION_BUMPING_KINDS: frozenset[EventKind] = frozenset({EventKind.NODE_UPSERT, EventKind.NODE_RETIRE})
@@ -339,11 +340,66 @@ _SCHEMA_V5_STATEMENTS: tuple[str, ...] = (
     "CREATE INDEX node_leases_expiry ON node_leases (expires_at)",
 )
 
+# Schema v6 (TASK2 WS-B SUB-160): retrieval-scale indexes, purely additive.
+# * ``symbols.name_tail`` — materialized resolver tail key: the segment after
+#   the last ``.`` and then the last ``::`` (byte-equivalent to
+#   ``ingest.extractor._name_tail``; equivalence pinned by tests). The SQL
+#   expression uses the rtrim-charset trick for "after last '.'" and a
+#   char(31) sentinel (with a right-shift fix for odd colon runs) for "after
+#   last '::'" — verified equal to the Python reference on adversarial names.
+# * ``files.path_rev`` — the path reversed, so the resolver's module-file
+#   suffix match becomes an index-seekable GLOB prefix on ``lower(path_rev)``
+#   (SQLite lower() folds ASCII only — exactly LIKE's case semantics).
+# * ``symbols_watch`` — one-row change counter driven by triggers on
+#   ``symbols`` so EVERY write path (helpers, pipeline batch SQL, future
+#   code) moves the FTS freshness token; enables O(1) event-driven freshness.
+# * ``idx_invocation_journal_effective_key`` — the conflict-lookup index (S3).
+_SCHEMA_V6_NAME_TAIL_DOT = "substr(name, length(rtrim(name, replace(name, '.', ''))) + 1)"
+_SCHEMA_V6_NAME_TAIL_SENTINEL = (
+    f"replace(replace({_SCHEMA_V6_NAME_TAIL_DOT}, '::', char(31)), char(31) || ':', char(31))"
+)
+_SCHEMA_V6_NAME_TAIL_EXPR = (
+    f"substr({_SCHEMA_V6_NAME_TAIL_SENTINEL}, "
+    f"length(rtrim({_SCHEMA_V6_NAME_TAIL_SENTINEL}, replace({_SCHEMA_V6_NAME_TAIL_SENTINEL}, char(31), ''))) + 1)"
+)
+_SCHEMA_V6_PATH_REV_SQL = (
+    "UPDATE files SET path_rev = ("
+    "WITH RECURSIVE _rev (p, acc, i) AS ("
+    "SELECT files.path, '', length(files.path) "
+    "UNION ALL SELECT p, acc || substr(p, i, 1), i - 1 FROM _rev WHERE i > 0"
+    ") SELECT acc FROM _rev WHERE i = 0)"
+)
+_SCHEMA_V6_DESCRIPTION = "retrieval scale: name_tail/path_rev columns, symbols_watch triggers, journal key index"
+_SCHEMA_V6_TABLES = ("symbols_watch",)
+_SCHEMA_V6_STATEMENTS: tuple[str, ...] = (
+    "ALTER TABLE symbols ADD COLUMN name_tail TEXT NOT NULL DEFAULT ''",
+    f"UPDATE symbols SET name_tail = {_SCHEMA_V6_NAME_TAIL_EXPR}",  # nosec B608 -- module-owned constant expression, no runtime input
+    "ALTER TABLE files ADD COLUMN path_rev TEXT NOT NULL DEFAULT ''",
+    _SCHEMA_V6_PATH_REV_SQL,
+    "CREATE TABLE symbols_watch (    id INTEGER PRIMARY KEY CHECK (id = 1),    seq INTEGER NOT NULL DEFAULT 0)",
+    "INSERT INTO symbols_watch (id, seq) VALUES (1, 0)",
+    # Backfills run BEFORE the triggers exist so the migration itself does not
+    # fire 1.8M counter bumps; after this point every symbols write bumps seq.
+    "CREATE TRIGGER symbols_watch_ins AFTER INSERT ON symbols BEGIN "
+    "UPDATE symbols_watch SET seq = seq + 1 WHERE id = 1; END",
+    "CREATE TRIGGER symbols_watch_upd AFTER UPDATE ON symbols BEGIN "
+    "UPDATE symbols_watch SET seq = seq + 1 WHERE id = 1; END",
+    "CREATE TRIGGER symbols_watch_del AFTER DELETE ON symbols BEGIN "
+    "UPDATE symbols_watch SET seq = seq + 1 WHERE id = 1; END",
+    "CREATE INDEX idx_symbols_name_tail ON symbols (name_tail)",
+    "CREATE INDEX idx_files_path_rev ON files (lower(path_rev))",
+    "CREATE INDEX idx_invocation_journal_effective_key ON invocation_journal (effective_idempotency_key)",
+)
+
 # Adjacency statements are built per (direction, kinds) shape and cached —
 # sqlite3 caches the compiled statement per SQL string, so a bounded string
 # cache gives prepared-statement behaviour with a fixed memory ceiling
 # (codegraph edgeKindStmt cache, capped at 64 shapes).
 _ADJACENCY_SQL_CACHE_LIMIT = 64
+
+# verify_chain streams event_log/invocation_journal in fixed-size batches so
+# a full chain audit is O(1) in memory regardless of chain length (S2).
+_VERIFY_CHAIN_BATCH = 4096
 
 
 @dataclass(frozen=True)
@@ -357,6 +413,16 @@ class FileRow:
     language: str
     generated_hint: bool
     extraction_version: int
+
+
+def symbol_name_tail(name: str) -> str:
+    """The resolver tail key for a symbol name (v6 ``symbols.name_tail``).
+
+    Segment after the last ``.`` and then the last ``::`` — byte-equivalent to
+    ``ingest.extractor._name_tail`` (equivalence pinned by tests). Kept here so
+    the store has no dependency on the ingest package.
+    """
+    return name.rsplit(".", 1)[-1].rsplit("::", 1)[-1]
 
 
 @dataclass(frozen=True)
@@ -707,8 +773,15 @@ class EventStore:
             self._migrate_v4(conn)
             recorded = 4
         self._check_v5_objects(conn, recorded)
+        self._apply_v5_and_v6(conn, recorded)
+
+    def _apply_v5_and_v6(self, conn: sqlite3.Connection, recorded: int) -> None:
         if SCHEMA_VERSION >= 5 and recorded == 4:
             self._migrate_v5(conn)
+            recorded = 5
+        self._check_v6_objects(conn, recorded)
+        if SCHEMA_VERSION >= 6 and recorded == 5:
+            self._migrate_v6(conn)
 
     def _check_v5_objects(self, conn: sqlite3.Connection, recorded: int) -> None:
         """Ledger ↔ object consistency for the v5 node_leases table (fail-closed)."""
@@ -779,6 +852,44 @@ class EventStore:
             raise
         except sqlite3.Error as error:
             raise MigrationError(f"schema migration to v5 failed and was rolled back: {error}") from error
+
+    def _check_v6_objects(self, conn: sqlite3.Connection, recorded: int) -> None:
+        """Ledger ↔ object consistency for the v6 retrieval objects (fail-closed)."""
+        has_name_tail = self._column_exists(conn, "symbols", "name_tail")
+        has_watch = self._table_exists(conn, "symbols_watch")
+        if recorded >= 6 and not has_name_tail:
+            raise SchemaStateError(
+                "schema_versions records v6 but symbols.name_tail is missing; refusing to open an inconsistent store"
+            )
+        if recorded >= 6 and not has_watch:
+            raise SchemaStateError(
+                "schema_versions records v6 but the symbols_watch table is missing; "
+                "refusing to open an inconsistent store"
+            )
+        if 3 <= recorded < 6 and has_name_tail:
+            raise SchemaStateError(
+                "symbols.name_tail exists without a v6 schema_versions record; refusing to guess the schema state"
+            )
+        if 3 <= recorded < 6 and has_watch:
+            raise SchemaStateError(
+                "symbols_watch exists without a v6 schema_versions record; refusing to guess the schema state"
+            )
+
+    def _migrate_v6(self, conn: sqlite3.Connection) -> None:
+        """v5 -> v6 (TASK2 WS-B SUB-160): additive retrieval columns/indexes +
+        the trigger-driven symbols_watch counter, one transaction."""
+        try:
+            with self.transaction() as tx:
+                for statement in _SCHEMA_V6_STATEMENTS:
+                    tx.execute(statement)
+                tx.execute(
+                    "INSERT INTO schema_versions (version, applied_at, description) VALUES (6, ?, ?)",
+                    (_now_iso(), _SCHEMA_V6_DESCRIPTION),
+                )
+        except StoreError:
+            raise
+        except sqlite3.Error as error:
+            raise MigrationError(f"schema migration to v6 failed and was rolled back: {error}") from error
 
     def applied_migrations(self) -> list[int]:
         with self.read() as conn:
@@ -871,8 +982,8 @@ class EventStore:
                 idempotency_key,
             ),
         )
-        count = conn.execute("SELECT COUNT(*) AS total FROM event_log").fetchone()
-        for key, value in (("chain_head_hash", event_hash), ("chain_event_count", str(int(count["total"])))):
+        count = self._chain_event_count(conn, previous)
+        for key, value in (("chain_head_hash", event_hash), ("chain_event_count", str(count))):
             conn.execute(
                 "INSERT INTO system_state (key, value, updated_at) VALUES (?, ?, ?) "
                 "ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
@@ -886,6 +997,23 @@ class EventStore:
             prev_event_hash=prev_event_hash,
             event_hash=event_hash,
         )
+
+    @staticmethod
+    def _chain_event_count(conn: sqlite3.Connection, previous: sqlite3.Row | None) -> int:
+        """Anchor-incremented event count for the insert path (S1).
+
+        The persisted ``chain_event_count`` anchor plus one, read O(1) from
+        ``system_state`` inside the same transaction — replacing the per-insert
+        ``COUNT(*)`` scan over ``event_log`` (O(N) per write, O(N^2) over the
+        store's lifetime). The scan survives only as the one-time bootstrap
+        for pre-anchor legacy stores; the first event needs no scan at all.
+        """
+        anchor_row = conn.execute("SELECT value FROM system_state WHERE key = 'chain_event_count'").fetchone()
+        if anchor_row is not None:
+            return int(str(anchor_row["value"])) + 1
+        if previous is None:
+            return 1
+        return int(conn.execute("SELECT COUNT(*) AS total FROM event_log").fetchone()["total"])
 
     def _row_hash(self, row: sqlite3.Row) -> str:
         return _digest(
@@ -916,47 +1044,71 @@ class EventStore:
         and ``chain_event_count`` in ``system_state``) is cross-checked so a
         truncated tail is detected, and every completed journal's
         ``audit_event_seq`` must resolve to that audit event in the log.
+
+        The event log is streamed in fixed-size batches (S2): peak memory is
+        constant in chain length, so a full audit fits small hosts even at
+        millions of events (the old ``fetchall()`` peaked near 1 GiB at
+        160k events and extrapolated to OOM at ~1M).
         """
         with self.read() as conn:
-            rows = conn.execute("SELECT * FROM event_log ORDER BY event_seq").fetchall()
+            cursor = conn.execute("SELECT * FROM event_log ORDER BY event_seq")
             anchor = {
                 str(row["key"]): str(row["value"])
                 for row in conn.execute(
                     "SELECT key, value FROM system_state WHERE key IN ('chain_head_hash', 'chain_event_count')"
                 )
             }
-            journals = conn.execute(
-                "SELECT audit_event_id, audit_event_seq FROM invocation_journal "
-                "WHERE status = 'complete' AND audit_event_seq IS NOT NULL"
-            ).fetchall()
             audit_events = {
                 int(row["event_seq"]): str(row["event_id"])
                 for row in conn.execute("SELECT event_seq, event_id FROM event_log WHERE kind = 'audit'")
             }
-        prev_event_hash: str | None = None
-        head_hash: str | None = None
-        checked = 0
-        for row in rows:
-            if row["prev_event_hash"] != prev_event_hash or self._row_hash(row) != row["event_hash"]:
-                return ChainReport(ok=False, checked=checked, first_bad_seq=int(row["event_seq"]))
-            prev_event_hash = str(row["event_hash"])
-            head_hash = prev_event_hash
-            checked += 1
-        expected_count = anchor.get("chain_event_count")
-        if expected_count is not None and int(expected_count) != checked:
-            return ChainReport(ok=False, checked=checked, first_bad_seq=checked + 1)
-        expected_head = anchor.get("chain_head_hash")
-        if expected_head is not None and expected_head != head_hash:
-            last_seq = int(rows[-1]["event_seq"]) if rows else None
-            return ChainReport(ok=False, checked=checked, first_bad_seq=last_seq)
-        if rows and not anchor:
-            # Events exist but the anchor is missing entirely: fail closed.
-            return ChainReport(ok=False, checked=checked, first_bad_seq=None)
-        for journal in journals:
-            audit_event_seq = int(journal["audit_event_seq"])
-            if audit_events.get(audit_event_seq) != str(journal["audit_event_id"]):
-                return ChainReport(ok=False, checked=checked, first_bad_seq=audit_event_seq)
+            prev_event_hash: str | None = None
+            head_hash: str | None = None
+            checked = 0
+            last_seq: int | None = None
+            while True:
+                rows = cursor.fetchmany(_VERIFY_CHAIN_BATCH)
+                if not rows:
+                    break
+                for row in rows:
+                    if row["prev_event_hash"] != prev_event_hash or self._row_hash(row) != row["event_hash"]:
+                        return ChainReport(ok=False, checked=checked, first_bad_seq=int(row["event_seq"]))
+                    prev_event_hash = str(row["event_hash"])
+                    head_hash = prev_event_hash
+                    checked += 1
+                    last_seq = int(row["event_seq"])
+            expected_count = anchor.get("chain_event_count")
+            if expected_count is not None and int(expected_count) != checked:
+                return ChainReport(ok=False, checked=checked, first_bad_seq=checked + 1)
+            expected_head = anchor.get("chain_head_hash")
+            if expected_head is not None and expected_head != head_hash:
+                return ChainReport(ok=False, checked=checked, first_bad_seq=last_seq)
+            if checked and not anchor:
+                # Events exist but the anchor is missing entirely: fail closed.
+                return ChainReport(ok=False, checked=checked, first_bad_seq=None)
+            journal_failure = self._verify_journal_links(conn, audit_events, checked)
+            if journal_failure is not None:
+                return journal_failure
         return ChainReport(ok=True, checked=checked, first_bad_seq=None)
+
+    @staticmethod
+    def _verify_journal_links(
+        conn: sqlite3.Connection, audit_events: dict[int, str], checked: int
+    ) -> ChainReport | None:
+        """Cross-check completed journals against audit events (streamed)."""
+        journal_cursor = conn.execute(
+            "SELECT audit_event_id, audit_event_seq FROM invocation_journal "
+            "WHERE status = 'complete' AND audit_event_seq IS NOT NULL"
+        )
+        while True:
+            journals = journal_cursor.fetchmany(_VERIFY_CHAIN_BATCH)
+            if not journals:
+                return None
+            for journal in journals:
+                audit_event_seq = int(journal["audit_event_seq"])
+                if audit_events.get(audit_event_seq) != str(journal["audit_event_id"]):
+                    return ChainReport(ok=False, checked=checked, first_bad_seq=audit_event_seq)
+        return None  # unreachable: the empty batch returns above
 
     # ------------------------------------------------------- domain mutations
 
@@ -1524,16 +1676,29 @@ class EventStore:
         generated_hint: bool,
         extraction_version: int,
     ) -> None:
-        """Record one tracked source file, replacing any earlier observation."""
+        """Record one tracked source file, replacing any earlier observation.
+
+        v6: ``path_rev`` (the reversed path) is maintained here so the
+        resolver's module-file suffix match stays index-seekable.
+        """
         with self.transaction() as conn:
             conn.execute(
-                "INSERT INTO files (path, sha256, size, mtime, language, generated_hint, extraction_version) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?) "
+                "INSERT INTO files (path, sha256, size, mtime, language, generated_hint, extraction_version, "
+                "path_rev) VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (path) DO UPDATE SET "
                 "sha256 = excluded.sha256, size = excluded.size, mtime = excluded.mtime, "
                 "language = excluded.language, generated_hint = excluded.generated_hint, "
-                "extraction_version = excluded.extraction_version",
-                (path, sha256, int(size), int(mtime), language, int(generated_hint), int(extraction_version)),
+                "extraction_version = excluded.extraction_version, path_rev = excluded.path_rev",
+                (
+                    path,
+                    sha256,
+                    int(size),
+                    int(mtime),
+                    language,
+                    int(generated_hint),
+                    int(extraction_version),
+                    path[::-1],
+                ),
             )
 
     @staticmethod
@@ -1564,14 +1729,32 @@ class EventStore:
     # ---------------------------------------------------------- v3: symbols
 
     def upsert_symbol(self, *, node_id: str, name: str, kind: str, path: str, line: int, col: int = -1) -> None:
+        """Record one symbol; v6 maintains ``name_tail`` (extractor tail semantics)."""
         with self.transaction() as conn:
             conn.execute(
-                "INSERT INTO symbols (node_id, name, kind, path, line, col) VALUES (?, ?, ?, ?, ?, ?) "
+                "INSERT INTO symbols (node_id, name, kind, path, line, col, name_tail) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (node_id) DO UPDATE SET "
                 "name = excluded.name, kind = excluded.kind, path = excluded.path, "
-                "line = excluded.line, col = excluded.col",
-                (node_id, name, kind, path, int(line), int(col)),
+                "line = excluded.line, col = excluded.col, name_tail = excluded.name_tail",
+                (node_id, name, kind, path, int(line), int(col), symbol_name_tail(name)),
             )
+
+    def symbols_with_tail(self, name_tail: str) -> list[SymbolRow]:
+        """Indexed tail lookup (v6 ``idx_symbols_name_tail``): every symbol whose
+        last ``.``/``::`` name segment equals ``name_tail``, canonical order."""
+        with self.read() as conn:
+            rows = conn.execute(
+                "SELECT * FROM symbols WHERE name_tail = ? ORDER BY path, line, col, node_id", (name_tail,)
+            ).fetchall()
+        return [self._symbol_row(row) for row in rows]
+
+    def symbols_revision(self) -> int:
+        """The trigger-maintained ``symbols`` change counter (v6): O(1) freshness
+        token that moves on ANY symbols write, whatever path wrote it."""
+        with self.read() as conn:
+            row = conn.execute("SELECT seq FROM symbols_watch WHERE id = 1").fetchone()
+        return int(row[0]) if row is not None else 0
 
     @staticmethod
     def _symbol_row(row: sqlite3.Row) -> SymbolRow:

@@ -1,0 +1,140 @@
+{
+ "small": {
+  "db_mb": 17.5,
+  "symbols": 14896,
+  "files": 505,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "32|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "3|0|61|SEARCH invocation_journal USING INDEX idx_invocation_journal_effective_key (effective_idempotency_key=?)"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col",
+   "name_tail"
+  ],
+  "schema_version": 6,
+  "fingerprint_ms": 31.58,
+  "cold_hit_p50_ms": 9.25,
+  "cold_hit_p95_ms": 22.64,
+  "cold_miss_p50_ms": 51.19,
+  "cold_miss_max_ms": 52.54,
+  "tail_hit_ms": 1.49,
+  "tail_hit_candidates": 256,
+  "tail_miss_ms": 0.05,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 0.242,
+  "module_file_status": "ambiguous",
+  "typical_tail": {
+   "tail": "AIter",
+   "candidates": 4,
+   "per_ref_ms_min": 0.044,
+   "per_ref_ms_max": 0.23
+  }
+ },
+ "mid": {
+  "db_mb": 1202.1,
+  "symbols": 491568,
+  "files": 16665,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "32|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "3|0|61|SEARCH invocation_journal USING INDEX idx_invocation_journal_effective_key (effective_idempotency_key=?)"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col",
+   "name_tail"
+  ],
+  "schema_version": 6,
+  "fingerprint_ms": 482.66,
+  "cold_hit_p50_ms": 28.24,
+  "cold_hit_p95_ms": 617.21,
+  "cold_miss_p50_ms": 270.55,
+  "cold_miss_max_ms": 342.69,
+  "tail_hit_ms": 51.66,
+  "tail_hit_candidates": 8448,
+  "tail_miss_ms": 1.37,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 21.832,
+  "module_file_status": "ambiguous",
+  "typical_tail": {
+   "tail": "AIter",
+   "candidates": 132,
+   "per_ref_ms_min": 0.6,
+   "per_ref_ms_max": 3.287
+  }
+ },
+ "big": {
+  "db_mb": 1919.9,
+  "symbols": 1847104,
+  "files": 62620,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "32|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "3|0|61|SEARCH invocation_journal USING INDEX idx_invocation_journal_effective_key (effective_idempotency_key=?)"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col",
+   "name_tail"
+  ],
+  "schema_version": 6,
+  "fingerprint_ms": 4175.49,
+  "cold_hit_p50_ms": 71.43,
+  "cold_hit_p95_ms": 2473.65,
+  "cold_miss_p50_ms": 954.91,
+  "cold_miss_max_ms": 1187.43,
+  "tail_hit_ms": 332.52,
+  "tail_hit_candidates": 31744,
+  "tail_miss_ms": 0.7,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 61.667,
+  "module_file_status": "ambiguous",
+  "typical_tail": {
+   "tail": "AIter",
+   "candidates": 496,
+   "per_ref_ms_min": 2.578,
+   "per_ref_ms_max": 12.045
+  }
+ }
+}

@@ -46,14 +46,14 @@ import json
 import re
 import sqlite3
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 
 from know_your_context.domain import canonical_json
 from know_your_context.ops.switches import load_switches
 from know_your_context.resolve.name_matcher import NameMatchConfig, NameMatchReport, NameMatchResolver
 from know_your_context.resolve.resolver import BatchReport, ReferenceResolver, ResolverConfig
-from know_your_context.store import EventStore, UnresolvedRefRow
+from know_your_context.store import EventStore, GraphEdgeRow, SymbolRow, UnresolvedRefRow
 
 __all__ = [
     "PASS_CALLBACK_EDGES",
@@ -248,6 +248,115 @@ def _edge_exists(store: EventStore, source: str, target: str, kind: str) -> bool
             (source, target, kind),
         ).fetchone()
     return row is not None
+
+
+# ------------------------------------------------------- batched input joins
+
+#: ``IN (...)`` chunk size for the batched pass-input joins (WS-D). SQLite
+#: allows 32766 host parameters on this host's build; 500 stays far below
+#: every historical limit and keeps statements short.
+_IN_QUERY_CHUNK = 500
+
+
+def _symbol_row(row: sqlite3.Row) -> SymbolRow:
+    """Local constructor mirroring the store's (resolver.py precedent)."""
+    return SymbolRow(
+        node_id=str(row["node_id"]),
+        name=str(row["name"]),
+        kind=str(row["kind"]),
+        path=str(row["path"]),
+        line=int(row["line"]),
+        col=int(row["col"]),
+    )
+
+
+def _graph_edge_row(row: sqlite3.Row) -> GraphEdgeRow:
+    """Local constructor mirroring the store's (column order as selected)."""
+    return GraphEdgeRow(
+        edge_id=int(row["edge_id"]),
+        source=str(row["source"]),
+        target=str(row["target"]),
+        kind=str(row["kind"]),
+        line=None if row["line"] is None else int(row["line"]),
+        col=None if row["col"] is None else int(row["col"]),
+        metadata=None if row["metadata"] is None else str(row["metadata"]),
+        provenance=None if row["provenance"] is None else str(row["provenance"]),
+    )
+
+
+def _chunked_unique(values: Iterable[str]) -> Iterator[list[str]]:
+    """First-occurrence-order unique chunks of ``_IN_QUERY_CHUNK`` values."""
+    seen: set[str] = set()
+    chunk: list[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        chunk.append(value)
+        if len(chunk) >= _IN_QUERY_CHUNK:
+            yield chunk
+            chunk = []
+    if chunk:
+        yield chunk
+
+
+def _symbols_indexed_by_node(store: EventStore, node_ids: Iterable[str]) -> dict[str, SymbolRow]:
+    """One batched read: node_id -> symbol (replaces per-candidate ``symbol_by_node``)."""
+    indexed: dict[str, SymbolRow] = {}
+    with store.read() as conn:
+        for chunk in _chunked_unique(node_ids):
+            placeholders = ", ".join("?" for _ in chunk)
+            rows = conn.execute(
+                f"SELECT * FROM symbols WHERE node_id IN ({placeholders})",  # nosec B608 -- placeholders are generated '?' marks, values bound
+                chunk,
+            ).fetchall()
+            for row in rows:
+                symbol = _symbol_row(row)
+                indexed[symbol.node_id] = symbol
+    return indexed
+
+
+def _symbols_indexed_by_path(store: EventStore, paths: Iterable[str]) -> dict[str, list[SymbolRow]]:
+    """One batched read: path -> symbols in ``symbols_in_path`` order (line, col, node_id)."""
+    indexed: dict[str, list[SymbolRow]] = {}
+    with store.read() as conn:
+        for chunk in _chunked_unique(paths):
+            placeholders = ", ".join("?" for _ in chunk)
+            rows = conn.execute(
+                f"SELECT * FROM symbols WHERE path IN ({placeholders}) "  # nosec B608 -- placeholders are generated '?' marks, values bound
+                "ORDER BY path, line, col, node_id",
+                chunk,
+            ).fetchall()
+            for row in rows:
+                symbol = _symbol_row(row)
+                indexed.setdefault(symbol.path, []).append(symbol)
+    return indexed
+
+
+def _outgoing_indexed_by_source(
+    store: EventStore, sources: Iterable[str], kinds: tuple[str, ...]
+) -> dict[str, list[GraphEdgeRow]]:
+    """One batched read: source -> outgoing edges in ``outgoing_edges`` order.
+
+    The per-source ordering matches ``EventStore._adjacency`` exactly
+    (``kind, target, IFNULL(line, -1), IFNULL(col, -1), edge_id``); grouping
+    by ``source`` first keeps each source's slice contiguous.
+    """
+    indexed: dict[str, list[GraphEdgeRow]] = {}
+    kind_placeholders = ", ".join("?" for _ in kinds)
+    with store.read() as conn:
+        for chunk in _chunked_unique(sources):
+            source_placeholders = ", ".join("?" for _ in chunk)
+            rows = conn.execute(
+                "SELECT edge_id, source, target, kind, line, col, metadata, provenance FROM graph_edges "
+                f"WHERE source IN ({source_placeholders}) AND kind IN ({kind_placeholders}) "  # nosec B608 -- placeholders are generated '?' marks, values bound
+                "ORDER BY source, kind, target, IFNULL(line, -1), IFNULL(col, -1), edge_id",
+                (*chunk, *kinds),
+            ).fetchall()
+            for row in rows:
+                edge = _graph_edge_row(row)
+                indexed.setdefault(edge.source, []).append(edge)
+    return indexed
 
 
 # ------------------------------------------------------- hardware integration
@@ -645,47 +754,10 @@ def _bare_name(name: str) -> str:
     return name.rsplit(".", 1)[-1].rsplit("::", 1)[-1]
 
 
-def _run_module_member_calls(store: EventStore, config: SynthesisConfig) -> _Pass:
-    """A failed call resolves through a module the source file imports.
-
-    ``helper()`` in ``main.py`` with ``import pkg.util`` resolved: when
-    exactly one symbol named ``helper`` lives in the imported modules, the
-    call binds through that module (confidence 7/10). Ambiguity across (or
-    within) imported modules never guesses.
-    """
-    result = _Pass(PASS_MODULE_MEMBER_CALLS)
-    with store.read() as conn:
-        rows = conn.execute(
-            "SELECT * FROM unresolved_refs WHERE kind = 'calls' AND status = 'failed' "
-            "AND failure_reason = 'no_resolution' ORDER BY first_seen, ref_id"
-        ).fetchall()
-    refs = [_ref_row(row) for row in rows]
-    hits: list[tuple[UnresolvedRefRow, str, str]] = []
-    for ref in refs:
-        result.candidates += 1
-        source_symbol = store.symbol_by_node(ref.source_node_id)
-        if source_symbol is None:
-            continue
-        imported_paths: list[str] = []
-        for edge in store.outgoing_edges(ref.source_node_id, kinds=("imports",)):
-            if edge.target.startswith(_FILE_PREFIX):
-                imported_paths.append(edge.target[len(_FILE_PREFIX) :])
-        if not imported_paths:
-            continue
-        matches: dict[str, str] = {}  # node_id -> module path
-        for module_path in sorted(set(imported_paths)):
-            for symbol in store.symbols_in_path(module_path):
-                if symbol.kind == "import":
-                    continue
-                if symbol.name == ref.name_tail or symbol.name.endswith(f".{ref.name_tail}"):
-                    matches[symbol.node_id] = module_path
-        if len(matches) > 1:
-            result.skipped_uncertain += 1
-            continue
-        if not matches:
-            continue
-        node_id, module_path = next(iter(matches.items()))
-        hits.append((ref, node_id, module_path))
+def _register_module_member_hits(
+    store: EventStore, result: _Pass, hits: list[tuple[UnresolvedRefRow, str, str]]
+) -> None:
+    """Emit the hit edges and arm the post-insert ref-resolution hook."""
     for ref, target, module_path in hits:
         if not _edge_exists(store, ref.source_node_id, target, "calls"):
             result.emit(
@@ -708,6 +780,64 @@ def _run_module_member_calls(store: EventStore, config: SynthesisConfig) -> _Pas
             store.record_resolution_attempt(ref.ref_id, outcome="resolved")
 
     result.after_insert = _resolve_hits
+
+
+def _run_module_member_calls(store: EventStore, config: SynthesisConfig) -> _Pass:
+    """A failed call resolves through a module the source file imports.
+
+    ``helper()`` in ``main.py`` with ``import pkg.util`` resolved: when
+    exactly one symbol named ``helper`` lives in the imported modules, the
+    call binds through that module (confidence 7/10). Ambiguity across (or
+    within) imported modules never guesses.
+
+    WS-D: the three input sets (source symbols, ``imports`` adjacency,
+    module member symbols) are joined ONCE per pass in batched ``IN`` reads
+    (the SUB-135 prefetch pattern) instead of three-plus queries per
+    candidate — the candidate loop below is byte-for-byte the historical
+    one, only its data source changed.
+    """
+    result = _Pass(PASS_MODULE_MEMBER_CALLS)
+    with store.read() as conn:
+        rows = conn.execute(
+            "SELECT * FROM unresolved_refs WHERE kind = 'calls' AND status = 'failed' "
+            "AND failure_reason = 'no_resolution' ORDER BY first_seen, ref_id"
+        ).fetchall()
+    refs = [_ref_row(row) for row in rows]
+    symbols_by_node = _symbols_indexed_by_node(store, (ref.source_node_id for ref in refs))
+    imports_by_source = _outgoing_indexed_by_source(store, (ref.source_node_id for ref in refs), ("imports",))
+    module_paths: list[str] = []
+    for ref in refs:
+        for edge in imports_by_source.get(ref.source_node_id, []):
+            if edge.target.startswith(_FILE_PREFIX):
+                module_paths.append(edge.target[len(_FILE_PREFIX) :])
+    symbols_by_path = _symbols_indexed_by_path(store, module_paths)
+    hits: list[tuple[UnresolvedRefRow, str, str]] = []
+    for ref in refs:
+        result.candidates += 1
+        source_symbol = symbols_by_node.get(ref.source_node_id)
+        if source_symbol is None:
+            continue
+        imported_paths: list[str] = []
+        for edge in imports_by_source.get(ref.source_node_id, []):
+            if edge.target.startswith(_FILE_PREFIX):
+                imported_paths.append(edge.target[len(_FILE_PREFIX) :])
+        if not imported_paths:
+            continue
+        matches: dict[str, str] = {}  # node_id -> module path
+        for module_path in sorted(set(imported_paths)):
+            for symbol in symbols_by_path.get(module_path, []):
+                if symbol.kind == "import":
+                    continue
+                if symbol.name == ref.name_tail or symbol.name.endswith(f".{ref.name_tail}"):
+                    matches[symbol.node_id] = module_path
+        if len(matches) > 1:
+            result.skipped_uncertain += 1
+            continue
+        if not matches:
+            continue
+        node_id, module_path = next(iter(matches.items()))
+        hits.append((ref, node_id, module_path))
+    _register_module_member_hits(store, result, hits)
     return result
 
 

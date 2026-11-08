@@ -7,10 +7,16 @@ store schema is not touched; the index lives next to it and can be
 dropped/rebuilt at any time (RESEARCH-QUERY §2.1 channel 1, MASTER-PLAN
 pillar 4).
 
-Freshness is fingerprint-based: ``ensure_fts_index`` rebuilds only when
-the ``symbols`` fingerprint (row count + total column bytes) changed.
-Callers that need guaranteed freshness after a length-preserving update
-call :func:`rebuild_fts_index` explicitly (the ingestion pipeline does).
+Freshness (TASK2 WS-B Q1): event-driven via the v6 ``symbols_watch``
+counter — one O(1) read of a trigger-maintained row that moves on ANY
+``symbols`` write (helpers, pipeline batch SQL, future paths). The legacy
+content fingerprint (``count(*)`` + total column bytes = a full ``symbols``
+SCAN) only runs as the *arbiter* when the counter moved, and a rebuild only
+happens when the arbiter confirms real drift — a no-op rewrite bumps the
+counter but not the content. Before v6 this SCAN ran per cold query (~97%
+of cold-query time at 1.85M symbols). Callers that need guaranteed freshness
+after a length-preserving update call :func:`rebuild_fts_index` explicitly
+(the ingestion pipeline does).
 """
 
 from __future__ import annotations
@@ -80,6 +86,28 @@ def _fingerprint(conn: sqlite3.Connection) -> str:
     return f"{int(row[0])}:{int(row[1])}"
 
 
+def _watch_seq(conn: sqlite3.Connection) -> int:
+    """The trigger-maintained symbols change counter (schema v6)."""
+    row = conn.execute("SELECT seq FROM symbols_watch WHERE id = 1").fetchone()
+    return int(row[0]) if row is not None else 0
+
+
+def _read_meta(conn: sqlite3.Connection, key: str) -> str | None:
+    row = conn.execute(
+        f"SELECT value FROM {META_TABLE} WHERE key = ?",  # nosec B608 -- constant table name; key bound
+        (key,),
+    ).fetchone()
+    return None if row is None else str(row[0])
+
+
+def _write_meta(conn: sqlite3.Connection, key: str, value: str) -> None:
+    conn.execute(
+        f"INSERT INTO {META_TABLE}(key, value) VALUES(?, ?) "  # nosec B608 -- constant table name; values bound
+        "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        (key, value),
+    )
+
+
 def _ensure_schema(conn: sqlite3.Connection) -> None:
     if not fts_available(conn):
         raise FtsUnavailableError("this SQLite build lacks FTS5; retrieval v2 search is unavailable")
@@ -124,27 +152,34 @@ def rebuild_fts_index(store: EventStore) -> int:
         # command atomically clears the index and repopulates from symbols
         conn.execute(f"INSERT INTO {FTS_TABLE}({FTS_TABLE}) VALUES('rebuild')")  # nosec B608 -- module-owned constant table name
         count = int(conn.execute("SELECT count(*) FROM symbols").fetchone()[0])
-        conn.execute(
-            f"INSERT INTO {META_TABLE}(key, value) VALUES('fingerprint', ?) "  # nosec B608 -- constant table name; value bound
-            f"ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            (_fingerprint(conn),),
-        )
+        _write_meta(conn, "fingerprint", _fingerprint(conn))
+        _write_meta(conn, "watch_seq", str(_watch_seq(conn)))
     return count
 
 
 def ensure_fts_index(store: EventStore) -> bool:
-    """Create the index when missing; rebuild when the fingerprint drifted.
+    """Create the index when missing; rebuild when ``symbols`` really changed.
 
-    Returns True when a (re)build happened, False when the index was
-    already current.
+    O(1) fast path (TASK2 WS-B Q1): the v6 ``symbols_watch`` counter is the
+    freshness token. When it matches the recorded one and a fingerprint is on
+    record, the index is current — no ``symbols`` SCAN at all. Only a moved
+    counter pays the legacy fingerprint SCAN (the arbiter): real drift →
+    rebuild; a no-op rewrite → just re-stamp the counter. Returns True when a
+    (re)build happened, False when the index was already current.
     """
     with store.transaction() as conn:
         _ensure_schema(conn)
-        row = conn.execute(
-            f"SELECT value FROM {META_TABLE} WHERE key = 'fingerprint'"  # nosec B608 -- constant table name
-        ).fetchone()
-        current = _fingerprint(conn)
-        if row is not None and str(row[0]) == current:
+        recorded_fp = _read_meta(conn, "fingerprint")
+        recorded_seq = _read_meta(conn, "watch_seq")
+        current_seq = _watch_seq(conn)
+        try:
+            seq_current = recorded_seq is not None and int(recorded_seq) == current_seq
+        except ValueError:
+            seq_current = False  # corrupt meta is a freshness event, never a crash
+        if recorded_fp is not None and seq_current:
+            return False
+        if recorded_fp is not None and _fingerprint(conn) == recorded_fp:
+            _write_meta(conn, "watch_seq", str(current_seq))
             return False
     rebuild_fts_index(store)
     return True

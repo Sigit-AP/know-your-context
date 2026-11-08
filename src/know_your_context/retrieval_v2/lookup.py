@@ -22,6 +22,7 @@ hard gates applied last (codegraph §2.1 step 5). Final ordering is total:
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 import threading
 from collections import OrderedDict
@@ -43,6 +44,8 @@ if TYPE_CHECKING:
     from know_your_context.retrieval_v2.experience import ExperienceReranker
 
 __all__ = ["LookupConfig", "LookupError", "ScoredSymbol", "SymbolLookup"]
+
+_logger = logging.getLogger(__name__)
 
 LIMIT_MIN = 1
 LIMIT_MAX = 100
@@ -66,6 +69,11 @@ class LookupConfig:
     fts_fetch_floor: int = 100
     enable_fuzzy: bool = True
     fuzzy_scan_cap: int = 5000
+    #: TASK2 WS-B Q2: hard cap on LIKE-channel candidates (same discipline as
+    #: ``fuzzy_scan_cap``). Truncation is deterministic (canonical row order)
+    #: and announced; the scoring ladder is untouched — a capped LIKE hit still
+    #: outranks every fuzzy hit.
+    like_scan_cap: int = 5000
     bm25_name: float = 20.0
     bm25_kind: float = 5.0
     bm25_path: float = 1.0
@@ -80,6 +88,7 @@ class LookupConfig:
             ("fts_fetch_factor", self.fts_fetch_factor),
             ("fts_fetch_floor", self.fts_fetch_floor),
             ("fuzzy_scan_cap", self.fuzzy_scan_cap),
+            ("like_scan_cap", self.like_scan_cap),
         ):
             if isinstance(value, bool) or not isinstance(value, int) or value < 1:
                 raise LookupError(f"{label} must be an int >= 1, got {value!r}")
@@ -354,9 +363,19 @@ class SymbolLookup:
             params.extend((f"%{escaped}%", f"%{escaped}%"))
         if not clauses:
             return {}
-        sql = f"SELECT * FROM symbols WHERE {' OR '.join(clauses)} ORDER BY path, line, col, node_id"  # nosec B608 -- constant fragments; terms are bound params
+        cap = self._config.like_scan_cap
+        sql = (
+            f"SELECT * FROM symbols WHERE {' OR '.join(clauses)} "  # nosec B608 -- constant fragments; terms are bound params
+            f"ORDER BY path, line, col, node_id LIMIT ?"
+        )
         with store.read() as conn:
-            rows = conn.execute(sql, params).fetchall()
+            rows = conn.execute(sql, (*params, cap)).fetchall()
+        if len(rows) == cap:
+            _logger.warning(
+                "LIKE channel truncated at like_scan_cap=%d (deterministic canonical order); "
+                "refine the query or raise the cap",
+                cap,
+            )
         candidates: dict[str, ScoredSymbol] = {}
         for row in rows:
             scores = [

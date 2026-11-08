@@ -1,0 +1,152 @@
+{
+ "small": {
+  "db_mb": 17.5,
+  "symbols": 14896,
+  "files": 505,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "32|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "3|0|61|SEARCH invocation_journal USING INDEX idx_invocation_journal_effective_key (effective_idempotency_key=?)"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col",
+   "name_tail"
+  ],
+  "schema_version": 6,
+  "fingerprint_ms": 30.25,
+  "cold_hit_p50_ms": 15.7,
+  "cold_hit_p95_ms": 89.12,
+  "cold_miss_p50_ms": 181.12,
+  "cold_miss_max_ms": 187.12,
+  "tail_hit_ms": 4.98,
+  "tail_hit_candidates": 256,
+  "tail_miss_ms": 0.35,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 0.642,
+  "module_file_status": "ambiguous",
+  "migration_open_s": 0.58,
+  "explain_tail_index": [
+   "4|0|62|SEARCH symbols USING INDEX idx_symbols_name_tail (name_tail=?)",
+   "21|0|0|USE TEMP B-TREE FOR ORDER BY"
+  ],
+  "explain_module_file_new": [
+   "4|0|162|SEARCH files USING INDEX idx_files_path_rev (<expr>>? AND <expr><?)",
+   "23|0|0|USE TEMP B-TREE FOR ORDER BY"
+  ],
+  "explain_journal_conflict_new": [
+   "3|0|61|SEARCH invocation_journal USING INDEX idx_invocation_journal_effective_key (effective_idempotency_key=?)"
+  ],
+  "explain_watch_seq": [
+   "2|0|33|SEARCH symbols_watch USING INTEGER PRIMARY KEY (rowid=?)"
+  ]
+ },
+ "big": {
+  "db_mb": 1919.9,
+  "symbols": 1847104,
+  "files": 62620,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "32|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "3|0|61|SEARCH invocation_journal USING INDEX idx_invocation_journal_effective_key (effective_idempotency_key=?)"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col",
+   "name_tail"
+  ],
+  "schema_version": 6,
+  "fingerprint_ms": 2837.39,
+  "cold_hit_p50_ms": 74.81,
+  "cold_hit_p95_ms": 3410.0,
+  "cold_miss_p50_ms": 1206.49,
+  "cold_miss_max_ms": 1459.96,
+  "tail_hit_ms": 383.26,
+  "tail_hit_candidates": 31744,
+  "tail_miss_ms": 0.17,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 10.915,
+  "module_file_status": "ambiguous",
+  "migration_open_s": 80.03,
+  "explain_tail_index": [
+   "4|0|62|SEARCH symbols USING INDEX idx_symbols_name_tail (name_tail=?)",
+   "21|0|0|USE TEMP B-TREE FOR ORDER BY"
+  ],
+  "explain_module_file_new": [
+   "4|0|162|SEARCH files USING INDEX idx_files_path_rev (<expr>>? AND <expr><?)",
+   "23|0|0|USE TEMP B-TREE FOR ORDER BY"
+  ],
+  "explain_journal_conflict_new": [
+   "3|0|61|SEARCH invocation_journal USING INDEX idx_invocation_journal_effective_key (effective_idempotency_key=?)"
+  ],
+  "explain_watch_seq": [
+   "2|0|33|SEARCH symbols_watch USING INTEGER PRIMARY KEY (rowid=?)"
+  ]
+ },
+ "mid": {
+  "db_mb": 1202.1,
+  "symbols": 491568,
+  "files": 16665,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "32|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "3|0|61|SEARCH invocation_journal USING INDEX idx_invocation_journal_effective_key (effective_idempotency_key=?)"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col",
+   "name_tail"
+  ],
+  "schema_version": 6,
+  "fingerprint_ms": 881.28,
+  "cold_hit_p50_ms": 50.68,
+  "cold_hit_p95_ms": 7041.78,
+  "cold_miss_p50_ms": 418.18,
+  "cold_miss_max_ms": 605.22,
+  "tail_hit_ms": 123.93,
+  "tail_hit_candidates": 8448,
+  "tail_miss_ms": 2.65,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 34.705,
+  "module_file_status": "ambiguous"
+ }
+}

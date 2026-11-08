@@ -111,10 +111,12 @@ mod tests {
 
     #[test]
     fn registry_loads_all_supported_languages() {
-        // 17 dual-engine (engine == "rust") languages; swift/dart are
-        // registered but Python-fallback (W7, docs/recovery/w7-languages.md).
+        // 17 dual-engine (engine == "rust") languages out of 33 registered
+        // (W12+ expansion, commit ea4f07d); the 16 engine="python" languages
+        // (swift/dart/crystal/…) are registered but Python-fallback
+        // (W7, docs/recovery/w7-languages.md).
         assert_eq!(supported_languages().len(), 17);
-        assert_eq!(registry().languages.len(), 19);
+        assert_eq!(registry().languages.len(), 33);
         assert!(get_spec("python").is_some());
         assert!(get_spec("bash").is_some());
         assert!(get_spec("perl").is_some());

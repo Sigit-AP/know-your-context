@@ -53,26 +53,45 @@ mod pyo3_bridge {
     }
 
     /// Extract an in-memory source string; returns the canonical JSON artifact.
+    ///
+    /// B3/K2 (TASK2-PLAN WS-C): the parse+walk is pure Rust CPU work, so the
+    /// GIL is released around it — otherwise a thread pool over kernel
+    /// extractions is *slower* than serial (measured 0.79x at 2 threads).
+    /// The string arguments are owned first because `&str` borrows are tied
+    /// to the GIL lifetime.
     #[pyfunction]
     #[pyo3(signature = (path, source, language=None, generated_hint=false))]
     fn extract_source(
+        py: Python<'_>,
         path: &str,
         source: &str,
         language: Option<&str>,
         generated_hint: bool,
     ) -> PyResult<String> {
-        walker::extract_source(path, source, language, generated_hint)
-            .map(|result| result.canonical_json())
-            .map_err(to_py_err)
+        let path = path.to_owned();
+        let source = source.to_owned();
+        let language = language.map(str::to_owned);
+        py.detach(move || {
+            walker::extract_source(&path, &source, language.as_deref(), generated_hint)
+                .map(|result| result.canonical_json())
+                .map_err(to_py_err)
+        })
     }
 
     /// Extract a file from disk; returns the canonical JSON artifact.
+    ///
+    /// Releases the GIL like [`extract_source`]: disk I/O plus the walk must
+    /// not serialise Python threads (ingest pipeline parallelism, B3/K2).
     #[pyfunction]
     #[pyo3(signature = (path, display_path=None))]
-    fn extract_file(path: &str, display_path: Option<&str>) -> PyResult<String> {
-        walker::extract_file(path, display_path)
-            .map(|result| result.canonical_json())
-            .map_err(to_py_err)
+    fn extract_file(py: Python<'_>, path: &str, display_path: Option<&str>) -> PyResult<String> {
+        let path = path.to_owned();
+        let display_path = display_path.map(str::to_owned);
+        py.detach(move || {
+            walker::extract_file(&path, display_path.as_deref())
+                .map(|result| result.canonical_json())
+                .map_err(to_py_err)
+        })
     }
 
     /// `kind:sha256(path:kind:name:line)[:col]` — identical to the Python model.

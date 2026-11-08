@@ -651,11 +651,29 @@ impl<'a> Walker<'a> {
         scopes: &mut [Scope],
     ) -> Result<(), KernelError> {
         let rule: &ImportRule = &self.spec.import_rules[rule_index];
+        let strip_chars: Vec<char> = rule.strip_chars.chars().collect();
+        let strip_candidate = |text: &str| -> String {
+            // Python: candidate.strip().strip(rule.strip_chars).strip()
+            text.trim()
+                .trim_matches(|ch| strip_chars.contains(&ch))
+                .trim()
+                .to_string()
+        };
         let mut target: Option<String> = None;
         for field in &rule.target_fields {
             if let Some(child) = node.child_by_field_name(field) {
-                target = Some(self.text(child));
-                break;
+                let candidate = strip_candidate(&self.text(child));
+                // F-SUB94-1 parity (extractor.py::_emit_import): a field
+                // carrying no module name must not win over later fields —
+                // Python `from . import x` yields module_name "." (dots only),
+                // whose name tail is empty. Skip it and fall through to the
+                // next field (the imported name); the Python reference does
+                // exactly this, so the kernel must too instead of aborting in
+                // the id allocator.
+                if !candidate.is_empty() && !name_tail(&candidate).is_empty() {
+                    target = Some(candidate);
+                    break;
+                }
             }
         }
         if target.is_none() && !rule.target_regex.is_empty() {
@@ -672,14 +690,11 @@ impl<'a> Walker<'a> {
             Some(target) => target,
             None => return Ok(()),
         };
-        // Python: target.strip().strip(rule.strip_chars).strip()
-        let strip_chars: Vec<char> = rule.strip_chars.chars().collect();
-        let target = target
-            .trim()
-            .trim_matches(|ch| strip_chars.contains(&ch))
-            .trim()
-            .to_string();
-        if target.is_empty() {
+        // Python: target.strip().strip(rule.strip_chars).strip() — idempotent
+        // for the (pre-stripped) field path, load-bearing for the regex path.
+        let target = strip_candidate(&target);
+        // Python: `if not target or not _has_name_tail(target): return`
+        if target.is_empty() || name_tail(&target).is_empty() {
             return Ok(());
         }
         let line = node.start_position().row + 1;

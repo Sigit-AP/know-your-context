@@ -57,7 +57,7 @@ def _seed_ref_with_reason(path: Path) -> None:
 
 class TestRegistry:
     def test_migrations_in_order(self) -> None:
-        assert [migration.version for migration in MIGRATIONS] == [3, 4, 5]
+        assert [migration.version for migration in MIGRATIONS] == [3, 4, 5, 6]
         for migration in MIGRATIONS:
             assert isinstance(migration, Migration)
 
@@ -76,6 +76,7 @@ class TestRegistry:
             3: store_module._SCHEMA_V3_STATEMENTS,
             4: store_module._SCHEMA_V4_STATEMENTS,
             5: store_module._SCHEMA_V5_STATEMENTS,
+            6: store_module._SCHEMA_V6_STATEMENTS,
         }
         for migration in MIGRATIONS:
             file_stmts = migration.up_sql()
@@ -84,6 +85,10 @@ class TestRegistry:
             assert {_normalize(s) for s in file_stmts} == {_normalize(s) for s in store_stmts}
 
     def test_down_sql_mentions_owned_objects(self) -> None:
+        v6 = next(m for m in MIGRATIONS if m.version == 6)
+        v6_down = " ".join(v6.down_sql())
+        for obj in ("name_tail", "path_rev", "symbols_watch", "idx_invocation_journal_effective_key"):
+            assert obj in v6_down
         v5 = next(m for m in MIGRATIONS if m.version == 5)
         assert "node_leases" in " ".join(v5.down_sql())
         v4 = next(m for m in MIGRATIONS if m.version == 4)
@@ -96,6 +101,23 @@ class TestRegistry:
     def test_versions_dir_is_below_migrations(self) -> None:
         assert VERSIONS_DIR.parent.name == "migrations"
 
+    def test_split_statements_keeps_trigger_body_intact(self) -> None:
+        """v6 carries triggers (BEGIN ... END blocks with inner semicolons);
+        the artifact splitter must treat each trigger as ONE statement."""
+        from know_your_context.ops.schema_migrations import _split_statements
+
+        sql = (
+            "CREATE TABLE w (id INTEGER PRIMARY KEY);\n"
+            "CREATE TRIGGER trg AFTER INSERT ON t BEGIN\n"
+            "  UPDATE w SET id = 1 WHERE id = 1;\n"
+            "END;\n"
+            "CREATE INDEX i ON t (x);\n"
+        )
+        statements = _split_statements(sql)
+        assert len(statements) == 3
+        assert statements[1].startswith("CREATE TRIGGER trg")
+        assert statements[1].endswith("END")
+
     def test_store_migration_loop_does_not_pick_versions_subdir(self, tmp_path: Path) -> None:
         # The store's file-migration loop is non-recursive: our versions/ files
         # must never be applied as file migrations.
@@ -107,9 +129,9 @@ class TestRegistry:
 
 
 class TestVerifySchema:
-    def test_fresh_store_is_consistent_v5(self, store_path: Path) -> None:
+    def test_fresh_store_is_consistent_v6(self, store_path: Path) -> None:
         report = verify_schema(store_path)
-        assert report["recorded_version"] == 5
+        assert report["recorded_version"] == 6
         assert report["consistent"] is True
         assert report["problems"] == []
 
@@ -128,10 +150,22 @@ class TestVerifySchema:
         assert report["consistent"] is False
         assert any("failure_reason" in problem for problem in report["problems"])
 
+    def test_v6_object_disagreement_detected(self, store_path: Path) -> None:
+        conn = sqlite3.connect(store_path)
+        try:
+            conn.execute("DROP INDEX idx_symbols_name_tail")
+            conn.execute("ALTER TABLE symbols DROP COLUMN name_tail")
+            conn.commit()
+        finally:
+            conn.close()
+        report = verify_schema(store_path)
+        assert report["consistent"] is False
+        assert any("name_tail" in problem for problem in report["problems"])
+
 
 class TestRecordedVersion:
-    def test_recorded_is_five(self, store_path: Path) -> None:
-        assert recorded_schema_version(store_path) == 5
+    def test_recorded_is_six(self, store_path: Path) -> None:
+        assert recorded_schema_version(store_path) == 6
 
 
 class TestPlanRollback:
@@ -140,20 +174,24 @@ class TestPlanRollback:
         plan = plan_rollback(store_path, 3)
         after = verify_schema(store_path)
         assert before == after
-        assert [step["version"] for step in plan] == [5, 4]
+        assert [step["version"] for step in plan] == [6, 5, 4]
+
+    def test_plan_v6_to_v5_is_one_step(self, store_path: Path) -> None:
+        plan = plan_rollback(store_path, 5)
+        assert [step["version"] for step in plan] == [6]
 
     def test_plan_v5_to_v4_is_one_step(self, store_path: Path) -> None:
         plan = plan_rollback(store_path, 4)
-        assert [step["version"] for step in plan] == [5]
+        assert [step["version"] for step in plan] == [6, 5]
 
-    def test_plan_to_v2_has_three_steps(self, store_path: Path) -> None:
+    def test_plan_to_v2_has_four_steps(self, store_path: Path) -> None:
         plan = plan_rollback(store_path, 2)
-        assert [step["version"] for step in plan] == [5, 4, 3]
+        assert [step["version"] for step in plan] == [6, 5, 4, 3]
         assert all(step["direction"] == MigrationDirection.DOWN for step in plan)
 
     def test_plan_rejects_target_at_or_above_recorded(self, store_path: Path) -> None:
         with pytest.raises(SchemaMigrationError):
-            plan_rollback(store_path, 5)
+            plan_rollback(store_path, 6)
 
     def test_plan_rejects_target_below_v2(self, store_path: Path) -> None:
         with pytest.raises(SchemaMigrationError):
@@ -161,9 +199,25 @@ class TestPlanRollback:
 
 
 class TestRollback:
-    def test_rollback_v5_to_v4(self, store_path: Path) -> None:
+    def test_rollback_v6_to_v5(self, store_path: Path) -> None:
+        report = rollback_to(store_path, 5)
+        assert report.from_version == 6
+        assert report.to_version == 5
+        assert report.verified is True
+        conn = sqlite3.connect(store_path)
+        try:
+            columns = [row[1] for row in conn.execute("PRAGMA table_info(symbols)")]
+            file_columns = [row[1] for row in conn.execute("PRAGMA table_info(files)")]
+            tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        finally:
+            conn.close()
+        assert "name_tail" not in columns
+        assert "path_rev" not in file_columns
+        assert "symbols_watch" not in tables
+
+    def test_rollback_v6_to_v4(self, store_path: Path) -> None:
         report = rollback_to(store_path, 4)
-        assert report.from_version == 5
+        assert report.from_version == 6
         assert report.to_version == 4
         assert report.verified is True
         conn = sqlite3.connect(store_path)
@@ -172,11 +226,12 @@ class TestRollback:
         finally:
             conn.close()
         assert "node_leases" not in tables
+        assert "symbols_watch" not in tables
 
-    def test_rollback_v5_to_v3(self, store_path: Path) -> None:
+    def test_rollback_v6_to_v3(self, store_path: Path) -> None:
         report = rollback_to(store_path, 3)
         assert isinstance(report, RollbackReport)
-        assert report.from_version == 5
+        assert report.from_version == 6
         assert report.to_version == 3
         assert report.direction == MigrationDirection.DOWN
         assert report.verified is True
@@ -195,20 +250,30 @@ class TestRollback:
         with pytest.raises(SchemaMigrationError) as info:
             rollback_to(store_path, 4)
         assert info.value.code == "DATA_LOSS_GUARD"
+        # The failed rollback is atomic: the v6 objects of the first step survived.
+        conn = sqlite3.connect(store_path)
+        try:
+            columns = [row[1] for row in conn.execute("PRAGMA table_info(symbols)")]
+        finally:
+            conn.close()
+        assert "name_tail" in columns
         report = rollback_to(store_path, 4, allow_data_loss=True)
         assert report.verified is True
 
-    def test_round_trip_v5_v3_v5(self, store_path: Path) -> None:
+    def test_round_trip_v6_v3_v6(self, store_path: Path) -> None:
         rollback_to(store_path, 3)
-        # Reopening re-applies v4+v5 transactionally — the store self-heals.
+        # Reopening re-applies v4+v5+v6 transactionally — the store self-heals.
         store = EventStore(store_path)
         try:
-            assert recorded_schema_version(store_path) == 5
+            assert recorded_schema_version(store_path) == 6
             with store.read() as conn:
                 columns = [row["name"] for row in conn.execute("PRAGMA table_info(unresolved_refs)")]
+                symbol_columns = [row["name"] for row in conn.execute("PRAGMA table_info(symbols)")]
                 tables = {row["name"] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             assert "failure_reason" in columns
+            assert "name_tail" in symbol_columns
             assert "node_leases" in tables
+            assert "symbols_watch" in tables
         finally:
             store.close()
 
@@ -267,7 +332,7 @@ class TestRollback:
 
     def test_rollback_rejects_target_at_or_above_recorded(self, store_path: Path) -> None:
         with pytest.raises(SchemaMigrationError):
-            rollback_to(store_path, 5)
+            rollback_to(store_path, 6)
 
     def test_rollback_missing_store_fails_closed(self, tmp_path: Path) -> None:
         with pytest.raises(SchemaMigrationError):
@@ -284,7 +349,7 @@ class TestRollback:
             conn.close()
         with pytest.raises(SchemaMigrationError):
             rollback_to(store_path, 3)
-        # Ledger unchanged: v4 and v5 are still recorded (the rollback never half-applied).
+        # Ledger unchanged: v4, v5 and v6 are still recorded (the rollback never half-applied).
         conn = sqlite3.connect(store_path)
         try:
             versions = [row[0] for row in conn.execute("SELECT version FROM schema_versions")]
@@ -292,6 +357,7 @@ class TestRollback:
             conn.close()
         assert 4 in versions
         assert 5 in versions
+        assert 6 in versions
 
     def test_old_sqlite_refused(self, store_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(sqlite3, "sqlite_version_info", (3, 34, 0))

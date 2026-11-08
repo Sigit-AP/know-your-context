@@ -83,7 +83,7 @@ from know_your_context.graph_model import (
     make_node_id,
     propose_primary_splits,
 )
-from know_your_context.store import EventStore
+from know_your_context.store import EventStore, symbol_name_tail
 
 __all__ = [
     "DEFAULT_MAX_FILE_BYTES",
@@ -1144,6 +1144,28 @@ class IngestionPipeline:
     # the ``files`` row is written last as the commit marker so a crash
     # mid-batch is re-ingested on the next run.
 
+    @staticmethod
+    def _write_symbol_rows(conn: sqlite3.Connection, *, relpath: str, nodes: list[dict[str, Any]]) -> None:
+        """The symbols batch (v6: maintains the materialized ``name_tail``)."""
+        for node in nodes:
+            col = node["col"]
+            conn.execute(
+                "INSERT INTO symbols (node_id, name, kind, path, line, col, name_tail) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT (node_id) DO UPDATE SET "
+                "name = excluded.name, kind = excluded.kind, path = excluded.path, "
+                "line = excluded.line, col = excluded.col, name_tail = excluded.name_tail",
+                (
+                    node["node_id"],
+                    node["name"],
+                    node["kind"],
+                    relpath,
+                    node["line"],
+                    -1 if col is None else int(col),
+                    symbol_name_tail(str(node["name"])),
+                ),
+            )
+
     def _write_batch(
         self,
         conn: sqlite3.Connection,
@@ -1159,15 +1181,7 @@ class IngestionPipeline:
         generated: bool,
         extraction_version: int,
     ) -> None:
-        for node in nodes:
-            col = node["col"]
-            conn.execute(
-                "INSERT INTO symbols (node_id, name, kind, path, line, col) VALUES (?, ?, ?, ?, ?, ?) "
-                "ON CONFLICT (node_id) DO UPDATE SET "
-                "name = excluded.name, kind = excluded.kind, path = excluded.path, "
-                "line = excluded.line, col = excluded.col",
-                (node["node_id"], node["name"], node["kind"], relpath, node["line"], -1 if col is None else int(col)),
-            )
+        self._write_symbol_rows(conn, relpath=relpath, nodes=nodes)
         for edge in edges:
             conn.execute(
                 "INSERT OR IGNORE INTO graph_edges (source, target, kind, line, col, metadata, provenance) "
@@ -1190,13 +1204,13 @@ class IngestionPipeline:
                 (ref["source_node_id"], ref["target_name"], ref["name_tail"], ref["kind"], f"ingest:{sha256[:16]}"),
             )
         conn.execute(
-            "INSERT INTO files (path, sha256, size, mtime, language, generated_hint, extraction_version) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?) "
+            "INSERT INTO files (path, sha256, size, mtime, language, generated_hint, extraction_version, path_rev) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
             "ON CONFLICT (path) DO UPDATE SET "
             "sha256 = excluded.sha256, size = excluded.size, mtime = excluded.mtime, "
             "language = excluded.language, generated_hint = excluded.generated_hint, "
-            "extraction_version = excluded.extraction_version",
-            (relpath, sha256, size, mtime, language, int(generated), extraction_version),
+            "extraction_version = excluded.extraction_version, path_rev = excluded.path_rev",
+            (relpath, sha256, size, mtime, language, int(generated), extraction_version, relpath[::-1]),
         )
 
     def _cascade_file(self, conn: sqlite3.Connection, relpath: str) -> None:

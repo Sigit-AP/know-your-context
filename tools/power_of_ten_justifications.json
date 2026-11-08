@@ -839,24 +839,10 @@
   },
   {
    "rule": "POT2",
-   "file": "resolve/name_matcher.py",
-   "scope": "NameMatchResolver.resolve_unmatched",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 68
-  },
-  {
-   "rule": "POT2",
    "file": "resolve/synthesis.py",
    "scope": "_run_callback_edges",
    "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
    "lines": 66
-  },
-  {
-   "rule": "POT2",
-   "file": "resolve/synthesis.py",
-   "scope": "_run_module_member_calls",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 64
   },
   {
    "rule": "POT2",

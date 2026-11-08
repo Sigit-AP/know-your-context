@@ -1,0 +1,119 @@
+{
+ "small": {
+  "db_mb": 16.8,
+  "symbols": 14896,
+  "files": 505,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "31|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "2|0|216|SCAN invocation_journal"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col"
+  ],
+  "schema_version": 5,
+  "fingerprint_ms": 13.26,
+  "cold_hit_p50_ms": 26.45,
+  "cold_hit_p95_ms": 62.07,
+  "cold_miss_p50_ms": 116.4,
+  "cold_miss_max_ms": 123.56,
+  "tail_hit_ms": 11.65,
+  "tail_hit_candidates": 256,
+  "tail_miss_ms": 19.97,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 0.575,
+  "module_file_status": "ambiguous"
+ },
+ "big": {
+  "db_mb": 1820.4,
+  "symbols": 1847104,
+  "files": 62620,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "31|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "2|0|216|SCAN invocation_journal"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col"
+  ],
+  "schema_version": 5,
+  "fingerprint_ms": 11637.52,
+  "cold_hit_p50_ms": 3722.95,
+  "cold_hit_p95_ms": 10785.54,
+  "cold_miss_p50_ms": 2927.99,
+  "cold_miss_max_ms": 4275.98,
+  "tail_hit_ms": 1261.92,
+  "tail_hit_candidates": 31744,
+  "tail_miss_ms": 1092.05,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 47.563,
+  "module_file_status": "ambiguous"
+ },
+ "mid": {
+  "db_mb": 1182.9,
+  "symbols": 491568,
+  "files": 16665,
+  "explain_fingerprint": [
+   "3|0|216|SCAN symbols"
+  ],
+  "explain_tail_like": [
+   "4|0|224|SCAN symbols USING INDEX idx_symbols_path",
+   "31|0|0|USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+  ],
+  "explain_module_file": [
+   "4|0|223|SCAN files USING INDEX sqlite_autoindex_files_1"
+  ],
+  "explain_journal_conflict": [
+   "2|0|216|SCAN invocation_journal"
+  ],
+  "symbols_columns": [
+   "node_id",
+   "name",
+   "kind",
+   "path",
+   "line",
+   "col"
+  ],
+  "schema_version": 5,
+  "fingerprint_ms": 1916.27,
+  "cold_hit_p50_ms": 709.59,
+  "cold_hit_p95_ms": 11390.56,
+  "cold_miss_p50_ms": 945.96,
+  "cold_miss_max_ms": 1343.57,
+  "tail_hit_ms": 491.89,
+  "tail_hit_candidates": 8448,
+  "tail_miss_ms": 247.41,
+  "tail_miss_candidates": 0,
+  "tail_hit_name": "f",
+  "module_file_ms": 39.979,
+  "module_file_status": "ambiguous"
+ }
+}

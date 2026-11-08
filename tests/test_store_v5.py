@@ -102,7 +102,7 @@ def test_v5_migration_is_transactional_and_rolls_back_on_failure(
 def test_too_new_schema_fails_closed(store_path: Path) -> None:
     conn = sqlite3.connect(store_path)
     try:
-        conn.execute("INSERT INTO schema_versions (version, applied_at, description) VALUES (6, 'x', 'future')")
+        conn.execute("INSERT INTO schema_versions (version, applied_at, description) VALUES (7, 'x', 'future')")
         conn.commit()
     finally:
         conn.close()

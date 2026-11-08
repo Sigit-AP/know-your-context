@@ -40,7 +40,7 @@ phases replays cleanly: edge identity dedups and the ref is simply retried.
 from __future__ import annotations
 
 import sqlite3
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from fractions import Fraction
 from pathlib import PurePosixPath
@@ -313,6 +313,38 @@ def _ref_row(row: sqlite3.Row) -> UnresolvedRefRow:
     )
 
 
+#: ``IN (...)`` chunk size for the batched reads (WS-D) — far below SQLite's
+#: host-parameter limit (32766 on every supported build).
+_IN_QUERY_CHUNK = 500
+
+_ASCII_LOWER_TABLE = str.maketrans({chr(c): chr(c + 32) for c in range(ord("A"), ord("Z") + 1)})
+
+
+def _ascii_lower(value: str) -> str:
+    """SQLite ``lower()`` semantics exactly: ASCII-only case fold.
+
+    Used to key the batched exact-name pool — both sides of the historical
+    ``lower(s.name) = lower(?)`` predicate fold identically under it.
+    """
+    return value.translate(_ASCII_LOWER_TABLE)
+
+
+def _chunked_unique(values: Iterable[str]) -> Iterator[list[str]]:
+    """First-occurrence-order unique chunks of at most ``_IN_QUERY_CHUNK``."""
+    seen: set[str] = set()
+    chunk: list[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        chunk.append(value)
+        if len(chunk) >= _IN_QUERY_CHUNK:
+            yield chunk
+            chunk = []
+    if chunk:
+        yield chunk
+
+
 @dataclass(frozen=True)
 class NameMatchOutcome:
     """The deterministic verdict for one retried ref."""
@@ -342,6 +374,64 @@ def _validate_limit(value: int | None) -> None:
         raise NameMatchError(f"limit must be None or an int >= 1, got {value!r}")
 
 
+def _edge_payloads(decisions: list[tuple[UnresolvedRefRow, NameMatch | None, str | None]]) -> list[dict[str, object]]:
+    """One name-match edge payload per decisive hit, in decision order."""
+    payloads: list[dict[str, object]] = []
+    for ref, match, _reason in decisions:
+        if match is None:
+            continue
+        payloads.append(
+            {
+                "source": ref.source_node_id,
+                "target": match.node_id,
+                "kind": REF_KIND_TO_EDGE_KIND[ref.kind],
+                "metadata": canonical_json(
+                    {
+                        "ref_id": ref.ref_id,
+                        "ref_name": ref.target_name,
+                        "strategy": "name_match",
+                        "score": f"{match.score.numerator}/{match.score.denominator}",
+                    }
+                ),
+                "provenance": PROVENANCE_NAME_MATCH,
+            }
+        )
+    return payloads
+
+
+def _record_outcomes(
+    store: EventStore, decisions: list[tuple[UnresolvedRefRow, NameMatch | None, str | None]]
+) -> tuple[NameMatchOutcome, ...]:
+    """Write the resolution for each decisive hit; outcomes sorted by ref_id."""
+    outcomes: list[NameMatchOutcome] = []
+    for ref, match, reason in decisions:
+        if match is None:
+            outcomes.append(
+                NameMatchOutcome(
+                    ref_id=ref.ref_id,
+                    status="unmatched",
+                    target_node_id=None,
+                    score=None,
+                    reason=reason,
+                )
+            )
+            continue
+        # The store requires attempts to start from pending.
+        store.retry_failed_ref(ref.ref_id)
+        store.record_resolution_attempt(ref.ref_id, outcome="resolved")
+        outcomes.append(
+            NameMatchOutcome(
+                ref_id=ref.ref_id,
+                status="resolved",
+                target_node_id=match.node_id,
+                score=match.score,
+                reason=None,
+            )
+        )
+    outcomes.sort(key=lambda outcome: outcome.ref_id)
+    return tuple(outcomes)
+
+
 class NameMatchResolver:
     """Retries ``no_resolution`` failures with structure-tolerant matching."""
 
@@ -358,70 +448,70 @@ class NameMatchResolver:
         Refs the matcher cannot resolve stay failed with their original
         reason — the store is only ever mutated on a decisive hit, which is
         what makes the pass idempotent.
+
+        WS-D: reads are batched — one symbols/files join per ref CLASS, one
+        exact-name and one LIKE query per DISTINCT lookup/segment per
+        language family (was: 4+ queries per ref; measured 61.816 SQL
+        executions for 13.426 refs). Decisions are replayed per ref through
+        the historical gate/cap/scoring logic, so outcomes (and the write
+        order below) are byte-identical to the per-ref queries.
         """
         _validate_limit(limit)
         refs = self._retryable_refs(store, limit)
-        decisions: list[tuple[UnresolvedRefRow, NameMatch | None, str | None]] = []
-        for ref in refs:
-            match, reason = self._match_ref(store, ref)
-            decisions.append((ref, match, reason))
-        edge_payloads: list[dict[str, object]] = []
-        for ref, match, _reason in decisions:
-            if match is None:
-                continue
-            edge_payloads.append(
-                {
-                    "source": ref.source_node_id,
-                    "target": match.node_id,
-                    "kind": REF_KIND_TO_EDGE_KIND[ref.kind],
-                    "metadata": canonical_json(
-                        {
-                            "ref_id": ref.ref_id,
-                            "ref_name": ref.target_name,
-                            "strategy": "name_match",
-                            "score": f"{match.score.numerator}/{match.score.denominator}",
-                        }
-                    ),
-                    "provenance": PROVENANCE_NAME_MATCH,
-                }
-            )
+        decisions = self._decide_all(store, refs)
+        edge_payloads = _edge_payloads(decisions)
         edges_inserted = store.add_graph_edges(edge_payloads) if edge_payloads else 0
-        outcomes: list[NameMatchOutcome] = []
-        for ref, match, reason in decisions:
-            if match is None:
-                outcomes.append(
-                    NameMatchOutcome(
-                        ref_id=ref.ref_id,
-                        status="unmatched",
-                        target_node_id=None,
-                        score=None,
-                        reason=reason,
-                    )
-                )
-                continue
-            # The store requires attempts to start from pending.
-            store.retry_failed_ref(ref.ref_id)
-            store.record_resolution_attempt(ref.ref_id, outcome="resolved")
-            outcomes.append(
-                NameMatchOutcome(
-                    ref_id=ref.ref_id,
-                    status="resolved",
-                    target_node_id=match.node_id,
-                    score=match.score,
-                    reason=None,
-                )
-            )
-        outcomes.sort(key=lambda outcome: outcome.ref_id)
+        outcomes = _record_outcomes(store, decisions)
         resolved = sum(1 for outcome in outcomes if outcome.status == "resolved")
         return NameMatchReport(
             processed=len(outcomes),
             resolved=resolved,
             unmatched=len(outcomes) - resolved,
             edges_inserted=edges_inserted,
-            outcomes=tuple(outcomes),
+            outcomes=outcomes,
         )
 
     # ---------------------------------------------------------- internals
+
+    def _decide_all(
+        self, store: EventStore, refs: list[UnresolvedRefRow]
+    ) -> list[tuple[UnresolvedRefRow, NameMatch | None, str | None]]:
+        """One ``(ref, match, reason)`` per ref, in ref order.
+
+        Batched reads (WS-D): languages join once per run; candidate pools
+        load one query per DISTINCT lookup/segment per language family (was:
+        4+ queries per ref; measured 61.816 SQL executions for 13.426 refs).
+        Decisions replay the historical gate/cap/scoring logic per ref and
+        are cached per ``(kind, target_name, name_tail, family)``, so the
+        results are byte-identical to the per-ref queries.
+        """
+        languages = self._source_languages(store, refs)
+        gates = [self._gate(ref, languages.get(ref.source_node_id)) for ref in refs]
+        pools: dict[tuple[str, ...], tuple[dict[str, list[SymbolRow]], dict[str, list[SymbolRow]]]] = {}
+        grouped: dict[tuple[str, ...], list[UnresolvedRefRow]] = {}
+        for ref, (family, _reason) in zip(refs, gates, strict=True):
+            if family is not None:
+                grouped.setdefault(tuple(sorted(family)), []).append(ref)
+        for family_key, members in grouped.items():
+            lookups = {ref.name_tail or ref.target_name for ref in members}
+            segments: set[str] = set()
+            for ref in members:
+                segments.update(self._segments(ref))
+            pools[family_key] = self._load_candidate_pools(store, frozenset(family_key), lookups, segments)
+        decisions: list[tuple[UnresolvedRefRow, NameMatch | None, str | None]] = []
+        decision_cache: dict[tuple[str, str, str, tuple[str, ...]], tuple[NameMatch | None, str | None]] = {}
+        for ref, (family, reason) in zip(refs, gates, strict=True):
+            if family is None:
+                decisions.append((ref, None, reason))
+                continue
+            family_key = tuple(sorted(family))
+            cache_key = (ref.kind, ref.target_name, ref.name_tail, family_key)
+            if cache_key not in decision_cache:
+                exact, segment_pools = pools[family_key]
+                decision_cache[cache_key] = self._decide(ref, exact, segment_pools)
+            match, reason = decision_cache[cache_key]
+            decisions.append((ref, match, reason))
+        return decisions
 
     def _retryable_refs(self, store: EventStore, limit: int | None) -> list[UnresolvedRefRow]:
         sql = "SELECT * FROM unresolved_refs WHERE status = 'failed' AND failure_reason = ? ORDER BY first_seen, ref_id"
@@ -433,33 +523,153 @@ class NameMatchResolver:
             rows = conn.execute(sql, parameters).fetchall()
         return [_ref_row(row) for row in rows]
 
-    def _source_language(self, store: EventStore, source_node_id: str) -> str | None:
-        path: str | None = None
-        symbol = store.symbol_by_node(source_node_id)
-        if symbol is not None:
-            path = symbol.path
-        elif is_file_node_id(source_node_id):
-            candidate = source_node_id[len("file:") :]
-            if store.get_file(candidate) is not None:
-                path = candidate
-        if path is None:
-            return None
-        file_row = store.get_file(path)
-        if file_row is not None and file_row.language != "unknown":
-            return file_row.language
-        return _EXTENSION_LANGUAGES.get(PurePosixPath(path).suffix)
+    def _source_languages(self, store: EventStore, refs: list[UnresolvedRefRow]) -> dict[str, str | None]:
+        """Batched ``_source_language``: two chunked reads for the whole run.
 
-    def _match_ref(self, store: EventStore, ref: UnresolvedRefRow) -> tuple[NameMatch | None, str | None]:
-        """(match, report-only reason when unmatched). Pure reads only."""
+        Replays the historical per-ref rule exactly: the ref's own symbol
+        gives the path; a bare ``file:<path>`` source falls back to its file
+        row; the file's declared language wins unless ``unknown``, else the
+        extension map decides.
+        """
+        node_ids = [ref.source_node_id for ref in refs]
+        symbol_paths: dict[str, str] = {}
+        with store.read() as conn:
+            for chunk in _chunked_unique(node_ids):
+                placeholders = ", ".join("?" for _ in chunk)
+                rows = conn.execute(
+                    f"SELECT node_id, path FROM symbols WHERE node_id IN ({placeholders})",  # nosec B608 -- placeholders are generated '?' marks, values bound
+                    chunk,
+                ).fetchall()
+                for row in rows:
+                    symbol_paths[str(row["node_id"])] = str(row["path"])
+        candidate_paths: set[str] = set(symbol_paths.values())
+        for node_id in node_ids:
+            if node_id not in symbol_paths and is_file_node_id(node_id):
+                candidate_paths.add(node_id[len("file:") :])
+        file_languages: dict[str, str] = {}
+        with store.read() as conn:
+            for chunk in _chunked_unique(candidate_paths):
+                placeholders = ", ".join("?" for _ in chunk)
+                rows = conn.execute(
+                    f"SELECT path, language FROM files WHERE path IN ({placeholders})",  # nosec B608 -- placeholders are generated '?' marks, values bound
+                    chunk,
+                ).fetchall()
+                for row in rows:
+                    file_languages[str(row["path"])] = str(row["language"])
+        languages: dict[str, str | None] = {}
+        for node_id in node_ids:
+            path = symbol_paths.get(node_id)
+            if path is None and is_file_node_id(node_id):
+                candidate = node_id[len("file:") :]
+                if candidate in file_languages:
+                    path = candidate
+            if path is None:
+                languages[node_id] = None
+                continue
+            declared = file_languages.get(path)
+            if declared is not None and declared != "unknown":
+                languages[node_id] = declared
+            else:
+                languages[node_id] = _EXTENSION_LANGUAGES.get(PurePosixPath(path).suffix)
+        return languages
+
+    def _gate(self, ref: UnresolvedRefRow, language: str | None) -> tuple[frozenset[str] | None, str | None]:
+        """``(family, early reason)`` — the pre-candidate gates of a ref."""
         if ref.kind not in REF_KIND_TO_EDGE_KIND:
             return None, "unknown_ref_kind"
-        language = self._source_language(store, ref.source_node_id)
         if language is None:
             return None, "unknown_source"
         family = _LANGUAGE_FAMILIES.get(language)
         if family is None:
             return None, "unknown_language"
-        candidates, capped = self._candidates(store, ref, family)
+        return family, None
+
+    def _segments(self, ref: UnresolvedRefRow) -> list[str]:
+        """The ref's query segments (deduped, capped) — the historical recipe."""
+        segments = list(dict.fromkeys(split_identifier(ref.name_tail or ref.target_name)))
+        return segments[: self._config.max_query_segments]
+
+    def _load_candidate_pools(
+        self,
+        store: EventStore,
+        family: frozenset[str],
+        lookups: set[str],
+        segments: set[str],
+    ) -> tuple[dict[str, list[SymbolRow]], dict[str, list[SymbolRow]]]:
+        """Per-family pools: exact-name matches + per-segment LIKE matches.
+
+        One query per DISTINCT lookup/segment — the historical SQL verbatim,
+        the segment pool capped at ``candidate_cap + 1`` rows (the most any
+        per-ref query could ever fetch, since ``len(found) >= 0``), ordered
+        identically, so the per-ref replay below observes the same rows.
+        """
+        languages = sorted(family)
+        language_placeholders = ", ".join("?" for _ in languages)
+        exact: dict[str, list[SymbolRow]] = {}
+        segment_pools: dict[str, list[SymbolRow]] = {}
+        with store.read() as conn:
+            for chunk in _chunked_unique(sorted(lookups)):
+                placeholders = ", ".join("?" for _ in chunk)
+                rows = conn.execute(
+                    "SELECT s.*, lower(s.name) AS folded FROM symbols s JOIN files f ON f.path = s.path "
+                    f"WHERE lower(s.name) IN ({placeholders}) AND f.language IN ({language_placeholders}) "  # nosec B608 -- placeholders are generated '?' marks, values bound
+                    "ORDER BY s.path, s.line, s.col, s.node_id",
+                    (*chunk, *languages),
+                ).fetchall()
+                for row in rows:
+                    exact.setdefault(str(row["folded"]), []).append(_symbol_row(row))
+            for segment in sorted(segments):
+                rows = conn.execute(
+                    "SELECT s.* FROM symbols s JOIN files f ON f.path = s.path "
+                    f"WHERE lower(s.name) LIKE ? ESCAPE '\\' AND f.language IN ({language_placeholders}) "  # nosec B608 -- placeholders are generated '?' marks, values bound
+                    "ORDER BY s.path, s.line, s.col, s.node_id LIMIT ?",
+                    (f"%{_escape_like(segment.lower())}%", *languages, self._config.candidate_cap + 1),
+                ).fetchall()
+                segment_pools[segment] = [_symbol_row(row) for row in rows]
+        return exact, segment_pools
+
+    def _candidates_from_pools(
+        self,
+        ref: UnresolvedRefRow,
+        exact: dict[str, list[SymbolRow]],
+        segment_pools: dict[str, list[SymbolRow]],
+    ) -> tuple[list[SymbolRow], bool]:
+        """Replay of the historical per-ref accumulation against the pools.
+
+        Identical rule: exact matches first, then per-segment ordered rows
+        with the fail-closed cap; ``len(rows) > cap - len(found)`` evaluates
+        against the same prefix the old ``LIMIT cap+1-len(found)`` returned
+        (the pool holds the first ``cap + 1`` rows in the same order).
+        """
+        found: dict[str, SymbolRow] = {}
+        capped = False
+        cap = self._config.candidate_cap
+        for symbol in exact.get(_ascii_lower(ref.name_tail or ref.target_name), []):
+            found.setdefault(symbol.node_id, symbol)
+        for segment in self._segments(ref):
+            if len(found) >= cap:
+                capped = True
+                break
+            rows = segment_pools.get(segment, [])[: cap + 1 - len(found)]
+            if len(rows) > cap - len(found):
+                capped = True
+            for symbol in rows:
+                if len(found) >= cap:
+                    capped = True
+                    break
+                found.setdefault(symbol.node_id, symbol)
+            if capped:
+                break
+        return sorted(found.values(), key=lambda s: (s.path, s.line, s.col, s.node_id)), capped
+
+    def _decide(
+        self,
+        ref: UnresolvedRefRow,
+        exact: dict[str, list[SymbolRow]],
+        segment_pools: dict[str, list[SymbolRow]],
+    ) -> tuple[NameMatch | None, str | None]:
+        """``(match, report-only reason)`` — pure reads over the pools."""
+        candidates, capped = self._candidates_from_pools(ref, exact, segment_pools)
         if capped:
             return None, "candidate_cap_exceeded"
         if not candidates:
@@ -477,44 +687,3 @@ class NameMatchResolver:
         if best is None:
             return None, "below_threshold_or_ambiguous"
         return best, None
-
-    def _candidates(
-        self, store: EventStore, ref: UnresolvedRefRow, family: frozenset[str]
-    ) -> tuple[list[SymbolRow], bool]:
-        """Symbols sharing >=1 query segment, language-gated, capped fail-closed."""
-        segments = list(dict.fromkeys(split_identifier(ref.name_tail or ref.target_name)))
-        segments = segments[: self._config.max_query_segments]
-        found: dict[str, SymbolRow] = {}
-        capped = False
-        cap = self._config.candidate_cap
-        with store.read() as conn:
-            # Case-insensitive exact names are always candidates.
-            for row in conn.execute(
-                "SELECT s.* FROM symbols s JOIN files f ON f.path = s.path "
-                "WHERE lower(s.name) = lower(?) AND f.language IN ({}) "
-                "ORDER BY s.path, s.line, s.col, s.node_id".format(", ".join("?" for _ in family)),  # nosec B608 -- generated placeholders; values bound
-                (ref.name_tail or ref.target_name, *sorted(family)),
-            ).fetchall():
-                symbol = _symbol_row(row)
-                found.setdefault(symbol.node_id, symbol)
-            for segment in segments:
-                if len(found) >= cap:
-                    capped = True
-                    break
-                rows = conn.execute(
-                    "SELECT s.* FROM symbols s JOIN files f ON f.path = s.path "
-                    "WHERE lower(s.name) LIKE ? ESCAPE '\\' AND f.language IN ({}) "
-                    "ORDER BY s.path, s.line, s.col, s.node_id LIMIT ?".format(", ".join("?" for _ in family)),  # nosec B608 -- generated placeholders; values bound
-                    (f"%{_escape_like(segment.lower())}%", *sorted(family), cap + 1 - len(found)),
-                ).fetchall()
-                if len(rows) > cap - len(found):
-                    capped = True
-                for row in rows:
-                    symbol = _symbol_row(row)
-                    if len(found) >= cap:
-                        capped = True
-                        break
-                    found.setdefault(symbol.node_id, symbol)
-                if capped:
-                    break
-        return sorted(found.values(), key=lambda s: (s.path, s.line, s.col, s.node_id)), capped

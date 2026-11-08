@@ -786,9 +786,11 @@ def extract_source(
     """Extract one in-memory source string under the contract path *path*.
 
     Routing (MASTER-PLAN multi-language decision): when the optional Rust
-    kernel is built it handles the parse+walk hot path; any kernel failure
-    falls back to the pure-Python walker below with a logged reason. Both
-    engines are proven byte-identical by ``tests/test_kernel_rust.py``.
+    kernel is built it handles the parse+walk hot path **for languages whose
+    spec declares ``engine="rust"``**; ``engine="python"`` languages go
+    straight to the reference walker (B2/K3), and any kernel failure on a
+    served language falls back to it with a logged reason. Both engines are
+    proven byte-identical by ``tests/test_kernel_rust.py``.
     """
     resolved = language if language is not None else language_for_path(path)
     if resolved is None:
@@ -796,11 +798,16 @@ def extract_source(
     encoded = source.encode("utf-8")
     if len(encoded) > MAX_SOURCE_FILE_SIZE_BYTES:
         raise FileTooLargeError(path, size=len(encoded), limit=MAX_SOURCE_FILE_SIZE_BYTES)
+    spec = get_spec(resolved)
     # Lazy import: kernel_bridge imports this module, so a top-level import
     # would be circular.
     from know_your_context.ingest import kernel_bridge
 
-    if kernel_bridge.kernel_available():
+    # B2/K3 (TASK2-PLAN WS-C): the routing honours ``spec.engine``. Languages
+    # without a parse-identical kernel grammar (engine="python") go straight
+    # to the reference walker — trying the kernel first always raised and
+    # fell back, a measured +27% per-file tax for zero benefit.
+    if spec.engine == "rust" and kernel_bridge.kernel_available():
         try:
             return kernel_bridge.extract_source_via_kernel(
                 path, source, language=resolved, generated_hint=generated_hint
@@ -809,7 +816,7 @@ def extract_source(
             raise  # deterministic contract errors propagate unchanged
         except Exception as error:
             _logger.warning("rust kernel failed on %r (%s); falling back to the python walker", path, error)
-    return TreeSitterExtractor(get_spec(resolved)).extract(path, source, generated_hint=generated_hint)
+    return TreeSitterExtractor(spec).extract(path, source, generated_hint=generated_hint)
 
 
 def extract_file(path: str | Path, *, display_path: str | None = None) -> ExtractionResult:

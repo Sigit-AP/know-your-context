@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections import deque
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -500,6 +501,14 @@ class UniversalGraph:
     def __init__(self, nodes: Iterable[GraphNode] = (), edges: Iterable[GraphEdge] = ()) -> None:
         self._nodes: dict[str, GraphNode] = {}
         self._edges: dict[tuple[str, str, str, int, int], GraphEdge] = {}
+        # WS-D (TASK2-PLAN B4): containment adjacency maintained incrementally
+        # at insert time. ``contains_children``/``contains_parent`` used to
+        # re-scan the full edge mapping per call (O(E) each — 56.8M enum
+        # accesses in one ingest batch); the indexes make them O(deg)/O(1).
+        # Edges are append-only (no removal API), so the indexes cannot
+        # drift; answers stay byte-identical (children remain sorted).
+        self._contains_children: dict[str, list[str]] = {}
+        self._contains_parent: dict[str, str] = {}
         for node in nodes:
             self.add_node(node)
         for edge in edges:
@@ -560,6 +569,9 @@ class UniversalGraph:
         elif edge.kind == CoreEdgeKind.BRIDGES.value:
             self._check_bridge(edge)
         self._edges[key] = edge
+        if edge.kind == CoreEdgeKind.CONTAINS.value:
+            self._contains_children.setdefault(edge.source, []).append(edge.target)
+            self._contains_parent[edge.target] = edge.source
         return edge
 
     def add_bridge(
@@ -622,18 +634,15 @@ class UniversalGraph:
     # -- hierarchy queries -------------------------------------------------
 
     def contains_parent(self, node_id: str) -> str | None:
-        for edge in self._edges.values():
-            if edge.kind == CoreEdgeKind.CONTAINS.value and edge.target == node_id:
-                return edge.source
-        return None
+        # O(1) index lookup (WS-D); identical to scanning for the single
+        # ``contains`` edge whose target is ``node_id`` (forest invariant:
+        # at most one parent, enforced eagerly at insert).
+        return self._contains_parent.get(node_id)
 
     def contains_children(self, node_id: str) -> tuple[str, ...]:
-        children = [
-            edge.target
-            for edge in self._edges.values()
-            if edge.kind == CoreEdgeKind.CONTAINS.value and edge.source == node_id
-        ]
-        return tuple(sorted(children))
+        # O(deg) index lookup (WS-D); answer identical to the historical
+        # full-scan filter — children are returned sorted, as before.
+        return tuple(sorted(self._contains_children.get(node_id, ())))
 
     def contains_root(self, node_id: str) -> str:
         """The root of the ``contains`` tree holding ``node_id`` (itself if parentless)."""
@@ -661,10 +670,10 @@ class UniversalGraph:
         """BFS over ``contains`` from ``root_id`` (inclusive), deterministic order."""
         self.get_node(root_id)
         order: list[str] = []
-        queue = [root_id]
+        queue: deque[str] = deque([root_id])
         seen = {root_id}
         while queue:
-            current = queue.pop(0)
+            current = queue.popleft()
             order.append(current)
             for child in self.contains_children(current):
                 if child not in seen:
@@ -767,6 +776,51 @@ class SplitProposal:
     metrics: tuple[tuple[str, int], ...] = field(default_factory=tuple)
 
 
+def _size_split_proposals(
+    graph: UniversalGraph,
+    root: GraphNode,
+    thresholds: SplitThresholds,
+    reasons: tuple[str, ...],
+    metrics: tuple[tuple[str, int], ...],
+) -> tuple[SplitProposal, ...]:
+    """Single-domain oversized subtree: first-fit packing over direct-child
+    subtrees (children sorted by ``(-size, id)``). WS-D: each child's subtree
+    is computed once (was twice — sizing and member materialization)."""
+    children = graph.contains_children(root.node_id)
+    child_subtrees = {child: graph.subtree_ids(child) for child in children}
+    sized = sorted(
+        ((len(child_subtrees[child]), child) for child in children),
+        key=lambda item: (-item[0], item[1]),
+    )
+    bins: list[list[str]] = []
+    bin_sizes: list[int] = []
+    for size, child in sized:
+        placed = False
+        for index in range(len(bins)):
+            if bin_sizes[index] + size <= thresholds.max_subtree_nodes:
+                bins[index].append(child)
+                bin_sizes[index] += size
+                placed = True
+                break
+        if not placed:
+            bins.append([child])
+            bin_sizes.append(size)
+    proposals: list[SplitProposal] = []
+    for index, members_children in enumerate(bins, start=1):
+        members = tuple(sorted({nid for child in members_children for nid in child_subtrees[child]}))
+        proposals.append(
+            SplitProposal(
+                root_id=root.node_id,
+                suggested_name=f"{root.name}:part-{index}",
+                domain=None,
+                member_node_ids=members,
+                reasons=reasons,
+                metrics=metrics,
+            )
+        )
+    return tuple(proposals)
+
+
 def propose_primary_splits(
     graph: UniversalGraph, root_id: str, thresholds: SplitThresholds | None = None
 ) -> tuple[SplitProposal, ...]:
@@ -792,8 +846,10 @@ def propose_primary_splits(
         raise PrimaryError(f"split proposals require a primary root; {root_id!r} is {root.kind!r}")
 
     descendants = graph.subtree_ids(root_id)[1:]
-    domains = sorted({node.domain.value for nid in descendants if (node := graph.get_node(nid)).domain is not None})
-    kinds = sorted({graph.get_node(nid).kind for nid in descendants})
+    # WS-D: one get_node per descendant (was three loops); same order, same bytes.
+    member_nodes = [(nid, graph.get_node(nid)) for nid in descendants]
+    domains = sorted({node.domain.value for _, node in member_nodes if node.domain is not None})
+    kinds = sorted({node.kind for _, node in member_nodes})
     metrics = (
         ("distinct_domains", len(domains)),
         ("distinct_kinds", len(kinds)),
@@ -812,55 +868,23 @@ def propose_primary_splits(
         return ()
 
     groups: dict[str, list[str]] = {}
-    for nid in descendants:
-        domain = graph.get_node(nid).domain
+    for nid, node in member_nodes:
+        domain = node.domain
         groups.setdefault(domain.value if domain else "", []).append(nid)
     keep_key = root.domain.value if root.domain is not None else ""
 
+    if len(groups) == 1:
+        return _size_split_proposals(graph, root, thresholds, reasons, metrics)
     proposals: list[SplitProposal] = []
-    if len(groups) > 1:
-        for key in sorted(groups):
-            if key == keep_key:
-                continue
-            members = tuple(sorted(groups[key]))
-            proposals.append(
-                SplitProposal(
-                    root_id=root_id,
-                    suggested_name=f"{root.name}:{key or 'undomain'}",
-                    domain=PrimaryDomain(key) if key else None,
-                    member_node_ids=members,
-                    reasons=reasons,
-                    metrics=metrics,
-                )
-            )
-        return tuple(proposals)
-
-    # single group: size-driven split over direct-child subtrees
-    children = graph.contains_children(root_id)
-    sized = sorted(
-        ((len(graph.subtree_ids(child)), child) for child in children),
-        key=lambda item: (-item[0], item[1]),
-    )
-    bins: list[list[str]] = []
-    bin_sizes: list[int] = []
-    for size, child in sized:
-        placed = False
-        for index in range(len(bins)):
-            if bin_sizes[index] + size <= thresholds.max_subtree_nodes:
-                bins[index].append(child)
-                bin_sizes[index] += size
-                placed = True
-                break
-        if not placed:
-            bins.append([child])
-            bin_sizes.append(size)
-    for index, members_children in enumerate(bins, start=1):
-        members = tuple(sorted({nid for child in members_children for nid in graph.subtree_ids(child)}))
+    for key in sorted(groups):
+        if key == keep_key:
+            continue
+        members = tuple(sorted(groups[key]))
         proposals.append(
             SplitProposal(
                 root_id=root_id,
-                suggested_name=f"{root.name}:part-{index}",
-                domain=None,
+                suggested_name=f"{root.name}:{key or 'undomain'}",
+                domain=PrimaryDomain(key) if key else None,
                 member_node_ids=members,
                 reasons=reasons,
                 metrics=metrics,
