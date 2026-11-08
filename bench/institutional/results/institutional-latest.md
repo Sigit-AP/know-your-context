@@ -24,17 +24,17 @@ Referensi: `networkx 3.7 (+ self-validated numpy PageRank reference; networkx.pa
 
 | Dataset | n | m | Correctness | Deterministic | Max abs err | Ours (public) ms | Ours (kernel) ms | Reference ms | Ratio public | Ratio kernel |
 |---|---|---|---|---|---|---|---|---|---|---|
-| path3 | 3 | 2 | pass | yes | 3.97e-13 | 1.097 | 0.649 | 0.884 | 1.2x | 0.7x |
-| diamond | 4 | 4 | pass | yes | 4e-13 | 1.545 | 0.581 | 0.561 | 2.8x | 1.0x |
-| two_triangles_bridge | 6 | 7 | pass | yes | 4.01e-13 | 2.385 | 0.889 | 0.866 | 2.8x | 1.0x |
-| star9_bidir | 9 | 16 | pass | yes | 1.09e-05 | 3.868 | 1.409 | 3.111 | 1.2x | 0.5x |
-| directed_cycle6 | 6 | 6 | pass | yes | 3.33e-13 | 2.236 | 0.973 | 0.070 | 31.9x | 13.9x |
-| two_cycles_shared_node | 5 | 6 | pass | yes | 1.86e-06 | 1.959 | 1.595 | 3.323 | 0.6x | 0.5x |
-| disconnected3 | 6 | 3 | pass | yes | 3.97e-13 | 2.008 | 0.829 | 0.541 | 3.7x | 1.5x |
-| cliques_4x5 | 20 | 80 | pass | yes | 0 | 12.655 | 4.896 | 0.121 | 104.6x | 40.5x |
-| erdos_n64_m192_s11 | 64 | 192 | pass | yes | 4.88e-13 | 54.791 | 15.283 | 1.299 | 42.2x | 11.8x |
-| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | 4.97e-13 | 427.919 | 69.649 | 4.341 | 98.6x | 16.0x |
-| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | 5e-13 | 1130.856 | 149.680 | 11.222 | 100.8x | 13.3x |
+| path3 | 3 | 2 | pass | yes | 3.97e-13 | 14.200 | 0.923 | 1.078 | 13.2x | 0.9x |
+| diamond | 4 | 4 | pass | yes | 4e-13 | 11.589 | 1.423 | 1.301 | 8.9x | 1.1x |
+| two_triangles_bridge | 6 | 7 | pass | yes | 4.01e-13 | 11.161 | 2.702 | 2.587 | 4.3x | 1.0x |
+| star9_bidir | 9 | 16 | pass | yes | 1.09e-05 | 15.716 | 2.402 | 4.878 | 3.2x | 0.5x |
+| directed_cycle6 | 6 | 6 | pass | yes | 3.33e-13 | 5.669 | 1.569 | 0.119 | 47.6x | 13.2x |
+| two_cycles_shared_node | 5 | 6 | pass | yes | 1.86e-06 | 5.267 | 1.441 | 4.689 | 1.1x | 0.3x |
+| disconnected3 | 6 | 3 | pass | yes | 3.97e-13 | 5.849 | 1.220 | 1.245 | 4.7x | 1.0x |
+| cliques_4x5 | 20 | 80 | pass | yes | 0 | 28.255 | 10.194 | 0.274 | 103.3x | 37.3x |
+| erdos_n64_m192_s11 | 64 | 192 | pass | yes | 4.88e-13 | 106.947 | 21.120 | 2.204 | 48.5x | 9.6x |
+| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | 4.97e-13 | 492.954 | 140.022 | 5.754 | 85.7x | 24.3x |
+| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | 5e-13 | 1305.337 | 151.877 | 11.872 | 109.9x | 12.8x |
 
 ## wcc
 
@@ -42,17 +42,17 @@ Referensi: `networkx 3.7 (+ self-validated numpy PageRank reference; networkx.pa
 
 | Dataset | n | m | Correctness | Deterministic | Max abs err | Ours (public) ms | Ours (kernel) ms | Reference ms | Ratio public | Ratio kernel |
 |---|---|---|---|---|---|---|---|---|---|---|
-| path3 | 3 | 2 | pass | yes | — | 0.058 | 0.015 | 0.039 | 1.5x | 0.4x |
-| diamond | 4 | 4 | pass | yes | — | 0.056 | 0.017 | 0.022 | 2.5x | 0.7x |
-| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.080 | 0.027 | 0.024 | 3.3x | 1.1x |
-| star9_bidir | 9 | 16 | pass | yes | — | 0.110 | 0.067 | 0.037 | 3.0x | 1.8x |
-| directed_cycle6 | 6 | 6 | pass | yes | — | 0.065 | 0.021 | 0.024 | 2.6x | 0.9x |
-| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.057 | 0.019 | 0.021 | 2.8x | 0.9x |
-| disconnected3 | 6 | 3 | pass | yes | — | 0.071 | 0.019 | 0.022 | 3.2x | 0.9x |
-| cliques_4x5 | 20 | 80 | pass | yes | — | 0.305 | 0.105 | 0.100 | 3.0x | 1.0x |
-| erdos_n64_m192_s11 | 64 | 192 | pass | yes | — | 1.004 | 0.287 | 0.240 | 4.2x | 1.2x |
-| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | — | 4.992 | 1.445 | 1.238 | 4.0x | 1.2x |
-| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | — | 11.523 | 3.164 | 2.665 | 4.3x | 1.2x |
+| path3 | 3 | 2 | pass | yes | — | 0.058 | 0.015 | 0.035 | 1.7x | 0.4x |
+| diamond | 4 | 4 | pass | yes | — | 0.094 | 0.036 | 0.041 | 2.3x | 0.9x |
+| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.134 | 0.043 | 0.057 | 2.3x | 0.8x |
+| star9_bidir | 9 | 16 | pass | yes | — | 0.232 | 0.074 | 0.083 | 2.8x | 0.9x |
+| directed_cycle6 | 6 | 6 | pass | yes | — | 0.132 | 0.048 | 0.056 | 2.3x | 0.8x |
+| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.108 | 0.019 | 0.023 | 4.7x | 0.8x |
+| disconnected3 | 6 | 3 | pass | yes | — | 0.074 | 0.020 | 0.023 | 3.1x | 0.8x |
+| cliques_4x5 | 20 | 80 | pass | yes | — | 0.316 | 0.107 | 0.128 | 2.5x | 0.8x |
+| erdos_n64_m192_s11 | 64 | 192 | pass | yes | — | 1.664 | 0.282 | 0.245 | 6.8x | 1.2x |
+| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | — | 5.508 | 1.553 | 1.193 | 4.6x | 1.3x |
+| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | — | 10.975 | 3.937 | 3.098 | 3.5x | 1.3x |
 
 ## bc
 
@@ -60,16 +60,16 @@ Referensi: `networkx 3.7 (+ self-validated numpy PageRank reference; networkx.pa
 
 | Dataset | n | m | Correctness | Deterministic | Max abs err | Ours (public) ms | Ours (kernel) ms | Reference ms | Ratio public | Ratio kernel |
 |---|---|---|---|---|---|---|---|---|---|---|
-| path3 | 3 | 2 | pass | yes | 0 | 1.080 | 0.057 | 0.065 | 16.7x | 0.9x |
-| diamond | 4 | 4 | pass | yes | 0 | 1.510 | 0.072 | 0.057 | 26.4x | 1.3x |
-| two_triangles_bridge | 6 | 7 | pass | yes | 5.55e-17 | 2.154 | 0.105 | 0.084 | 25.6x | 1.2x |
-| star9_bidir | 9 | 16 | pass | yes | 0 | 4.084 | 0.313 | 0.283 | 14.4x | 1.1x |
-| directed_cycle6 | 6 | 6 | pass | yes | 0 | 3.721 | 0.155 | 0.108 | 34.5x | 1.4x |
-| two_cycles_shared_node | 5 | 6 | pass | yes | 1.11e-16 | 1.849 | 0.106 | 0.084 | 22.0x | 1.3x |
-| disconnected3 | 6 | 3 | pass | yes | 0 | 1.957 | 0.081 | 0.108 | 18.2x | 0.7x |
-| cliques_4x5 | 20 | 80 | pass | yes | 0 | 10.852 | 0.574 | 0.365 | 29.7x | 1.6x |
-| erdos_n64_m192_s11 | 64 | 192 | pass | yes | 4.16e-17 | 65.032 | 13.100 | 7.206 | 9.0x | 1.8x |
-| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | 2.78e-17 | 864.647 | 324.305 | 158.503 | 5.5x | 2.0x |
+| path3 | 3 | 2 | pass | yes | 0 | 7.757 | 0.063 | 0.063 | 123.9x | 1.0x |
+| diamond | 4 | 4 | pass | yes | 0 | 5.040 | 0.100 | 0.117 | 43.0x | 0.9x |
+| two_triangles_bridge | 6 | 7 | pass | yes | 5.55e-17 | 5.368 | 0.131 | 0.163 | 32.8x | 0.8x |
+| star9_bidir | 9 | 16 | pass | yes | 0 | 9.682 | 0.349 | 0.235 | 41.2x | 1.5x |
+| directed_cycle6 | 6 | 6 | pass | yes | 0 | 8.082 | 0.188 | 0.167 | 48.3x | 1.1x |
+| two_cycles_shared_node | 5 | 6 | pass | yes | 1.11e-16 | 4.961 | 0.171 | 0.149 | 33.2x | 1.1x |
+| disconnected3 | 6 | 3 | pass | yes | 0 | 6.499 | 0.151 | 0.129 | 50.3x | 1.2x |
+| cliques_4x5 | 20 | 80 | pass | yes | 0 | 16.481 | 1.402 | 0.699 | 23.6x | 2.0x |
+| erdos_n64_m192_s11 | 64 | 192 | pass | yes | 4.16e-17 | 88.473 | 26.830 | 7.641 | 11.6x | 3.5x |
+| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | 2.78e-17 | 1189.984 | 366.960 | 223.992 | 5.3x | 1.6x |
 
 ## cdlp
 
@@ -78,49 +78,49 @@ Referensi: `networkx 3.7 (+ self-validated numpy PageRank reference; networkx.pa
 
 | Dataset | n | m | Correctness | Deterministic | Max abs err | Ours (public) ms | Ours (kernel) ms | Reference ms | Ratio public | Ratio kernel |
 |---|---|---|---|---|---|---|---|---|---|---|
-| path3 | 3 | 2 | pass | yes | — | 0.086 | — | — | — | — |
-| diamond | 4 | 4 | pass | yes | — | 0.068 | — | — | — | — |
-| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.116 | — | 0.241 | 0.5x | — |
-| star9_bidir | 9 | 16 | pass | yes | — | 0.178 | — | — | — | — |
-| directed_cycle6 | 6 | 6 | pass | yes | — | 0.153 | — | — | — | — |
-| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.136 | — | — | — | — |
-| disconnected3 | 6 | 3 | pass | yes | — | 0.104 | — | — | — | — |
-| cliques_4x5 | 20 | 80 | pass | yes | — | 0.700 | — | 0.652 | 1.1x | — |
-| erdos_n64_m192_s11 | 64 | 192 | pass | yes | — | 2.241 | — | — | — | — |
-| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | — | 17.769 | — | — | — | — |
-| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | — | 49.619 | — | — | — | — |
+| path3 | 3 | 2 | pass | yes | — | 1.640 | — | — | — | — |
+| diamond | 4 | 4 | pass | yes | — | 2.583 | — | — | — | — |
+| two_triangles_bridge | 6 | 7 | pass | yes | — | 4.295 | — | 0.231 | 18.6x | — |
+| star9_bidir | 9 | 16 | pass | yes | — | 2.658 | — | — | — | — |
+| directed_cycle6 | 6 | 6 | pass | yes | — | 4.626 | — | — | — | — |
+| two_cycles_shared_node | 5 | 6 | pass | yes | — | 4.640 | — | — | — | — |
+| disconnected3 | 6 | 3 | pass | yes | — | 5.053 | — | — | — | — |
+| cliques_4x5 | 20 | 80 | pass | yes | — | 4.579 | — | 0.675 | 6.8x | — |
+| erdos_n64_m192_s11 | 64 | 192 | pass | yes | — | 10.079 | — | — | — | — |
+| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | — | 39.600 | — | — | — | — |
+| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | — | 79.668 | — | — | — | — |
 
 ## lcc
 
 | Dataset | n | m | Correctness | Deterministic | Max abs err | Ours (public) ms | Ours (kernel) ms | Reference ms | Ratio public | Ratio kernel |
 |---|---|---|---|---|---|---|---|---|---|---|
-| path3 | 3 | 2 | pass | yes | 0 | 0.041 | — | 0.100 | 0.4x | — |
-| diamond | 4 | 4 | pass | yes | 3.33e-13 | 0.045 | — | 0.058 | 0.8x | — |
-| two_triangles_bridge | 6 | 7 | pass | yes | 3.33e-13 | 0.114 | — | 0.129 | 0.9x | — |
-| star9_bidir | 9 | 16 | pass | yes | 0 | 0.088 | — | 0.126 | 0.7x | — |
-| directed_cycle6 | 6 | 6 | pass | yes | 0 | 0.067 | — | 0.072 | 0.9x | — |
-| two_cycles_shared_node | 5 | 6 | pass | yes | 3.33e-13 | 0.052 | — | 0.067 | 0.8x | — |
-| disconnected3 | 6 | 3 | pass | yes | 0 | 0.045 | — | 0.090 | 0.5x | — |
-| cliques_4x5 | 20 | 80 | pass | yes | 0 | 0.222 | — | 0.655 | 0.3x | — |
-| erdos_n64_m192_s11 | 64 | 192 | pass | yes | 4.44e-13 | 1.630 | — | 1.777 | 0.9x | — |
-| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | 4.87e-13 | 6.076 | — | 9.651 | 0.6x | — |
-| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | 4.87e-13 | 10.704 | — | 27.630 | 0.4x | — |
+| path3 | 3 | 2 | pass | yes | 0 | 0.096 | — | 0.084 | 1.1x | — |
+| diamond | 4 | 4 | pass | yes | 3.33e-13 | 0.049 | — | 0.083 | 0.6x | — |
+| two_triangles_bridge | 6 | 7 | pass | yes | 3.33e-13 | 0.069 | — | 0.147 | 0.5x | — |
+| star9_bidir | 9 | 16 | pass | yes | 0 | 0.155 | — | 0.146 | 1.1x | — |
+| directed_cycle6 | 6 | 6 | pass | yes | 0 | 0.070 | — | 0.142 | 0.5x | — |
+| two_cycles_shared_node | 5 | 6 | pass | yes | 3.33e-13 | 0.073 | — | 0.156 | 0.5x | — |
+| disconnected3 | 6 | 3 | pass | yes | 0 | 0.092 | — | 0.083 | 1.1x | — |
+| cliques_4x5 | 20 | 80 | pass | yes | 0 | 0.266 | — | 0.360 | 0.7x | — |
+| erdos_n64_m192_s11 | 64 | 192 | pass | yes | 4.44e-13 | 1.183 | — | 1.435 | 0.8x | — |
+| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | 4.87e-13 | 4.642 | — | 9.563 | 0.5x | — |
+| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | 4.87e-13 | 7.641 | — | 30.025 | 0.3x | — |
 
 ## tc
 
 | Dataset | n | m | Correctness | Deterministic | Max abs err | Ours (public) ms | Ours (kernel) ms | Reference ms | Ratio public | Ratio kernel |
 |---|---|---|---|---|---|---|---|---|---|---|
-| path3 | 3 | 2 | pass | yes | — | 0.070 | — | 0.076 | 0.9x | — |
-| diamond | 4 | 4 | pass | yes | — | 0.042 | — | 0.047 | 0.9x | — |
-| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.121 | — | 0.090 | 1.3x | — |
-| star9_bidir | 9 | 16 | pass | yes | — | 0.144 | — | 0.121 | 1.2x | — |
-| directed_cycle6 | 6 | 6 | pass | yes | — | 0.104 | — | 0.059 | 1.8x | — |
-| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.103 | — | 0.035 | 2.9x | — |
-| disconnected3 | 6 | 3 | pass | yes | — | 0.054 | — | 0.084 | 0.6x | — |
-| cliques_4x5 | 20 | 80 | pass | yes | — | 0.480 | — | 0.153 | 3.1x | — |
-| erdos_n64_m192_s11 | 64 | 192 | pass | yes | — | 0.713 | — | 0.760 | 0.9x | — |
-| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | — | 5.960 | — | 5.936 | 1.0x | — |
-| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | — | 15.983 | — | 8.243 | 1.9x | — |
+| path3 | 3 | 2 | pass | yes | — | 0.066 | — | 0.066 | 1.0x | — |
+| diamond | 4 | 4 | pass | yes | — | 0.090 | — | 0.066 | 1.4x | — |
+| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.117 | — | 0.088 | 1.3x | — |
+| star9_bidir | 9 | 16 | pass | yes | — | 0.141 | — | 0.114 | 1.2x | — |
+| directed_cycle6 | 6 | 6 | pass | yes | — | 0.100 | — | 0.092 | 1.1x | — |
+| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.120 | — | 0.084 | 1.4x | — |
+| disconnected3 | 6 | 3 | pass | yes | — | 0.111 | — | 0.071 | 1.6x | — |
+| cliques_4x5 | 20 | 80 | pass | yes | — | 0.424 | — | 0.297 | 1.4x | — |
+| erdos_n64_m192_s11 | 64 | 192 | pass | yes | — | 1.208 | — | 1.016 | 1.2x | — |
+| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | — | 6.337 | — | 5.957 | 1.1x | — |
+| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | — | 9.251 | — | 7.849 | 1.2x | — |
 
 ## louvain
 
@@ -129,16 +129,16 @@ Referensi: `networkx 3.7 (+ self-validated numpy PageRank reference; networkx.pa
 | Dataset | n | m | Correctness | Deterministic | Max abs err | Ours (public) ms | Ours (kernel) ms | Reference ms | Ratio public | Ratio kernel |
 |---|---|---|---|---|---|---|---|---|---|---|
 | path3 | 3 | 2 | pass | yes | — | 0.079 | — | — | — | — |
-| diamond | 4 | 4 | pass | yes | — | 0.127 | — | — | — | — |
-| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.277 | — | 0.500 | 0.6x | — |
-| star9_bidir | 9 | 16 | pass | yes | — | 0.167 | — | — | — | — |
-| directed_cycle6 | 6 | 6 | pass | yes | — | 0.191 | — | — | — | — |
-| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.139 | — | — | — | — |
-| disconnected3 | 6 | 3 | pass | yes | — | 0.134 | — | — | — | — |
-| cliques_4x5 | 20 | 80 | pass | yes | — | 0.511 | — | 1.064 | 0.5x | — |
-| erdos_n64_m192_s11 | 64 | 192 | pass | yes | — | 6.422 | — | — | — | — |
-| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | — | 87.492 | — | — | — | — |
-| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | — | 188.759 | — | — | — | — |
+| diamond | 4 | 4 | pass | yes | — | 0.155 | — | — | — | — |
+| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.172 | — | 0.896 | 0.2x | — |
+| star9_bidir | 9 | 16 | pass | yes | — | 0.280 | — | — | — | — |
+| directed_cycle6 | 6 | 6 | pass | yes | — | 0.313 | — | — | — | — |
+| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.317 | — | — | — | — |
+| disconnected3 | 6 | 3 | pass | yes | — | 0.303 | — | — | — | — |
+| cliques_4x5 | 20 | 80 | pass | yes | — | 0.936 | — | 2.181 | 0.4x | — |
+| erdos_n64_m192_s11 | 64 | 192 | pass | yes | — | 11.718 | — | — | — | — |
+| erdos_n256_m1024_s12 | 256 | 1024 | pass | yes | — | 60.039 | — | — | — | — |
+| erdos_n512_m2048_s13 | 512 | 2048 | pass | yes | — | 225.785 | — | — | — | — |
 
 ## cycles
 
@@ -146,10 +146,10 @@ Referensi: `networkx 3.7 (+ self-validated numpy PageRank reference; networkx.pa
 
 | Dataset | n | m | Correctness | Deterministic | Max abs err | Ours (public) ms | Ours (kernel) ms | Reference ms | Ratio public | Ratio kernel |
 |---|---|---|---|---|---|---|---|---|---|---|
-| path3 | 3 | 2 | pass | yes | — | 0.063 | — | 0.220 | 0.3x | — |
-| diamond | 4 | 4 | pass | yes | — | 0.029 | — | 0.073 | 0.4x | — |
-| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.046 | — | 0.079 | 0.6x | — |
-| star9_bidir | 9 | 16 | pass | yes | — | 0.082 | — | 0.489 | 0.2x | — |
-| directed_cycle6 | 6 | 6 | pass | yes | — | 0.050 | — | 0.224 | 0.2x | — |
-| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.045 | — | 0.532 | 0.1x | — |
-| disconnected3 | 6 | 3 | pass | yes | — | 0.059 | — | 0.180 | 0.3x | — |
+| path3 | 3 | 2 | pass | yes | — | 0.066 | — | 0.170 | 0.4x | — |
+| diamond | 4 | 4 | pass | yes | — | 0.072 | — | 0.167 | 0.4x | — |
+| two_triangles_bridge | 6 | 7 | pass | yes | — | 0.116 | — | 0.185 | 0.6x | — |
+| star9_bidir | 9 | 16 | pass | yes | — | 0.164 | — | 0.722 | 0.2x | — |
+| directed_cycle6 | 6 | 6 | pass | yes | — | 0.096 | — | 0.425 | 0.2x | — |
+| two_cycles_shared_node | 5 | 6 | pass | yes | — | 0.090 | — | 0.554 | 0.2x | — |
+| disconnected3 | 6 | 3 | pass | yes | — | 0.054 | — | 0.141 | 0.4x | — |

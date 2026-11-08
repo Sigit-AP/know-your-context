@@ -643,20 +643,6 @@
   },
   {
    "rule": "POT2",
-   "file": "ops/diagnose.py",
-   "scope": "run_diagnostics",
-   "reason": "Linear diagnostic probe sequence; each probe independent. Ratchet baseline, may shrink only.",
-   "lines": 289
-  },
-  {
-   "rule": "POT2",
-   "file": "ops/doctor.py",
-   "scope": "run_doctor",
-   "reason": "Linear sequence of independent health probes over one report dict. Ratchet baseline, may shrink only.",
-   "lines": 407
-  },
-  {
-   "rule": "POT2",
    "file": "ops/export_cli.py",
    "scope": "run_export_command",
    "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
@@ -1011,20 +997,6 @@
    "scope": "WebviewApp.ledger_experience_payload",
    "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
    "lines": 64
-  },
-  {
-   "rule": "POT2",
-   "file": "serve/webview.py",
-   "scope": "WebviewServer._make_handler",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 444
-  },
-  {
-   "rule": "POT2",
-   "file": "serve/webview.py",
-   "scope": "WebviewServer._make_handler._Handler._dispatch_api",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 176
   },
   {
    "rule": "POT2",

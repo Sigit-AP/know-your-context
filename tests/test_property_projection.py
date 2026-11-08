@@ -752,7 +752,9 @@ def test_knowledge_events_respect_the_watermark(affecting: list[bool]) -> None:
             idempotency_key=f"ev:{index}",
         )
     projector = GraphProjector(store, output_root="unused")
-    events = projector._knowledge_events(store.knowledge_high_watermark())  # noqa: SLF001
+    # D3 (TASK2 WS-E): the replay query now carries event_seq for the
+    # incremental fold; after_event_seq=0 is the full prefix.
+    events = [event for _seq, event in projector._knowledge_events(0, store.knowledge_high_watermark())]  # noqa: SLF001
     # Only knowledge-affecting events replay, and they are exactly the
     # affecting upserts in append order.
     assert len(events) == sum(affecting)

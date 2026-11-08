@@ -186,7 +186,10 @@ class TestDaemonWorkerWatchdog:
         section = stats["worker_watchdog"]
         assert section["enabled"] is True
         names = set(section["workers"])
-        expected = {f"read-{i}" for i in range(config.read_pool_size)} | {"heavy", "acceptor", "reaper"}
+        # D1 (TASK2 WS-E): the writer lane joined supervision — the pre-fix
+        # pin {read, heavy, acceptor, reaper} encoded the half-alive-daemon
+        # bug (a crashed writer was never restarted).
+        expected = {f"read-{i}" for i in range(config.read_pool_size)} | {"heavy", "acceptor", "reaper", "writer"}
         assert names == expected
         assert all(w["alive"] for w in section["workers"].values())
 

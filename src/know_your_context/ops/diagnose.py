@@ -148,6 +148,246 @@ class _Checks:
         self.findings.append(finding)
 
 
+# ------------------------------------------------------------------ checks
+#
+# One module-level function per check (TASK2 WS-F / F2C): run_diagnostics is
+# a pure dispatch table over these — the pre-refactor nested closures put the
+# whole module's cyclomatic weight (C=47) on one function.
+
+
+def _store_select(store: EventStore) -> None:
+    with store.read() as conn:
+        conn.execute("SELECT 1").fetchone()
+
+
+def _hash_chain(store: EventStore, checks: _Checks) -> None:
+    report = store.verify_chain()
+    if not report.ok:
+        checks.add(
+            _finding(
+                "CHAIN_BROKEN",
+                "error",
+                "the event-log hash chain does not verify",
+                checked=report.checked,
+                first_bad_seq=report.first_bad_seq,
+            )
+        )
+
+
+def _migrations(store: EventStore, migrations_dir: str | Path | None, checks: _Checks) -> None:
+    applied = store.applied_migrations()
+    available = available_migration_versions(migrations_dir)
+    if applied != available:
+        checks.add(
+            _finding(
+                "MIGRATIONS_DRIFT",
+                "error",
+                "applied migrations differ from the migrations on disk",
+                applied=applied,
+                available=available,
+            )
+        )
+
+
+def _stale_journals(store: EventStore, stale_after_seconds: float, checks: _Checks) -> None:
+    stale = store.incomplete_journals(stale_after_seconds)
+    if stale:
+        checks.add(
+            _finding(
+                "STALE_JOURNALS",
+                "warning",
+                f"{len(stale)} in-progress journal(s) are stale beyond {stale_after_seconds}s",
+                count=len(stale),
+                stale_after_seconds=stale_after_seconds,
+            )
+        )
+
+
+def _pointer(root: Path, checks: _Checks) -> tuple[Path | None, dict[str, Any] | None]:
+    if not root.is_dir():
+        checks.add(_finding("PROJECTION_ABSENT", "warning", f"projection root {root} does not exist", path=str(root)))
+        return None, None
+    pointer = root / "CURRENT"
+    try:
+        name = pointer.read_text(encoding="utf-8").strip()
+    except OSError:
+        checks.add(
+            _finding("PROJECTION_ABSENT", "warning", "no active projection (CURRENT pointer missing)", path=str(root))
+        )
+        return None, None
+    if not name or len(name) != 64 or any(char not in "0123456789abcdef" for char in name):
+        checks.add(_finding("CURRENT_POINTER_INVALID", "error", "CURRENT does not name a 64-hex generation", name=name))
+        return None, None
+    generation = root / "generations" / name
+    if not generation.is_dir():
+        checks.add(_finding("CURRENT_POINTER_INVALID", "error", "CURRENT names a generation absent on disk", name=name))
+        return None, None
+    try:
+        checks.checked.append("manifest_load")
+        loaded = json.loads((generation / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        checks.add(
+            _finding(
+                "MANIFEST_UNREADABLE",
+                "error",
+                f"manifest.json of the active generation is unreadable: {type(error).__name__}",
+            )
+        )
+        return generation, None
+    if not isinstance(loaded, dict):
+        checks.add(_finding("MANIFEST_UNREADABLE", "error", "manifest.json is not an object"))
+        return generation, None
+    return generation, loaded
+
+
+def _manifest_vs_disk(generation_dir: Path, manifest: dict[str, Any], checks: _Checks) -> None:
+    artifacts = manifest.get("artifacts", {})
+    artifact_map = artifacts if isinstance(artifacts, dict) else {}
+    missing: list[str] = []
+    mismatched: list[str] = []
+    for name in sorted(artifact_map):
+        target = generation_dir / name
+        if not target.is_file():
+            missing.append(name)
+            continue
+        try:
+            digest = _sha256(target.read_bytes())
+        except OSError:
+            missing.append(name)
+            continue
+        if digest != artifact_map[name]:
+            mismatched.append(name)
+    if missing:
+        checks.add(
+            _finding(
+                "ARTIFACT_MISSING",
+                "error",
+                f"{len(missing)} manifest artifact(s) are absent or unreadable on disk",
+                artifacts=missing,
+            )
+        )
+    if mismatched:
+        checks.add(
+            _finding(
+                "ARTIFACT_HASH_MISMATCH",
+                "error",
+                f"{len(mismatched)} artifact(s) on disk no longer match the manifest hash",
+                artifacts=mismatched,
+            )
+        )
+    expected = set(artifact_map) | {"manifest.json"}
+    extra = sorted(
+        path.relative_to(generation_dir).as_posix()
+        for path in generation_dir.rglob("*")
+        if path.is_file() and path.relative_to(generation_dir).as_posix() not in expected
+    )
+    if extra:
+        checks.add(
+            _finding(
+                "ARTIFACT_UNMANIFESTED",
+                "warning",
+                f"{len(extra)} file(s) on disk are not named by the manifest",
+                artifacts=extra,
+            )
+        )
+
+
+def _watermark(store: EventStore, manifest: dict[str, Any], checks: _Checks) -> None:
+    store_watermark = store.knowledge_high_watermark()
+    manifest_watermark = manifest.get("source_knowledge_high_watermark")
+    if manifest_watermark != store_watermark:
+        checks.add(
+            _finding(
+                "WATERMARK_MISMATCH",
+                "warning",
+                "the active projection's knowledge watermark differs from the store's",
+                manifest_watermark=manifest_watermark,
+                store_watermark=store_watermark,
+            )
+        )
+    store_version = store.projection_version()
+    manifest_version = manifest.get("projection_version")
+    if store_version is not None and manifest_version is not None and store_version != manifest_version:
+        checks.add(
+            _finding(
+                "PROJECTION_VERSION_MISMATCH",
+                "warning",
+                "the store's projection pointer disagrees with the active manifest",
+                store_version=store_version,
+                manifest_version=manifest_version,
+            )
+        )
+
+
+def _validator_check(
+    validator: ReadModelValidator | None, generation_dir: Path, manifest: dict[str, Any], checks: _Checks
+) -> None:
+    active = validator if validator is not None else ReadModelValidator()
+    report = active.validate(generation_dir, manifest)
+    if not report.ok:
+        checks.add(
+            _finding(
+                "VALIDATOR_FAILED",
+                "error",
+                f"the read-model validator rejects the active generation ({len(report.errors)} error(s))",
+                errors=list(report.errors),
+                node_count=report.node_count,
+                edge_count=report.edge_count,
+            )
+        )
+
+
+def _publish_capacity(store: EventStore, checks: _Checks) -> None:
+    estimated = store.estimate_publish_bytes()
+    guard = int(ARTIFACT_MAX_BYTES * PUBLISH_CAPACITY_RATIO)
+    if estimated > ARTIFACT_MAX_BYTES:
+        checks.add(
+            _finding(
+                "CAPACITY_EXCEEDED",
+                "error",
+                "the publish estimate exceeds the per-artifact cap; publishing is impossible",
+                estimated_bytes=estimated,
+                cap_bytes=ARTIFACT_MAX_BYTES,
+            )
+        )
+    elif estimated > guard:
+        checks.add(
+            _finding(
+                "CAPACITY_GUARD_EXCEEDED",
+                "warning",
+                "the publish estimate is past the write-side guard; the store will refuse further growth",
+                estimated_bytes=estimated,
+                guard_bytes=guard,
+                cap_bytes=ARTIFACT_MAX_BYTES,
+            )
+        )
+
+
+def _permissions(store: EventStore, generation_dir: Path | None, checks: _Checks) -> None:
+    paths: list[Path] = []
+    if store.db_path != ":memory:":
+        paths.append(Path(store.db_path))
+    if generation_dir is not None:
+        paths.extend(sorted(path for path in generation_dir.rglob("*") if path.is_file()))
+    for path in paths:
+        if not path.exists():
+            checks.add(_finding("FILE_UNREADABLE", "error", f"expected file is missing: {path}", path=str(path)))
+            continue
+        mode = stat.S_IMODE(path.stat().st_mode)
+        if not os.access(path, os.R_OK):
+            checks.add(_finding("FILE_UNREADABLE", "error", f"file is not readable: {path}", path=str(path)))
+        if mode & 0o077:
+            checks.add(
+                _finding(
+                    "PERMISSIONS_TOO_OPEN",
+                    "warning",
+                    f"file is group/other-accessible (mode {oct(mode)}): {path.name}",
+                    path=str(path),
+                    mode=oct(mode),
+                )
+            )
+
+
 # ------------------------------------------------------------------ report
 
 
@@ -191,57 +431,10 @@ def run_diagnostics(
     """Run the full self-check; strictly read-only, fail-closed per check."""
     checks = _Checks()
 
-    def _store_select() -> None:
-        with store.read() as conn:
-            conn.execute("SELECT 1").fetchone()
-
-    checks.run("store_select", _store_select)
-
-    def _hash_chain() -> None:
-        report = store.verify_chain()
-        if not report.ok:
-            checks.add(
-                _finding(
-                    "CHAIN_BROKEN",
-                    "error",
-                    "the event-log hash chain does not verify",
-                    checked=report.checked,
-                    first_bad_seq=report.first_bad_seq,
-                )
-            )
-
-    checks.run("hash_chain", _hash_chain)
-
-    def _migrations() -> None:
-        applied = store.applied_migrations()
-        available = available_migration_versions(migrations_dir)
-        if applied != available:
-            checks.add(
-                _finding(
-                    "MIGRATIONS_DRIFT",
-                    "error",
-                    "applied migrations differ from the migrations on disk",
-                    applied=applied,
-                    available=available,
-                )
-            )
-
-    checks.run("migrations", _migrations)
-
-    def _stale_journals() -> None:
-        stale = store.incomplete_journals(stale_after_seconds)
-        if stale:
-            checks.add(
-                _finding(
-                    "STALE_JOURNALS",
-                    "warning",
-                    f"{len(stale)} in-progress journal(s) are stale beyond {stale_after_seconds}s",
-                    count=len(stale),
-                    stale_after_seconds=stale_after_seconds,
-                )
-            )
-
-    checks.run("stale_journals", _stale_journals)
+    checks.run("store_select", lambda: _store_select(store))
+    checks.run("hash_chain", lambda: _hash_chain(store, checks))
+    checks.run("migrations", lambda: _migrations(store, migrations_dir, checks))
+    checks.run("stale_journals", lambda: _stale_journals(store, stale_after_seconds, checks))
 
     # ---------------------------------------------------------- projection
     generation_dir: Path | None = None
@@ -252,219 +445,20 @@ def run_diagnostics(
         )
     else:
         root = Path(projection_root)
-
-        def _pointer() -> tuple[Path | None, dict[str, Any] | None]:
-            if not root.is_dir():
-                checks.add(
-                    _finding("PROJECTION_ABSENT", "warning", f"projection root {root} does not exist", path=str(root))
-                )
-                return None, None
-            pointer = root / "CURRENT"
-            try:
-                name = pointer.read_text(encoding="utf-8").strip()
-            except OSError:
-                checks.add(
-                    _finding(
-                        "PROJECTION_ABSENT", "warning", "no active projection (CURRENT pointer missing)", path=str(root)
-                    )
-                )
-                return None, None
-            if not name or len(name) != 64 or any(char not in "0123456789abcdef" for char in name):
-                checks.add(
-                    _finding("CURRENT_POINTER_INVALID", "error", "CURRENT does not name a 64-hex generation", name=name)
-                )
-                return None, None
-            generation = root / "generations" / name
-            if not generation.is_dir():
-                checks.add(
-                    _finding("CURRENT_POINTER_INVALID", "error", "CURRENT names a generation absent on disk", name=name)
-                )
-                return None, None
-            try:
-                checks.checked.append("manifest_load")
-                loaded = json.loads((generation / "manifest.json").read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError) as error:
-                checks.add(
-                    _finding(
-                        "MANIFEST_UNREADABLE",
-                        "error",
-                        f"manifest.json of the active generation is unreadable: {type(error).__name__}",
-                    )
-                )
-                return generation, None
-            if not isinstance(loaded, dict):
-                checks.add(_finding("MANIFEST_UNREADABLE", "error", "manifest.json is not an object"))
-                return generation, None
-            return generation, loaded
-
-        def _projection_pointer() -> None:
-            nonlocal generation_dir, manifest
-            generation_dir, manifest = _pointer()
-
-        checks.run("projection_pointer", _projection_pointer)
-
+        resolved: list[tuple[Path | None, dict[str, Any] | None]] = []
+        checks.run("projection_pointer", lambda: resolved.append(_pointer(root, checks)))
+        if resolved:
+            generation_dir, manifest = resolved[0]
         if generation_dir is not None and manifest is not None:
-
-            def _manifest_vs_disk() -> None:
-                assert generation_dir is not None and manifest is not None
-                artifacts = manifest.get("artifacts", {})
-                artifact_map = artifacts if isinstance(artifacts, dict) else {}
-                missing: list[str] = []
-                mismatched: list[str] = []
-                for name in sorted(artifact_map):
-                    target = generation_dir / name
-                    if not target.is_file():
-                        missing.append(name)
-                        continue
-                    try:
-                        digest = _sha256(target.read_bytes())
-                    except OSError:
-                        missing.append(name)
-                        continue
-                    if digest != artifact_map[name]:
-                        mismatched.append(name)
-                if missing:
-                    checks.add(
-                        _finding(
-                            "ARTIFACT_MISSING",
-                            "error",
-                            f"{len(missing)} manifest artifact(s) are absent or unreadable on disk",
-                            artifacts=missing,
-                        )
-                    )
-                if mismatched:
-                    checks.add(
-                        _finding(
-                            "ARTIFACT_HASH_MISMATCH",
-                            "error",
-                            f"{len(mismatched)} artifact(s) on disk no longer match the manifest hash",
-                            artifacts=mismatched,
-                        )
-                    )
-                expected = set(artifact_map) | {"manifest.json"}
-                extra = sorted(
-                    path.relative_to(generation_dir).as_posix()
-                    for path in generation_dir.rglob("*")
-                    if path.is_file() and path.relative_to(generation_dir).as_posix() not in expected
-                )
-                if extra:
-                    checks.add(
-                        _finding(
-                            "ARTIFACT_UNMANIFESTED",
-                            "warning",
-                            f"{len(extra)} file(s) on disk are not named by the manifest",
-                            artifacts=extra,
-                        )
-                    )
-
-            checks.run("manifest_vs_disk", _manifest_vs_disk)
-
-            def _watermark() -> None:
-                assert manifest is not None
-                store_watermark = store.knowledge_high_watermark()
-                manifest_watermark = manifest.get("source_knowledge_high_watermark")
-                if manifest_watermark != store_watermark:
-                    checks.add(
-                        _finding(
-                            "WATERMARK_MISMATCH",
-                            "warning",
-                            "the active projection's knowledge watermark differs from the store's",
-                            manifest_watermark=manifest_watermark,
-                            store_watermark=store_watermark,
-                        )
-                    )
-                store_version = store.projection_version()
-                manifest_version = manifest.get("projection_version")
-                if store_version is not None and manifest_version is not None and store_version != manifest_version:
-                    checks.add(
-                        _finding(
-                            "PROJECTION_VERSION_MISMATCH",
-                            "warning",
-                            "the store's projection pointer disagrees with the active manifest",
-                            store_version=store_version,
-                            manifest_version=manifest_version,
-                        )
-                    )
-
-            checks.run("watermark_consistency", _watermark)
-
-            def _validator() -> None:
-                assert generation_dir is not None and manifest is not None
-                active = validator if validator is not None else ReadModelValidator()
-                report = active.validate(generation_dir, manifest)
-                if not report.ok:
-                    checks.add(
-                        _finding(
-                            "VALIDATOR_FAILED",
-                            "error",
-                            f"the read-model validator rejects the active generation ({len(report.errors)} error(s))",
-                            errors=list(report.errors),
-                            node_count=report.node_count,
-                            edge_count=report.edge_count,
-                        )
-                    )
-
-            checks.run("validator", _validator)
+            checks.run("manifest_vs_disk", lambda: _manifest_vs_disk(generation_dir, manifest, checks))
+            checks.run("watermark_consistency", lambda: _watermark(store, manifest, checks))
+            checks.run("validator", lambda: _validator_check(validator, generation_dir, manifest, checks))
 
     # ----------------------------------------------------------- capacity
-
-    def _publish_capacity() -> None:
-        estimated = store.estimate_publish_bytes()
-        guard = int(ARTIFACT_MAX_BYTES * PUBLISH_CAPACITY_RATIO)
-        if estimated > ARTIFACT_MAX_BYTES:
-            checks.add(
-                _finding(
-                    "CAPACITY_EXCEEDED",
-                    "error",
-                    "the publish estimate exceeds the per-artifact cap; publishing is impossible",
-                    estimated_bytes=estimated,
-                    cap_bytes=ARTIFACT_MAX_BYTES,
-                )
-            )
-        elif estimated > guard:
-            checks.add(
-                _finding(
-                    "CAPACITY_GUARD_EXCEEDED",
-                    "warning",
-                    "the publish estimate is past the write-side guard; the store will refuse further growth",
-                    estimated_bytes=estimated,
-                    guard_bytes=guard,
-                    cap_bytes=ARTIFACT_MAX_BYTES,
-                )
-            )
-
-    checks.run("publish_capacity", _publish_capacity)
+    checks.run("publish_capacity", lambda: _publish_capacity(store, checks))
 
     # ---------------------------------------------------------- permissions
-
     if check_permissions:
-
-        def _permissions() -> None:
-            paths: list[Path] = []
-            if store.db_path != ":memory:":
-                paths.append(Path(store.db_path))
-            if generation_dir is not None:
-                paths.extend(sorted(path for path in generation_dir.rglob("*") if path.is_file()))
-            for path in paths:
-                if not path.exists():
-                    checks.add(
-                        _finding("FILE_UNREADABLE", "error", f"expected file is missing: {path}", path=str(path))
-                    )
-                    continue
-                mode = stat.S_IMODE(path.stat().st_mode)
-                if not os.access(path, os.R_OK):
-                    checks.add(_finding("FILE_UNREADABLE", "error", f"file is not readable: {path}", path=str(path)))
-                if mode & 0o077:
-                    checks.add(
-                        _finding(
-                            "PERMISSIONS_TOO_OPEN",
-                            "warning",
-                            f"file is group/other-accessible (mode {oct(mode)}): {path.name}",
-                            path=str(path),
-                            mode=oct(mode),
-                        )
-                    )
-
-        checks.run("file_permissions", _permissions)
+        checks.run("file_permissions", lambda: _permissions(store, generation_dir, checks))
 
     return DiagnosticReport(findings=tuple(checks.findings), checked=tuple(sorted(set(checks.checked))))

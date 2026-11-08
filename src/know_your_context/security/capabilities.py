@@ -96,6 +96,13 @@ _MAX_VERB_CHARS = 128
 _MAX_NONCE_CHARS = 128
 _GENESIS_HASH = "0" * 64
 
+# Tail-read window for the O(1) audit-append path (F1C, TASK2 WS-F): the
+# head marker + the log's last line are enough to compute (seq, prev). A
+# line longer than this window (or any disagreement) degrades to the
+# full-scan fallback with the pre-fix semantics — the log stays the source
+# of truth, the head marker is only a shortcut that must agree with it.
+_AUDIT_TAIL_WINDOW_BYTES = 64 * 1024
+
 
 class CapabilityError(SecurityError):
     """Base class for fail-closed capability decisions."""
@@ -176,6 +183,23 @@ def _b64decode(text: str) -> bytes:
 
 def _canonical(payload: Mapping[str, Any]) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _copy_registry(registry: Mapping[str, Any]) -> dict[str, Any]:
+    """Defensive copy of the cached registry without a serializer round-trip.
+
+    F1C residual: ``json.loads(json.dumps(...))`` cost a full encode+decode
+    of every entry per call (measured ~45% of ``issue`` at 5000 tokens).
+    Two levels of dict copy give the same isolation for every mutation the
+    store performs (``issued``/``revoked`` key insertions) at pointer-copy
+    cost. Entry dicts are treated as immutable by convention — callers
+    replace keys, never mutate an entry in place.
+    """
+    return {
+        "version": registry["version"],
+        "issued": dict(registry["issued"]),
+        "revoked": dict(registry["revoked"]),
+    }
 
 
 def _validate_number(value: Any, field: str) -> float:
@@ -410,7 +434,7 @@ class CapabilityStore:
         with self._registry_lock:
             cached_fingerprint, cached = self._registry_cache
             if fingerprint == cached_fingerprint and fingerprint is not None:
-                return json.loads(json.dumps(cached))  # defensive copy
+                return _copy_registry(cached)
             if fingerprint is None:
                 registry: dict[str, Any] = {"version": 1, "issued": {}, "revoked": {}}
             else:
@@ -428,7 +452,7 @@ class CapabilityStore:
                 ):
                     raise CapabilityStoreError(f"capability registry at {self.registry_path} has an invalid shape")
             self._registry_cache = (fingerprint, registry)
-            return json.loads(json.dumps(registry))
+            return _copy_registry(registry)
 
     def _write_registry(self, registry: Mapping[str, Any]) -> None:
         with self._registry_lock:
@@ -437,7 +461,7 @@ class CapabilityStore:
             tmp.write_text(_canonical(registry) + "\n", encoding="utf-8")
             os.chmod(tmp, stat.S_IRUSR | stat.S_IWUSR)
             os.replace(tmp, self.registry_path)
-            self._registry_cache = (self._registry_fingerprint(), dict(registry))
+            self._registry_cache = (self._registry_fingerprint(), _copy_registry(registry))
 
     def _revoked_nonces(self) -> frozenset[str]:
         return frozenset(self._load_registry()["revoked"])
@@ -545,25 +569,7 @@ class CapabilityStore:
         """Append one hash-chained audit event (seq, prev, at, ..., hash)."""
         moment = time.time() if now is None else float(now)
         with self._audit_lock:
-            seq = 1
-            prev = _GENESIS_HASH
-            try:
-                with self.audit_path.open("rb") as handle:
-                    handle.seek(0, os.SEEK_END)
-                    if handle.tell() > 0:
-                        # Count lines and read the tail hash; the log is the
-                        # operator's security record and stays small by
-                        # policy (denials + lifecycle, never payloads).
-                        handle.seek(0)
-                        lines = handle.read().splitlines()
-                        seq = len(lines) + 1
-                        prev = str(json.loads(lines[-1])["hash"])
-            except FileNotFoundError:
-                pass
-            except (OSError, json.JSONDecodeError, KeyError) as error:
-                raise CapabilityStoreError(
-                    f"capability audit log at {self.audit_path} is unreadable: {error}"
-                ) from error
+            seq, prev = self._audit_head()
             record: dict[str, Any] = {"seq": seq, "prev": prev, "at": moment, **dict(event)}
             record["hash"] = hashlib.sha256(_canonical(record).encode("utf-8")).hexdigest()
             self._root.mkdir(parents=True, exist_ok=True)
@@ -576,6 +582,103 @@ class CapabilityStore:
             tmp.write_text(f"{seq} {record['hash']}\n", encoding="utf-8")
             os.chmod(tmp, stat.S_IRUSR | stat.S_IWUSR)
             os.replace(tmp, self.audit_head_path)
+
+    def _audit_head(self) -> tuple[int, str]:
+        """``(seq, prev)`` for the next append; O(1) on the steady path.
+
+        F1C: the head marker plus the log's last line carry everything the
+        append needs. The fast path is taken only when the marker AGREES
+        with the log tail (or the tail sits exactly one line ahead — the
+        crash window between the log append and the marker replace). Any
+        other shape — missing/garbage marker, disagreeing tail, an
+        over-window line — degrades to the full scan, so the semantics are
+        identical to reading the whole log (the log is always the truth).
+        """
+        head = self._read_head_marker()
+        if head is not None:
+            tail = self._read_tail_record()
+            if tail is not None:
+                head_seq, head_hash = head
+                tail_seq, tail_hash = tail
+                if (tail_seq, tail_hash) == head or tail_seq == head_seq + 1:
+                    return tail_seq + 1, tail_hash
+        return self._audit_head_full_scan()
+
+    def _read_head_marker(self) -> tuple[int, str] | None:
+        """Parse ``capability-audit.head``; ``None`` on any doubt."""
+        try:
+            fields = self.audit_head_path.read_text(encoding="utf-8").split()
+        except OSError:
+            return None
+        if len(fields) != 2:
+            return None
+        try:
+            seq = int(fields[0])
+        except ValueError:
+            return None
+        digest = fields[1]
+        if seq < 1 or len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
+            return None
+        return seq, digest
+
+    def _read_tail_record(self) -> tuple[int, str] | None:
+        """``(seq, hash)`` of the log's last line via a bounded tail read.
+
+        ``None`` when the log is missing/empty, the last line is longer
+        than the tail window, or the line does not parse — all of which
+        route the caller to the full-scan fallback (or, for a corrupt last
+        line, to the typed failure the full scan raises).
+        """
+        try:
+            size = self.audit_path.stat().st_size
+            if size == 0:
+                return None
+            with self.audit_path.open("rb") as handle:
+                handle.seek(max(0, size - _AUDIT_TAIL_WINDOW_BYTES))
+                chunk = handle.read()
+        except OSError:
+            return None
+        if size > _AUDIT_TAIL_WINDOW_BYTES:
+            newline = chunk.find(b"\n")
+            if newline < 0:
+                return None  # the last line alone outlengthens the window
+            chunk = chunk[newline + 1 :]
+        lines = chunk.splitlines()
+        if not lines:
+            return None
+        try:
+            record = json.loads(lines[-1])
+            seq = int(record["seq"])
+            digest = str(record["hash"])
+        except json.JSONDecodeError, KeyError, TypeError, ValueError:
+            return None
+        return seq, digest
+
+    def _audit_head_full_scan(self) -> tuple[int, str]:
+        """The pre-head-cache semantics: count every line, hash the last.
+
+        Kept as the bootstrap for logs written before the head marker
+        existed and as the fallback for any head/tail disagreement; the
+        typed failure on an unreadable log lives here and only here.
+        """
+        seq = 1
+        prev = _GENESIS_HASH
+        try:
+            with self.audit_path.open("rb") as handle:
+                handle.seek(0, os.SEEK_END)
+                if handle.tell() > 0:
+                    # Count lines and read the tail hash; the log is the
+                    # operator's security record and stays small by
+                    # policy (denials + lifecycle, never payloads).
+                    handle.seek(0)
+                    lines = handle.read().splitlines()
+                    seq = len(lines) + 1
+                    prev = str(json.loads(lines[-1])["hash"])
+        except FileNotFoundError:
+            pass
+        except (OSError, json.JSONDecodeError, KeyError) as error:
+            raise CapabilityStoreError(f"capability audit log at {self.audit_path} is unreadable: {error}") from error
+        return seq, prev
 
     def audit_events(self) -> list[dict[str, Any]]:
         try:

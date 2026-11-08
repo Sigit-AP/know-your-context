@@ -45,6 +45,7 @@ import re
 import unicodedata
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from functools import lru_cache
 from pathlib import Path
@@ -52,7 +53,16 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from know_your_context.domain import Event, EventKind, Node, RelationKind, canonical_json, new_id, quantize_score
+from know_your_context.domain import (
+    Event,
+    EventKind,
+    Node,
+    Relation,
+    RelationKind,
+    canonical_json,
+    new_id,
+    quantize_score,
+)
 from know_your_context.exporters.orchestrator import ExportError, ExportRegistry, manifest_entries, produce_exports
 from know_your_context.graphify_adapter import (
     ADAPTER_VERSION,
@@ -511,6 +521,28 @@ def _secret_category_scan(text: str) -> str | None:
     return _raw_secret_category(text)
 
 
+@dataclass
+class _ReplayState:
+    """The accumulated event fold behind incremental publish (D3, TASK2 WS-E).
+
+    Folding events is monotone: NODE_UPSERT replaces, NODE_RETIRE removes,
+    RELATION_ADD appends — so folding a delta into the accumulated state is
+    exactly equivalent to re-folding the full prefix, PROVIDED the delta is
+    precisely the events with ``event_seq`` greater than every event already
+    folded. That holds because the event log is append-only and
+    ``knowledge_seq`` is assigned ``MAX(knowledge_seq)+1`` under the single
+    writer, making knowledge_seq monotone in event_seq. Any watermark
+    regression (fixed-mark probe at an earlier seq, store restored under the
+    projector) discards the state and replays in full.
+    """
+
+    nodes: dict[str, Node] = field(default_factory=dict)
+    versions: dict[str, int] = field(default_factory=dict)
+    relations: list[Relation] = field(default_factory=list)
+    last_event_seq: int = 0
+    watermark: int = 0
+
+
 class GraphProjector:
     """The single serialized projector for one corpus root."""
 
@@ -551,6 +583,10 @@ class GraphProjector:
         self._allow_shrink = allow_shrink
         self._max_artifact_bytes = max_artifact_bytes
         self._export_registry = export_registry
+        # D3: the accumulated fold that makes publish O(delta) instead of
+        # O(K). In-memory only — a process restart simply replays in full
+        # once, and a watermark regression discards it (see _ReplayState).
+        self._replay_state: _ReplayState | None = None
 
     # ------------------------------------------------------------------ lock
 
@@ -814,28 +850,73 @@ class GraphProjector:
                 },
             )
 
-    def _knowledge_events(self, upto_knowledge_seq: int) -> list[Event]:
+    def _knowledge_events(self, after_event_seq: int, upto_knowledge_seq: int) -> list[tuple[int, Event]]:
+        """Knowledge events up to the watermark, with their store sequence.
+
+        ``after_event_seq=0`` is the full prefix (first build, regression,
+        fallback); otherwise exactly the not-yet-folded delta (D3). The
+        ``event_seq`` rides along so the accumulated state knows where the
+        fold ends — without it the next delta would re-fold the prefix.
+        """
         with self._store.read() as conn:
             rows = conn.execute(
-                "SELECT payload_json FROM event_log WHERE kind = 'domain' AND knowledge_affecting = 1 "
-                "AND knowledge_seq IS NOT NULL AND knowledge_seq <= ? ORDER BY event_seq",
-                (upto_knowledge_seq,),
+                "SELECT event_seq, payload_json FROM event_log WHERE kind = 'domain' AND knowledge_affecting = 1 "
+                "AND knowledge_seq IS NOT NULL AND knowledge_seq <= ? AND event_seq > ? ORDER BY event_seq",
+                (upto_knowledge_seq, after_event_seq),
             ).fetchall()
-        return [Event.model_validate(json.loads(str(row["payload_json"]))) for row in rows]
+        return [(int(row["event_seq"]), Event.model_validate(json.loads(str(row["payload_json"])))) for row in rows]
 
-    def _extraction(self, events: list[Event]) -> tuple[dict[str, Any], list[tuple[str, str, str]]]:
-        nodes: dict[str, Node] = {}
-        versions: dict[str, int] = {}
-        relations = []
-        for event in events:
-            if event.kind is EventKind.NODE_UPSERT and event.node is not None:
-                versions[event.node_id] = versions.get(event.node_id, 0) + 1
-                nodes[event.node_id] = event.node
-            elif event.kind is EventKind.NODE_RETIRE:
-                nodes.pop(event.node_id, None)
-                versions.pop(event.node_id, None)
-            elif event.kind is EventKind.RELATION_ADD and event.relation is not None:
-                relations.append(event.relation)
+    @staticmethod
+    def _fold_event(state: _ReplayState, event: Event) -> None:
+        """Apply one knowledge event to the accumulated replay state."""
+        if event.kind is EventKind.NODE_UPSERT and event.node is not None:
+            state.versions[event.node_id] = state.versions.get(event.node_id, 0) + 1
+            state.nodes[event.node_id] = event.node
+        elif event.kind is EventKind.NODE_RETIRE:
+            state.nodes.pop(event.node_id, None)
+            state.versions.pop(event.node_id, None)
+        elif event.kind is EventKind.RELATION_ADD and event.relation is not None:
+            state.relations.append(event.relation)
+
+    def _replay_upto(self, watermark: int) -> tuple[_ReplayState, bool]:
+        """The replay state at ``watermark``; ``(state, used_delta)``.
+
+        Forward moves fold only the delta since the last replayed
+        ``event_seq``; a first build or a watermark regression replays the
+        full prefix. A delta row that would not move the fold forward is a
+        state-corruption signal: discard and full-replay (fail closed to
+        correctness, never to a cheap-but-wrong publish).
+        """
+        state = self._replay_state
+        while True:  # at most two passes: delta, then the full-replay fallback
+            if state is None or state.watermark > watermark:
+                state = _ReplayState()
+                for event_seq, event in self._knowledge_events(0, watermark):
+                    self._fold_event(state, event)
+                    state.last_event_seq = event_seq
+                state.watermark = watermark
+                self._replay_state = state
+                return state, False
+            delta = self._knowledge_events(state.last_event_seq, watermark)
+            for event_seq, event in delta:
+                if event_seq <= state.last_event_seq:
+                    logger.warning(
+                        "incremental replay saw a non-forward event_seq %d (last %d); full replay",
+                        event_seq,
+                        state.last_event_seq,
+                    )
+                    state = None
+                    break
+                self._fold_event(state, event)
+                state.last_event_seq = event_seq
+            if state is not None:
+                state.watermark = watermark
+                return state, bool(delta)
+
+    def _extraction(self, state: _ReplayState) -> tuple[dict[str, Any], list[tuple[str, str, str]]]:
+        nodes = state.nodes
+        versions = state.versions
+        relations = state.relations
 
         node_dicts: dict[str, dict[str, Any]] = {}
         raw_fields: dict[str, tuple[tuple[str, str], ...]] = {}
@@ -1203,37 +1284,60 @@ class GraphProjector:
                     f"knowledge high watermark {store_watermark}"
                 )
             watermark = store_watermark if upto_knowledge_seq is None else upto_knowledge_seq
-            extraction, quarantined = self._extraction(self._knowledge_events(watermark))
-            generation_dir, manifest, node_count, edge_count = self._build_generation(
-                extraction,
-                watermark,
-                allow_shrink=self._allow_shrink if allow_shrink is None else allow_shrink,
-                quarantined_count=len(quarantined),
-            )
-            report = self._validator.validate(generation_dir, manifest)
-            if not report.ok:
-                raise ProjectionValidationError(
-                    "generation failed the read-model validator: " + "; ".join(report.errors)
-                )
-            if quarantined:
-                # The generation passed every gate with the poisoned nodes
-                # excluded — the security event is real, so it is journaled.
-                self._record_quarantine(
-                    quarantined,
-                    projection_version=str(manifest["projection_version"]),
-                    watermark=watermark,
-                )
-            if activate:
-                self._activate(manifest, generation_dir)
-            return ProjectionReceipt(
+            state, used_delta = self._replay_upto(watermark)
+            extraction, quarantined = self._extraction(state)
+            try:
+                return self._publish(extraction, quarantined, watermark, allow_shrink=allow_shrink, activate=activate)
+            except ProjectionValidationError:
+                if not used_delta:
+                    raise
+                # D3 fallback: a delta publish that fails validation retries
+                # once as a full replay before the error may escape — a
+                # corrupt accumulated state must never veto correctness.
+                logger.warning("delta publish failed validation at watermark %d; retrying as full replay", watermark)
+                self._replay_state = None
+                state, _ = self._replay_upto(watermark)
+                extraction, quarantined = self._extraction(state)
+                return self._publish(extraction, quarantined, watermark, allow_shrink=allow_shrink, activate=activate)
+
+    def _publish(
+        self,
+        extraction: dict[str, Any],
+        quarantined: list[tuple[str, str, str]],
+        watermark: int,
+        *,
+        allow_shrink: bool | None,
+        activate: bool,
+    ) -> ProjectionReceipt:
+        """Build, validate, (audit,) and activate one extraction."""
+        generation_dir, manifest, node_count, edge_count = self._build_generation(
+            extraction,
+            watermark,
+            allow_shrink=self._allow_shrink if allow_shrink is None else allow_shrink,
+            quarantined_count=len(quarantined),
+        )
+        report = self._validator.validate(generation_dir, manifest)
+        if not report.ok:
+            raise ProjectionValidationError("generation failed the read-model validator: " + "; ".join(report.errors))
+        if quarantined:
+            # The generation passed every gate with the poisoned nodes
+            # excluded — the security event is real, so it is journaled.
+            self._record_quarantine(
+                quarantined,
                 projection_version=str(manifest["projection_version"]),
-                source_knowledge_high_watermark=watermark,
-                content_hash=str(manifest["content_hash"]),
-                generation_dir=str(generation_dir),
-                activated=activate,
-                node_count=node_count,
-                edge_count=edge_count,
+                watermark=watermark,
             )
+        if activate:
+            self._activate(manifest, generation_dir)
+        return ProjectionReceipt(
+            projection_version=str(manifest["projection_version"]),
+            source_knowledge_high_watermark=watermark,
+            content_hash=str(manifest["content_hash"]),
+            generation_dir=str(generation_dir),
+            activated=activate,
+            node_count=node_count,
+            edge_count=edge_count,
+        )
 
     def _activate(self, manifest: Mapping[str, Any], generation_dir: Path) -> None:
         """CAS the store pointers, then atomically swap ``CURRENT`` (fsynced).

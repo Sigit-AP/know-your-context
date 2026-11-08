@@ -97,7 +97,7 @@ from datetime import UTC, datetime
 from email.message import Message
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 from urllib.parse import parse_qs, unquote, urlsplit
 
 from know_your_context.analytics.bridges import find_bridges
@@ -2987,6 +2987,482 @@ def _error_payload(code: str, message: str) -> dict[str, Any]:
     return {"error": {"code": code, "message": message, "retryable": False}}
 
 
+def _exact_read_table(
+    app: WebviewApp, knobs: Any, params: Mapping[str, list[str]]
+) -> dict[str, Callable[[], dict[str, Any]]]:
+    """Exact tails: graph/search/symbols/metrics/health/analytics reads."""
+    page_default = int(knobs.value("webview.page_size_default"))
+    return {
+        "graph": app.graph_payload,
+        "nodes": lambda: app.nodes_payload(
+            offset=_int_param(params, "offset", 0),
+            limit=_int_param(params, "limit", page_default),
+            kind=_str_param(params, "kind"),
+            domain=_str_param(params, "domain"),
+        ),
+        "edges": lambda: app.edges_payload(
+            offset=_int_param(params, "offset", 0),
+            limit=_int_param(params, "limit", page_default),
+            relation=_str_param(params, "relation"),
+        ),
+        "graph/edges": lambda: app.graph_edges_payload(
+            offset=_int_param(params, "offset", 0),
+            limit=_int_param(params, "limit", page_default),
+            kind=_str_param(params, "kind"),
+            source=_str_param(params, "source"),
+        ),
+        "search": lambda: app.search_payload(
+            params.get("q", [""])[-1],
+            kind=_str_param(params, "kind"),
+            lang=_str_param(params, "lang"),
+            limit=_int_param(params, "limit", int(knobs.value("webview.search_limit_default"))),
+        ),
+        "search/symbols": lambda: app.symbol_prefix_payload(
+            params.get("q", [""])[-1],
+            limit=_int_param(params, "limit", int(knobs.value("webview.search_limit_default"))),
+        ),
+        "symbols": lambda: app.symbols_payload(
+            offset=_int_param(params, "offset", 0),
+            limit=_int_param(params, "limit", page_default),
+            kind=_str_param(params, "kind"),
+            path_prefix=_str_param(params, "path_prefix"),
+        ),
+        "metrics": app.metrics_payload,
+        "metrics/series": lambda: app.metrics_series_payload(
+            limit=_int_param(params, "limit", int(knobs.value("webview.series_limit_default")))
+        ),
+        "metrics/buckets": lambda: app.metrics_buckets_payload(
+            bucket=_str_param(params, "bucket") or "day",
+            limit=_int_param(params, "limit", int(knobs.value("webview.series_limit_max"))),
+        ),
+        "metrics/operations": app.metrics_operations_payload,
+        "health": app.health_payload,
+        "health/checks": app.health_checks_payload,
+        "analytics": app.analytics_payload,
+        "analytics/centrality": lambda: app.analytics_centrality_payload(
+            top=_int_param(params, "top", int(knobs.value("webview.top_ranking")))
+        ),
+        "analytics/communities": app.analytics_communities_payload,
+        "analytics/bridges": app.analytics_bridges_payload,
+    }
+
+
+def _exact_ops_table(
+    server_ref: WebviewServer, app: WebviewApp, knobs: Any, params: Mapping[str, list[str]]
+) -> dict[str, Callable[[], dict[str, Any]]]:
+    """Exact tails: audit/activity/ledger/store/export and the heavy reads."""
+    return {
+        "health/detail": lambda: app.health_detail_payload(timing=server_ref._timings.summary()),
+        "health/findings": lambda: app.health_findings_payload(severity=_str_param(params, "severity") or "error"),
+        "audit": lambda: app.audit_payload(
+            limit=_int_param(params, "limit", int(knobs.value("webview.audit_limit_default")))
+        ),
+        "audit/tail": lambda: app.audit_tail_payload(
+            since=_int_param(params, "since", 0),
+            limit=_int_param(params, "limit", int(knobs.value("webview.audit_tail_limit_default"))),
+        ),
+        "audit/verify": app.audit_verify_payload,
+        "activity": lambda: app.activity_payload(
+            limit=_int_param(params, "limit", int(knobs.value("webview.activity_limit_default")))
+        ),
+        "activity/tail": lambda: app.activity_tail_payload(
+            since=_int_param(params, "since", 0),
+            limit=_int_param(params, "limit", int(knobs.value("webview.activity_limit_default"))),
+        ),
+        "leases": app.leases_payload,
+        "features": app.features_payload,
+        "hardware": app.hardware_payload,
+        "relearn": app.relearn_payload,
+        "setup": app.setup_payload,
+        "contracts": app.contracts_payload,
+        "proposals": app.proposals_payload,
+        "improvements": app.improvements_payload,
+        "extractions": app.extractions_payload,
+        "extractions/summary": app.extraction_summary_payload,
+        "debt": app.debt_payload,
+        "debt/report": app.debt_report_payload,
+        "refs": app.refs_payload,
+        "ledger/health": lambda: app.ledger_health_payload(
+            limit=_int_param(params, "limit", int(knobs.value("webview.ledger_tail_max")))
+        ),
+        "ledger/debt": lambda: app.ledger_debt_payload(
+            limit=_int_param(params, "limit", int(knobs.value("webview.ledger_tail_max")))
+        ),
+        "ledger/experience": lambda: app.ledger_experience_payload(
+            limit=_int_param(params, "limit", int(knobs.value("webview.ledger_tail_max")))
+        ),
+        "query": lambda: _query_route(app, knobs, params),
+        "bench": app.bench_payload,
+        "store/stats": app.store_stats_payload,
+        "store/tables": app.store_tables_payload,
+        "store/schema": app.store_schema_payload,
+        "switches": app.switches_payload,
+        "config": app.config_payload,
+        "export/subgraph": lambda: app.export_subgraph_payload(
+            node_id=_str_param(params, "node_id"),
+            domain=_str_param(params, "domain"),
+            depth=_int_param(params, "depth", int(knobs.value("webview.export_depth_default"))),
+            max_nodes=_int_param(params, "max_nodes", int(knobs.value("webview.export_nodes_max"))),
+        ),
+        "routes": app.routes_payload,
+        "codeintel": lambda: _codeintel_route(app, params),
+    }
+
+
+def _exact_api_table(
+    server_ref: WebviewServer, app: WebviewApp, knobs: Any, params: Mapping[str, list[str]]
+) -> dict[str, Callable[[], dict[str, Any]]]:
+    """The exact-tail route table (F2C: lifted out of ``_dispatch_api``).
+
+    Values are zero-arg callables so the dict stays data: building it
+    binds params eagerly, dispatch calls the bound thunk.
+    """
+    return {**_exact_read_table(app, knobs, params), **_exact_ops_table(server_ref, app, knobs, params)}
+
+
+def _int_param(params: Mapping[str, list[str]], name: str, default: int) -> int:
+    raw = params.get(name, [None])[-1]
+    if raw is None:
+        return default
+    if not re.fullmatch(r"[0-9]+", raw):
+        raise _BadRequest(f"{name} must be a non-negative integer, got {raw!r}")
+    return int(raw)
+
+
+def _str_param(params: Mapping[str, list[str]], name: str) -> str | None:
+    raw = params.get(name, [None])[-1]
+    return raw if raw else None
+
+
+def _query_route(app: WebviewApp, knobs: Any, params: Mapping[str, list[str]]) -> dict[str, Any]:
+    node_id = _str_param(params, "node_id")
+    if node_id is None:
+        raise _BadRequest("node_id is required")
+    kind = _str_param(params, "kind")
+    if kind is not None and _KIND_LANG_RE.fullmatch(kind) is None:
+        raise _BadRequest(f"kind filter must match {_KIND_LANG_RE.pattern}, got {kind!r}")
+    return app.query_payload(
+        node_id,
+        kind=kind,
+        direction=_str_param(params, "direction") or "both",
+        limit=_int_param(params, "limit", int(knobs.value("webview.query_limit_default"))),
+    )
+
+
+def _codeintel_route(app: WebviewApp, params: Mapping[str, list[str]]) -> dict[str, Any]:
+    op = _str_param(params, "op")
+    if op is None:
+        raise _BadRequest("op is required (callers|callees|path|impact|co-change|boundary)")
+    return app.codeintel_payload(
+        op,
+        symbol=_str_param(params, "symbol"),
+        source=_str_param(params, "source"),
+        target=_str_param(params, "target"),
+        depth=_int_param(params, "depth", 8),
+        limit=_int_param(params, "limit", 200),
+        min_support=_int_param(params, "min_support", 2),
+        layers=_str_param(params, "layers"),
+        allow=_str_param(params, "allow"),
+    )
+
+
+class _Handler(BaseHTTPRequestHandler):
+    """The per-request handler; bound to one WebviewServer per subclass.
+
+    F2C (TASK2 WS-F): module-level since the complexity pass — nested inside
+    ``_make_handler``, the whole dispatch surface's decision points counted
+    against the factory (C=68). ``WebviewServer._make_handler`` binds the
+    server via ``type("_Handler", (_Handler,), {"server_ref": self})`` — the
+    same per-instance binding the closure class had.
+    """
+
+    server_version = "KysWebview/1"
+    protocol_version = "HTTP/1.1"
+    server_ref: ClassVar[WebviewServer]
+
+    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002 - stdlib signature
+        return  # quiet by design: the terminal belongs to the operator
+
+    # -- plumbing ------------------------------------------------
+
+    def _respond(self, status: int, body: bytes, content_type: str, *, head_only: bool = False) -> None:
+        server_ref = self.server_ref
+        self._last_status = status
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Cache-Control", "no-store")
+        if content_type.startswith("text/html"):
+            self.send_header("Content-Security-Policy", _CSP)
+        ctx = getattr(self, "_ctx", None)
+        if ctx is not None:
+            server_ref._timings.stamp(ctx)  # Server-Timing: duration so far
+            for header, value in ctx.response_headers.items():
+                self.send_header(header, value)
+        if getattr(self, "_fresh_token", False) and content_type.startswith("text/html"):
+            # Page authenticated via ?token= — issue the session cookie
+            # so static assets and API calls authenticate without the
+            # token in the URL. HttpOnly + SameSite=Strict, loopback.
+            self.send_header(
+                "Set-Cookie",
+                f"kys_token={server_ref._token}; Path=/; HttpOnly; SameSite=Strict",
+            )
+        self.end_headers()
+        if not head_only:
+            self.wfile.write(body)
+
+    def _respond_json(self, status: int, payload: Any, *, head_only: bool = False) -> None:
+        self._respond(status, escape_json_bytes(payload), "application/json; charset=utf-8", head_only=head_only)
+
+    def _reject(self, status: int, code: str, message: str) -> None:
+        self._respond_json(status, _error_payload(code, message))
+
+    # -- guards (order: host -> origin -> method -> token) -------
+
+    def _token_authorized(self) -> bool:
+        """The session-token capability decision (pure check + fresh mark)."""
+        server_ref = self.server_ref
+        if _auth_disabled():
+            return True
+        query = parse_qs(urlsplit(self.path).query)
+        provided = query.get("token", [None])[-1]
+        if provided is not None and hmac.compare_digest(str(provided), server_ref._token):
+            self._fresh_token = True  # mark: issue the session cookie
+            return True
+        cookie = _session_cookie_token(self.headers)
+        if cookie is not None and hmac.compare_digest(cookie, server_ref._token):
+            return True
+        presented = _header_token(self.headers)
+        return presented is not None and hmac.compare_digest(presented, server_ref._token)
+
+    def _capability_gate(self) -> CapabilityGateMiddleware:
+        """The token check as an explicit middleware layer (W13)."""
+        return CapabilityGateMiddleware(checker=lambda _ctx: self._token_authorized())
+
+    def _guards_pass(self) -> bool:
+        server_ref = self.server_ref
+        host = self.headers.get("Host")
+        if host is None or not host_allowed(host, server_ref.port, server_ref._host_allowlist):
+            self._respond_json(
+                403, _error_payload("HOST_NOT_ALLOWED", "Host header is not an allowlisted loopback origin")
+            )
+            return False
+        origin = self.headers.get("Origin")
+        if not origin_allowed(origin, server_ref.port):
+            self._respond_json(
+                403, _error_payload("ORIGIN_NOT_ALLOWED", "Origin header is not an allowlisted loopback origin")
+            )
+            return False
+        try:
+            self._capability_gate().before(self._ctx)
+        except CapabilityDeniedError as error:
+            self._respond_json(
+                error.status, _error_payload("UNAUTHORIZED", "a valid token query parameter is required")
+            )
+            return False
+        return True
+
+    # -- verbs ---------------------------------------------------
+
+    def do_GET(self) -> None:
+        self._dispatch(head_only=False)
+
+    def do_HEAD(self) -> None:
+        self._dispatch(head_only=True)
+
+    def do_POST(self) -> None:
+        self._method_not_allowed()
+
+    def do_PUT(self) -> None:
+        self._method_not_allowed()
+
+    def do_DELETE(self) -> None:
+        self._method_not_allowed()
+
+    def do_PATCH(self) -> None:
+        self._method_not_allowed()
+
+    def do_OPTIONS(self) -> None:
+        self._method_not_allowed()
+
+    def _method_not_allowed(self) -> None:
+        # Guards still run first: an unauthenticated probe must not
+        # learn which methods exist.
+        self._ensure_ctx()
+        if self._guards_pass():
+            self._reject(405, "METHOD_NOT_ALLOWED", "the viewer is read-only; only GET and HEAD exist")
+
+    def _ensure_ctx(self) -> None:
+        """Build the per-request middleware context exactly once."""
+        if getattr(self, "_ctx", None) is None:
+            self._ctx = RequestContext(
+                request_id=self.server_ref._request_id_factory(),
+                method=self.command,
+                path=urlsplit(self.path).path,
+                client=str(self.client_address[0]),
+                headers={key: value for key, value in self.headers.items()},
+            )
+            self._last_status = 200
+
+    def _dispatch(self, *, head_only: bool) -> None:
+        server_ref = self.server_ref
+        self._ensure_ctx()
+        if not self._guards_pass():
+            return
+        ctx = self._ctx
+        stack = MiddlewareStack((RequestIdMiddleware(), server_ref._timings))
+        stack.before(ctx)
+        try:
+            self._route(head_only=head_only)
+        except BrokenPipeError, ConnectionResetError:
+            pass  # client left; nothing to report
+        except Exception as error:
+            # Typed error mapping (W13): typed errors keep their
+            # code/status; untyped ones become 500 INTERNAL with no
+            # internals leaked — never a bare connection drop.
+            status, payload = server_ref._errors.map_error(error)
+            self._respond_json(status, payload, head_only=head_only)
+        finally:
+            stack.after(ctx, status=getattr(self, "_last_status", 200))
+
+    # -- routing -------------------------------------------------
+
+    def _route(self, *, head_only: bool) -> None:
+        split = urlsplit(self.path)
+        raw_path = split.path
+        if "%" in raw_path:
+            raw_path = unquote(raw_path, errors="strict")
+        params = parse_qs(split.query)
+        if raw_path == "/":
+            self._serve_asset("index.html", head_only=head_only)
+            return
+        if raw_path.startswith("/static/"):
+            name = raw_path[len("/static/") :]
+            if "/" in name or name not in _STATIC_ASSETS or name == "index.html":
+                self._reject(404, "NOT_FOUND", "unknown static asset")
+                return
+            self._serve_asset(name, head_only=head_only)
+            return
+        if raw_path.startswith("/api/"):
+            self._route_api(raw_path[len("/api/") :], params, head_only=head_only)
+            return
+        self._reject(404, "NOT_FOUND", "unknown path")
+
+    def _serve_asset(self, name: str, *, head_only: bool) -> None:
+        content_type, filename = _STATIC_ASSETS[name]
+        try:
+            body = (_ASSETS_DIR / filename).read_bytes()
+        except OSError:
+            self._reject(404, "NOT_FOUND", "asset missing from the installed package")
+            return
+        self._respond(200, body, content_type, head_only=head_only)
+
+    def _route_api(self, tail: str, params: Mapping[str, list[str]], *, head_only: bool) -> None:
+        server_ref = self.server_ref
+        knobs = server_ref._knobs
+
+        # W15: feature flags gate whole route groups fail-closed (a
+        # disabled group answers exactly like an unknown endpoint).
+        flag = _route_group_flag(tail)
+        if flag is not None and not bool(knobs.value(flag)):
+            self._reject(404, "NOT_FOUND", "unknown api endpoint")
+            return
+        # W15: per-class rate limit, checked before any store work.
+        if bool(knobs.value("webview.rate.enabled")):
+            try:
+                server_ref._rate_limiter.check(route_class_for(tail))
+            except RateLimitedError as error:
+                self._ctx.response_headers["Retry-After"] = str(error.retry_after_seconds)
+                self._respond_json(
+                    429,
+                    {"error": {"code": error.code, "message": str(error), "retryable": True}},
+                    head_only=head_only,
+                )
+                return
+
+        try:
+            payload = self._dispatch_api(tail, params)
+        except _UnknownRoute:
+            self._reject(404, "NOT_FOUND", "unknown api endpoint")
+            return
+        except _NodeNotFound:
+            self._reject(404, "NOT_FOUND", "unknown node id")
+            return
+        except _ExportTooLarge as error:
+            self._reject(413, "PAYLOAD_TOO_LARGE", str(error))
+            return
+        except _BadRequest as error:
+            self._reject(400, "BAD_REQUEST", str(error))
+            return
+        self._respond_json(200, payload, head_only=head_only)
+
+    def _dispatch_api(self, tail: str, params: Mapping[str, list[str]]) -> dict[str, Any]:
+        """Table-driven dispatch (W15): exact tails via a lookup table,
+        parameterized tails via the prefix chain below it."""
+        server_ref = self.server_ref
+        app = server_ref._app
+        knobs = server_ref._knobs
+
+        page_default = int(knobs.value("webview.page_size_default"))
+        handler = _exact_api_table(server_ref, app, knobs, params).get(tail)
+        if handler is not None:
+            return handler()
+        if tail in ("refs/pending", "refs/failed", "refs/resolved"):
+            return app.refs_by_status_payload(
+                tail.rsplit("/", 1)[-1],
+                offset=_int_param(params, "offset", 0),
+                limit=_int_param(params, "limit", page_default),
+            )
+        if tail.startswith("hierarchy/"):
+            node_id = tail[len("hierarchy/") :]
+            if not node_id or "/" in node_id:
+                raise _BadRequest("node id must be a single non-empty path segment")
+            return app.hierarchy_payload(
+                node_id, depth=_int_param(params, "depth", int(knobs.value("webview.hierarchy_depth_default")))
+            )
+        return self._dispatch_prefixed(tail, app, params)
+
+    def _dispatch_prefixed(self, tail: str, app: WebviewApp, params: Mapping[str, list[str]]) -> dict[str, Any]:
+        """Parameterized tails: one id/segment carried in the path."""
+        if tail.startswith("node/"):
+            return self._dispatch_node(tail[len("node/") :], app, params)
+        for prefix, method, missing in (
+            ("symbols/", app.symbol_payload, "node id"),
+            ("provenance/", app.provenance_payload, "node id"),
+            ("extractions/", app.extraction_detail_payload, "receipt id"),
+            ("improvements/", app.improvement_detail_payload, "proposal id"),
+            ("bench/", app.bench_operation_payload, "operation"),
+            ("store/tables/", app.store_table_payload, "table name"),
+            ("switches/", app.switch_detail_payload, "switch name"),
+            ("config/", app.config_knob_payload, "knob name"),
+            ("export/node/", app.export_node_payload, "node id"),
+        ):
+            if tail.startswith(prefix):
+                segment = tail[len(prefix) :]
+                if not segment or "/" in segment:
+                    raise _BadRequest(f"{missing} must be a single non-empty path segment")
+                return method(segment)
+        raise _UnknownRoute(tail)
+
+    def _dispatch_node(self, node_tail: str, app: WebviewApp, params: Mapping[str, list[str]]) -> dict[str, Any]:
+        for suffix in ("/edges", "/evidence", "/revisions"):
+            if node_tail.endswith(suffix):
+                node_id = node_tail[: -len(suffix)]
+                if not node_id or "/" in node_id:
+                    raise _BadRequest("node id must be a single non-empty path segment")
+                if suffix == "/edges":
+                    return app.node_edges_payload(node_id)
+                if suffix == "/evidence":
+                    raw = params.get("limit", [None])[-1]
+                    limit = int(self.server_ref._knobs.value("webview.evidence_limit_max")) if raw is None else int(raw)
+                    return app.node_evidence_payload(node_id, limit=limit)
+                return app.node_revisions_payload(node_id)
+        if not node_tail or "/" in node_tail:
+            raise _BadRequest("node id must be a single non-empty path segment")
+        return app.node_payload(node_tail)
+
+
 class WebviewServer:
     """The loopback-only viewer server; one token per instance."""
 
@@ -3103,447 +3579,11 @@ class WebviewServer:
     # ---------------------------------------------------------- handler
 
     def _make_handler(self) -> type[BaseHTTPRequestHandler]:
-        server_ref = self
-
-        class _Handler(BaseHTTPRequestHandler):
-            server_version = "KysWebview/1"
-            protocol_version = "HTTP/1.1"
-
-            def log_message(self, format: str, *args: Any) -> None:  # noqa: A002 - stdlib signature
-                return  # quiet by design: the terminal belongs to the operator
-
-            # -- plumbing ------------------------------------------------
-
-            def _respond(self, status: int, body: bytes, content_type: str, *, head_only: bool = False) -> None:
-                self._last_status = status
-                self.send_response(status)
-                self.send_header("Content-Type", content_type)
-                self.send_header("Content-Length", str(len(body)))
-                self.send_header("X-Content-Type-Options", "nosniff")
-                self.send_header("Cache-Control", "no-store")
-                if content_type.startswith("text/html"):
-                    self.send_header("Content-Security-Policy", _CSP)
-                ctx = getattr(self, "_ctx", None)
-                if ctx is not None:
-                    server_ref._timings.stamp(ctx)  # Server-Timing: duration so far
-                    for header, value in ctx.response_headers.items():
-                        self.send_header(header, value)
-                if getattr(self, "_fresh_token", False) and content_type.startswith("text/html"):
-                    # Page authenticated via ?token= — issue the session cookie
-                    # so static assets and API calls authenticate without the
-                    # token in the URL. HttpOnly + SameSite=Strict, loopback.
-                    self.send_header(
-                        "Set-Cookie",
-                        f"kys_token={server_ref._token}; Path=/; HttpOnly; SameSite=Strict",
-                    )
-                self.end_headers()
-                if not head_only:
-                    self.wfile.write(body)
-
-            def _respond_json(self, status: int, payload: Any, *, head_only: bool = False) -> None:
-                self._respond(
-                    status, escape_json_bytes(payload), "application/json; charset=utf-8", head_only=head_only
-                )
-
-            def _reject(self, status: int, code: str, message: str) -> None:
-                self._respond_json(status, _error_payload(code, message))
-
-            # -- guards (order: host -> origin -> method -> token) -------
-
-            def _token_authorized(self) -> bool:
-                """The session-token capability decision (pure check + fresh mark)."""
-                if _auth_disabled():
-                    return True
-                query = parse_qs(urlsplit(self.path).query)
-                provided = query.get("token", [None])[-1]
-                if provided is not None and hmac.compare_digest(str(provided), server_ref._token):
-                    self._fresh_token = True  # mark: issue the session cookie
-                    return True
-                cookie = _session_cookie_token(self.headers)
-                if cookie is not None and hmac.compare_digest(cookie, server_ref._token):
-                    return True
-                presented = _header_token(self.headers)
-                return presented is not None and hmac.compare_digest(presented, server_ref._token)
-
-            def _capability_gate(self) -> CapabilityGateMiddleware:
-                """The token check as an explicit middleware layer (W13)."""
-                return CapabilityGateMiddleware(checker=lambda _ctx: self._token_authorized())
-
-            def _guards_pass(self) -> bool:
-                host = self.headers.get("Host")
-                if host is None or not host_allowed(host, server_ref.port, server_ref._host_allowlist):
-                    self._respond_json(
-                        403, _error_payload("HOST_NOT_ALLOWED", "Host header is not an allowlisted loopback origin")
-                    )
-                    return False
-                origin = self.headers.get("Origin")
-                if not origin_allowed(origin, server_ref.port):
-                    self._respond_json(
-                        403, _error_payload("ORIGIN_NOT_ALLOWED", "Origin header is not an allowlisted loopback origin")
-                    )
-                    return False
-                try:
-                    self._capability_gate().before(self._ctx)
-                except CapabilityDeniedError as error:
-                    self._respond_json(
-                        error.status, _error_payload("UNAUTHORIZED", "a valid token query parameter is required")
-                    )
-                    return False
-                return True
-
-            # -- verbs ---------------------------------------------------
-
-            def do_GET(self) -> None:
-                self._dispatch(head_only=False)
-
-            def do_HEAD(self) -> None:
-                self._dispatch(head_only=True)
-
-            def do_POST(self) -> None:
-                self._method_not_allowed()
-
-            def do_PUT(self) -> None:
-                self._method_not_allowed()
-
-            def do_DELETE(self) -> None:
-                self._method_not_allowed()
-
-            def do_PATCH(self) -> None:
-                self._method_not_allowed()
-
-            def do_OPTIONS(self) -> None:
-                self._method_not_allowed()
-
-            def _method_not_allowed(self) -> None:
-                # Guards still run first: an unauthenticated probe must not
-                # learn which methods exist.
-                self._ensure_ctx()
-                if self._guards_pass():
-                    self._reject(405, "METHOD_NOT_ALLOWED", "the viewer is read-only; only GET and HEAD exist")
-
-            def _ensure_ctx(self) -> None:
-                """Build the per-request middleware context exactly once."""
-                if getattr(self, "_ctx", None) is None:
-                    self._ctx = RequestContext(
-                        request_id=server_ref._request_id_factory(),
-                        method=self.command,
-                        path=urlsplit(self.path).path,
-                        client=str(self.client_address[0]),
-                        headers={key: value for key, value in self.headers.items()},
-                    )
-                    self._last_status = 200
-
-            def _dispatch(self, *, head_only: bool) -> None:
-                self._ensure_ctx()
-                if not self._guards_pass():
-                    return
-                ctx = self._ctx
-                stack = MiddlewareStack((RequestIdMiddleware(), server_ref._timings))
-                stack.before(ctx)
-                try:
-                    self._route(head_only=head_only)
-                except BrokenPipeError, ConnectionResetError:
-                    pass  # client left; nothing to report
-                except Exception as error:
-                    # Typed error mapping (W13): typed errors keep their
-                    # code/status; untyped ones become 500 INTERNAL with no
-                    # internals leaked — never a bare connection drop.
-                    status, payload = server_ref._errors.map_error(error)
-                    self._respond_json(status, payload, head_only=head_only)
-                finally:
-                    stack.after(ctx, status=getattr(self, "_last_status", 200))
-
-            # -- routing -------------------------------------------------
-
-            def _route(self, *, head_only: bool) -> None:
-                split = urlsplit(self.path)
-                raw_path = split.path
-                if "%" in raw_path:
-                    raw_path = unquote(raw_path, errors="strict")
-                params = parse_qs(split.query)
-                if raw_path == "/":
-                    self._serve_asset("index.html", head_only=head_only)
-                    return
-                if raw_path.startswith("/static/"):
-                    name = raw_path[len("/static/") :]
-                    if "/" in name or name not in _STATIC_ASSETS or name == "index.html":
-                        self._reject(404, "NOT_FOUND", "unknown static asset")
-                        return
-                    self._serve_asset(name, head_only=head_only)
-                    return
-                if raw_path.startswith("/api/"):
-                    self._route_api(raw_path[len("/api/") :], params, head_only=head_only)
-                    return
-                self._reject(404, "NOT_FOUND", "unknown path")
-
-            def _serve_asset(self, name: str, *, head_only: bool) -> None:
-                content_type, filename = _STATIC_ASSETS[name]
-                try:
-                    body = (_ASSETS_DIR / filename).read_bytes()
-                except OSError:
-                    self._reject(404, "NOT_FOUND", "asset missing from the installed package")
-                    return
-                self._respond(200, body, content_type, head_only=head_only)
-
-            def _route_api(self, tail: str, params: Mapping[str, list[str]], *, head_only: bool) -> None:
-                knobs = server_ref._knobs
-
-                # W15: feature flags gate whole route groups fail-closed (a
-                # disabled group answers exactly like an unknown endpoint).
-                flag = _route_group_flag(tail)
-                if flag is not None and not bool(knobs.value(flag)):
-                    self._reject(404, "NOT_FOUND", "unknown api endpoint")
-                    return
-                # W15: per-class rate limit, checked before any store work.
-                if bool(knobs.value("webview.rate.enabled")):
-                    try:
-                        server_ref._rate_limiter.check(route_class_for(tail))
-                    except RateLimitedError as error:
-                        self._ctx.response_headers["Retry-After"] = str(error.retry_after_seconds)
-                        self._respond_json(
-                            429,
-                            {"error": {"code": error.code, "message": str(error), "retryable": True}},
-                            head_only=head_only,
-                        )
-                        return
-
-                try:
-                    payload = self._dispatch_api(tail, params)
-                except _UnknownRoute:
-                    self._reject(404, "NOT_FOUND", "unknown api endpoint")
-                    return
-                except _NodeNotFound:
-                    self._reject(404, "NOT_FOUND", "unknown node id")
-                    return
-                except _ExportTooLarge as error:
-                    self._reject(413, "PAYLOAD_TOO_LARGE", str(error))
-                    return
-                except _BadRequest as error:
-                    self._reject(400, "BAD_REQUEST", str(error))
-                    return
-                self._respond_json(200, payload, head_only=head_only)
-
-            def _dispatch_api(self, tail: str, params: Mapping[str, list[str]]) -> dict[str, Any]:
-                """Table-driven dispatch (W15): exact tails via a lookup table,
-                parameterized tails via the prefix chain below it."""
-                app = server_ref._app
-                knobs = server_ref._knobs
-
-                def _int_param(name: str, default: int) -> int:
-                    raw = params.get(name, [None])[-1]
-                    if raw is None:
-                        return default
-                    if not re.fullmatch(r"[0-9]+", raw):
-                        raise _BadRequest(f"{name} must be a non-negative integer, got {raw!r}")
-                    return int(raw)
-
-                def _str_param(name: str) -> str | None:
-                    raw = params.get(name, [None])[-1]
-                    return raw if raw else None
-
-                def _knob_int(name: str) -> int:
-                    return int(knobs.value(name))
-
-                def _query() -> dict[str, Any]:
-                    node_id = _str_param("node_id")
-                    if node_id is None:
-                        raise _BadRequest("node_id is required")
-                    kind = _str_param("kind")
-                    if kind is not None and _KIND_LANG_RE.fullmatch(kind) is None:
-                        raise _BadRequest(f"kind filter must match {_KIND_LANG_RE.pattern}, got {kind!r}")
-                    return app.query_payload(
-                        node_id,
-                        kind=kind,
-                        direction=_str_param("direction") or "both",
-                        limit=_int_param("limit", _knob_int("webview.query_limit_default")),
-                    )
-
-                def _codeintel() -> dict[str, Any]:
-                    op = _str_param("op")
-                    if op is None:
-                        raise _BadRequest("op is required (callers|callees|path|impact|co-change|boundary)")
-                    return app.codeintel_payload(
-                        op,
-                        symbol=_str_param("symbol"),
-                        source=_str_param("source"),
-                        target=_str_param("target"),
-                        depth=_int_param("depth", 8),
-                        limit=_int_param("limit", 200),
-                        min_support=_int_param("min_support", 2),
-                        layers=_str_param("layers"),
-                        allow=_str_param("allow"),
-                    )
-
-                page_default = _knob_int("webview.page_size_default")
-                exact: dict[str, Callable[[], dict[str, Any]]] = {
-                    "graph": app.graph_payload,
-                    "nodes": lambda: app.nodes_payload(
-                        offset=_int_param("offset", 0),
-                        limit=_int_param("limit", page_default),
-                        kind=_str_param("kind"),
-                        domain=_str_param("domain"),
-                    ),
-                    "edges": lambda: app.edges_payload(
-                        offset=_int_param("offset", 0),
-                        limit=_int_param("limit", page_default),
-                        relation=_str_param("relation"),
-                    ),
-                    "graph/edges": lambda: app.graph_edges_payload(
-                        offset=_int_param("offset", 0),
-                        limit=_int_param("limit", page_default),
-                        kind=_str_param("kind"),
-                        source=_str_param("source"),
-                    ),
-                    "search": lambda: app.search_payload(
-                        params.get("q", [""])[-1],
-                        kind=_str_param("kind"),
-                        lang=_str_param("lang"),
-                        limit=_int_param("limit", _knob_int("webview.search_limit_default")),
-                    ),
-                    "search/symbols": lambda: app.symbol_prefix_payload(
-                        params.get("q", [""])[-1],
-                        limit=_int_param("limit", _knob_int("webview.search_limit_default")),
-                    ),
-                    "symbols": lambda: app.symbols_payload(
-                        offset=_int_param("offset", 0),
-                        limit=_int_param("limit", page_default),
-                        kind=_str_param("kind"),
-                        path_prefix=_str_param("path_prefix"),
-                    ),
-                    "metrics": app.metrics_payload,
-                    "metrics/series": lambda: app.metrics_series_payload(
-                        limit=_int_param("limit", _knob_int("webview.series_limit_default"))
-                    ),
-                    "metrics/buckets": lambda: app.metrics_buckets_payload(
-                        bucket=_str_param("bucket") or "day",
-                        limit=_int_param("limit", _knob_int("webview.series_limit_max")),
-                    ),
-                    "metrics/operations": app.metrics_operations_payload,
-                    "health": app.health_payload,
-                    "health/detail": lambda: app.health_detail_payload(timing=server_ref._timings.summary()),
-                    "health/findings": lambda: app.health_findings_payload(severity=_str_param("severity") or "error"),
-                    "health/checks": app.health_checks_payload,
-                    "analytics": app.analytics_payload,
-                    "analytics/centrality": lambda: app.analytics_centrality_payload(
-                        top=_int_param("top", _knob_int("webview.top_ranking"))
-                    ),
-                    "analytics/communities": app.analytics_communities_payload,
-                    "analytics/bridges": app.analytics_bridges_payload,
-                    "audit": lambda: app.audit_payload(
-                        limit=_int_param("limit", _knob_int("webview.audit_limit_default"))
-                    ),
-                    "audit/tail": lambda: app.audit_tail_payload(
-                        since=_int_param("since", 0),
-                        limit=_int_param("limit", _knob_int("webview.audit_tail_limit_default")),
-                    ),
-                    "audit/verify": app.audit_verify_payload,
-                    "activity": lambda: app.activity_payload(
-                        limit=_int_param("limit", _knob_int("webview.activity_limit_default"))
-                    ),
-                    "activity/tail": lambda: app.activity_tail_payload(
-                        since=_int_param("since", 0),
-                        limit=_int_param("limit", _knob_int("webview.activity_limit_default")),
-                    ),
-                    "leases": app.leases_payload,
-                    "features": app.features_payload,
-                    "hardware": app.hardware_payload,
-                    "relearn": app.relearn_payload,
-                    "setup": app.setup_payload,
-                    "contracts": app.contracts_payload,
-                    "proposals": app.proposals_payload,
-                    "improvements": app.improvements_payload,
-                    "extractions": app.extractions_payload,
-                    "extractions/summary": app.extraction_summary_payload,
-                    "debt": app.debt_payload,
-                    "debt/report": app.debt_report_payload,
-                    "refs": app.refs_payload,
-                    "ledger/health": lambda: app.ledger_health_payload(
-                        limit=_int_param("limit", _knob_int("webview.ledger_tail_max"))
-                    ),
-                    "ledger/debt": lambda: app.ledger_debt_payload(
-                        limit=_int_param("limit", _knob_int("webview.ledger_tail_max"))
-                    ),
-                    "ledger/experience": lambda: app.ledger_experience_payload(
-                        limit=_int_param("limit", _knob_int("webview.ledger_tail_max"))
-                    ),
-                    "query": _query,
-                    "bench": app.bench_payload,
-                    "store/stats": app.store_stats_payload,
-                    "store/tables": app.store_tables_payload,
-                    "store/schema": app.store_schema_payload,
-                    "switches": app.switches_payload,
-                    "config": app.config_payload,
-                    "export/subgraph": lambda: app.export_subgraph_payload(
-                        node_id=_str_param("node_id"),
-                        domain=_str_param("domain"),
-                        depth=_int_param("depth", _knob_int("webview.export_depth_default")),
-                        max_nodes=_int_param("max_nodes", _knob_int("webview.export_nodes_max")),
-                    ),
-                    "routes": app.routes_payload,
-                    "codeintel": _codeintel,
-                }
-                handler = exact.get(tail)
-                if handler is not None:
-                    return handler()
-                if tail in ("refs/pending", "refs/failed", "refs/resolved"):
-                    return app.refs_by_status_payload(
-                        tail.rsplit("/", 1)[-1],
-                        offset=_int_param("offset", 0),
-                        limit=_int_param("limit", page_default),
-                    )
-                if tail.startswith("hierarchy/"):
-                    node_id = tail[len("hierarchy/") :]
-                    if not node_id or "/" in node_id:
-                        raise _BadRequest("node id must be a single non-empty path segment")
-                    return app.hierarchy_payload(
-                        node_id, depth=_int_param("depth", _knob_int("webview.hierarchy_depth_default"))
-                    )
-                return self._dispatch_prefixed(tail, app, params)
-
-            def _dispatch_prefixed(self, tail: str, app: WebviewApp, params: Mapping[str, list[str]]) -> dict[str, Any]:
-                """Parameterized tails: one id/segment carried in the path."""
-                if tail.startswith("node/"):
-                    return self._dispatch_node(tail[len("node/") :], app, params)
-                for prefix, method, missing in (
-                    ("symbols/", app.symbol_payload, "node id"),
-                    ("provenance/", app.provenance_payload, "node id"),
-                    ("extractions/", app.extraction_detail_payload, "receipt id"),
-                    ("improvements/", app.improvement_detail_payload, "proposal id"),
-                    ("bench/", app.bench_operation_payload, "operation"),
-                    ("store/tables/", app.store_table_payload, "table name"),
-                    ("switches/", app.switch_detail_payload, "switch name"),
-                    ("config/", app.config_knob_payload, "knob name"),
-                    ("export/node/", app.export_node_payload, "node id"),
-                ):
-                    if tail.startswith(prefix):
-                        segment = tail[len(prefix) :]
-                        if not segment or "/" in segment:
-                            raise _BadRequest(f"{missing} must be a single non-empty path segment")
-                        return method(segment)
-                raise _UnknownRoute(tail)
-
-            def _dispatch_node(
-                self, node_tail: str, app: WebviewApp, params: Mapping[str, list[str]]
-            ) -> dict[str, Any]:
-                for suffix in ("/edges", "/evidence", "/revisions"):
-                    if node_tail.endswith(suffix):
-                        node_id = node_tail[: -len(suffix)]
-                        if not node_id or "/" in node_id:
-                            raise _BadRequest("node id must be a single non-empty path segment")
-                        if suffix == "/edges":
-                            return app.node_edges_payload(node_id)
-                        if suffix == "/evidence":
-                            raw = params.get("limit", [None])[-1]
-                            limit = (
-                                int(server_ref._knobs.value("webview.evidence_limit_max")) if raw is None else int(raw)
-                            )
-                            return app.node_evidence_payload(node_id, limit=limit)
-                        return app.node_revisions_payload(node_id)
-                if not node_tail or "/" in node_tail:
-                    raise _BadRequest("node id must be a single non-empty path segment")
-                return app.node_payload(node_tail)
-
-        return _Handler
+        # F2C (TASK2 WS-F): the handler class lives at module level
+        # (nested, it put the whole dispatch surface's cyclomatic weight,
+        # C=68, on this one factory); each server instance gets a subclass
+        # bound to itself, exactly like the old per-instance closure class.
+        return type("_Handler", (_Handler,), {"server_ref": self})
 
 
 # ------------------------------------------------------------------ cli

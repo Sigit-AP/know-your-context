@@ -836,6 +836,9 @@ class _WriteArbiter:
         self._dirty = False
         self._published_watermark = 0
         self._stop = threading.Event()
+        # D1 (TASK2 WS-E): the writer is a supervised worker like every other
+        # lane — heartbeat per loop wakeup, budgeted restart via _respawn.
+        self._heartbeat = Heartbeat()
         self._thread = threading.Thread(target=self._run, name="superpower-writer", daemon=True)
         self._started = False
         self._executing = 0  # batch members in flight right now (drain watches this)
@@ -855,6 +858,35 @@ class _WriteArbiter:
         self._published_watermark = self._store.knowledge_high_watermark()
         self._thread.start()
         self._started = True
+
+    def _respawn(self) -> threading.Thread:
+        """Watchdog restart path: replace a DEAD writer (never a live one).
+
+        Single-writer is the store's core invariant, so spawning over a
+        live thread is a programmer error (assert), not a recovery path —
+        the same guard the read pool and acceptor respawns carry. A crash
+        mid-batch rolled the group transaction back (the context manager's
+        ``__exit__``); the batch members were already failed by the batch
+        error path, and deferred audit receipts of uncommitted work must
+        never resolve — they fail typed here. Watermark accounting
+        (``_published_watermark``) is instance state and survives the
+        crash, so the ``_publish_now`` monotonicity assert still holds for
+        the new incarnation.
+        """
+        assert not self._thread.is_alive(), "the writer thread is alive — restarting would create a second writer"
+        self._executing = 0
+        self._batch_transaction_open = False
+        self._flush_pending_audit(
+            error=ServeError("the writer crashed before the batch committed; the work rolled back")
+        )
+        self._heartbeat = Heartbeat()
+        self._thread = threading.Thread(target=self._run, name="superpower-writer", daemon=True)
+        self._thread.start()
+        return self._thread
+
+    @property
+    def heartbeat(self) -> Heartbeat:
+        return self._heartbeat
 
     def stop(self) -> None:
         self._stop.set()
@@ -978,6 +1010,7 @@ class _WriteArbiter:
 
     def _run(self) -> None:
         while not self._stop.is_set():
+            self._heartbeat.beat()  # W13/D1: one beat per wakeup, idle included
             self._drain_audit()
             item = self._write_q.get(timeout=0.05)
             if item is not None:
@@ -1572,7 +1605,7 @@ class SuperpowerDaemon:
         # Per-agent latency observability (W7): bounded reservoirs per actor
         # per lane; stats() renders p50/p95/p99. No payload content, ever.
         self._latencies: dict[str, dict[str, collections.deque[float]]] = {}
-        self._buckets: dict[str, _TokenBucket] = {}
+        self._buckets: collections.OrderedDict[str, _TokenBucket] = collections.OrderedDict()
         self._buckets_lock = threading.Lock()
         self._sessions_high_water = 0
         self._acceptor: threading.Thread | None = None
@@ -1700,9 +1733,34 @@ class SuperpowerDaemon:
         watchdog = Watchdog(policy=policy, on_alert=self._on_worker_alert)
         assert self._read_pool is not None and self._heavy is not None
         assert self._acceptor is not None and self._reaper is not None
+        for worker in self._lane_workers(policy):
+            watchdog.register(worker)
+        watchdog.start()
+        self._worker_watchdog = watchdog
+
+    def _lane_workers(self, policy: WatchdogPolicy) -> list[SupervisedThread]:
+        """The five supervised lanes: writer, read pool, heavy, acceptor, reaper.
+
+        D1 (TASK2 WS-E): the writer joined supervision — the pre-fix roster
+        left the single-writer thread unwatched (a crashed writer wedged
+        every write while the daemon looked alive).
+        """
+        assert self._read_pool is not None and self._heavy is not None
+        assert self._acceptor is not None and self._reaper is not None
+        assert self._arbiter is not None
+        arbiter = self._arbiter
+        workers = [
+            SupervisedThread(
+                "writer",
+                arbiter._thread,
+                heartbeat_getter=lambda: arbiter.heartbeat,
+                restart_factory=arbiter._respawn,
+                policy=policy,
+            )
+        ]
         read_pool, heavy = self._read_pool, self._heavy
         for index, worker in enumerate(read_pool._workers):
-            watchdog.register(
+            workers.append(
                 SupervisedThread(
                     f"read-{index}",
                     worker,
@@ -1711,7 +1769,7 @@ class SuperpowerDaemon:
                     policy=policy,
                 )
             )
-        watchdog.register(
+        workers.append(
             SupervisedThread(
                 "heavy",
                 heavy._worker,
@@ -1720,7 +1778,7 @@ class SuperpowerDaemon:
                 policy=policy,
             )
         )
-        watchdog.register(
+        workers.append(
             SupervisedThread(
                 "acceptor",
                 self._acceptor,
@@ -1729,7 +1787,7 @@ class SuperpowerDaemon:
                 policy=policy,
             )
         )
-        watchdog.register(
+        workers.append(
             SupervisedThread(
                 "reaper",
                 self._reaper,
@@ -1738,8 +1796,7 @@ class SuperpowerDaemon:
                 policy=policy,
             )
         )
-        watchdog.start()
-        self._worker_watchdog = watchdog
+        return workers
 
     def _on_worker_alert(self, name: str, kind: str) -> None:
         entry = {"worker": name, "kind": kind, "at": _utcnow_iso()}
@@ -2255,17 +2312,27 @@ class SuperpowerDaemon:
             )
 
     def _admit(self, actor: str) -> None:
-        """Per-agent token bucket (W7 #1): over-rate agents get typed busy."""
+        """Per-agent token bucket (W7 #1): over-rate agents get typed busy.
+
+        D2 (TASK2): at the 512-actor cap the map evicts only the
+        least-recently-used bucket — the pre-fix ``clear()`` handed every
+        active spammer a fresh burst on each overflow. Recency follows
+        admission activity, so hot actors keep their (possibly exhausted)
+        budgets and only a stale idle actor loses its (by then refilled)
+        bucket — losing it is then semantically free.
+        """
         with self._buckets_lock:
             bucket = self._buckets.get(actor)
             if bucket is None:
                 if len(self._buckets) >= BUCKET_CACHE_CAP:
-                    self._buckets.clear()  # bounded; buckets are cheap to rebuild
+                    self._buckets.popitem(last=False)  # evict the LRU actor only
                 bucket = _TokenBucket(
                     rate_per_second=self._config.agent_rate_per_second,
                     burst=self._config.agent_burst,
                 )
                 self._buckets[actor] = bucket
+            else:
+                self._buckets.move_to_end(actor)
             retry_after = bucket.retry_after_seconds()
         if retry_after is not None:
             raise ServerBusy(
