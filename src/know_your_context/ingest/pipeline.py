@@ -338,7 +338,7 @@ class IngestionBudget:
     the invocation typed with :class:`IngestionBudgetError`.
     """
 
-    max_files: int = 1024
+    max_files: int = 65536
     max_nodes: int = 65536
     max_edges: int = 131072
     max_refs: int = 65536
@@ -402,6 +402,12 @@ class IngestionReport:
     proposal: Mapping[str, int]
     primary_suggestions: tuple[Mapping[str, Any], ...]
     guards_hit: tuple[str, ...] = ()
+    # B3 (SUB-173): a capped walk is never silent. ``truncated`` is the
+    # explicit signal (the ``guards_hit`` entry alone was buried in a long
+    # one-line summary and a 5k-file repo quietly got 1,024 files indexed).
+    truncated: bool = False
+    files_truncated: int = 0
+    max_files: int = 65536
     resolution: Mapping[str, int] | None = None
     resolution_status: str = "skipped"  # "ok" | "skipped" | "unavailable"
     audit_event_id: str | None = None
@@ -418,6 +424,9 @@ class IngestionReport:
             "proposal": dict(self.proposal),
             "primary_suggestions": [dict(s) for s in self.primary_suggestions],
             "guards_hit": list(self.guards_hit),
+            "truncated": self.truncated,
+            "files_truncated": self.files_truncated,
+            "max_files": self.max_files,
             "resolution": None if self.resolution is None else dict(self.resolution),
             "resolution_status": self.resolution_status,
             "audit_event_id": self.audit_event_id,
@@ -717,7 +726,8 @@ class IngestionPipeline:
         serial_extraction = self._extraction_needs_serial(extractor)
 
         selected = entries[: self._budget.max_files]
-        if len(entries) > self._budget.max_files:
+        files_truncated = len(entries) - len(selected)
+        if files_truncated > 0:
             guards.append("max_files")
         stats["scanned"] = len(selected)
 
@@ -819,6 +829,9 @@ class IngestionPipeline:
             },
             primary_suggestions=suggestions,
             guards_hit=tuple(guards),
+            truncated=files_truncated > 0,
+            files_truncated=files_truncated,
+            max_files=self._budget.max_files,
             resolution=resolution,
             resolution_status=resolution_status,
             duration_ms=int((time.monotonic() - started) * 1000),

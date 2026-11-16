@@ -112,7 +112,7 @@ from know_your_context.improvement import (
     rollback_improvement,
 )
 from know_your_context.improvement import UnknownNode as ImprovementUnknownNode
-from know_your_context.projection import ARTIFACT_MAX_BYTES, GraphProjector, ProjectorBusy
+from know_your_context.projection import GraphProjector, ProjectorBusy, resolve_artifact_cap
 from know_your_context.read_model_validator import ReadModelValidator
 from know_your_context.relearn import (
     BackupUnavailable,
@@ -160,6 +160,14 @@ class InvalidPublishCapacity(PublishCapacityExceeded):
 
 
 _MAX_SNAPSHOT_CACHE = 8
+# B2 (SUB-173): how long a reader waits for a *concurrent* builder before it
+# reports the projection as unavailable. The projector's rebuild lock is
+# non-blocking, so losing the race to the first builder used to surface as
+# STALE_PROJECTION ("does not cover watermark 0") in 22.5% of post-ingest
+# reads. A build is seconds, not minutes: 5 s covers it with room to spare and
+# still bounds a crashed builder.
+_PROJECTION_WAIT_SECONDS = 5.0
+_PROJECTION_WAIT_POLL_SECONDS = 0.01
 _MAX_PROVENANCE_ENTRIES = 32
 _MAX_PROVENANCE_LENGTH = 256
 _MAX_SUMMARY_LENGTH = 256
@@ -255,16 +263,22 @@ class KnowledgeService:
         # would cross 95% of it, so the store can never grow past the point
         # where a repair rebuild fails permanently.
         if publish_capacity_bytes is None:
-            self._publish_capacity_bytes = int(ARTIFACT_MAX_BYTES * PUBLISH_CAPACITY_RATIO)
+            # B1 (SUB-174): the guard ceiling follows the same store-derived cap
+            # the projector publishes under, so an ingested corpus is not
+            # refused writes for a projection it can legitimately build.
+            self._artifact_cap_bytes = resolve_artifact_cap(store)
+            self._publish_capacity_bytes = int(self._artifact_cap_bytes * PUBLISH_CAPACITY_RATIO)
         else:
             override = int(publish_capacity_bytes)
-            if override > ARTIFACT_MAX_BYTES:
+            ceiling = resolve_artifact_cap(store)
+            self._artifact_cap_bytes = ceiling
+            if override > ceiling:
                 # SUB48-1: fail closed. A ceiling above the per-artifact cap
                 # disarms the guard — the store grows until every publish and
                 # repair fails with OversizedArtifactError.
                 raise InvalidPublishCapacity(
                     f"publish_capacity_bytes override {override} exceeds the per-artifact cap "
-                    f"{ARTIFACT_MAX_BYTES} bytes; the F-3 guard cannot protect a ceiling the "
+                    f"{ceiling} bytes; the F-3 guard cannot protect a ceiling the "
                     "projection can never publish. Lower the override or retire nodes instead."
                 )
             self._publish_capacity_bytes = override
@@ -418,8 +432,8 @@ class KnowledgeService:
             self._snapshot_cache[key] = snapshot
         return snapshot
 
-    def _repair_projection_once(self) -> None:
-        """One repair pass, including the ahead-of-store (lying manifest) case.
+    def _repair_projection_once(self) -> bool:
+        """One repair pass; ``True`` when another process holds the build lock.
 
         F-2: a manifest whose watermark is *ahead* of the store (poisoned
         ``upto_knowledge_seq``, or a restore that regressed the store) also
@@ -427,6 +441,11 @@ class KnowledgeService:
         legitimately shrink — the store cannot grow backwards. Both are
         handled here: heal the marker, then rebuild with shrink scoped to
         exactly this condition. The ordinary path stays ``repair_if_stale``.
+
+        B2 (SUB-173): ``ProjectorBusy`` is *not* a repair failure — it means a
+        peer process is publishing right now. It is reported to the caller so
+        the read can wait for that publication instead of calling the
+        projection stale.
         """
         manifest = self._projector.active_manifest()
         ahead = (
@@ -440,7 +459,27 @@ class KnowledgeService:
             else:
                 self._projector.repair_if_stale()
         except ProjectorBusy:
-            pass  # a concurrent writer is repairing; the re-check decides
+            return True  # a peer is building; the caller waits for it
+        return False
+
+    def _await_concurrent_builder(self, required_watermark: int) -> _Snapshot | None:
+        """Poll (bounded) for the peer's publication after losing the lock.
+
+        Only called when a repair attempt was refused because another process
+        holds the rebuild lock. Returns the covering snapshot the moment the
+        peer activates it, or ``None`` once the wait budget is exhausted (the
+        peer crashed, or is building a generation that still does not cover).
+        Called while holding ``_repair_lock``, so a single process never runs a
+        wait per reader thread — the first reader waits, the rest queue behind
+        it and then find the snapshot.
+        """
+        deadline = time.monotonic() + _PROJECTION_WAIT_SECONDS
+        while time.monotonic() < deadline:
+            time.sleep(_PROJECTION_WAIT_POLL_SECONDS)
+            snapshot = self._try_snapshot(required_watermark)
+            if snapshot is not None:
+                return snapshot
+        return None
 
     def _snapshot(self, required_watermark: int) -> _Snapshot:
         snapshot = self._try_snapshot(required_watermark)
@@ -453,17 +492,28 @@ class KnowledgeService:
         # a full rebuild and still fail. Within the window a stale read fails
         # typed and retryable instead; a repair that covers its read clears the
         # cooldown, so the normal write→repair flow is unaffected.
+        busy_peer = False
         with self._repair_lock:
             # Re-check under the lock: a concurrent reader may just have repaired.
             snapshot = self._try_snapshot(required_watermark)
             if snapshot is None and time.monotonic() >= self._repair_unavailable_until:
-                self._repair_projection_once()
+                busy_peer = self._repair_projection_once()
                 snapshot = self._try_snapshot(required_watermark)
+                if snapshot is None and busy_peer:
+                    # B2: another process is publishing — wait for it rather than
+                    # reporting a projection that is being built as stale.
+                    snapshot = self._await_concurrent_builder(required_watermark)
                 if snapshot is None:
                     self._repair_unavailable_until = time.monotonic() + self._repair_cooldown_seconds
                 else:
                     self._repair_unavailable_until = 0.0
         if snapshot is None:
+            if busy_peer:
+                raise StaleProjectionUnavailable(
+                    f"the active projection does not cover knowledge watermark {required_watermark}: "
+                    f"another process is rebuilding it and did not publish within "
+                    f"{_PROJECTION_WAIT_SECONDS:g}s"
+                )
             raise StaleProjectionUnavailable(
                 f"the active projection does not cover knowledge watermark {required_watermark}"
             )
@@ -633,6 +683,45 @@ class KnowledgeService:
 
     # --------------------------------------------------------------------- query
 
+    @staticmethod
+    def _ordered_candidates(
+        snapshot: _Snapshot,
+        root_node_id: str,
+        candidate_ids: set[str],
+        request: QueryRequest,
+    ) -> list[str]:
+        """Relevance-ordered candidate ids: the traversal window plus the routed root's lexical hits.
+
+        Relevance order comes from the index itself, so the field-rank
+        tie-break survives; unknown ids sort last by node id.
+
+        B1 (SUB-175): spec 8 bounds traversal by *relevance*, so a positive
+        lexical hit attributed to the routed root must never be windowed out
+        by the traversal budget (measured: a 328-node applied corpus let the
+        default ``max_nodes=64`` BFS window exclude the exact ``Cls17`` match
+        and the query returned only generic branch nodes). Seeding is bounded
+        by ``max_nodes``; small graphs are unaffected because their hits
+        already sit inside the window.
+        """
+        terms = query_terms(request.purpose)
+        for tag in request.context_tags:
+            terms.extend(query_terms(tag))
+        rank_order = {hit.node_id: position for position, hit in enumerate(snapshot.index.rank(terms))}
+        seeded = 0
+        for node_id in rank_order:
+            if seeded >= request.max_nodes:
+                break
+            if node_id in candidate_ids or node_id not in snapshot.nodes:
+                continue
+            if snapshot.router.primary_root_of(node_id) != root_node_id:
+                continue
+            candidate_ids.add(node_id)
+            seeded += 1
+        return sorted(
+            candidate_ids,
+            key=lambda node_id: (rank_order.get(node_id, len(rank_order)), node_id),
+        )
+
     def query(self, request: QueryRequest, *, actor: str | None = None) -> QueryResponse:
         started = time.monotonic()
         invocation = self._begin("knowledge.query", request.model_dump(mode="json"), actor, None)
@@ -740,7 +829,9 @@ class KnowledgeService:
             max_edges=request.max_edges,
         )
 
-        consulted = [snapshot.nodes[node_id] for node_id in report.nodes if node_id in snapshot.nodes]
+        consulted_ids = {node_id for node_id in report.nodes if node_id in snapshot.nodes}
+        ordered_ids = self._ordered_candidates(snapshot, outcome.root_node_id, consulted_ids, request)
+        consulted = [snapshot.nodes[node_id] for node_id in ordered_ids]
         node_versions = {str(node["id"]): int(node.get("version", 1)) for node in consulted}
         provenance = tuple(
             sorted(
@@ -753,16 +844,6 @@ class KnowledgeService:
             )
         )[:_MAX_PROVENANCE_ENTRIES]
 
-        # Relevance order comes from the index itself, so the field-rank
-        # tie-break survives; unknown ids sort last by node id.
-        terms = query_terms(request.purpose)
-        for tag in request.context_tags:
-            terms.extend(query_terms(tag))
-        rank_order = {hit.node_id: position for position, hit in enumerate(snapshot.index.rank(terms))}
-        ordered_ids = sorted(
-            (node_id for node_id in report.nodes if node_id in snapshot.nodes),
-            key=lambda node_id: (rank_order.get(node_id, len(rank_order)), node_id),
-        )
         ranked_results = [self._result_node(snapshot.nodes[node_id]) for node_id in ordered_ids]
 
         results = ranked_results
@@ -1241,7 +1322,7 @@ class KnowledgeService:
         error = PublishCapacityExceeded(
             f"log_event refused: the estimated published graph would reach {estimate} bytes, over the "
             f"publish capacity guard at {self._publish_capacity_bytes} bytes "
-            f"(per-artifact cap {ARTIFACT_MAX_BYTES} bytes). Retire nodes or restore a smaller backup "
+            f"(per-artifact cap {self._artifact_cap_bytes} bytes). Retire nodes or restore a smaller backup "
             "before writing more; see docs/recovery/sub41-flow-core-fixes.md"
         )
         self._audit.begin(invocation)
@@ -1483,10 +1564,14 @@ class KnowledgeService:
             # Re-check under the lock: a concurrent repair may have covered it.
             meta = self._meta_from_active_manifest(audit_event_id, required)
             if meta is None and time.monotonic() >= self._repair_unavailable_until:
-                self._repair_projection_once()
+                # A busy peer is fine here: this path assembles best-effort
+                # metadata and never claims coverage; reads that need the
+                # projection itself wait for the peer in ``_snapshot``.
+                busy_peer = self._repair_projection_once()
                 meta = self._meta_from_active_manifest(audit_event_id, required)
                 if meta is None:
-                    self._repair_unavailable_until = time.monotonic() + self._repair_cooldown_seconds
+                    if not busy_peer:
+                        self._repair_unavailable_until = time.monotonic() + self._repair_cooldown_seconds
                 else:
                     self._repair_unavailable_until = 0.0
         if meta is None:

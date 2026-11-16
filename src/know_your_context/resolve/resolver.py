@@ -206,6 +206,33 @@ def _symbol_row(row: sqlite3.Row) -> SymbolRow:
     )
 
 
+@dataclass
+class _PassCache:
+    """Per-pass memo for read-only lookups (B7, SUB-173).
+
+    The resolve pass never mutates the ``symbols``/``files`` tables (edges are
+    written after the read phase), so within one ``resolve_pending`` call every
+    lookup is a pure function of the store. A batch shares many refs per source
+    file and many repeated names (``len``/``append``/``json``), so memoising
+    the *counts* and the source context removes repeated round-trips without
+    changing a single decision. A new cache is built per call: nothing survives
+    across passes, so an incremental re-ingest never resolves against stale
+    counts.
+
+    Ids are opaque strings and tails arbitrary text, hence the dict keys.
+    """
+
+    source_context: dict[str, tuple[str, str] | None]
+    name_counts: dict[str, int]
+    tail_counts: dict[str, int]
+    module_files: dict[str, tuple[str, FileRow | int | None]]
+    symbols_in_file: dict[tuple[str, str], tuple[str, SymbolRow | int | None]]
+
+    @classmethod
+    def fresh(cls) -> _PassCache:
+        return cls(source_context={}, name_counts={}, tail_counts={}, module_files={}, symbols_in_file={})
+
+
 class ReferenceResolver:
     """Turns pending ``unresolved_refs`` into ``calls``/``imports`` edges."""
 
@@ -235,10 +262,11 @@ class ReferenceResolver:
         _validate_limit(limit, "limit")
         effective_limit = limit if limit is not None else self._config.batch_limit
         refs = store.pending_unresolved_refs(limit=effective_limit)
+        cache = _PassCache.fresh()
         decisions: list[tuple[UnresolvedRefRow, _Decision]] = []
         edge_payloads: list[dict[str, object]] = []
         for ref in refs:
-            decision = self._resolve_ref(store, ref)
+            decision = self._resolve_ref(store, ref, cache=cache)
             decisions.append((ref, decision))
             if decision.reason is None:
                 assert decision.target_node_id is not None and decision.strategy is not None
@@ -254,17 +282,34 @@ class ReferenceResolver:
                     }
                 )
         edges_inserted = store.add_graph_edges(edge_payloads) if edge_payloads else 0
+        # B7 (SUB-173): one transaction for the whole batch. Per-ref commits
+        # meant one fsync per parked reference (38,371 of them at 1,000 files =
+        # 14.6 s of the 65 s ingest) for writes the pass had already decided.
+        recorded_rows = store.record_resolution_attempts(
+            [
+                (ref.ref_id, "resolved" if decision.reason is None else "failed", decision.reason)
+                for ref, decision in decisions
+            ]
+        )
+        return self._batch_report(store, decisions, recorded_rows, edges_inserted)
+
+    @staticmethod
+    def _batch_report(
+        store: EventStore,
+        decisions: list[tuple[UnresolvedRefRow, _Decision]],
+        recorded_rows: list[UnresolvedRefRow],
+        edges_inserted: int,
+    ) -> BatchReport:
+        """Assemble the BatchReport as a view of persisted state (F4)."""
         outcomes: list[RefOutcome] = []
-        for ref, decision in decisions:
-            status: Literal["resolved", "failed"] = "resolved" if decision.reason is None else "failed"
+        for (ref, decision), recorded in zip(decisions, recorded_rows, strict=True):
             # F4 (schema v4): the deterministic failure reason is persisted on
             # the row, and the reported outcome reads it back from the store —
             # the BatchReport is a view of persisted state, never just memory.
-            recorded = store.record_resolution_attempt(ref.ref_id, outcome=status, reason=decision.reason)
             outcomes.append(
                 RefOutcome(
                     ref_id=ref.ref_id,
-                    status=status,
+                    status="resolved" if decision.reason is None else "failed",
                     strategy=decision.strategy,
                     target_node_id=decision.target_node_id,
                     reason=recorded.failure_reason,
@@ -276,7 +321,7 @@ class ReferenceResolver:
             processed=len(outcomes),
             resolved=resolved,
             failed=len(outcomes) - resolved,
-            pending_remaining=len(store.pending_unresolved_refs()),
+            pending_remaining=store.pending_unresolved_count(),
             edges_inserted=edges_inserted,
             outcomes=tuple(outcomes),
         )
@@ -301,35 +346,47 @@ class ReferenceResolver:
 
     # ------------------------------------------------------- strategy cascade
 
-    def _resolve_ref(self, store: EventStore, ref: UnresolvedRefRow) -> _Decision:
+    def _resolve_ref(self, store: EventStore, ref: UnresolvedRefRow, *, cache: _PassCache | None = None) -> _Decision:
+        pass_cache = cache if cache is not None else _PassCache.fresh()
         edge_kind = REF_KIND_TO_EDGE_KIND.get(ref.kind)
         if edge_kind is None:
             return _fail("unknown_ref_kind")
-        context = self._source_context(store, ref.source_node_id)
+        context = self._source_context(store, ref.source_node_id, cache=pass_cache)
         if context is None:
             return _fail("unknown_source")
         source_path, language = context
         deferred_reason: str | None = None
-        # (a) exact symbol match
-        exact = store.symbols_named(ref.target_name)
-        if len(exact) == 1:
+        # (a) exact symbol match. B7 (SUB-173): ask the index how many rows a
+        # name has before fetching any — materialising every same-named row
+        # only to read ``len()`` made the resolve pass quadratic in corpus size
+        # (every module defines ``__init__``/``add``/``summary``/``json``).
+        exact_count = pass_cache.name_counts.get(ref.target_name)
+        if exact_count is None:
+            exact_count = store.symbols_named_count(ref.target_name)
+            pass_cache.name_counts[ref.target_name] = exact_count
+        if exact_count == 1:
+            exact = store.symbols_named(ref.target_name)
             return _hit("exact", exact[0].node_id)
-        if len(exact) > 1:
-            deferred_reason = f"ambiguous_exact:{len(exact)}"
+        if exact_count > 1:
+            deferred_reason = f"ambiguous_exact:{exact_count}"
         # (b) name_tail match (skip when the tail adds no information)
         tail = ref.name_tail
         if tail and tail != ref.target_name:
-            candidates = self._tail_candidates(store, tail)
-            if len(candidates) == 1:
+            tail_count = pass_cache.tail_counts.get(tail)
+            if tail_count is None:
+                tail_count = self._tail_candidate_count(store, tail)
+                pass_cache.tail_counts[tail] = tail_count
+            if tail_count == 1:
+                candidates = self._tail_candidates(store, tail)
                 return _hit("name_tail", candidates[0].node_id)
-            if len(candidates) > 1 and deferred_reason is None:
-                deferred_reason = f"ambiguous_tail:{len(candidates)}"
+            if tail_count > 1 and deferred_reason is None:
+                deferred_reason = f"ambiguous_tail:{tail_count}"
         # (c) import-path resolution (module-based languages)
         if language in self._config.module_languages and self._import_path_applies(ref.kind, ref.target_name, language):
             if language == "python":
-                decision = self._resolve_python_import(store, source_path, ref.target_name, edge_kind)
+                decision = self._resolve_python_import(store, source_path, ref.target_name, edge_kind, cache=pass_cache)
             else:
-                decision = self._resolve_js_import(store, source_path, ref.target_name)
+                decision = self._resolve_js_import(store, source_path, ref.target_name, cache=pass_cache)
             if decision is not None:
                 return decision
         # (d) per-language helper tier (W12): imports refs only, after (c).
@@ -343,8 +400,12 @@ class ReferenceResolver:
             return _fail(deferred_reason)
         return _fail("no_resolution")
 
-    def _source_context(self, store: EventStore, source_node_id: str) -> tuple[str, str] | None:
+    def _source_context(
+        self, store: EventStore, source_node_id: str, *, cache: _PassCache | None = None
+    ) -> tuple[str, str] | None:
         """(source file path, language) or None when the source node is unknown."""
+        if cache is not None and source_node_id in cache.source_context:
+            return cache.source_context[source_node_id]
         path: str | None = None
         symbol = store.symbol_by_node(source_node_id)
         if symbol is not None:
@@ -354,6 +415,8 @@ class ReferenceResolver:
             if store.get_file(candidate) is not None:
                 path = candidate
         if path is None:
+            if cache is not None:
+                cache.source_context[source_node_id] = None
             return None
         file_row = store.get_file(path)
         language = (
@@ -361,6 +424,8 @@ class ReferenceResolver:
             if file_row is not None and file_row.language != "unknown"
             else _EXTENSION_LANGUAGES.get(PurePosixPath(path).suffix, "unknown")
         )
+        if cache is not None:
+            cache.source_context[source_node_id] = (path, language)
         return path, language
 
     def _import_path_applies(self, ref_kind: str, target_name: str, language: str) -> bool:
@@ -369,6 +434,26 @@ class ReferenceResolver:
         if language == "python":
             return target_name.startswith(".") or "." in target_name
         return target_name.startswith(".") or "/" in target_name
+
+    def _tail_candidate_count(self, store: EventStore, tail: str) -> int:
+        """How many symbols the tail strategy would match — without the rows.
+
+        Mirrors :meth:`_tail_candidates`'s predicate exactly (the v6 indexed
+        ``name_tail`` path for separator-free tails, the legacy exact/LIKE union
+        otherwise) so a count and a fetch can never disagree. B7: the resolver
+        only needs the count to choose a strategy; the rows are fetched solely
+        when there is exactly one.
+        """
+        if "." not in tail and "::" not in tail:
+            return store.symbols_with_tail_count(tail)
+        like = _escape_like(tail)
+        with store.read() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS n FROM symbols WHERE name = ? OR name LIKE ? ESCAPE '\\' "
+                "OR name LIKE ? ESCAPE '\\'",
+                (tail, f"%.{like}", f"%::{like}"),
+            ).fetchone()
+        return 0 if row is None else int(row["n"])
 
     def _tail_candidates(self, store: EventStore, tail: str) -> list[SymbolRow]:
         # v6 index path: a separator-free tail equals the materialized
@@ -395,8 +480,23 @@ class ReferenceResolver:
 
     # -------------------------------------------------------- module lookups
 
-    def _module_file(self, store: EventStore, rel: str) -> tuple[str, FileRow | int | None]:
-        """Exact-then-suffix file match: ``("hit", row)`` / ``("ambiguous", n)`` / ``("miss", None)``."""
+    def _module_file(
+        self, store: EventStore, rel: str, *, cache: _PassCache | None = None
+    ) -> tuple[str, FileRow | int | None]:
+        """Exact-then-suffix file match: ``("hit", row)`` / ``("ambiguous", n)`` / ``("miss", None)``.
+
+        Memoised per pass (B7): every ref of a file imports from the same few
+        modules, so the same module path was resolved thousands of times.
+        """
+        if cache is not None and rel in cache.module_files:
+            return cache.module_files[rel]
+        result = self._module_file_uncached(store, rel)
+        if cache is not None:
+            cache.module_files[rel] = result
+        return result
+
+    def _module_file_uncached(self, store: EventStore, rel: str) -> tuple[str, FileRow | int | None]:
+        """The uncached exact-then-suffix module-file search."""
         exact = store.get_file(rel)
         if exact is not None:
             return ("hit", exact)
@@ -416,7 +516,19 @@ class ReferenceResolver:
             return ("ambiguous", len(rows))
         return ("hit", _file_row(rows[0]))
 
-    def _symbol_in_file(self, store: EventStore, path: str, tail: str) -> tuple[str, SymbolRow | int | None]:
+    def _symbol_in_file(
+        self, store: EventStore, path: str, tail: str, *, cache: _PassCache | None = None
+    ) -> tuple[str, SymbolRow | int | None]:
+        key = (path, tail)
+        if cache is not None and key in cache.symbols_in_file:
+            return cache.symbols_in_file[key]
+        result = self._symbol_in_file_uncached(store, path, tail)
+        if cache is not None:
+            cache.symbols_in_file[key] = result
+        return result
+
+    @staticmethod
+    def _symbol_in_file_uncached(store: EventStore, path: str, tail: str) -> tuple[str, SymbolRow | int | None]:
         matches = [
             symbol
             for symbol in store.symbols_in_path(path)
@@ -428,18 +540,28 @@ class ReferenceResolver:
             return ("miss", None)
         return ("ambiguous", len(matches))
 
+    @staticmethod
+    def _relative_import_prefix(source_path: str, dots: int) -> str:
+        """The package prefix a leading-dots import is relative to."""
+        if not dots:
+            return ""
+        base = PurePosixPath(source_path).parent
+        for _ in range(dots - 1):
+            base = base.parent
+        return "" if str(base) in ("", ".") else str(base)
+
     def _resolve_python_import(
-        self, store: EventStore, source_path: str, target_name: str, edge_kind: str
+        self,
+        store: EventStore,
+        source_path: str,
+        target_name: str,
+        edge_kind: str,
+        *,
+        cache: _PassCache | None = None,
     ) -> _Decision | None:
         dots = len(target_name) - len(target_name.lstrip("."))
         rest = target_name[dots:]
-        if dots:
-            base = PurePosixPath(source_path).parent
-            for _ in range(dots - 1):
-                base = base.parent
-            prefix = "" if str(base) in ("", ".") else str(base)
-        else:
-            prefix = ""
+        prefix = self._relative_import_prefix(source_path, dots)
         segments = [segment for segment in rest.split(".") if segment] if rest else []
         # Deterministic split order: longest module + symbol tail first, then
         # the whole target as a module, then (relative only) the package
@@ -458,7 +580,7 @@ class ReferenceResolver:
                 continue  # root-level relative import has no anchor package
             module_row: FileRow | None = None
             for candidate in (f"{module_rel}{suffix}" for suffix in self._config.python_suffixes):
-                status, payload = self._module_file(store, candidate)
+                status, payload = self._module_file(store, candidate, cache=cache)
                 if status == "ambiguous":
                     return _fail(f"ambiguous_module:{payload}")
                 if status == "hit":
@@ -471,7 +593,7 @@ class ReferenceResolver:
                 if edge_kind == "imports":
                     return _hit("import_path", file_node_id(module_row.path))
                 continue  # a calls edge never binds a bare module
-            symbol_status, symbol_payload = self._symbol_in_file(store, module_row.path, symbol_tail)
+            symbol_status, symbol_payload = self._symbol_in_file(store, module_row.path, symbol_tail, cache=cache)
             if symbol_status == "hit":
                 assert isinstance(symbol_payload, SymbolRow)
                 return _hit("import_path", symbol_payload.node_id)
@@ -548,7 +670,9 @@ class ReferenceResolver:
             return ("ambiguous", len(directories))
         return ("hit", ordered_paths[0])
 
-    def _resolve_js_import(self, store: EventStore, source_path: str, target_name: str) -> _Decision | None:
+    def _resolve_js_import(
+        self, store: EventStore, source_path: str, target_name: str, *, cache: _PassCache | None = None
+    ) -> _Decision | None:
         if not (target_name.startswith("./") or target_name.startswith("../")):
             return _fail("external_module")
         joined = posixpath.normpath(posixpath.join(posixpath.dirname(source_path), target_name))
@@ -561,7 +685,7 @@ class ReferenceResolver:
             if candidate not in candidates:
                 candidates.append(candidate)
         for candidate in candidates:
-            status, payload = self._module_file(store, candidate)
+            status, payload = self._module_file(store, candidate, cache=cache)
             if status == "ambiguous":
                 return _fail(f"ambiguous_module:{payload}")
             if status == "hit":

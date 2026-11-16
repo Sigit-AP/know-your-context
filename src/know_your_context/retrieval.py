@@ -627,6 +627,10 @@ class PrimaryRouter:
         self._parent = parent
         self._index = LexicalIndex.from_graph_nodes(self._nodes.values())
 
+    def primary_root_of(self, node_id: str) -> str | None:
+        """The primary root a node is attributed to (public read of the route rule)."""
+        return self._primary_root(node_id)
+
     def _primary_root(self, node_id: str) -> str | None:
         """The nearest ``primary`` ancestor, resolved through ``parent_of``."""
         current = node_id

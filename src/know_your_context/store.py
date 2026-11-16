@@ -145,6 +145,12 @@ class StorageTuningError(StoreError):
     """An invalid storage-tuning specification (typed, fail-closed)."""
 
 
+def _chunked(items: Sequence[int], size: int) -> Iterator[list[int]]:
+    """Fixed-size slices for ``IN (...)`` statements (SQLite's parameter cap)."""
+    for start in range(0, len(items), size):
+        yield list(items[start : start + size])
+
+
 @dataclass(frozen=True)
 class StorageTuning:
     """Hardware-aware pragma recipe for one store connection (W15).
@@ -1847,6 +1853,13 @@ class EventStore:
             ).fetchall()
         return [self._symbol_row(row) for row in rows]
 
+    def symbols_with_tail_count(self, name_tail: str) -> int:
+        """How many symbols end in *name_tail* (v6 index, count only). See
+        :meth:`symbols_named_count` for why the count is its own primitive."""
+        with self.read() as conn:
+            row = conn.execute("SELECT COUNT(*) AS n FROM symbols WHERE name_tail = ?", (name_tail,)).fetchone()
+        return 0 if row is None else int(row["n"])
+
     def symbols_revision(self) -> int:
         """The trigger-maintained ``symbols`` change counter (v6): O(1) freshness
         token that moves on ANY symbols write, whatever path wrote it."""
@@ -1888,6 +1901,22 @@ class EventStore:
                     "SELECT * FROM symbols WHERE name = ? ORDER BY path, line, col, node_id", (name,)
                 ).fetchall()
         return [self._symbol_row(row) for row in rows]
+
+    def symbols_named_count(self, name: str, *, case_insensitive: bool = False) -> int:
+        """How many symbols carry *name* — index-only, no row materialisation.
+
+        B7 (SUB-173): the resolver only needs "exactly one?" / "how many?" to
+        pick a strategy. Fetching every same-named row to answer that turned a
+        corpus-linear lookup into a quadratic one (3.06M rows at 1,000 files,
+        because every module defines ``__init__``/``add``/``summary``/``json``/
+        ``os``). ``COUNT(*)`` seeks the same index and allocates nothing.
+        """
+        with self.read() as conn:
+            if case_insensitive:
+                row = conn.execute("SELECT COUNT(*) AS n FROM symbols WHERE lower(name) = lower(?)", (name,)).fetchone()
+            else:
+                row = conn.execute("SELECT COUNT(*) AS n FROM symbols WHERE name = ?", (name,)).fetchone()
+        return 0 if row is None else int(row["n"])
 
     def symbols_in_path(self, path: str) -> list[SymbolRow]:
         with self.read() as conn:
@@ -2128,6 +2157,28 @@ class EventStore:
             rows = conn.execute(sql, parameters).fetchall()
         return [self._unresolved_ref_row(row) for row in rows]
 
+    def code_index_size(self) -> tuple[int, int]:
+        """``(files, symbols)`` counts of the ingested code index — O(1) reads.
+
+        The projection sizes its publish cap from this (B1, SUB-174): a store
+        with no code index answers ``(0, 0)`` and keeps the 64 KiB default,
+        while an ingested corpus scales the cap with what it actually has to
+        carry. Two ``COUNT(*)`` reads, no row materialisation.
+        """
+        with self.read() as conn:
+            files = conn.execute("SELECT COUNT(*) AS n FROM files").fetchone()
+            symbols = conn.execute("SELECT COUNT(*) AS n FROM symbols").fetchone()
+        return (
+            0 if files is None else int(files["n"]),
+            0 if symbols is None else int(symbols["n"]),
+        )
+
+    def pending_unresolved_count(self) -> int:
+        """Pending queue length without materialising the queue (B7)."""
+        with self.read() as conn:
+            row = conn.execute("SELECT COUNT(*) AS n FROM unresolved_refs WHERE status = 'pending'").fetchone()
+        return 0 if row is None else int(row["n"])
+
     def failed_unresolved_refs(self, *, name_tail: str | None = None) -> list[UnresolvedRefRow]:
         """Failed refs, optionally narrowed to one tail (``idx_unresolved_failed_tail``)."""
         with self.read() as conn:
@@ -2142,6 +2193,16 @@ class EventStore:
                 ).fetchall()
         return [self._unresolved_ref_row(row) for row in rows]
 
+    @staticmethod
+    def _validate_attempt(ref_id: int, outcome: str, reason: str | None) -> None:
+        """The per-attempt vocabulary gate shared by the single and batch writes."""
+        if outcome not in ("resolved", "failed"):
+            raise UnresolvedRefError(f"resolution outcome must be 'resolved' or 'failed', got {outcome!r}")
+        if reason is not None and (not isinstance(reason, str) or not reason):
+            raise UnresolvedRefError(f"failure reason must be a non-empty string, got {reason!r}")
+        if outcome == "resolved" and reason is not None:
+            raise UnresolvedRefError("a resolved ref carries no failure reason")
+
     def record_resolution_attempt(self, ref_id: int, *, outcome: str, reason: str | None = None) -> UnresolvedRefRow:
         """Record one resolution attempt on a pending ref: ``resolved`` or ``failed``.
 
@@ -2155,28 +2216,52 @@ class EventStore:
         raise :class:`UnresolvedRefError` — a resolved ref is terminal, a
         failed ref must go through :meth:`retry_failed_ref` first.
         """
-        if outcome not in ("resolved", "failed"):
-            raise UnresolvedRefError(f"resolution outcome must be 'resolved' or 'failed', got {outcome!r}")
-        if reason is not None and (not isinstance(reason, str) or not reason):
-            raise UnresolvedRefError(f"failure reason must be a non-empty string, got {reason!r}")
-        if outcome == "resolved" and reason is not None:
-            raise UnresolvedRefError("a resolved ref carries no failure reason")
+        return self.record_resolution_attempts([(int(ref_id), outcome, reason)])[0]
+
+    def record_resolution_attempts(self, attempts: Sequence[tuple[int, str, str | None]]) -> list[UnresolvedRefRow]:
+        """Record many resolution attempts in ONE transaction (B7, SUB-173).
+
+        The single-row form paid one ``BEGIN IMMEDIATE``/``COMMIT`` (one fsync)
+        per ref: at 1,000 files that was 38,371 commits and 14.6 s of the
+        65 s ingest — pure write amplification, since the resolve pass already
+        decided every outcome in memory. All-or-nothing: a ref that is unknown
+        or no longer pending rolls the whole batch back, exactly like the
+        single-row call rolls its own write back. Returned rows are ordered as
+        the input was.
+        """
+        prepared: list[tuple[int, str, str | None]] = []
+        for ref_id, outcome, reason in attempts:
+            self._validate_attempt(int(ref_id), outcome, reason)
+            prepared.append((int(ref_id), outcome, reason))
+        if not prepared:
+            return []
+        ids = [ref_id for ref_id, _, _ in prepared]
         with self.transaction() as conn:
-            row = conn.execute("SELECT * FROM unresolved_refs WHERE ref_id = ?", (int(ref_id),)).fetchone()
-            if row is None:
-                raise UnresolvedRefError(f"unresolved ref {ref_id} does not exist")
-            status = str(row["status"])
-            if status != "pending":
-                raise UnresolvedRefError(
-                    f"unresolved ref {ref_id} is {status!r}, not 'pending'; refusing to record an attempt"
-                )
-            conn.execute(
+            status_by_id: dict[int, str] = {}
+            for chunk in _chunked(ids, 400):
+                placeholders = ",".join("?" for _ in chunk)
+                for row in conn.execute(
+                    f"SELECT ref_id, status FROM unresolved_refs WHERE ref_id IN ({placeholders})", chunk
+                ):
+                    status_by_id[int(row["ref_id"])] = str(row["status"])
+            for ref_id in ids:
+                status = status_by_id.get(ref_id)
+                if status is None:
+                    raise UnresolvedRefError(f"unresolved ref {ref_id} does not exist")
+                if status != "pending":
+                    raise UnresolvedRefError(
+                        f"unresolved ref {ref_id} is {status!r}, not 'pending'; refusing to record an attempt"
+                    )
+            conn.executemany(
                 "UPDATE unresolved_refs SET status = ?, attempts = attempts + 1, failure_reason = ? WHERE ref_id = ?",
-                (outcome, reason, int(ref_id)),
+                [(outcome, reason, ref_id) for ref_id, outcome, reason in prepared],
             )
-            updated = conn.execute("SELECT * FROM unresolved_refs WHERE ref_id = ?", (int(ref_id),)).fetchone()
-        assert updated is not None  # same transaction, same row
-        return self._unresolved_ref_row(updated)
+            updated: dict[int, UnresolvedRefRow] = {}
+            for chunk in _chunked(ids, 400):
+                placeholders = ",".join("?" for _ in chunk)
+                for row in conn.execute(f"SELECT * FROM unresolved_refs WHERE ref_id IN ({placeholders})", chunk):
+                    updated[int(row["ref_id"])] = self._unresolved_ref_row(row)
+        return [updated[ref_id] for ref_id in ids]
 
     def retry_failed_ref(self, ref_id: int) -> UnresolvedRefRow:
         """Move a failed ref back to pending so the next resolve pass retries it.

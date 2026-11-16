@@ -201,9 +201,12 @@ def test_docs_internal_links_resolve():
 def test_api_documents_every_cli_command():
     cli_src = (SRC / "cli.py").read_text(encoding="utf-8")
     named = set(re.findall(r'add_parser\(\s*"([a-z0-9-]+)"', cli_src))
-    http_src = (SRC / "http_api.py").read_text(encoding="utf-8")
+    # B4 (SUB-173): the operation tuples live in the dependency-free
+    # ``operations`` module so the CLI parser builds without importing
+    # ``http_api``; ``http_api`` re-exports every historical name unchanged.
+    ops_src = (SRC / "operations.py").read_text(encoding="utf-8")
     for block in ("KNOWLEDGE_OPERATIONS", "OPS_OPERATIONS"):
-        section = http_src.split(f"{block}: tuple[str, ...] = (", 1)[1].split(")", 1)[0]
+        section = ops_src.split(f"{block}: tuple[str, ...] = (", 1)[1].split(")", 1)[0]
         named |= {op.replace("_", "-") for op in re.findall(r'"([a-z_]+)"', section)}
     api = (DOCS / "api.md").read_text(encoding="utf-8")
     missing = {name for name in named if f"`{name}`" not in api}

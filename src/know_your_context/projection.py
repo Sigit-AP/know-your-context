@@ -89,7 +89,9 @@ except ImportError:  # pragma: no cover - POSIX-only fallback
     fcntl = None  # type: ignore[assignment]
 
 __all__ = [
+    "APPLIED_NODE_BYTES",
     "ARTIFACT_MAX_BYTES",
+    "ARTIFACT_MAX_BYTES_CEILING",
     "ARTIFACT_NAMES",
     "ENRICHED_SUMMARY_MAX_LENGTH",
     "FragmentCache",
@@ -102,6 +104,8 @@ __all__ = [
     "ShrinkGuardError",
     "StalePublicationError",
     "enriched_summary",
+    "resolve_artifact_cap",
+    "resolve_fragment_bounds",
 ]
 
 # manifest.json is activated last and verified by canonical equality, so it is
@@ -131,6 +135,22 @@ _MANIFEST_VERSION = 1
 #   whose artifacts exceed it is rejected before any file is written.
 PUBLISH_TEXT_MAX_CHARS = DEFAULT_MAX_TEXT_LENGTH
 ARTIFACT_MAX_BYTES = 64 * 1024
+
+# B1 (SUB-174): 64 KiB is the *hand-authored knowledge* default — a docs corpus
+# is a few dozen nodes. An ingested code corpus is three orders of magnitude
+# larger (stress L1: 100 files → 1,279 nodes → 958 KB of graph.json), so
+# `ingest --apply` used to die on the publish cap and `query` stayed blind —
+# the exact B1 symptom, just one step later. The cap therefore scales with the
+# store's own code index: deterministic (a pure function of the store), the
+# same number in every process, and 64 KiB whenever there is no code index. It
+# stays a real guard — explicit caps below the payload still raise — and the
+# absolute ceiling refuses a corpus that cannot fit one artifact instead of
+# wedging the store or exhausting RAM.
+#: Measured 749 B/node on the stress L1 corpus; 2 KiB/node leaves ~2.7x
+#: headroom for wider symbols (long names, deep paths, provenance) and keeps
+#: the estimate's whole point intact: it is proportional, not unbounded.
+APPLIED_NODE_BYTES = 2048
+ARTIFACT_MAX_BYTES_CEILING = 256 * 1024 * 1024
 
 # Summary enrichment (ruling "Opsi A", 2026-10-25): a projected node label is
 # the heading plus the leading sentence(s) of its source section, sanitized
@@ -543,6 +563,78 @@ class _ReplayState:
     watermark: int = 0
 
 
+def resolve_artifact_cap(store: Any) -> int:
+    """The per-artifact publish cap this store's projection has to honour.
+
+    B1 (SUB-174): the 64 KiB default is right for hand-authored knowledge and
+    impossible for an ingested corpus (stress L1 carries 1,279 nodes in 958 KB).
+    The cap is therefore derived from the store's own code index — a pure
+    function of the store, so every process (build, repair, ops probe) reaches
+    the same number without a side channel — and bounded by
+    :data:`ARTIFACT_MAX_BYTES_CEILING`, above which the apply lane refuses typed
+    rather than attempting an artifact that cannot fit.
+
+    ``store`` is anything exposing ``code_index_size()``; a store without a
+    code index answers ``(0, 0)`` and keeps :data:`ARTIFACT_MAX_BYTES`.
+    """
+    counter = getattr(store, "code_index_size", None)
+    if counter is None:
+        return ARTIFACT_MAX_BYTES
+    files, symbols = counter()
+    projected = int(files) + int(symbols)
+    if projected <= 0:
+        return ARTIFACT_MAX_BYTES
+    needed = projected * APPLIED_NODE_BYTES + ARTIFACT_MAX_BYTES
+    return min(max(ARTIFACT_MAX_BYTES, needed), ARTIFACT_MAX_BYTES_CEILING)
+
+
+# B1 (SUB-175): the projection build gate reuses the pinned Graphify fragment
+# bounds (10k nodes / 100k edges / 25 MB). Those bounds are sized for one LLM
+# *fragment*; a generation carries the whole corpus, so an ingested code index
+# died at the gate (measured: L2's 12,927 nodes rejected with "nodes has 12927
+# entries; max is 10000" right after a successful apply). The count bounds
+# scale from the store's code index under the same rule as the byte cap —
+# deterministic, identical in every process, defaults when there is no code
+# index — while every per-item check (id charset, schema) stays pinned.
+_FRAGMENT_GATE_ROOT_SLACK = 64
+#: Consistent with the apply lane's pre-check: a corpus whose byte estimate
+#: fits the artifact ceiling always fits the node ceiling too.
+FRAGMENT_GATE_NODE_CEILING = ARTIFACT_MAX_BYTES_CEILING // APPLIED_NODE_BYTES
+FRAGMENT_GATE_EDGE_CEILING = 4 * FRAGMENT_GATE_NODE_CEILING
+
+
+def resolve_fragment_bounds(store: Any) -> tuple[int, int, int]:
+    """The ``(max_nodes, max_edges, max_payload_bytes)`` the build gate enforces.
+
+    A pure function of the store's code index, exactly like
+    :func:`resolve_artifact_cap`: a store without one keeps the pinned
+    Graphify fragment defaults, an ingested corpus scales the counts to what
+    it legitimately carries, and the ceilings keep the gate fail-closed beyond
+    what the apply lane itself would refuse. The payload bound *is* the
+    artifact cap, so the gate and the publish check can never disagree.
+    """
+    from graphify.semantic_cleanup import (
+        MAX_SEMANTIC_FRAGMENT_BYTES,
+        MAX_SEMANTIC_FRAGMENT_EDGES,
+        MAX_SEMANTIC_FRAGMENT_NODES,
+    )
+
+    counter = getattr(store, "code_index_size", None)
+    files, symbols = counter() if counter is not None else (0, 0)
+    projected = int(files) + int(symbols)
+    if projected <= 0:
+        return (MAX_SEMANTIC_FRAGMENT_NODES, MAX_SEMANTIC_FRAGMENT_EDGES, MAX_SEMANTIC_FRAGMENT_BYTES)
+    # Additive: the fragment default stays the hand-authored-knowledge
+    # allowance, the code index adds what the apply lane materialises.
+    max_nodes = min(
+        MAX_SEMANTIC_FRAGMENT_NODES + projected + _FRAGMENT_GATE_ROOT_SLACK,
+        FRAGMENT_GATE_NODE_CEILING,
+    )
+    # Parent links alone need one edge per applied node; relations add more.
+    max_edges = min(max(MAX_SEMANTIC_FRAGMENT_EDGES, 2 * max_nodes), FRAGMENT_GATE_EDGE_CEILING)
+    return (max_nodes, max_edges, resolve_artifact_cap(store))
+
+
 class GraphProjector:
     """The single serialized projector for one corpus root."""
 
@@ -556,9 +648,15 @@ class GraphProjector:
         cache: FragmentCache | None = None,
         corpus_label: str = "soul-corpus",
         allow_shrink: bool = False,
-        max_artifact_bytes: int = ARTIFACT_MAX_BYTES,
+        max_artifact_bytes: int | None = None,
         export_registry: ExportRegistry | None = None,
     ) -> None:
+        # B1 (SUB-174): ``None`` means "size it from this store" (64 KiB for a
+        # knowledge-only store, corpus-proportional for an ingested code index);
+        # an explicit number is honoured verbatim and validated, so probes and
+        # tests keep a hand-set ceiling.
+        if max_artifact_bytes is None:
+            max_artifact_bytes = resolve_artifact_cap(store)
         if max_artifact_bytes < 1:
             raise ValueError("max_artifact_bytes must be positive")
         self._store = store
@@ -1020,6 +1118,16 @@ class GraphProjector:
 
     # ----------------------------------------------------------------- build
 
+    def _build_gate_errors(self, extraction: dict[str, Any]) -> list[str]:
+        """The build gate under this store's scaled fragment bounds (B1)."""
+        max_nodes, max_edges, max_payload_bytes = resolve_fragment_bounds(self._store)
+        return self._adapter.validate_extraction_strict(
+            extraction,
+            max_nodes=max_nodes,
+            max_edges=max_edges,
+            max_payload_bytes=max_payload_bytes,
+        )
+
     def _build_generation(
         self,
         extraction: dict[str, Any],
@@ -1028,7 +1136,7 @@ class GraphProjector:
         allow_shrink: bool,
         quarantined_count: int = 0,
     ) -> tuple[Path, dict[str, Any], int, int]:
-        errors = self._adapter.validate_extraction_strict(extraction)
+        errors = self._build_gate_errors(extraction)
         if errors:
             raise ProjectionValidationError("extraction failed the build gate: " + "; ".join(errors))
 

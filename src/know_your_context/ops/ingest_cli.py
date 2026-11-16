@@ -44,9 +44,20 @@ def _operation_error(code: str, message: str) -> int:
 
 
 def render_summary(report: IngestionReport) -> str:
-    """The deterministic one-line human summary."""
+    """The deterministic one-line human summary.
+
+    B3 (SUB-173): when the walk cap dropped files, the summary *leads* with it.
+    The old form buried ``guards_hit max_files`` at the tail of a long line, so
+    a truncated corpus looked like a successful complete ingest.
+    """
     stats = report.stats
     totals = report.totals
+    prefix = "ingest: "
+    if report.truncated:
+        prefix = (
+            f"ingest: TRUNCATED (max_files={report.max_files}, "
+            f"{report.files_truncated} file(s) not ingested; raise --max-files or ingest the rest) | "
+        )
     parts = [
         f"files {stats['scanned']} (proposed {stats['proposed']}, skipped {stats['skipped']}, "
         f"failed {stats['failed']}, deleted {stats['deleted']})",
@@ -65,7 +76,26 @@ def render_summary(report: IngestionReport) -> str:
     if report.primary_suggestions:
         parts.append(f"primary_suggestions {len(report.primary_suggestions)}")
     parts.append(f"duration {report.duration_ms} ms")
-    return "ingest: " + " | ".join(parts)
+    return prefix + " | ".join(parts)
+
+
+def _apply_after_ingest(store: EventStore, report: IngestionReport, args: argparse.Namespace):
+    """Run the apply lane for ``ingest --apply`` and return its receipt.
+
+    The projection is rebuilt only when the caller asked for it (default): the
+    rebuild is what makes the very next ``query`` cheap and stale-free, but an
+    operator batching ingests can defer it with ``--no-apply-rebuild``.
+    """
+    from know_your_context.ingest.apply import apply_ingested_corpus
+    from know_your_context.projection import GraphProjector
+
+    projector = GraphProjector(store, output_root=args.output_root) if args.apply_rebuild else None
+    return apply_ingested_corpus(
+        store,
+        corpus_root=report.root,
+        projector=projector,
+        actor=args.actor,
+    )
 
 
 def run_ingest_command(args: argparse.Namespace) -> int:
@@ -81,6 +111,7 @@ def run_ingest_command(args: argparse.Namespace) -> int:
     except ValueError as error:
         return _usage_error(str(error))
     store = EventStore(args.store)
+    apply_receipt = None
     try:
         pipeline = IngestionPipeline(store, budget=budget, actor=args.actor)
         report = pipeline.ingest_path(
@@ -89,12 +120,35 @@ def run_ingest_command(args: argparse.Namespace) -> int:
             recursive=args.recursive,
             resolve=not args.no_resolve,
         )
+        if getattr(args, "apply", False):
+            # B1 (SUB-173): the official ingest → apply → query path. Without
+            # this the store holds a code index that `query` cannot see.
+            apply_receipt = _apply_after_ingest(store, report, args)
     except (IngestionError, ExtractorUnavailableError) as error:
         return _operation_error(getattr(error, "code", "INGESTION_ERROR"), str(error))
     finally:
         store.close()
     if args.json:
-        print(canonical_json(report.to_dict()))
+        payload = report.to_dict()
+        if apply_receipt is not None:
+            payload = {**payload, "status": "applied", "apply": apply_receipt.to_dict()}
+        print(canonical_json(payload))
     else:
         print(render_summary(report))
+        if apply_receipt is not None:
+            print(
+                f"apply: files {apply_receipt.files_applied} | file nodes {apply_receipt.file_nodes} | "
+                f"symbol nodes {apply_receipt.symbol_nodes} | replayed {apply_receipt.replayed} | "
+                f"watermark {apply_receipt.knowledge_watermark} | projection "
+                f"{apply_receipt.projection_version or '-'} | duration {apply_receipt.duration_ms} ms"
+            )
+    if report.truncated:
+        # Stderr, not stdout: the machine-readable stream stays canonical while
+        # an operator (or a wrapper script) cannot miss the cap. Exit stays 0 —
+        # a capped walk is a legitimate partial ingest, not a failure.
+        print(
+            f"ingest: TRUNCATED max_files={report.max_files}: {report.files_truncated} file(s) were not "
+            f"ingested; re-run with a higher --max-files (max 65536) to index the remainder",
+            file=sys.stderr,
+        )
     return 0

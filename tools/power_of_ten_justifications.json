@@ -337,15 +337,15 @@
    "rule": "POT2",
    "file": "cli.py",
    "scope": "build_parser",
-   "reason": "Argument-parser table: one branch per CLI verb; breadth, not nesting depth. Ratchet baseline, may shrink only.",
-   "lines": 648
+   "reason": "Argument-parser table: one branch per CLI verb; breadth, not nesting depth. Ratchet baseline, may shrink only. Task-3 (B1/B3) added the apply-ingest verb and the ingest --apply/--max-files flags.",
+   "lines": 697
   },
   {
    "rule": "POT2",
    "file": "cli.py",
    "scope": "main",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 82
+   "reason": "W16 ratchet: legacy dispatch above the 60-line page ceiling; recorded at its measured length, may shrink but never grow. Task-3 (B1) added the apply-ingest dispatch branch.",
+   "lines": 86
   },
   {
    "rule": "POT3",
@@ -610,8 +610,8 @@
    "rule": "POT2",
    "file": "ingest/pipeline.py",
    "scope": "IngestionPipeline._run",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 150
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow. Task-3 (B3) added the truncation fields to the report.",
+   "lines": 154
   },
   {
    "rule": "POT2",
@@ -743,8 +743,8 @@
    "rule": "POT3",
    "file": "projection.py",
    "scope": "<module>",
-   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
-   "density": 0.05
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress. Task-3 (B1) added resolve_fragment_bounds (pure arithmetic, typed refusals instead of asserts).",
+   "density": 0.04
   },
   {
    "rule": "POT2",
@@ -1002,8 +1002,8 @@
    "rule": "POT2",
    "file": "service.py",
    "scope": "KnowledgeService.__init__",
-   "reason": "W16 ratchet; SUB-151 disk-mode added manual_gates mode resolution (flag param + env fallback). Recorded at its measured length, may shrink but never grow.",
-   "lines": 68
+   "reason": "W16 ratchet; SUB-151 disk-mode added manual_gates mode resolution (flag param + env fallback); SUB-174 (B1) resolves the publish cap from the code index. Recorded at its measured length, may shrink but never grow.",
+   "lines": 74
   },
   {
    "rule": "POT2",
@@ -1086,8 +1086,8 @@
    "rule": "POT3",
    "file": "store.py",
    "scope": "<module>",
-   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress.",
-   "density": 0.03
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); ratcheted at the measured density, may improve, never regress. Task-3 (B7) added O(1) count/read helpers (no asserts: typed errors only).",
+   "density": 0.02
   },
   {
    "rule": "POT2",
@@ -1123,6 +1123,13 @@
    "scope": "KnowledgeService.apply_improvement",
    "reason": "SUB-151 disk-mode: auto-approve synthesis + post_write review wiring on the apply path; recorded at its measured length, may shrink but never grow.",
    "lines": 78
+  },
+  {
+   "rule": "POT2",
+   "file": "ingest/apply.py",
+   "scope": "apply_ingested_corpus",
+   "reason": "B1 (task-3): one outer transaction materialises file branches + symbol leaves; the loop body is the idempotent-write seam and splitting it would scatter the transaction boundary. Recorded at its measured length, may shrink but never grow.",
+   "lines": 138
   }
  ]
 }

@@ -38,24 +38,61 @@ from pathlib import Path
 from typing import Any
 
 from know_your_context import __version__
-from know_your_context.domain import canonical_json
-from know_your_context.http_api import (
-    DEFAULT_HOST_ALLOWLIST,
-    KNOWLEDGE_OPERATIONS,
-    OPS_OPERATIONS,
-    AdapterValidationError,
-    build_stack,
-    dispatch_text,
-    error_envelope,
-    run_extraction_verb,
-    run_ingest_verb,
-    serve,
-    to_jsonable,
-)
-from know_your_context.security import BindPolicyError
-from know_your_context.update_pipeline import UpdatePipelineError
+from know_your_context.operations import DEFAULT_HOST_ALLOWLIST, KNOWLEDGE_OPERATIONS, OPS_OPERATIONS
 
 __all__ = ["build_parser", "main"]
+
+
+# ------------------------------------------------------------------ lazy seams
+#
+# B4 (SUB-173): every name below used to be a module-level import from
+# ``http_api``/``domain``/``security``/``update_pipeline``. That made *every*
+# invocation — ``--version``, ``--help``, ``config`` — pay for the full
+# extraction/projection/networkx/pypdf/uvicorn graph (measured 1.2 s floor vs
+# 0.15 s for the reference tools). They are thin deferred re-exports: the first
+# call imports the real implementation, and the call site keeps its shape. The
+# operation-name tuples above stay eager because ``build_parser`` needs them.
+
+
+def canonical_json(value: Any) -> str:
+    """Deferred re-export of :func:`know_your_context.domain.canonical_json`."""
+    from know_your_context.domain import canonical_json as _canonical_json
+
+    return _canonical_json(value)
+
+
+def to_jsonable(value: Any) -> Any:
+    """Deferred re-export of :func:`know_your_context.http_api.to_jsonable`."""
+    from know_your_context.http_api import to_jsonable as _to_jsonable
+
+    return _to_jsonable(value)
+
+
+def build_stack(*args: Any, **kwargs: Any) -> Any:
+    """Deferred re-export of :func:`know_your_context.http_api.build_stack`."""
+    from know_your_context.http_api import build_stack as _build_stack
+
+    return _build_stack(*args, **kwargs)
+
+
+def error_envelope(error: BaseException) -> dict[str, Any]:
+    """Deferred re-export of :func:`know_your_context.http_api.error_envelope`."""
+    from know_your_context.http_api import error_envelope as _error_envelope
+
+    return _error_envelope(error)
+
+
+def serve(stack: Any, **kwargs: Any) -> Any:
+    """Deferred re-export of :func:`know_your_context.http_api.serve`.
+
+    Also the monkeypatch seam for the serve handler: tests replace
+    ``cli.serve`` to capture the wiring without starting a server, so the
+    handler below must call the *module attribute*, never a local import.
+    """
+    from know_your_context.http_api import serve as _serve
+
+    return _serve(stack, **kwargs)
+
 
 DEFAULT_STORE_PATH = "know-your-context.sqlite3"
 DEFAULT_OUTPUT_ROOT = "know-your-context-projection"
@@ -640,7 +677,16 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="park cross-file references without running the resolve pass",
     )
-    ingest_parser.add_argument("--max-files", type=int, default=1024, help="walk cap, [1, 65536] (default 1024)")
+    # B3 (SUB-173): the 1,024 default silently cut a 5,000-file repo to 20 % of
+    # its index with exit 0. The default is now the documented maximum; an
+    # explicit cap that does truncate is reported loudly (summary + stderr +
+    # ``truncated`` in the JSON report).
+    ingest_parser.add_argument(
+        "--max-files",
+        type=int,
+        default=65536,
+        help="walk cap, [1, 65536] (default 65536 = the documented maximum; a smaller cap that truncates is reported)",
+    )
     ingest_parser.add_argument("--max-nodes", type=int, default=65536, help="fail-closed total node cap")
     ingest_parser.add_argument("--max-edges", type=int, default=131072, help="fail-closed total edge cap")
     ingest_parser.add_argument("--max-refs", type=int, default=65536, help="fail-closed total unresolved-ref cap")
@@ -648,6 +694,46 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-file-bytes", type=int, default=4 * 1024 * 1024, help="per-file size cap (default 4 MiB)"
     )
     ingest_parser.add_argument("--json", action="store_true", help="print the canonical JSON report")
+    # B1 (SUB-173): the code index alone is invisible to `query`; the apply lane
+    # materialises it as knowledge nodes (roots → file branches → symbol leaves)
+    # and rebuilds the projection, so one command reaches a queryable corpus.
+    ingest_parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="after ingesting, apply the code index to the knowledge graph and rebuild the projection "
+        "(the official ingest → apply → query path)",
+    )
+    ingest_parser.add_argument(
+        "--no-apply-rebuild",
+        dest="apply_rebuild",
+        action="store_false",
+        default=True,
+        help="with --apply: skip the projection rebuild (the first query repairs instead)",
+    )
+
+    apply_ingest_parser = subparsers.add_parser(
+        "apply-ingest",
+        help="ops: apply the ingested code index to the knowledge graph (ingest → apply → query)",
+    )
+    apply_ingest_parser.add_argument(
+        "--domain",
+        default="P1",
+        help="primary domain that owns the applied corpus (P1-P7, default P1)",
+    )
+    apply_ingest_parser.add_argument(
+        "--max-nodes",
+        type=int,
+        default=500_000,
+        help="fail-closed cap on knowledge nodes written by this apply (default 500000)",
+    )
+    apply_ingest_parser.add_argument(
+        "--no-rebuild",
+        dest="apply_rebuild",
+        action="store_false",
+        default=True,
+        help="skip the projection rebuild (the first query repairs instead)",
+    )
+    apply_ingest_parser.add_argument("--json", action="store_true", help="print the canonical JSON receipt")
 
     # Contract v3 (addendum docs/contracts/ingestion-contract-v3.md; audit
     # F2): the frozen adapter mapping names ``ingest-file`` /
@@ -811,6 +897,7 @@ def _ingest_verb_command(args: argparse.Namespace, command: str) -> int:
     the standard envelope on stderr. Exit 0 success, 1 typed failure.
     """
     from know_your_context.audit import AuditLog
+    from know_your_context.http_api import run_ingest_verb
     from know_your_context.ingest.pipeline import ExtractorUnavailableError, IngestionError
     from know_your_context.store import EventStore
 
@@ -859,6 +946,7 @@ def _extraction_verb_command(args: argparse.Namespace) -> int:
     import json as _json
 
     from know_your_context.extraction import ExtractionError
+    from know_your_context.http_api import run_extraction_verb
 
     payload_text: str = args.payload if args.payload is not None else "{}"
     if payload_text == "-":
@@ -896,6 +984,52 @@ def _extraction_verb_command(args: argparse.Namespace) -> int:
     finally:
         stack.close()
     print(canonical_json(payload))
+    return 0
+
+
+def _apply_ingest_command(args: argparse.Namespace) -> int:
+    """The ``apply-ingest`` ops command: code index → knowledge graph (B1, SUB-173).
+
+    The official second half of ``ingest``: materialises every ingested
+    file/symbol as a knowledge node and (unless ``--no-rebuild``) publishes a
+    projection generation that covers the new watermark, so the next ``query``
+    sees the corpus instead of ``no_match``.
+    """
+    from know_your_context.domain import PrimaryDomain
+    from know_your_context.ingest.apply import ApplyError, apply_ingested_corpus
+    from know_your_context.projection import GraphProjector, ProjectionError
+    from know_your_context.store import EventStore
+
+    try:
+        domain = PrimaryDomain(str(args.domain))
+    except ValueError:
+        _print_usage_error(f"unknown primary domain {args.domain!r}; expected one of P1..P7")
+        return 2
+    store = EventStore(args.store)
+    try:
+        projector = GraphProjector(store, output_root=args.output_root) if args.apply_rebuild else None
+        receipt = apply_ingested_corpus(
+            store,
+            corpus_root=args.store,
+            domain=domain,
+            actor=args.actor,
+            projector=projector,
+            max_nodes=int(args.max_nodes),
+        )
+    except (ApplyError, ProjectionError) as error:
+        print(canonical_json(error_envelope(error)), file=sys.stderr)
+        return 1
+    finally:
+        store.close()
+    if args.json:
+        print(canonical_json(receipt.to_dict()))
+    else:
+        print(
+            f"apply-ingest: files {receipt.files_applied} | file nodes {receipt.file_nodes} | "
+            f"symbol nodes {receipt.symbol_nodes} | replayed {receipt.replayed} | "
+            f"watermark {receipt.knowledge_watermark} | projection {receipt.projection_version or '-'} | "
+            f"duration {receipt.duration_ms} ms"
+        )
     return 0
 
 
@@ -1329,6 +1463,9 @@ def _serve_command(args: argparse.Namespace) -> int:
         else DEFAULT_HOST_ALLOWLIST
     )
     stack = build_stack(args.store, args.output_root, ops_root=args.ops_root)
+    from know_your_context.security import BindPolicyError
+    from know_your_context.update_pipeline import UpdatePipelineError
+
     try:
         kwargs: dict[str, Any] = {"api_key": api_key, "host_allowlist": allowlist}
         if args.max_body_bytes is not None:
@@ -1576,6 +1713,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         from know_your_context.ops.ingest_cli import run_ingest_command
 
         return run_ingest_command(args)
+    if command == "apply_ingest":
+        return _apply_ingest_command(args)
     if command in ("ingest_file", "ingest_directory"):
         return _ingest_verb_command(args, command)
     if command == "submit_extraction":
@@ -1596,6 +1735,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         payload_text = sys.stdin.read()
 
     stack = build_stack(args.store, args.output_root, ops_root=args.ops_root)
+    from know_your_context.http_api import AdapterValidationError, dispatch_text
+
     try:
         result = dispatch_text(stack, command, payload_text, actor=args.actor, idempotency_key=args.idempotency_key)
     except AdapterValidationError as error:

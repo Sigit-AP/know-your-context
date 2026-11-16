@@ -97,6 +97,9 @@ from know_your_context.ingest.pipeline import (
     PathOutsideRootError,
 )
 from know_your_context.observability import HealthReport, check_readiness
+from know_your_context.operations import DEFAULT_HOST_ALLOWLIST as _DEFAULT_HOST_ALLOWLIST
+from know_your_context.operations import KNOWLEDGE_OPERATIONS as _KNOWLEDGE_OPERATIONS
+from know_your_context.operations import OPS_OPERATIONS as _OPS_OPERATIONS
 from know_your_context.projection import GraphProjector, ProjectionError
 from know_your_context.relearn import RelearnApproval, RelearnOffer
 from know_your_context.security import (
@@ -144,38 +147,13 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 API_VERSION = "v1"
-DEFAULT_HOST_ALLOWLIST: tuple[str, ...] = ("localhost", "127.0.0.1", "::1")
-KNOWLEDGE_OPERATIONS: tuple[str, ...] = (
-    # The frozen ten v1 operations (spec section 8).
-    "query",
-    "get_node",
-    "get_subtree",
-    "log_event",
-    "record_outcome",
-    "evaluate",
-    "review",
-    "propose_improvement",
-    "apply_improvement",
-    "rollback",
-    # Contract v2 (operator ruling 2026-10-26, progress.md; addendum
-    # docs/contracts/retrieval-verbs-v2.md): the four G1 retrieval verbs.
-    "path",
-    "explain",
-    "affected",
-    "god_nodes",
-)
-OPS_OPERATIONS: tuple[str, ...] = (
-    "rebuild",
-    "backup",
-    "restore",
-    "health",
-    # Final-audit F-4 (adapter half): the operator-gated relearn lifecycle
-    # rides the ops route — the knowledge operations stay untouched by it.
-    "relearn_scan",
-    "relearn_status",
-    "relearn_preview",
-    "relearn_apply",
-)
+# The operation vocabulary lives in a dependency-free module so the CLI can
+# build its parser without importing this surface (SUB-173 B4). Re-exported
+# here unchanged: every historical ``http_api.KNOWLEDGE_OPERATIONS`` import
+# keeps working.
+DEFAULT_HOST_ALLOWLIST: tuple[str, ...] = _DEFAULT_HOST_ALLOWLIST
+KNOWLEDGE_OPERATIONS: tuple[str, ...] = _KNOWLEDGE_OPERATIONS
+OPS_OPERATIONS: tuple[str, ...] = _OPS_OPERATIONS
 
 _MAX_ERROR_MESSAGE = 512
 

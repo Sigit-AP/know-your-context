@@ -20,7 +20,9 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import json
 import os
+import re
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -59,6 +61,13 @@ __all__ = [
 ]
 
 ADAPTER_VERSION = "1.0.0"
+
+# B1 (SUB-175): the pinned ``validate_semantic_fragment`` mixes aggregate
+# count caps (payload bytes, node count, edge count) with per-item checks in
+# one pass. The projection's store-scaled gate rescales only the counts, so
+# the pinned count messages are recognised exactly and re-issued against the
+# scaled caps; hyperedges keep the fragment default (applied graphs have none).
+_FRAGMENT_COUNT_ERROR_RE = re.compile(r"^(payload is \d+ bytes|(?:nodes|edges) has \d+ entries); max is \d+$")
 
 # graphify.export.GRAPH_SCHEMA_VERSION at the pinned 0.9.95; the read-model
 # validator fails closed on anything outside this set (matrix row 22).
@@ -256,7 +265,14 @@ class GraphifyAdapter:
         """The stable synthetic prompt fingerprint carried by every fragment."""
         return FRAGMENT_PROMPT_FINGERPRINT
 
-    def validate_extraction_strict(self, extraction: Mapping[str, Any]) -> list[str]:
+    def validate_extraction_strict(
+        self,
+        extraction: Mapping[str, Any],
+        *,
+        max_nodes: int | None = None,
+        max_edges: int | None = None,
+        max_payload_bytes: int | None = None,
+    ) -> list[str]:
         """Fail-closed validation of an assembled extraction (build gate).
 
         Combines Graphify's semantic-fragment bounds (id charset, sizes) with
@@ -264,6 +280,14 @@ class GraphifyAdapter:
         dangling-endpoint tolerance applies here: the event store enforces
         relation integrity, so a dangling endpoint in an assembled extraction
         is a defect, not an unresolved wikilink.
+
+        B1 (SUB-175): the pinned count bounds (10k nodes / 100k edges / 25 MB)
+        are sized for one LLM *fragment*; a projection generation carries a
+        whole corpus (stress L2: 12,927 nodes died at the gate, so an applied
+        corpus could never publish). The projection therefore passes
+        store-derived count caps; only the three aggregate counts rescale —
+        every per-item check (id charset/length, schema) is byte-identical.
+        With no override the pinned defaults apply unchanged.
         """
         raw = {
             "nodes": [dict(node) for node in extraction.get("nodes", [])],
@@ -271,6 +295,16 @@ class GraphifyAdapter:
             "hyperedges": [dict(hyperedge) for hyperedge in extraction.get("hyperedges", [])],
         }
         errors = validate_semantic_fragment(raw)
+        if max_nodes is not None or max_edges is not None or max_payload_bytes is not None:
+            errors = [error for error in errors if not _FRAGMENT_COUNT_ERROR_RE.match(error)]
+            if max_payload_bytes is not None:
+                payload = len(json.dumps(raw, ensure_ascii=False).encode("utf-8"))
+                if payload > max_payload_bytes:
+                    errors.append(f"payload is {payload} bytes; max is {max_payload_bytes}")
+            if max_nodes is not None and len(raw["nodes"]) > max_nodes:
+                errors.append(f"nodes has {len(raw['nodes'])} entries; max is {max_nodes}")
+            if max_edges is not None and len(raw["edges"]) > max_edges:
+                errors.append(f"edges has {len(raw['edges'])} entries; max is {max_edges}")
         errors.extend(validate_extraction(raw))
         return errors
 
