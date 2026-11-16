@@ -332,8 +332,11 @@ class TestSwitchRegistryUnchanged:
     def test_kill_switches_untouched(self) -> None:
         names = [entry.name for entry in switches.KILL_SWITCHES]
         assert "webview" in names
-        # 23 pre-W15 switches + storage.hw_tuning + hw.governor (W15 SUB-134, additive).
-        assert len(names) == 25
+        # 23 pre-W15 switches + storage.hw_tuning + hw.governor (W15 SUB-134, additive)
+        # + daemon.adaptive_batch + store.chain_checkpoint + watchtower.serial
+        # (TASK1-PUSH200 SUB-166, additive: every new optimization is switchable)
+        # + retrieval.trigram (TASK1-PUSH200-R2 SUB-167, additive).
+        assert len(names) == 29
 
     def test_knob_envs_do_not_collide_with_switch_envs(self) -> None:
         switch_envs = {entry.env for entry in switches.KILL_SWITCHES}

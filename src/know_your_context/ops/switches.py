@@ -59,6 +59,9 @@ __all__ = [
     "ENV_DISABLE_SYNTHESIS",
     "ENV_DISABLE_WEBVIEW",
     "ENV_FORCE_WATCH",
+    "ENV_NO_ADAPTIVE_BATCH",
+    "ENV_NO_CHAIN_CHECKPOINT",
+    "ENV_WATCHTOWER_SERIAL",
     "ENV_NO_GROUP_COMMIT",
     "ENV_NO_WATCH",
     "FALSE_VALUES",
@@ -127,6 +130,10 @@ SYNTH_PASS_ENV: dict[str, str] = {
 ENV_NO_WATCH = "KNOW_YOUR_CONTEXT_NO_WATCH"
 ENV_FORCE_WATCH = "KNOW_YOUR_CONTEXT_FORCE_WATCH"
 ENV_NO_GROUP_COMMIT = "KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT"
+ENV_NO_ADAPTIVE_BATCH = "KNOW_YOUR_CONTEXT_NO_ADAPTIVE_BATCH"
+ENV_NO_CHAIN_CHECKPOINT = "KNOW_YOUR_CONTEXT_NO_CHAIN_CHECKPOINT"
+ENV_WATCHTOWER_SERIAL = "KNOW_YOUR_CONTEXT_WATCHTOWER_SERIAL"
+ENV_NO_TRIGRAM = "KNOW_YOUR_CONTEXT_NO_TRIGRAM"
 ENV_DISABLE_RUST_KERNEL = "KYS_DISABLE_RUST_KERNEL"
 
 #: Accepted spellings for strict boolean parsing (case-insensitive, stripped).
@@ -234,6 +241,34 @@ KILL_SWITCHES: tuple[KillSwitch, ...] = (
         owned_here=False,
     ),
     KillSwitch(
+        name="daemon.adaptive_batch",
+        env=ENV_NO_ADAPTIVE_BATCH,
+        affects="the daemon writer's arrival-rate-adaptive gather window",
+        fail_safe="disabled ('=1'): the static group-commit window applies to every batch",
+        owned_here=False,
+    ),
+    KillSwitch(
+        name="store.chain_checkpoint",
+        env=ENV_NO_CHAIN_CHECKPOINT,
+        affects="the event-store's checkpointed re-audit (verify_chain incremental mode)",
+        fail_safe="disabled ('=1'): every chain verify re-derives the whole log; no sidecar written",
+        owned_here=False,
+    ),
+    KillSwitch(
+        name="watchtower.serial",
+        env=ENV_WATCHTOWER_SERIAL,
+        affects="the watchtower fleet probe fan-out",
+        fail_safe="disabled ('=1'): stores are probed sequentially, one at a time",
+        owned_here=False,
+    ),
+    KillSwitch(
+        name="retrieval.trigram",
+        env=ENV_NO_TRIGRAM,
+        affects="the retrieval v2 LIKE channel's durable trigram prefilter",
+        fail_safe="disabled ('=1'): the LIKE channel runs the historical full scan",
+        owned_here=False,
+    ),
+    KillSwitch(
         name="ingest.rust_kernel",
         env=ENV_DISABLE_RUST_KERNEL,
         affects="the rust parse kernel bridge",
@@ -281,6 +316,20 @@ def parse_switch_bool(env_name: str, raw: str) -> bool:
 def _legacy_truthy(raw: str | None) -> bool:
     """watcher semantics: only 1/true/yes/on count; other values never raise."""
     return raw is not None and raw.strip().lower() in TRUE_VALUES
+
+
+def _mirrored_legacy_states(environ: Mapping[str, str]) -> dict[str, bool]:
+    """Mirrored legacy switches: owner semantics, never strict."""
+    return {
+        "watcher": _legacy_truthy(environ.get(ENV_NO_WATCH)),
+        "watcher.force": _legacy_truthy(environ.get(ENV_FORCE_WATCH)),
+        "daemon.group_commit": environ.get(ENV_NO_GROUP_COMMIT) == "1",
+        "daemon.adaptive_batch": environ.get(ENV_NO_ADAPTIVE_BATCH) == "1",
+        "store.chain_checkpoint": environ.get(ENV_NO_CHAIN_CHECKPOINT) == "1",
+        "watchtower.serial": environ.get(ENV_WATCHTOWER_SERIAL) == "1",
+        "retrieval.trigram": environ.get(ENV_NO_TRIGRAM) == "1",
+        "ingest.rust_kernel": bool(environ.get(ENV_DISABLE_RUST_KERNEL)),
+    }
 
 
 class SwitchBoard:
@@ -336,8 +385,14 @@ class SwitchBoard:
     def group_commit_disabled(self) -> bool:
         return self._states.get("daemon.group_commit", False)
 
+    def adaptive_batch_disabled(self) -> bool:
+        return self._states.get("daemon.adaptive_batch", False)
+
     def rust_kernel_disabled(self) -> bool:
         return self._states.get("ingest.rust_kernel", False)
+
+    def trigram_disabled(self) -> bool:
+        return self._states.get("retrieval.trigram", False)
 
     def hw_tuning_disabled(self) -> bool:
         return self._states.get("storage.hw_tuning", False)
@@ -468,11 +523,7 @@ def load_switches(env: Mapping[str, str] | None = None) -> SwitchBoard:
         if (raw := environ.get(ENV_DISABLE_HW_AUTOSCALER)) is not None
         else False
     )
-    # Mirrored legacy switches: owner semantics, never strict.
-    states["watcher"] = _legacy_truthy(environ.get(ENV_NO_WATCH))
-    states["watcher.force"] = _legacy_truthy(environ.get(ENV_FORCE_WATCH))
-    states["daemon.group_commit"] = environ.get(ENV_NO_GROUP_COMMIT) == "1"
-    states["ingest.rust_kernel"] = bool(environ.get(ENV_DISABLE_RUST_KERNEL))
+    states.update(_mirrored_legacy_states(environ))
 
     capability_mode: CapabilityMode | None = None
     raw_mode = environ.get(ENV_CAPABILITY_MODE)

@@ -190,6 +190,9 @@ class TestPackageExports:
             "collections",
             "typing",
             "__future__",
+            # TASK1-PUSH200-R2 (item C): the fsync probe measures commit
+            # latency; time is stdlib, still no third-party dependency
+            "time",
         }
         for module in Path(hw.__file__).parent.glob("*.py"):
             tree = ast.parse(module.read_text(encoding="utf-8"))

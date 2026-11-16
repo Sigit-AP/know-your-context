@@ -160,6 +160,9 @@ suite.
 
 ## Development wave log
 
+Detailed per-wave entries for W14–W23 and the task2 remediation live in
+[CHANGELOG-waves.md](CHANGELOG-waves.md); this table stays the index.
+
 | Wave | Date (UTC) | Headline | Recovery docs |
 |---|---|---|---|
 | W1 | 2026-10-27 | Graph model v2 + schema v3 + contracts | `docs/recovery/w1-graph-model.md`, `w1-schema-v3.md`, `w1-contract-v3.md` |

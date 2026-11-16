@@ -401,6 +401,13 @@ _ADJACENCY_SQL_CACHE_LIMIT = 64
 # a full chain audit is O(1) in memory regardless of chain length (S2).
 _VERIFY_CHAIN_BATCH = 4096
 
+# TASK1-PUSH200 (P2): checkpointed re-audit. A successful full verify pins
+# (seq, hash, checked) to a sidecar file; incremental=True re-derives only
+# the O(1) checkpoint anchor row plus the tail. Kill switch restores the
+# full-walk-every-time behavior (and stops writing checkpoints).
+_NO_CHAIN_CHECKPOINT_ENV = "KNOW_YOUR_CONTEXT_NO_CHAIN_CHECKPOINT"
+_CHAIN_CHECKPOINT_SUFFIX = ".chain-checkpoint.json"
+
 
 @dataclass(frozen=True)
 class FileRow:
@@ -1037,68 +1044,159 @@ class EventStore:
             )
         )
 
-    def verify_chain(self) -> ChainReport:
-        """Re-derive the whole hash chain and report the first broken link.
+    def verify_chain(self, *, incremental: bool = False, write_checkpoint: bool = True) -> ChainReport:
+        """Re-derive the hash chain and report the first broken link.
 
-        Beyond the per-event links, the persisted anchor (``chain_head_hash``
-        and ``chain_event_count`` in ``system_state``) is cross-checked so a
-        truncated tail is detected, and every completed journal's
-        ``audit_event_seq`` must resolve to that audit event in the log.
+        Cross-checks the persisted anchor (``chain_head_hash`` /
+        ``chain_event_count`` in ``system_state``) so a truncated tail is
+        detected, plus every completed journal's ``audit_event_seq``. The log
+        is streamed in fixed-size batches (S2): peak memory is O(1) in chain
+        length (the old ``fetchall()`` peaked near 1 GiB at 160k events).
 
-        The event log is streamed in fixed-size batches (S2): peak memory is
-        constant in chain length, so a full audit fits small hosts even at
-        millions of events (the old ``fetchall()`` peaked near 1 GiB at
-        160k events and extrapolated to OOM at ~1M).
+        ``incremental=True`` (TASK1-PUSH200 P2) re-verifies only the tail
+        beyond the sidecar checkpoint of the last successful full verify; the
+        checkpoint row is re-derived (O(1) anchor) so a foreign or stale
+        sidecar fails closed into a full verify. Scope disclosure: history at
+        or below the checkpoint is attested by that earlier full pass —
+        forensic audits must stay with the default full mode.
         """
+        checkpoint = self._valid_chain_checkpoint() if incremental else None
+        base_seq = int(checkpoint["seq"]) if checkpoint is not None else 0
+        base_count = int(checkpoint["checked"]) if checkpoint is not None else 0
+        prev_event_hash: str | None = str(checkpoint["hash"]) if checkpoint is not None else None
         with self.read() as conn:
-            cursor = conn.execute("SELECT * FROM event_log ORDER BY event_seq")
-            anchor = {
-                str(row["key"]): str(row["value"])
-                for row in conn.execute(
-                    "SELECT key, value FROM system_state WHERE key IN ('chain_head_hash', 'chain_event_count')"
-                )
-            }
-            audit_events = {
-                int(row["event_seq"]): str(row["event_id"])
-                for row in conn.execute("SELECT event_seq, event_id FROM event_log WHERE kind = 'audit'")
-            }
-            prev_event_hash: str | None = None
-            head_hash: str | None = None
+            cursor, anchor, audit_events = self._chain_audit_reads(conn, base_seq)
+            head_hash: str | None = prev_event_hash
             checked = 0
             last_seq: int | None = None
-            while True:
+            bad_seq: int | None = None
+            while not bad_seq:
                 rows = cursor.fetchmany(_VERIFY_CHAIN_BATCH)
                 if not rows:
                     break
                 for row in rows:
                     if row["prev_event_hash"] != prev_event_hash or self._row_hash(row) != row["event_hash"]:
-                        return ChainReport(ok=False, checked=checked, first_bad_seq=int(row["event_seq"]))
+                        bad_seq = int(row["event_seq"])
+                        break
                     prev_event_hash = str(row["event_hash"])
                     head_hash = prev_event_hash
                     checked += 1
                     last_seq = int(row["event_seq"])
+            if bad_seq is not None:
+                return ChainReport(ok=False, checked=checked, first_bad_seq=bad_seq)
             expected_count = anchor.get("chain_event_count")
-            if expected_count is not None and int(expected_count) != checked:
-                return ChainReport(ok=False, checked=checked, first_bad_seq=checked + 1)
+            if expected_count is not None and int(expected_count) != base_count + checked:
+                return ChainReport(ok=False, checked=checked, first_bad_seq=base_count + checked + 1)
             expected_head = anchor.get("chain_head_hash")
             if expected_head is not None and expected_head != head_hash:
                 return ChainReport(ok=False, checked=checked, first_bad_seq=last_seq)
             if checked and not anchor:
                 # Events exist but the anchor is missing entirely: fail closed.
                 return ChainReport(ok=False, checked=checked, first_bad_seq=None)
-            journal_failure = self._verify_journal_links(conn, audit_events, checked)
+            journal_failure = self._verify_journal_links(conn, audit_events, checked, min_seq=base_seq)
             if journal_failure is not None:
                 return journal_failure
-        return ChainReport(ok=True, checked=checked, first_bad_seq=None)
+        report = ChainReport(ok=True, checked=checked, first_bad_seq=None)
+        if last_seq is not None and write_checkpoint:
+            self._write_chain_checkpoint(seq=last_seq, head=str(head_hash), checked=base_count + checked)
+        return report
+
+    # ------------------------------------------- chain checkpoint sidecar
+
+    @staticmethod
+    def _chain_audit_reads(
+        conn: sqlite3.Connection, base_seq: int
+    ) -> tuple[sqlite3.Cursor, dict[str, str], dict[int, str]]:
+        """The three verify reads: tail rows, the persisted anchor, audit ids."""
+        cursor = conn.execute("SELECT * FROM event_log WHERE event_seq > ? ORDER BY event_seq", (base_seq,))
+        anchor = {
+            str(row["key"]): str(row["value"])
+            for row in conn.execute(
+                "SELECT key, value FROM system_state WHERE key IN ('chain_head_hash', 'chain_event_count')"
+            )
+        }
+        audit_events = {
+            int(row["event_seq"]): str(row["event_id"])
+            for row in conn.execute(
+                "SELECT event_seq, event_id FROM event_log WHERE kind = 'audit' AND event_seq > ?",
+                (base_seq,),
+            )
+        }
+        return cursor, anchor, audit_events
+
+    def _chain_checkpoint_path(self) -> Path:
+        return Path(self.db_path + _CHAIN_CHECKPOINT_SUFFIX)
+
+    @staticmethod
+    def _chain_checkpoint_disabled() -> bool:
+        return os.environ.get(_NO_CHAIN_CHECKPOINT_ENV) == "1"
+
+    def _valid_chain_checkpoint(self) -> dict[str, Any] | None:
+        """Load the sidecar and re-derive its anchor row — O(1) tamper check.
+
+        Returns None (caller falls back to a full verify) for a missing,
+        corrupt, disabled, or non-matching checkpoint: a checkpoint is only
+        ever an acceleration hint, never a substitute for derivation.
+        """
+        if self._chain_checkpoint_disabled() or self.db_path == ":memory:":
+            return None
+        try:
+            data = json.loads(self._chain_checkpoint_path().read_text())
+            seq, head, checked = int(data["seq"]), str(data["hash"]), int(data["checked"])
+        except OSError, ValueError, KeyError, TypeError:
+            return None
+        with self.read() as conn:
+            row = conn.execute("SELECT * FROM event_log WHERE event_seq = ?", (seq,)).fetchone()
+        if row is None or self._row_hash(row) != head:
+            return None
+        return {"seq": seq, "hash": head, "checked": checked}
+
+    def _write_chain_checkpoint(self, *, seq: int, head: str, checked: int) -> None:
+        """Persist the verified tip atomically (tmp+rename, 0600).
+
+        Best-effort on purpose: an unwritable sidecar must never fail an
+        audit that just succeeded. A sidecar already covering this head is
+        left untouched so polling verifiers never churn the file.
+        """
+        if self._chain_checkpoint_disabled() or self.db_path == ":memory:":
+            return
+        path = self._chain_checkpoint_path()
+        try:
+            existing = json.loads(path.read_text())
+            if int(existing["seq"]) == seq and str(existing["hash"]) == head:
+                return
+        except OSError, ValueError, KeyError, TypeError:
+            pass
+        tmp = path.with_name(path.name + ".tmp")
+        try:
+            fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, "w") as handle:
+                json.dump(
+                    {
+                        "seq": seq,
+                        "hash": head,
+                        "checked": checked,
+                        "verified_at": datetime.now(UTC).isoformat(),
+                    },
+                    handle,
+                    sort_keys=True,
+                )
+            os.replace(tmp, path)
+        except OSError:  # sidecar is a hint; the verify result already stands
+            try:
+                tmp.unlink(missing_ok=True)
+            except OSError:
+                pass
 
     @staticmethod
     def _verify_journal_links(
-        conn: sqlite3.Connection, audit_events: dict[int, str], checked: int
+        conn: sqlite3.Connection, audit_events: dict[int, str], checked: int, *, min_seq: int = 0
     ) -> ChainReport | None:
         """Cross-check completed journals against audit events (streamed)."""
         journal_cursor = conn.execute(
             "SELECT audit_event_id, audit_event_seq FROM invocation_journal "
-            "WHERE status = 'complete' AND audit_event_seq IS NOT NULL"
+            "WHERE status = 'complete' AND audit_event_seq IS NOT NULL AND audit_event_seq > ?",
+            (min_seq,),
         )
         while True:
             journals = journal_cursor.fetchmany(_VERIFY_CHAIN_BATCH)

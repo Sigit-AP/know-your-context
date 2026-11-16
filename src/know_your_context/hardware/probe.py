@@ -9,8 +9,12 @@ Design principles (EXPERT-THINKING):
   not an error;
 * strict=True turns malformed data into typed :class:`ProbeError` for
   operators who want fail-closed probing;
-* probes never write to the filesystem and never spawn subprocesses;
-  results are cached per path because hardware does not change mid-process.
+* probes never spawn subprocesses; results are cached per path because
+  hardware does not change mid-process.
+* one bounded exception to read-only probing: :func:`probe_fsync_latency`
+  writes and removes one 4 KiB probe file per sample in the *database's own
+  directory* — commit latency is only honest when measured on the actual
+  target filesystem (TASK1-PUSH200-R2 item C).
 """
 
 from __future__ import annotations
@@ -18,6 +22,7 @@ from __future__ import annotations
 import os
 import shutil
 import sys
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
@@ -27,17 +32,21 @@ __all__ = [
     "VIRTUAL_DISPLAY_DRIVERS",
     "DiskKind",
     "DiskProbe",
+    "FsyncProbe",
     "GpuKind",
     "GpuProbe",
     "HardwareProfile",
     "MemoryProbe",
     "ProbeError",
+    "classify_fsync",
     "probe_cpu_count",
     "probe_disk_kind",
+    "probe_fsync_latency",
     "probe_gpu",
     "probe_hardware",
     "probe_memory",
     "reset_probe_cache",
+    "resolve_disk_kind",
 ]
 
 
@@ -74,6 +83,20 @@ class DiskProbe:
 
 
 @dataclass(frozen=True)
+class FsyncProbe:
+    """Measured commit-latency evidence for the database's own directory.
+
+    ``p50_ms``/``p95_ms`` are None when the directory could not be written
+    (fail-open); ``samples`` counts successful fsync measurements.
+    """
+
+    p50_ms: float | None
+    p95_ms: float | None
+    samples: int
+    note: str
+
+
+@dataclass(frozen=True)
 class MemoryProbe:
     total_bytes: int
     available_bytes: int
@@ -103,6 +126,85 @@ VIRTUAL_DISPLAY_DRIVERS: frozenset[str] = frozenset(
 
 _MAX_BLOCK_WALK_DEPTH = 6
 _KIB = 1024
+
+
+#: Measured-fsync classification bounds (milliseconds, p50). Basis: an
+#: fsync that lands in a volatile write-back cache or an SSD's flush path is
+#: sub-millisecond; a rotational commit pays seek + half-rotation (~8-12 ms).
+#: The 1–8 ms gap stays UNKNOWN on purpose — virtualized stacks and
+#: throttled devices live there, and guessing is worse than failing open.
+_FSYNC_SSD_P50_MS = 1.0
+_FSYNC_HDD_P50_MS = 8.0
+
+
+def probe_fsync_latency(
+    path: str | Path | None = None,
+    *,
+    samples: int = 16,
+    strict: bool = False,
+) -> FsyncProbe:
+    """Measure write+fsync latency in the directory that will hold the db.
+
+    One 4 KiB page written and fsynced per sample — the same shape as a WAL
+    commit, so the number is the durability cost the store will actually
+    pay. Fails open (``p50_ms=None`` with a note) when the directory is not
+    writable or any sample errors; strict mode raises ProbeError instead.
+    The probe file is always removed.
+    """
+    target = Path(path) if path is not None else Path(".")
+    directory = target if target.is_dir() else target.parent
+    probe_file = directory / f".kyc-fsync-probe-{os.getpid()}"
+    durations_ms: list[float] = []
+    payload = b"\0" * 4096
+    try:
+        for _ in range(max(1, samples)):
+            with open(probe_file, "wb") as handle:  # noqa: PTH123 -- low-level fsync control needed
+                handle.write(payload)
+                started = time.perf_counter()
+                os.fsync(handle.fileno())
+                durations_ms.append((time.perf_counter() - started) * 1000.0)
+    except OSError as exc:
+        _fail(strict, "FSYNC_PROBE_FAILED", f"cannot write+fsync in {directory}: {exc}")
+        return FsyncProbe(None, None, 0, f"fsync probe failed open in {directory}: {exc}")
+    finally:
+        try:
+            probe_file.unlink(missing_ok=True)
+        except OSError:
+            pass
+    durations_ms.sort()
+    p50 = durations_ms[len(durations_ms) // 2]
+    p95 = durations_ms[min(len(durations_ms) - 1, int(len(durations_ms) * 0.95))]
+    return FsyncProbe(
+        p50_ms=p50,
+        p95_ms=p95,
+        samples=len(durations_ms),
+        note=f"measured fsync p50={p50:.3f} ms p95={p95:.3f} ms over {len(durations_ms)} samples in {directory}",
+    )
+
+
+def classify_fsync(measured: FsyncProbe) -> DiskKind:
+    """Disk class from measured commit latency; the 1–8 ms gap stays UNKNOWN."""
+    if measured.p50_ms is None:
+        return DiskKind.UNKNOWN
+    if measured.p50_ms < _FSYNC_SSD_P50_MS:
+        return DiskKind.SSD
+    if measured.p50_ms > _FSYNC_HDD_P50_MS:
+        return DiskKind.HDD
+    return DiskKind.UNKNOWN
+
+
+def resolve_disk_kind(flag: DiskProbe, measured: FsyncProbe) -> DiskProbe:
+    """Arbitrate the sysfs rotational flag with measured fsync evidence.
+
+    A known flag wins (the measurement is recorded as a note); an UNKNOWN
+    flag (virtualized stacks commonly expose no queue/rotational) is
+    reclassified by the measurement, except in the honest 1–8 ms gap.
+    """
+    evidence = f"{measured.note}; measured class {classify_fsync(measured).value}"
+    if flag.kind is not DiskKind.UNKNOWN:
+        return DiskProbe(flag.kind, flag.device, flag.rotational, f"{flag.note}; {evidence}")
+    measured_kind = classify_fsync(measured)
+    return DiskProbe(measured_kind, flag.device, flag.rotational, f"{flag.note}; {evidence}")
 
 
 def _fail(strict: bool, code: str, message: str) -> None:
@@ -357,30 +459,46 @@ def probe_gpu(
 
 # ------------------------------------------------------------------ profile
 
-_PROFILE_CACHE: dict[str | None, HardwareProfile] = {}
+_PROFILE_CACHE: dict[tuple[str | None, bool], HardwareProfile] = {}
 
 
-def probe_hardware(path: str | Path | None = None, *, refresh: bool = False) -> HardwareProfile:
+def probe_hardware(
+    path: str | Path | None = None,
+    *,
+    refresh: bool = False,
+    measure_fsync: bool = True,
+) -> HardwareProfile:
     """The cached full profile for the host as seen from *path*.
 
     Cached per resolved path: hardware does not change mid-process, and the
     store constructor probes on every open. Pass ``refresh=True`` to re-probe
-    (operator tools); tests use :func:`reset_probe_cache`.
+    (operator tools); tests use :func:`reset_probe_cache`. ``measure_fsync``
+    adds the measured commit-latency evidence that arbitrates an UNKNOWN
+    rotational flag (TASK1-PUSH200-R2 item C).
     """
     key: str | None = None if path is None else str(Path(path).resolve())
-    if not refresh and key in _PROFILE_CACHE:
-        return _PROFILE_CACHE[key]
+    cache_key = (key, measure_fsync)
+    if not refresh and cache_key in _PROFILE_CACHE:
+        return _PROFILE_CACHE[cache_key]
     notes: list[str] = []
     if sys.platform != "linux":
         notes.append(f"platform={sys.platform}: /proc and /sys probing is Linux-only; failing open")
+    # the fsync probe writes one small file per sample in the db directory,
+    # so it is skipped entirely when the operator switched hw tuning off
+    from know_your_context.ops.switches import load_switches
+
+    measure = measure_fsync and not load_switches().hw_tuning_disabled()
+    disk = probe_disk_kind(path)
+    if measure:
+        disk = resolve_disk_kind(disk, probe_fsync_latency(path))
     profile = HardwareProfile(
         cpu_count=probe_cpu_count(),
         memory=probe_memory(),
-        disk=probe_disk_kind(path),
+        disk=disk,
         gpu=probe_gpu(),
         notes=tuple(notes),
     )
-    _PROFILE_CACHE[key] = profile
+    _PROFILE_CACHE[cache_key] = profile
     return profile
 
 

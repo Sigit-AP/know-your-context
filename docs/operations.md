@@ -98,6 +98,11 @@ Least privilege by default (`src/know_your_context/security.py`):
 - `check_health(store)` — liveness: `SELECT 1`, full hash-chain verification
   (`EventStore.verify_chain`), and applied migrations equal to the migrations
   on disk. Any failed check makes the report not-ok; probes never raise.
+  `verify_chain(incremental=True)` re-verifies only the tail beyond the
+  sidecar checkpoint of the last successful full verify (default stays full;
+  the checkpoint row is re-derived, so a foreign/stale sidecar falls back to
+  a full pass). `KNOW_YOUR_CONTEXT_NO_CHAIN_CHECKPOINT=1` disables the
+  checkpoint entirely; probe paths pass `write_checkpoint=False`.
 - `check_readiness(store, projector=..., stale_after_seconds=300)` — traffic
   gate: health **plus** no stale incomplete journals (heartbeat older than
   the threshold) **plus**, when a projector is attached, an active generation
@@ -107,6 +112,31 @@ Run readiness before accepting traffic; run
 `AuditLog.recover_incomplete(projection_repair=projector.repair_if_stale)` (or
 `recover_projection(..., audit_log=...)`) at startup to close crashed
 invocations exactly once.
+
+## Retrieval v2 trigram index (TASK1-PUSH200-R2)
+
+The retrieval v2 LIKE fallback channel (`name/path LIKE '%term%'`) is
+accelerated by a **durable** FTS5 trigram index
+(`retrieval_v2_symbols_trigram`, external content over `symbols`) whenever
+every query term has ≥ 3 literal characters — the trigram candidate set is
+an exact superset of the LIKE result there, and the LIKE predicate is still
+applied, so results are byte-identical to the scan. Freshness follows the
+v6 `symbols_watch` counter (O(1) steady state; a no-op rewrite re-stamps
+without rebuilding). Shorter terms, any trigram error, or the kill switch
+`KNOW_YOUR_CONTEXT_NO_TRIGRAM=1` fall back to the historical full scan.
+Measured @1.000.000 symbols: LIKE miss 246,4 ms (scan) → 2,7 ms (trigram);
+one-time rebuild 14,3 s; note the index roughly doubles the symbols share
+of the database file.
+
+## Hardware fsync calibration (TASK1-PUSH200-R2)
+
+The disk probe now measures real commit latency (`probe_fsync_latency`:
+write + fsync one 4 KiB page per sample in the database's own directory)
+and arbitrates the sysfs `queue/rotational` flag: an UNKNOWN flag
+(virtualized stacks often expose none) is reclassified from the measurement
+(p50 < 1 ms → SSD, > 8 ms → HDD, the 1–8 ms gap stays honestly UNKNOWN); a
+known flag still wins and the measurement is recorded as a note. The probe
+is skipped entirely when `KNOW_YOUR_CONTEXT_DISABLE_HW_TUNING=1` is set.
 
 ## Backup and restore
 
@@ -367,7 +397,10 @@ know-your-context watchtower --target prod=/srv/prod.sqlite3 --format markdown
   migration state, watermarks, event counts, stale journals, file size,
   projection presence. A probe never creates a missing store file and never
   raises — failures land in the report. Duplicate names or paths are a typed
-  `WatchtowerError`. Exit 1 iff any store is unreachable, errored, or fails
+  `WatchtowerError`. Fleet probes fan out over a bounded pool (report stays
+  name-sorted, byte-identical to the serial run);
+  `KNOW_YOUR_CONTEXT_WATCHTOWER_SERIAL=1` forces sequential probing.
+  Exit 1 iff any store is unreachable, errored, or fails
   its chain/migration checks.
 
 

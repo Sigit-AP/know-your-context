@@ -159,8 +159,28 @@ _ADMIN_PREFIX = "daemon."
 _NO_GROUP_COMMIT_ENV = "KNOW_YOUR_CONTEXT_NO_GROUP_COMMIT"
 # W16 (SUB-137): audit-drain batching kill switch (see _drain_audit).
 _NO_AUDIT_BATCH_ENV = "KNOW_YOUR_CONTEXT_NO_AUDIT_BATCH"
+# TASK1-PUSH200 (P1): adaptive gather-window kill switch (see _gather_batch).
+_NO_ADAPTIVE_BATCH_ENV = "KNOW_YOUR_CONTEXT_NO_ADAPTIVE_BATCH"
 
 _LOGGER = logging.getLogger("know_your_context.serve.superpower")
+
+
+def _adaptive_window_seconds(window: float, ema_seconds: float | None) -> float:
+    """Scale the group-commit gather window with the measured arrival rate.
+
+    The static ``window`` is the Tiger Style ceiling — never exceeded. The
+    effective wait is ``window² / ema``: a burst (ema ≪ window) keeps the full
+    budget because another mutation is expected well inside it, while sparse
+    traffic (ema ≫ window) collapses the wait toward zero instead of taxing
+    every isolated write with a full-window pause it cannot amortize. Unknown
+    or non-positive rates are treated as dense (fail toward the static,
+    batching-friendly behaviour). Neither reference implements adaptive
+    write-batch geometry (codegraph: fixed batch constants; graphify: no
+    write arbiter at all).
+    """
+    if ema_seconds is None or ema_seconds <= 0:
+        return window
+    return min(window, (window * window) / ema_seconds)
 
 
 class ServeError(RuntimeError):
@@ -848,6 +868,11 @@ class _WriteArbiter:
         self._batch_transaction_open = False
         self._group_commit_enabled = bool(config.group_commit) and os.environ.get(_NO_GROUP_COMMIT_ENV) != "1"
         self._audit_batch_enabled = os.environ.get(_NO_AUDIT_BATCH_ENV) != "1"
+        # TASK1-PUSH200 (P1): arrival-rate-adaptive gather window. The batch
+        # CAP stays a static budget; only the WAIT adapts, inside it.
+        self._adaptive_batch_enabled = self._group_commit_enabled and os.environ.get(_NO_ADAPTIVE_BATCH_ENV) != "1"
+        self._arrival_ema_seconds: float | None = None
+        self._last_submit_mono: float | None = None
         # W16 (SUB-137): receipts of audit items drained INSIDE an open
         # group-commit batch wait here until the batch commits.
         self._pending_audit: list[tuple[Future, Any]] = []
@@ -949,7 +974,25 @@ class _WriteArbiter:
                 with self._in_flight_lock:
                     self._in_flight.pop(dedup_key, None)
             raise
+        self._note_arrival(time.monotonic())
         return _await(future)
+
+    def _note_arrival(self, now: float) -> None:
+        """Feed the submit inter-arrival EMA driving the adaptive window.
+
+        Only real enqueues count (a dedup-shared wait is not a new arrival).
+        Alpha 0.25: converges within a handful of burst samples, ignores
+        one-off jitter.
+        """
+        last = self._last_submit_mono
+        self._last_submit_mono = now
+        if last is None:
+            return
+        interval = now - last
+        if interval <= 0:
+            return
+        ema = self._arrival_ema_seconds
+        self._arrival_ema_seconds = interval if ema is None else ema + 0.25 * (interval - ema)
 
     def run_audit(self, fn: Callable[[], Any]) -> Any:
         """Run one journal append on the writer thread, blocking for it.
@@ -1075,7 +1118,13 @@ class _WriteArbiter:
         if not self._group_commit_enabled:
             return []
         batch: list[_Mutation] = []
-        deadline = time.monotonic() + self._config.group_commit_window_seconds
+        window = self._config.group_commit_window_seconds
+        if self._adaptive_batch_enabled:
+            # TASK1-PUSH200 (P1): wait proportional to the measured arrival
+            # rate — an isolated write commits without paying a full static
+            # window it cannot amortize; a burst keeps the whole budget.
+            window = _adaptive_window_seconds(window, self._arrival_ema_seconds)
+        deadline = time.monotonic() + window
         exclude: frozenset[str] = frozenset({first.actor})
         while len(batch) + 1 < self._config.group_commit_batch:
             remaining = deadline - time.monotonic()

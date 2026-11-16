@@ -231,7 +231,7 @@ def _collect_health(
     except Exception:  # noqa: BLE001 - metrics report state, never raise
         _record("store_select", False)
     try:
-        _record("hash_chain", store.verify_chain().ok)
+        _record("hash_chain", store.verify_chain(write_checkpoint=False).ok)
     except Exception:  # noqa: BLE001
         _record("hash_chain", False)
     try:

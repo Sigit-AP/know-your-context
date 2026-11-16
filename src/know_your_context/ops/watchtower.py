@@ -18,6 +18,7 @@ fleet as a stable table for runbooks and chat ops.
 from __future__ import annotations
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,8 @@ __all__ = [
 ]
 
 PROBE_BUSY_TIMEOUT_MS = 1000
+# TASK1-PUSH200 (P3): serial-probe kill switch (see aggregate_status).
+_SERIAL_PROBE_ENV = "KNOW_YOUR_CONTEXT_WATCHTOWER_SERIAL"
 
 
 class WatchtowerError(RuntimeError):
@@ -164,7 +167,7 @@ def probe_store(target: StoreTarget, *, stale_after_seconds: float = 300.0) -> S
         counts = collected["counts"]
         projection = collected["projection"]
         try:
-            chain_ok: bool | None = bool(store.verify_chain().ok)
+            chain_ok: bool | None = bool(store.verify_chain(write_checkpoint=False).ok)
         except Exception:  # noqa: BLE001
             chain_ok = False
         try:
@@ -224,9 +227,16 @@ def aggregate_status(
         names.add(target.name)
         paths.add(resolved)
     ordered = sorted(targets, key=lambda target: target.name)
-    return WatchtowerReport(
-        stores=tuple(probe_store(target, stale_after_seconds=stale_after_seconds) for target in ordered)
-    )
+    # TASK1-PUSH200 (P3): fleet probes are independent and never raise, so
+    # they fan out over a bounded pool; Executor.map preserves the name-sorted
+    # order, keeping the report byte-identical to the serial run. Serial mode
+    # stays one env away (W7: every optimization is switchable).
+    if len(ordered) <= 1 or os.environ.get(_SERIAL_PROBE_ENV) == "1":
+        probed = [probe_store(target, stale_after_seconds=stale_after_seconds) for target in ordered]
+    else:
+        with ThreadPoolExecutor(max_workers=min(4, len(ordered))) as pool:
+            probed = list(pool.map(lambda t: probe_store(t, stale_after_seconds=stale_after_seconds), ordered))
+    return WatchtowerReport(stores=tuple(probed))
 
 
 # ------------------------------------------------------------------ rendering

@@ -29,6 +29,7 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
+from know_your_context.ops.switches import load_switches
 from know_your_context.retrieval_v2.fts import FTS_TABLE, build_fts_query, ensure_fts_index
 from know_your_context.retrieval_v2.query import ParsedQuery, parse_query
 from know_your_context.retrieval_v2.scoring import (
@@ -37,6 +38,12 @@ from know_your_context.retrieval_v2.scoring import (
     kind_bonus,
     name_match_bonus,
     path_relevance,
+)
+from know_your_context.retrieval_v2.trigram import (
+    TRIGRAM_TABLE,
+    TrigramUnavailableError,
+    build_trigram_match,
+    ensure_trigram_index,
 )
 from know_your_context.store import EventStore, SymbolRow
 
@@ -364,12 +371,8 @@ class SymbolLookup:
         if not clauses:
             return {}
         cap = self._config.like_scan_cap
-        sql = (
-            f"SELECT * FROM symbols WHERE {' OR '.join(clauses)} "  # nosec B608 -- constant fragments; terms are bound params
-            f"ORDER BY path, line, col, node_id LIMIT ?"
-        )
-        with store.read() as conn:
-            rows = conn.execute(sql, (*params, cap)).fetchall()
+        where = " OR ".join(clauses)
+        rows = self._like_rows(store, parsed, where, params, cap)
         if len(rows) == cap:
             _logger.warning(
                 "LIKE channel truncated at like_scan_cap=%d (deterministic canonical order); "
@@ -394,6 +397,38 @@ class SymbolLookup:
                 source="like",
             )
         return candidates
+
+    def _like_rows(
+        self, store: EventStore, parsed: ParsedQuery, where: str, params: list[str], cap: int
+    ) -> list[sqlite3.Row]:
+        """Rows for the LIKE channel: durable trigram prefilter when possible.
+
+        TASK1-PUSH200-R2 (item A): when every term has >= 3 literal
+        characters, the trigram MATCH candidate set is an exact superset of
+        the LIKE result, so prefilters + the unchanged LIKE predicate yield
+        byte-identical rows in canonical order. The scan remains the fail
+        safe: kill switch, short terms, or any trigram error → full scan.
+        """
+        match = build_trigram_match(tuple(parsed.terms))
+        if match is not None and not load_switches().trigram_disabled():
+            try:
+                if ensure_trigram_index(store):
+                    _logger.debug("trigram index (re)built before LIKE prefilter")
+                sql = (
+                    f"SELECT * FROM symbols WHERE rowid IN ("  # nosec B608 -- constant fragments; terms are bound params
+                    f"SELECT rowid FROM {TRIGRAM_TABLE} WHERE {TRIGRAM_TABLE} MATCH ?"
+                    f") AND ({where}) ORDER BY path, line, col, node_id LIMIT ?"
+                )
+                with store.read() as conn:
+                    return list(conn.execute(sql, (match, *params, cap)).fetchall())
+            except (sqlite3.Error, TrigramUnavailableError) as exc:
+                _logger.warning("trigram prefilter unavailable (%s); falling back to LIKE scan", exc)
+        sql = (
+            f"SELECT * FROM symbols WHERE {where} "  # nosec B608 -- constant fragments; terms are bound params
+            f"ORDER BY path, line, col, node_id LIMIT ?"
+        )
+        with store.read() as conn:
+            return list(conn.execute(sql, (*params, cap)).fetchall())
 
     def _fuzzy_channel(self, store: EventStore, parsed: ParsedQuery) -> dict[str, ScoredSymbol]:
         terms = [term for term in parsed.terms if fuzzy_max_distance(len(term)) > 0]
