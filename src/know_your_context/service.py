@@ -254,6 +254,16 @@ class _Snapshot:
         return str(self.manifest["projection_version"])
 
 
+def _resolve_manual_gates(manual_gates: bool | None) -> bool:
+    """Disk-mode (operator decision, docs/recovery/disk-mode-autoreview.md).
+
+    Writes land immediately and the mandatory deterministic post-write
+    auto-review replaces the human approval gates;
+    ``KNOW_YOUR_CONTEXT_MANUAL_GATES=1`` restores the legacy behavior.
+    """
+    return manual_gates if manual_gates is not None else manual_gates_enabled()
+
+
 def _resolve_publish_capacity(store: EventStore, override: int | None) -> tuple[int, int]:
     """The ``(capacity, artifact_cap)`` pair for the F-3 write guard.
 
@@ -324,24 +334,11 @@ class KnowledgeService:
         self._validator = validator if validator is not None else ReadModelValidator()
         self._max_token_budget = max_token_budget
         self._default_actor = default_actor
-        # Disk-mode (operator decision, docs/recovery/disk-mode-autoreview.md):
-        # writes land immediately and the mandatory deterministic post-write
-        # auto-review replaces the human approval gates.
-        # ``KNOW_YOUR_CONTEXT_MANUAL_GATES=1`` restores the legacy behavior.
-        self._manual_gates = manual_gates if manual_gates is not None else manual_gates_enabled()
-        # F-3: the write-side publish-capacity guard. The publish cap itself
-        # (ARTIFACT_MAX_BYTES, per artifact) lives in the projection; the
-        # service refuses log_event writes whose conservative size estimate
-        # would cross 95% of it, so the store can never grow past the point
-        # where a repair rebuild fails permanently.
+        self._manual_gates = _resolve_manual_gates(manual_gates)
         self._publish_capacity_bytes, self._artifact_cap_bytes = _resolve_publish_capacity(
             store, publish_capacity_bytes
         )
-        # F-7: reader-triggered repairs are rate-limited so a sustained write
-        # stream no longer forces one rebuild per read.
         self._repair_cooldown_seconds = float(repair_cooldown_seconds)
-        # ``None`` keeps the module budget live: tests and hosts may patch
-        # ``_PROJECTION_WAIT_SECONDS`` per call; an explicit override pins it.
         self._projection_wait_override = (
             None if projection_wait_seconds is None else _resolve_projection_wait(projection_wait_seconds)
         )
