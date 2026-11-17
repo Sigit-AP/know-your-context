@@ -63,7 +63,7 @@ import os
 import sqlite3
 import threading
 import time
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -482,12 +482,18 @@ class _WorkItem:
 
 @dataclass(frozen=True)
 class _Analyzed:
-    """Pure outcome of read + hash + extract for one file (no store access)."""
+    """Pure outcome of read + hash + extract for one file (no store access).
+
+    The file's bytes are deliberately absent (SUB-186): Phase B needs them only
+    for the sha256 and the generated-file head check, both computed while the
+    bytes are in hand, so concluded analyses carry no content and a walk holds
+    at most the in-flight window of file bytes instead of the whole corpus.
+    """
 
     failure_code: str | None
-    content: bytes | None
     sha256: str | None
     extraction: Any | None
+    generated_hint: bool = False
 
 
 # ------------------------------------------------------- dependency loading
@@ -748,10 +754,12 @@ class IngestionPipeline:
                 assert item is not None
                 work[index] = item
 
-        # Phase B (pure, parallel): read + hash + decode + extract. No store
-        # access, no shared mutable state — results stay a pure function of
-        # the input bytes and land in canonical order.
-        analyzed = self._analyze_all(work, extractor=extractor, workers=workers, serial=serial_extraction)
+        # Phase B (pure, bounded): read + hash + decode + extract, consumed in
+        # canonical order. No store access, no shared mutable state — results
+        # stay a pure function of the input bytes, and each outcome is released
+        # as soon as Phase C commits it (SUB-186: peak follows the in-flight
+        # window, never the corpus).
+        analyzed = self._analyze_stream(work, extractor=extractor, workers=workers, serial=serial_extraction)
 
         # Phase C (canonical): digest tokens, budget checks and store writes,
         # in walk order; commits flush in disk-profile batches.
@@ -773,7 +781,8 @@ class IngestionPipeline:
                 reports.append(report)
                 continue
             item = work[index]
-            outcome = analyzed[index]
+            analyzed_index, outcome = next(analyzed)
+            assert analyzed_index == index  # the stream follows canonical walk order
             report = self._commit_analyzed(
                 item,
                 outcome,
@@ -950,32 +959,37 @@ class IngestionPipeline:
         except Exception:  # noqa: BLE001 - unknown means serial (safe)
             return True
 
-    def _analyze_all(
+    def _analyze_stream(
         self,
         work: dict[int, _WorkItem],
         *,
         extractor: Any,
         workers: int,
         serial: bool,
-    ) -> dict[int, _Analyzed]:
-        """Phase B: pure read+hash+decode+extract, canonical order preserved.
+    ) -> Iterator[tuple[int, _Analyzed]]:
+        """Phase B as a bounded stream: ``(index, _Analyzed)`` in canonical order.
 
-        With ``workers == 1`` (kill switch, tiny walk, or probe failure) this
-        is exactly the historical inline path.
+        Only one window of ``workers * 4`` files is in flight at a time and each
+        outcome is handed to the caller (which commits it) before the next one is
+        produced, so content and extraction results are released per file rather
+        than accumulating for the whole walk (SUB-186). With ``workers == 1``
+        (kill switch, tiny walk, or probe failure) this is the historical inline
+        path, evaluated lazily.
         """
         if not work:
-            return {}
+            return
         indexes = list(work)  # dicts preserve insertion (canonical walk) order
         if workers <= 1 or len(indexes) <= 1:
-            return {index: self._analyze_one(work[index], extractor=extractor, serial=serial) for index in indexes}
-        analyzed: dict[int, _Analyzed] = {}
+            for index in indexes:
+                yield index, self._analyze_one(work[index], extractor=extractor, serial=serial)
+            return
         window = workers * 4  # bounded in-flight content: 4 files per worker
         with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="kys-ingest") as pool:
             for start in range(0, len(indexes), window):
                 chunk = indexes[start : start + window]
                 outcomes = pool.map(lambda i: self._analyze_one(work[i], extractor=extractor, serial=serial), chunk)
-                analyzed.update(zip(chunk, outcomes, strict=True))
-        return analyzed
+                for index, outcome in zip(chunk, outcomes, strict=True):
+                    yield index, outcome
 
     def _analyze_one(self, item: _WorkItem, *, extractor: Any, serial: bool) -> _Analyzed:
         """Pure content work for one file; never touches the store."""
@@ -983,8 +997,11 @@ class IngestionPipeline:
         try:
             content = item.real_path.read_bytes()
         except OSError:
-            return _Analyzed("PATH_NOT_READABLE", None, None, None)
+            return _Analyzed("PATH_NOT_READABLE", None, None)
         sha256 = hashlib.sha256(content).hexdigest()
+        # Head-marker check while the bytes are in hand: the outcome must not
+        # carry content past this frame (SUB-186).
+        generated = is_generated_hint(relpath, content)
 
         if item.document_language is not None and _document_extractor is not None:
             # W3 (SUB-90) document lane: raw bytes in, ExtractionResult-shaped
@@ -994,13 +1011,14 @@ class IngestionPipeline:
                     extraction = _document_extractor.extract_document(relpath, content, language=item.document_language)
             except Exception as error:  # noqa: BLE001 - per-file failure never aborts the walk
                 code = getattr(error, "code", None)
-                return _Analyzed(code if isinstance(code, str) else "EXTRACTION_FAILED", content, sha256, None)
-            return _Analyzed(None, content, sha256, extraction)
+                return _Analyzed(code if isinstance(code, str) else "EXTRACTION_FAILED", sha256, None, generated)
+            return _Analyzed(None, sha256, extraction, generated)
 
         try:
             source = content.decode("utf-8-sig")
         except UnicodeDecodeError:
-            return _Analyzed("DECODE_ERROR", content, sha256, None)
+            return _Analyzed("DECODE_ERROR", sha256, None, generated)
+        del content  # the decoded text is the only remaining view of the bytes
         try:
             if serial:
                 with _EXTRACT_SERIAL_LOCK:
@@ -1009,8 +1027,8 @@ class IngestionPipeline:
                 extraction = extractor.extract_source(relpath, source, language=None, generated_hint=False)
         except Exception as error:  # noqa: BLE001 - per-file failure never aborts the walk
             code = getattr(error, "code", None)
-            return _Analyzed(code if isinstance(code, str) else "EXTRACTION_FAILED", content, sha256, None)
-        return _Analyzed(None, content, sha256, extraction)
+            return _Analyzed(code if isinstance(code, str) else "EXTRACTION_FAILED", sha256, None, generated)
+        return _Analyzed(None, sha256, extraction, generated)
 
     def _commit_analyzed(
         self,
@@ -1057,7 +1075,7 @@ class IngestionPipeline:
             )
 
         extraction = outcome.extraction
-        assert outcome.content is not None
+        assert outcome.sha256 is not None
         tracked = self._store.get_file(relpath) if incremental else None
         if (
             tracked is not None
@@ -1093,7 +1111,7 @@ class IngestionPipeline:
             flush()  # every completed file before the boundary stays committed
             raise
 
-        generated = bool(getattr(extraction, "generated_hint", False)) or is_generated_hint(relpath, outcome.content)
+        generated = bool(getattr(extraction, "generated_hint", False)) or outcome.generated_hint
         write_language = str(getattr(extraction, "language", item.language))
         write_version = int(getattr(extraction, "extraction_version", item.extraction_version))
         write_sha = outcome.sha256

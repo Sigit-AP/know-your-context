@@ -203,6 +203,60 @@ class TestImportScope:
         assert outcome.target_node_id == "function:pa-local"
 
 
+# ------------------------------------------------------ precision guards
+
+class TestScopePrecision:
+    """The extractor's ``import:`` bookkeeping nodes are not definitions.
+
+    Ingest parks one ``kind="import"`` symbol per import statement (the source
+    node of the ``imports`` ref). Those nodes share the module's name, so the
+    naive scope lookup counted them as candidates: on L4 that minted 19,632
+    edges whose target was the referring file's own import node — a calls edge
+    to a non-definition (SUB-185 measurement). The scope tier must count only
+    real definitions.
+    """
+
+    def test_file_scope_ignores_import_bookkeeping_nodes(self, store: EventStore) -> None:
+        """`import pytest` in three files is not one definition in this file."""
+        for index, path in enumerate(("pkg/a.py", "pkg/b.py", "pkg/cli.py")):
+            add_file(store, path)
+            add_symbol(store, f"import:px-{index}", "pytest", path, kind="import")
+        add_symbol(store, BASE, "main", "pkg/cli.py")
+        ref_id = add_ref(store, "pytest", source=BASE)
+
+        outcome = outcome_of(resolve(store), ref_id)
+        assert outcome.status == "failed"
+        assert outcome.reason == "ambiguous_exact:3"
+        assert edges_of(store) == []
+
+    def test_imports_ref_never_binds_to_a_local_definition(self, store: EventStore) -> None:
+        """A module ref is resolved by the module tiers, never by lexical scope."""
+        add_file(store, "pkg/cli.py")
+        add_symbol(store, BASE, "main", "pkg/cli.py")
+        add_symbol(store, "function:j-local", "json", "pkg/cli.py")
+        add_symbol(store, "function:j-a", "json", "pkg/a.py")
+        add_symbol(store, "function:j-b", "json", "pkg/b.py")
+        ref_id = add_ref(store, "json", "imports", source=BASE)
+
+        outcome = outcome_of(resolve(store), ref_id)
+        assert outcome.status == "failed"
+        assert outcome.reason == "ambiguous_exact:3"
+        assert edges_of(store) == []
+
+    def test_real_definition_wins_when_an_import_node_shares_its_name(self, store: EventStore) -> None:
+        """One definition + the file's own import node is still ONE candidate."""
+        seed_parse_args(store, PARSE_ARGS_DEFS - 1, "pkg/cli.py")
+        add_symbol(store, "function:pa-local", "parse_args", "pkg/cli.py")
+        add_symbol(store, "import:pa-shadow", "parse_args", "pkg/cli.py", kind="import")
+        ref_id = add_ref(store, "parse_args", source=BASE)
+
+        outcome = outcome_of(resolve(store), ref_id)
+        assert outcome.status == "resolved"
+        assert outcome.strategy == "exact_scoped"
+        assert outcome.target_node_id == "function:pa-local"
+        assert edges_of(store)[0][:3] == (BASE, "function:pa-local", "calls")
+
+
 # --------------------------------------------------------------- invariants
 
 

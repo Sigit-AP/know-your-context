@@ -12,15 +12,20 @@ c. **import_path** — module-based languages only: Python dotted/relative
    directory with the extension/index-name search order. Bare JS/TS
    specifiers fail as ``external_module``.
 d. **module_helper** — per-language candidate paths (W12).
-e. **exact_scoped** (SUB-181) — only for refs that would otherwise fail with
-   an ambiguity reason: 2+ symbols share ``target_name``, so pick by lexical
-   scope. *File scope* first — exactly one same-name symbol in the referring
-   file is the bound definition (module-level shadowing). *Import scope*
-   second — exactly one same-name symbol in a module the referring file
-   imports (its ``imports`` refs resolved with the tier-(c) rules). Still 2+
-   candidates after both scopes → the ref keeps failing with the original
-   ``ambiguous_exact:N`` reason. The tier runs *after* (a)–(d) so it can only
-   convert failures into edges, never retarget a ref that already resolved.
+e. **exact_scoped** (SUB-181/SUB-185) — only for refs that would otherwise
+   fail with an ambiguity reason: 2+ symbols share ``target_name``, so pick
+   by lexical scope. *File scope* first — exactly one same-name definition
+   in the referring file is the bound definition (module-level shadowing).
+   *Import scope* second — exactly one same-name definition in a module the
+   referring file imports (its ``imports`` refs resolved with the tier-(c)
+   rules). Only ``symbols.kind <> 'import'`` rows count: the extractor's
+   ``import:`` nodes are bookkeeping, not bindings (counting them minted
+   19,632 edges to non-definitions on L4), and ``imports`` refs themselves
+   are module bindings owned by tiers (c)/(d) — the scope tier skips them.
+   Still 2+ candidates after both scopes → the ref keeps failing with the
+   original ``ambiguous_exact:N`` reason. The tier runs *after* (a)–(d) so it
+   can only convert failures into edges, never retarget a ref that already
+   resolved.
 
 Ambiguity never guesses: a tier with 2+ candidates defers to the next tier
 (import-path can disambiguate via the module path, e.g. ``pkg.mod.func``);
@@ -585,13 +590,20 @@ class ReferenceResolver:
     ) -> _Decision | None:
         """File scope, then import scope; ``None`` keeps the ambiguity verdict.
 
-        Both scopes ask one question — "is there exactly ONE same-name symbol
-        in this scope?" — with a count-first lookup, so a name with 300
-        definitions still materialises at most one candidate row (the B7
-        cost model). Two or more candidates in a scope is *not* a guess: the
-        next scope runs, and if none is decisive the ref keeps failing with
-        its original ambiguity reason.
+        Both scopes ask one question — "is there exactly ONE same-name
+        *definition* in this scope?" — with a count-first lookup, so a name
+        with 300 definitions still materialises at most one candidate row
+        (the B7 cost model). Two or more candidates in a scope is *not* a
+        guess: the next scope runs, and if none is decisive the ref keeps
+        failing with its original ambiguity reason.
+
+        ``imports`` refs are module bindings, not lexical names: tier (c)/(d)
+        own them, and letting lexical scope bind them would mint an
+        ``imports`` edge to whatever local symbol shares the module's name
+        (SUB-185 measured 17,511 such self-edges on L4).
         """
+        if ref.kind == "imports":
+            return None
         status, payload = self._same_name_in_paths(store, ref.target_name, (source_path,), cache=cache)
         if status == "hit":
             assert isinstance(payload, SymbolRow)
@@ -627,6 +639,14 @@ class ReferenceResolver:
     def _same_name_in_paths_uncached(
         cls, store: EventStore, name: str, ordered: tuple[str, ...]
     ) -> tuple[str, SymbolRow | int | None]:
+        """Count same-name *definitions* in the paths (SUB-185).
+
+        ``kind = 'import'`` rows are the extractor's import bookkeeping nodes
+        (the source of an ``imports`` ref), not bindings; counting them both
+        inflated an import-heavy file to "ambiguous" and minted 19,632 edges
+        to non-definitions on L4. The predicate is the same in the count and
+        the fetch so a verdict can never disagree with itself.
+        """
         total = 0
         first: SymbolRow | None = None
         for start in range(0, len(ordered), cls._SCOPE_PATH_CHUNK):
@@ -634,7 +654,8 @@ class ReferenceResolver:
             placeholders = ", ".join("?" for _ in chunk)
             with store.read() as conn:
                 row = conn.execute(
-                    f"SELECT COUNT(*) AS n FROM symbols WHERE name = ? AND path IN ({placeholders})",
+                    f"SELECT COUNT(*) AS n FROM symbols WHERE name = ? AND kind <> 'import' "
+                    f"AND path IN ({placeholders})",
                     (name, *chunk),
                 ).fetchone()
                 total += 0 if row is None else int(row["n"])
@@ -643,7 +664,7 @@ class ReferenceResolver:
                 if total == 1 and first is None:
                     # Fetch only the single decisive row (never the candidate set).
                     hit = conn.execute(
-                        f"SELECT * FROM symbols WHERE name = ? AND path IN ({placeholders}) "
+                        f"SELECT * FROM symbols WHERE name = ? AND kind <> 'import' AND path IN ({placeholders}) "
                         "ORDER BY path, line, col, node_id LIMIT 1",
                         (name, *chunk),
                     ).fetchone()
