@@ -1,4 +1,3 @@
-
 """Adapter boundary between the product and the pinned Graphify library.
 
 Task 3 of ``docs/superpowers/plans/2026-10-24-superpower-knowledge-soul.md``;
@@ -24,13 +23,9 @@ import importlib.util
 import json
 import os
 import re
+import sys
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-
-try:  # pragma: no cover - optional graphify dependency
-    from graphify.build import build_from_json  # noqa: F401
-except Exception:  # pragma: no cover
-    build_from_json = None  # type: ignore[assignment]
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -327,10 +322,8 @@ class GraphifyAdapter:
         prepared["nodes"] = sorted(prepared.get("nodes", []), key=canonical_json)
         prepared["edges"] = sorted(prepared.get("edges", []), key=canonical_json)
         import networkx as nx
-        if build_from_json is None:  # pragma: no cover - import guard
-            raise FragmentValidationError(["graphify.build is unavailable in this environment"])
 
-        graph = build_from_json(prepared, directed=True, dedup=False)
+        graph = _lazy_build_from_json()(prepared, directed=True, dedup=False)
         if not isinstance(graph, nx.DiGraph):  # pragma: no cover - build contract
             raise TypeError(f"expected a directed graph, got {type(graph).__name__}")
         return graph
@@ -401,3 +394,25 @@ class GraphifyAdapter:
 
         return probe_multigraph_capabilities()
 
+
+def _lazy_build_from_json() -> Any:
+    """Resolve ``graphify.build.build_from_json`` lazily, honouring a patch.
+
+    Importing ``graphify.build`` pulls networkx; the query fast path must not
+    pay it, yet a test patching ``graphify_adapter.build_from_json`` must be
+    seen — so read the attribute off the module object and cache the import.
+    """
+    module = sys.modules[__name__]
+    existing = module.__dict__.get("build_from_json")
+    if existing is not None:
+        return existing
+    from graphify.build import build_from_json as _build
+
+    module.__dict__["build_from_json"] = _build
+    return _build
+
+
+def __getattr__(name: str) -> Any:
+    if name == "build_from_json":
+        return _lazy_build_from_json()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

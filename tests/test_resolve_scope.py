@@ -18,7 +18,10 @@ resolved — no target churn, no provenance churn.
 2. **import scope** — exactly one same-name symbol in a module the referring
    file imports wins (the file's ``imports`` refs resolved against the
    ``files`` table, reusing the import-path resolution rules).
-3. **global** — still 2+ candidates: the ref keeps failing with the original
+3. **global scope** (SUB-185S) — exactly one same-name *definition* in the
+   whole corpus wins: the other same-named symbols are the extractor's
+   ``import:`` bookkeeping nodes, so "unique definition" is not a guess.
+4. Still 2+ candidates everywhere: the ref keeps failing with the original
    ``ambiguous_exact:N`` reason. Never guess. No edge is minted.
 
 Recovered refs report ``strategy == "exact_scoped"`` so the gain is
@@ -205,6 +208,7 @@ class TestImportScope:
 
 # ------------------------------------------------------ precision guards
 
+
 class TestScopePrecision:
     """The extractor's ``import:`` bookkeeping nodes are not definitions.
 
@@ -356,6 +360,122 @@ class TestScopeShapes:
         outcome = outcome_of(resolve(store), ref_id)
         assert outcome.status == "failed"
         assert outcome.reason == "ambiguous_exact:2"
+
+
+# ------------------------------------------------------------- global scope
+
+
+class TestGlobalScope:
+    """SUB-185S tier (c): a corpus-unique *definition* binds the ambiguous name.
+
+    File scope (a) and import scope (b) resolve the lexically-bound cases; the
+    refs they cannot anchor stay ``ambiguous_exact:N`` even when the name has
+    exactly ONE real definition in the whole corpus — ``N`` is inflated by the
+    extractor's ``kind = 'import'`` bookkeeping nodes, which share the
+    imported module's name. Tier (c) asks the same count-first question
+    corpus-wide, excluding import nodes: exactly one real definition is not a
+    guess (there is no other possible target), two or more keep the original
+    ambiguity verdict.
+    """
+
+    def test_unique_global_definition_resolves_despite_import_node_inflation(self, store: EventStore) -> None:
+        """RED before SUB-185S: 13 import nodes + 1 def → ambiguous_exact:14."""
+        for index in range(13):
+            path = f"pkg/m{index:02d}.py"
+            add_file(store, path)
+            add_symbol(store, f"import:pa-{index}", "parse_args", path, kind="import")
+        add_file(store, "pkg/cli.py")
+        add_symbol(store, "function:pa-cli", "parse_args", "pkg/cli.py")
+        add_file(store, "pkg/main.py")
+        add_symbol(store, BASE, "main", "pkg/main.py")
+        ref_id = add_ref(store, "parse_args", source=BASE)
+
+        report = resolve(store)
+        outcome = outcome_of(report, ref_id)
+        assert outcome.status == "resolved"
+        assert outcome.strategy == "exact_scoped"
+        assert outcome.target_node_id == "function:pa-cli"
+        calls = [(edge[0], edge[1]) for edge in edges_of(store) if edge[2] == "calls"]
+        assert calls == [(BASE, "function:pa-cli")]
+
+    def test_two_global_definitions_stay_parked(self, store: EventStore) -> None:
+        """Two real defs, neither lexically anchored → still ambiguous, 0 edges."""
+        seed_parse_args(store, 2, "pkg/main.py")
+        for index in range(12):
+            add_symbol(store, f"import:pa-{index}", "parse_args", f"pkg/m{index:02d}.py", kind="import")
+        ref_id = add_ref(store, "parse_args", source=BASE)
+
+        outcome = outcome_of(resolve(store), ref_id)
+        assert outcome.status == "failed"
+        assert outcome.reason == f"ambiguous_exact:{PARSE_ARGS_DEFS}"
+        assert [edge for edge in edges_of(store) if edge[2] == "calls"] == []
+
+    def test_import_scope_wins_over_global(self, store: EventStore) -> None:
+        """The imported definition binds before a corpus-unique outside one."""
+        seed_parse_args(store, 1, "pkg/main.py")  # real def in pkg/m00.py
+        add_file(store, "pkg/z.py")
+        add_symbol(store, "function:pa-z", "parse_args", "pkg/z.py")
+        add_symbol(store, "import:0", "m00", "pkg/main.py", kind="import")
+        add_ref(store, "pkg.m00", "imports", source="import:0")
+        ref_id = add_ref(store, "parse_args", source=BASE)
+
+        outcome = outcome_of(resolve(store), ref_id)
+        assert outcome.status == "resolved"
+        assert outcome.strategy == "exact_scoped"
+        assert outcome.target_node_id == "function:pa-0"
+
+    def test_only_import_nodes_globally_stay_parked(self, store: EventStore) -> None:
+        """14 import nodes and no definition is still ambiguous — never binds."""
+        for index in range(PARSE_ARGS_DEFS):
+            add_symbol(store, f"import:pa-{index}", "parse_args", f"pkg/m{index:02d}.py", kind="import")
+        add_file(store, "pkg/main.py")
+        add_symbol(store, BASE, "main", "pkg/main.py")
+        ref_id = add_ref(store, "parse_args", source=BASE)
+
+        outcome = outcome_of(resolve(store), ref_id)
+        assert outcome.status == "failed"
+        assert outcome.reason == f"ambiguous_exact:{PARSE_ARGS_DEFS}"
+        assert edges_of(store) == []
+
+    def test_file_scope_still_wins_over_global(self, store: EventStore) -> None:
+        """A same-file definition outranks the corpus-unique outside one."""
+        seed_parse_args(store, PARSE_ARGS_DEFS - 1, "pkg/cli.py")
+        add_symbol(store, "function:pa-local", "parse_args", "pkg/cli.py")
+        ref_id = add_ref(store, "parse_args", source=BASE)
+
+        outcome = outcome_of(resolve(store), ref_id)
+        assert outcome.status == "resolved"
+        assert outcome.strategy == "exact_scoped"
+        assert outcome.target_node_id == "function:pa-local"
+
+
+def test_global_scope_materialises_at_most_the_decisive_row(store: EventStore, monkeypatch: pytest.MonkeyPatch) -> None:
+    """B7 cost model holds for the global tier: count first, fetch only on 1.
+
+    300 import-node inflation + 1 unique definition must cost O(1) symbol
+    rows — the corpus-wide COUNT answers "unique?" without the candidate set
+    (the same discipline as the file-scope guard above).
+    """
+    for index in range(300):
+        add_symbol(store, f"import:pa-{index}", "parse_args", f"pkg/m{index:03d}.py", kind="import")
+    add_file(store, "pkg/cli.py")
+    add_symbol(store, "function:pa-cli", "parse_args", "pkg/cli.py")
+    add_file(store, "pkg/main.py")
+    add_symbol(store, BASE, "main", "pkg/main.py")
+
+    calls = [0]
+    original = EventStore._symbol_row
+
+    def counting(row):  # noqa: ANN001, ANN202 - mirrors the staticmethod signature
+        calls[0] += 1
+        return original(row)
+
+    monkeypatch.setattr(EventStore, "_symbol_row", staticmethod(counting))
+    ref = add_ref(store, "parse_args", source=BASE)
+    report = resolve(store)
+    assert outcome_of(report, ref).target_node_id == "function:pa-cli"
+    # Exactly two rows: the source symbol (``_source_context``) + the hit.
+    assert calls[0] <= 2, f"global tier materialised {calls[0]} symbol rows"
 
 
 # --------------------------------------------------------------- cost model

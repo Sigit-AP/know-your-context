@@ -496,6 +496,43 @@ class _Analyzed:
     generated_hint: bool = False
 
 
+@dataclass
+class _RunState:
+    """Per-invocation accumulator shared by ``_run`` and its phase helpers.
+
+    One bundle instead of a dozen parameters keeps the phase call sites
+    short enough to stay on a single formatted line; the fields mirror the
+    local variables the monolithic ``_run`` used to declare.
+    """
+
+    incremental: bool
+    stats: dict[str, int]
+    totals: dict[str, int]
+    digest: Any
+    guards: list[str]
+    seen: set[str]
+    introduced_tails: set[str]
+    proposals_nodes: list[GraphNode]
+    proposals_edges: list[GraphEdge]
+    reports: list[FileReport]
+
+
+def _new_run_state(incremental: bool) -> _RunState:
+    """Fresh per-invocation state; mirrors the historical ``_run`` locals."""
+    return _RunState(
+        incremental=incremental,
+        stats={"proposed": 0, "failed": 0, "skipped": 0, "deleted": 0, "scanned": 0},
+        totals={"nodes": 0, "edges": 0, "refs_parked": 0},
+        digest=hashlib.sha256(),
+        guards=[],
+        seen=set(),
+        introduced_tails=set(),
+        proposals_nodes=[],
+        proposals_edges=[],
+        reports=[],
+    )
+
+
 # ------------------------------------------------------- dependency loading
 
 
@@ -689,6 +726,54 @@ class IngestionPipeline:
         return "knowledge.ingest_file" if Path(raw).is_file() else "knowledge.ingest_directory"
 
     def _run(self, raw: str, *, incremental: bool, recursive: bool, resolve: bool, started: float) -> IngestionReport:
+        root, rel_input, is_dir = self._resolve_root(raw)
+
+        extractor = self._extractor if self._extractor is not None else _default_extractor()
+        extraction_version = int(getattr(extractor, "EXTRACTION_VERSION", EXTRACTION_VERSION_FALLBACK))
+        entries = self._walk(root, rel_input if not is_dir else None, recursive=recursive)
+
+        state = _new_run_state(incremental)
+
+        # Hardware integration (SUB-135): the canonical walk order holds for
+        # every store read, digest token, report entry and write — only the
+        # pure content work fans out; kill switches restore history.
+        workers, commit_batch = _hardware_ingest_params(self._store)
+        serial_extraction = self._extraction_needs_serial(extractor)
+
+        selected = entries[: self._budget.max_files]
+        files_truncated = len(entries) - len(selected)
+        if files_truncated > 0:
+            state.guards.append("max_files")
+        state.stats["scanned"] = len(selected)
+
+        terminal, work = self._run_phase_a(selected, root, extraction_version=extraction_version, state=state)
+        analyzed = self._analyze_stream(work, extractor=extractor, workers=workers, serial=serial_extraction)
+        self._run_phase_c(selected, terminal, work, analyzed, state=state, commit_batch=commit_batch)
+        if is_dir:
+            state.stats["deleted"] = self._delete_missing(state.seen, state.digest) if incremental else 0
+        if resolve:
+            self._retry_failed_refs(state)
+        resolution, resolution_status = self._run_resolution(resolve)
+        suggestions = self._primary_suggestions(rel_input, state.proposals_nodes, state.proposals_edges)
+        return self._assemble_report(
+            root=root,
+            rel_input=rel_input,
+            extraction_version=extraction_version,
+            state=state,
+            suggestions=suggestions,
+            files_truncated=files_truncated,
+            resolution=resolution,
+            resolution_status=resolution_status,
+            started=started,
+        )
+
+    def _resolve_root(self, raw: str) -> tuple[Path, str, bool]:
+        """Resolve the input path to ``(root, rel_input, is_dir)``.
+
+        Typed failures before any read: a missing path is an operator error
+        (``PATH_NOT_FOUND``), an unresolvable/unreadable one is distinct so
+        the caller can report "fix permissions" instead of "fix path".
+        """
         candidate = Path(raw)
         if not candidate.exists():
             raise PathNotFoundError(f"input path {raw!r} does not exist")
@@ -701,68 +786,50 @@ class IngestionPipeline:
         except OSError as error:
             raise PathNotReadableError(f"input path {raw!r} is not readable: {error}") from error
         if is_dir:
-            root = resolved_input
-            rel_input = "."
-        else:
-            root = resolved_input.parent
-            rel_input = resolved_input.name
+            return resolved_input, ".", is_dir
+        return resolved_input.parent, resolved_input.name, is_dir
 
-        extractor = self._extractor if self._extractor is not None else _default_extractor()
-        extraction_version = int(getattr(extractor, "EXTRACTION_VERSION", EXTRACTION_VERSION_FALLBACK))
+    def _run_phase_a(
+        self,
+        selected: list[tuple[Path, str]],
+        root: Path,
+        *,
+        extraction_version: int,
+        state: _RunState,
+    ) -> tuple[dict[int, tuple[FileReport, bytes]], dict[int, _WorkItem]]:
+        """Phase A (canonical, cheap): path gates + tracked fast-path.
 
-        entries = self._walk(root, rel_input if not is_dir else None, recursive=recursive)
-
-        stats = {"proposed": 0, "failed": 0, "skipped": 0, "deleted": 0, "scanned": 0}
-        totals = {"nodes": 0, "edges": 0, "refs_parked": 0}
-        reports: list[FileReport] = []
-        digest = hashlib.sha256()
-        guards: list[str] = []
-        seen: set[str] = set()
-        introduced_tails: set[str] = set()
-        proposals_nodes: list[GraphNode] = []
-        proposals_edges: list[GraphEdge] = []
-
-        # Hardware integration (SUB-135): extraction workers follow the
-        # plan's cores/RAM advice; the commit batch follows the disk profile.
-        # Both phases keep the CANONICAL walk order for every store read,
-        # digest token, report entry and write — only the pure content work
-        # (read/hash/decode/parse) fans out. Kill switches restore the
-        # historical (1 worker, per-file commit) path byte-identically.
-        workers, commit_batch = _hardware_ingest_params(self._store)
-        serial_extraction = self._extraction_needs_serial(extractor)
-
-        selected = entries[: self._budget.max_files]
-        files_truncated = len(entries) - len(selected)
-        if files_truncated > 0:
-            guards.append("max_files")
-        stats["scanned"] = len(selected)
-
-        # Phase A (canonical, cheap): path/size/language gates + the tracked
-        # fast-path. Produces terminal reports or content work items.
+        Produces terminal reports (or content work items) in walk order;
+        every selected relpath is marked seen here so the delete pass below
+        never cascades a live file.
+        """
         terminal: dict[int, tuple[FileReport, bytes]] = {}
         work: dict[int, _WorkItem] = {}
         for index, (abs_path, relpath) in enumerate(selected):
-            seen.add(relpath)
+            state.seen.add(relpath)
             terminal_out, item = self._preflight(
-                root, abs_path, relpath, extraction_version=extraction_version, incremental=incremental
+                root, abs_path, relpath, extraction_version=extraction_version, incremental=state.incremental
             )
             if terminal_out is not None:
                 report, token = terminal_out
-                stats["failed" if report.status == "failed" else "skipped"] += 1
+                state.stats["failed" if report.status == "failed" else "skipped"] += 1
                 terminal[index] = (report, token)
             else:
                 assert item is not None
                 work[index] = item
+        return terminal, work
 
-        # Phase B (pure, bounded): read + hash + decode + extract, consumed in
-        # canonical order. No store access, no shared mutable state — results
-        # stay a pure function of the input bytes, and each outcome is released
-        # as soon as Phase C commits it (SUB-186: peak follows the in-flight
-        # window, never the corpus).
-        analyzed = self._analyze_stream(work, extractor=extractor, workers=workers, serial=serial_extraction)
-
-        # Phase C (canonical): digest tokens, budget checks and store writes,
-        # in walk order; commits flush in disk-profile batches.
+    def _run_phase_c(
+        self,
+        selected: list[tuple[Path, str]],
+        terminal: dict[int, tuple[FileReport, bytes]],
+        work: dict[int, _WorkItem],
+        analyzed: Iterator[tuple[int, _Analyzed]],
+        *,
+        state: _RunState,
+        commit_batch: int,
+    ) -> None:
+        """Phase C (canonical): digest tokens, budget gates, queued writes."""
         pending: list[Any] = []
 
         def _flush() -> None:
@@ -774,70 +841,82 @@ class IngestionPipeline:
             pending.clear()
 
         for index in range(len(selected)):
-            relpath = selected[index][1]
             if index in terminal:
                 report, token = terminal[index]
-                digest.update(token)
-                reports.append(report)
+                state.digest.update(token)
+                state.reports.append(report)
                 continue
             item = work[index]
             analyzed_index, outcome = next(analyzed)
             assert analyzed_index == index  # the stream follows canonical walk order
-            report = self._commit_analyzed(
-                item,
-                outcome,
-                incremental=incremental,
-                stats=stats,
-                totals=totals,
-                digest=digest,
-                introduced_tails=introduced_tails,
-                proposals_nodes=proposals_nodes,
-                proposals_edges=proposals_edges,
-                pending=pending,
-                flush=_flush,
-                flush_when=commit_batch,
+            state.reports.append(
+                self._commit_analyzed(
+                    item,
+                    outcome,
+                    incremental=state.incremental,
+                    stats=state.stats,
+                    totals=state.totals,
+                    digest=state.digest,
+                    introduced_tails=state.introduced_tails,
+                    proposals_nodes=state.proposals_nodes,
+                    proposals_edges=state.proposals_edges,
+                    pending=pending,
+                    flush=_flush,
+                    flush_when=commit_batch,
+                )
             )
-            reports.append(report)
         _flush()
 
-        if is_dir:
-            stats["deleted"] = self._delete_missing(seen, digest) if incremental else 0
+    def _retry_failed_refs(self, state: _RunState) -> None:
+        """Move failed refs back to pending when a matching tail landed.
 
-        # Failed refs retry when a changed/landed file introduced a matching
-        # name tail (codegraph #1240): move them back to pending so the
-        # resolve pass below re-binds them. Deterministic: tails sorted,
-        # store queries ordered.
-        if resolve:
-            for tail in sorted(introduced_tails):
-                for failed_ref in self._store.failed_unresolved_refs(name_tail=tail):
-                    self._store.retry_failed_ref(failed_ref.ref_id)
+        A changed/landed file can now bind refs that previously failed
+        (codegraph #1240); the resolve pass re-binds them. Deterministic:
+        tails sorted, store queries ordered.
+        """
+        for tail in sorted(state.introduced_tails):
+            for failed_ref in self._store.failed_unresolved_refs(name_tail=tail):
+                self._store.retry_failed_ref(failed_ref.ref_id)
 
-        resolution: Mapping[str, int] | None = None
-        resolution_status = "skipped"
-        if resolve:
-            try:
-                resolution = self.resolve_pending()
-                resolution_status = "ok"
-            except ResolverUnavailableError:
-                resolution_status = "unavailable"
+    def _run_resolution(self, resolve: bool) -> tuple[Mapping[str, int] | None, str]:
+        """Run the SUB-88 resolve pass; ``unavailable`` instead of a crash."""
+        if not resolve:
+            return None, "skipped"
+        try:
+            return self.resolve_pending(), "ok"
+        except ResolverUnavailableError:
+            return None, "unavailable"
 
-        suggestions = self._primary_suggestions(rel_input, proposals_nodes, proposals_edges)
+    def _assemble_report(
+        self,
+        *,
+        root: Path,
+        rel_input: str,
+        extraction_version: int,
+        state: _RunState,
+        suggestions: tuple[Mapping[str, Any], ...],
+        files_truncated: int,
+        resolution: Mapping[str, int] | None,
+        resolution_status: str,
+        started: float,
+    ) -> IngestionReport:
+        """Build the proposal summary (exactly one report per invocation)."""
         return IngestionReport(
             status="proposal",
             root=str(root),
             input_path=rel_input,
-            input_sha256=digest.hexdigest(),
+            input_sha256=state.digest.hexdigest(),
             extraction_version=extraction_version,
-            files=tuple(reports),
-            stats=stats,
-            totals=totals,
+            files=tuple(state.reports),
+            stats=state.stats,
+            totals=state.totals,
             proposal={
-                "nodes": totals["nodes"],
-                "edges": totals["edges"],
-                "refs_parked": totals["refs_parked"],
+                "nodes": state.totals["nodes"],
+                "edges": state.totals["edges"],
+                "refs_parked": state.totals["refs_parked"],
             },
             primary_suggestions=suggestions,
-            guards_hit=tuple(guards),
+            guards_hit=tuple(state.guards),
             truncated=files_truncated > 0,
             files_truncated=files_truncated,
             max_files=self._budget.max_files,

@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import random
 import re
 import threading
 import time
@@ -253,6 +254,53 @@ class _Snapshot:
         return str(self.manifest["projection_version"])
 
 
+def _resolve_publish_capacity(store: EventStore, override: int | None) -> tuple[int, int]:
+    """The ``(capacity, artifact_cap)`` pair for the F-3 write guard.
+
+    ``capacity`` is the largest ``log_event`` payload the service accepts; it
+    must stay under the same store-derived per-artifact cap the projector
+    publishes under (B1/SUB-174), otherwise an ingested corpus could be refused
+    writes for a projection it can legitimately build. A caller override is
+    honoured only below that ceiling — above it the guard is disarmed, so the
+    override fails closed (SUB48-1).
+    """
+    ceiling = resolve_artifact_cap(store)
+    if override is None:
+        return int(ceiling * PUBLISH_CAPACITY_RATIO), ceiling
+    requested = int(override)
+    if requested > ceiling:
+        raise InvalidPublishCapacity(
+            f"publish_capacity_bytes override {requested} exceeds the per-artifact cap "
+            f"{ceiling} bytes; the F-3 guard cannot protect a ceiling the "
+            "projection can never publish. Lower the override or retire nodes instead."
+        )
+    return requested, ceiling
+
+
+def _current_projection_wait(override: float | None) -> float:
+    """The effective peer-publish budget: the pinned override or the module value.
+
+    Reading ``_PROJECTION_WAIT_SECONDS`` per call (rather than at construction)
+    keeps the historical test seam: a monkeypatched module constant still
+    bounds the wait for services built before the patch.
+    """
+    return _PROJECTION_WAIT_SECONDS if override is None else override
+
+
+def _resolve_projection_wait(seconds: float | None) -> float:
+    """How long a reader waits for a peer's publish before failing typed.
+
+    The default preserves the historical 5 s budget. A caller that knows its
+    rebuilds are expensive (large stores, contended hosts) can raise it so the
+    reader rides out the peer's publish instead of failing a read that would
+    have succeeded a few seconds later (B-L4).
+    """
+    resolved = _PROJECTION_WAIT_SECONDS if seconds is None else float(seconds)
+    if resolved <= 0:
+        raise ValueError("projection_wait_seconds must be positive")
+    return resolved
+
+
 class KnowledgeService:
     """The application service behind the CLI, local API and MCP surfaces."""
 
@@ -267,6 +315,7 @@ class KnowledgeService:
         default_actor: str = "operator",
         publish_capacity_bytes: int | None = None,
         repair_cooldown_seconds: float = 1.0,
+        projection_wait_seconds: float | None = None,
         manual_gates: bool | None = None,
     ) -> None:
         self._store = store
@@ -285,29 +334,17 @@ class KnowledgeService:
         # service refuses log_event writes whose conservative size estimate
         # would cross 95% of it, so the store can never grow past the point
         # where a repair rebuild fails permanently.
-        if publish_capacity_bytes is None:
-            # B1 (SUB-174): the guard ceiling follows the same store-derived cap
-            # the projector publishes under, so an ingested corpus is not
-            # refused writes for a projection it can legitimately build.
-            self._artifact_cap_bytes = resolve_artifact_cap(store)
-            self._publish_capacity_bytes = int(self._artifact_cap_bytes * PUBLISH_CAPACITY_RATIO)
-        else:
-            override = int(publish_capacity_bytes)
-            ceiling = resolve_artifact_cap(store)
-            self._artifact_cap_bytes = ceiling
-            if override > ceiling:
-                # SUB48-1: fail closed. A ceiling above the per-artifact cap
-                # disarms the guard — the store grows until every publish and
-                # repair fails with OversizedArtifactError.
-                raise InvalidPublishCapacity(
-                    f"publish_capacity_bytes override {override} exceeds the per-artifact cap "
-                    f"{ceiling} bytes; the F-3 guard cannot protect a ceiling the "
-                    "projection can never publish. Lower the override or retire nodes instead."
-                )
-            self._publish_capacity_bytes = override
+        self._publish_capacity_bytes, self._artifact_cap_bytes = _resolve_publish_capacity(
+            store, publish_capacity_bytes
+        )
         # F-7: reader-triggered repairs are rate-limited so a sustained write
         # stream no longer forces one rebuild per read.
         self._repair_cooldown_seconds = float(repair_cooldown_seconds)
+        # ``None`` keeps the module budget live: tests and hosts may patch
+        # ``_PROJECTION_WAIT_SECONDS`` per call; an explicit override pins it.
+        self._projection_wait_override = (
+            None if projection_wait_seconds is None else _resolve_projection_wait(projection_wait_seconds)
+        )
         self._repair_lock = threading.Lock()
         self._repair_unavailable_until = 0.0
         self._snapshot_cache: dict[tuple[str, str], _Snapshot] = {}
@@ -496,9 +533,12 @@ class KnowledgeService:
         wait per reader thread — the first reader waits, the rest queue behind
         it and then find the snapshot.
         """
-        deadline = time.monotonic() + _PROJECTION_WAIT_SECONDS
+        wait = _current_projection_wait(self._projection_wait_override)
+        deadline = time.monotonic() + wait
         while time.monotonic() < deadline:
-            time.sleep(_PROJECTION_WAIT_POLL_SECONDS)
+            # Jitter the poll: dozens of readers waking on the same tick hammer
+            # the reader-writer lock even when they are only checking a pointer.
+            time.sleep(_PROJECTION_WAIT_POLL_SECONDS * (1.0 + random.random()))
             snapshot = self._try_snapshot(required_watermark)
             if snapshot is not None:
                 return snapshot
@@ -535,7 +575,7 @@ class KnowledgeService:
                 raise StaleProjectionUnavailable(
                     f"the active projection does not cover knowledge watermark {required_watermark}: "
                     f"another process is rebuilding it and did not publish within "
-                    f"{_PROJECTION_WAIT_SECONDS:g}s"
+                    f"{_current_projection_wait(self._projection_wait_override):g}s"
                 )
             raise StaleProjectionUnavailable(
                 f"the active projection does not cover knowledge watermark {required_watermark}"

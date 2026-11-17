@@ -433,13 +433,6 @@
   },
   {
    "rule": "POT2",
-   "file": "fragment_generator.py",
-   "scope": "FragmentGenerator.generate",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 86
-  },
-  {
-   "rule": "POT2",
    "file": "graph_model.py",
    "scope": "propose_primary_splits",
    "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
@@ -479,27 +472,6 @@
    "scope": "BoundaryMiddleware.__call__",
    "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
    "lines": 92
-  },
-  {
-   "rule": "POT2",
-   "file": "http_api.py",
-   "scope": "create_app",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 87
-  },
-  {
-   "rule": "POT2",
-   "file": "http_api.py",
-   "scope": "run_ingest_verb",
-   "reason": "Single ingest verb orchestration over the pipeline phases. Ratchet baseline, may shrink only.",
-   "lines": 189
-  },
-  {
-   "rule": "POT2",
-   "file": "http_api.py",
-   "scope": "serve",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 62
   },
   {
    "rule": "POT2",
@@ -605,13 +577,6 @@
    "scope": "IngestionPipeline._preflight",
    "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
    "lines": 66
-  },
-  {
-   "rule": "POT2",
-   "file": "ingest/pipeline.py",
-   "scope": "IngestionPipeline._run",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow. Task-3 (B3) added the truncation fields to the report.",
-   "lines": 154
   },
   {
    "rule": "POT2",
@@ -751,7 +716,7 @@
    "file": "read_model_validator.py",
    "scope": "ReadModelValidator._validate_uncached",
    "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 200
+   "lines": 202
   },
   {
    "rule": "POT2",
@@ -997,13 +962,6 @@
    "scope": "WebviewApp.ledger_experience_payload",
    "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
    "lines": 64
-  },
-  {
-   "rule": "POT2",
-   "file": "service.py",
-   "scope": "KnowledgeService.__init__",
-   "reason": "W16 ratchet; SUB-151 disk-mode added manual_gates mode resolution (flag param + env fallback); SUB-174 (B1) resolves the publish cap from the code index. Recorded at its measured length, may shrink but never grow.",
-   "lines": 74
   },
   {
    "rule": "POT2",

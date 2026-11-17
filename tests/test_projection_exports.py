@@ -142,7 +142,12 @@ def test_without_registry_generation_is_unchanged(tmp_path: Path) -> None:
     manifest = json.loads((generation / "manifest.json").read_text(encoding="utf-8"))
     assert "export_artifacts" not in manifest
     assert "export_registry_fingerprint" not in manifest
-    assert sorted(path.name for path in generation.iterdir()) == sorted(ARTIFACT_NAMES)
+    # ``validation-verdict.json`` is a validation sidecar, not a published
+    # artifact: the projector writes it beside the artifacts so a later CLI
+    # process can reuse the passing verdict (SUB-178). It must not appear in
+    # the manifest's artifact list, but it does live in the generation dir.
+    written = sorted(path.name for path in generation.iterdir())
+    assert written == sorted([*ARTIFACT_NAMES, "validation-verdict.json"])
     store.close()
 
 

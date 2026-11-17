@@ -376,3 +376,109 @@ def test_cli_unknown_action_rejected_by_argparse(rich_store: Path, capsys: pytes
     with pytest.raises(SystemExit) as excinfo:
         main(["--store", str(rich_store), "codeintel", "frobnicate", "x"])
     assert excinfo.value.code == 2
+
+
+# ------------------------------------------------------- aggregate memo (SUB-188S)
+#
+# RED/GREEN: these pin the cross-instance memo for node_count/edge_count/
+# dropped_edges and the non-ASCII name set. On the L3 store the edge-count
+# aggregation is ~500 ms (full edge stream: filter + group + endpoint
+# validity); a one-shot CLI query pays it through the payload's
+# node_count/edge_count fields. The memo serves later instances of the SAME
+# snapshot from process memory — zero SQL — and must never serve a stale
+# snapshot: the fingerprint is read inside the instance's own read
+# transaction, so a write landing between instances moves it.
+from know_your_context.analytics.code_intel_sql import _EDGE_COUNT_SQL  # noqa: E402
+
+
+def _fresh_graph(store_path: Path):
+    store = EventStore(store_path)
+    try:
+        stats: dict[str, int] = {"node_rows": 0, "edge_rows": 0, "queries": 0}
+        graph = open_sql_code_graph(store, stats=stats)
+        assert graph is not None
+        return graph, stats
+    finally:
+        store.close()
+
+
+def _memo_snapshot(store_path: Path):
+    """node_count/edge_count/dropped_edges via a memo-warm instance, plus its stats."""
+    graph, stats = _fresh_graph(store_path)
+    values = (graph.node_count, graph.edge_count, graph.dropped_edges)
+    graph.close()
+    return values, stats
+
+
+def test_aggregate_counts_memoized_across_instances(rich_store: Path) -> None:
+    """Same store, second instance: counts come from the memo, zero SQL."""
+    memory_graph, sql_graph, _ = _graphs(rich_store)
+    try:
+        expected = (sql_graph.node_count, sql_graph.edge_count, sql_graph.dropped_edges)
+        assert expected == (len(memory_graph.nodes), len(memory_graph.edges), memory_graph.dropped_edges)
+    finally:
+        sql_graph.close()
+    (second, _, second_dropped), stats = _memo_snapshot(rich_store)
+    assert (second, second_dropped) == (expected[0], expected[2])
+    assert stats["queries"] == 0, "memo-warm instance must not run SQL for the aggregates"
+
+
+def test_memo_invalidated_by_store_writes(rich_store: Path) -> None:
+    """A write between instances moves the fingerprint: the next instance recomputes."""
+    before, _ = _memo_snapshot(rich_store)
+    store = EventStore(rich_store)
+    try:
+        # A NEW symbol row (count moves) — but a name-content-only update
+        # would move only the watch seq; cover both write classes.
+        store.upsert_symbol(node_id="n:late", name="late", kind="function", path="z.py", line=1, col=0)
+        store.add_graph_edge("n:late", "n:a", "calls", line=1)
+        store.upsert_symbol(node_id="n:a", name="alpha-renamed", kind="function", path="core/f.py", line=1, col=0)
+        after, stats = _memo_snapshot(rich_store)
+    finally:
+        store.close()
+    assert after != before[:2], "new symbol/edge rows must change node_count/edge_count"
+    assert stats["queries"] > 0, "a moved fingerprint must force recomputation"
+    # The name-content update is visible through the fresh instance too.
+    graph, _ = _fresh_graph(rich_store)
+    try:
+        assert graph.node("n:a").name == "alpha-renamed"  # type: ignore[union-attr]
+    finally:
+        graph.close()
+
+
+def test_memo_does_not_bleed_between_stores(tmp_path: Path) -> None:
+    """Two stores with the same file name in different dirs get different counts."""
+    first = _seed_rich_store(tmp_path / "a" / "store.sqlite3")
+    second = _seed_rich_store(tmp_path / "b" / "store.sqlite3")
+    store = EventStore(second)
+    try:
+        store.upsert_symbol(node_id="n:extra", name="extra", kind="function", path="z.py", line=1, col=0)
+    finally:
+        store.close()
+    (a1, _, _), _ = _memo_snapshot(first)
+    (b1, _, _), _ = _memo_snapshot(second)
+    assert b1 == a1 + 1
+
+
+def test_edge_count_plan_probes_symbols_pk(rich_store: Path) -> None:
+    """The edge-count statement must seek the symbols PK, never scan symbols.
+
+    Pins the rewrite: endpoint validity is enforced by point probes of the
+    ``symbols`` PRIMARY KEY (a covering ``SEARCH ... node_id=?`` per side)
+    — a ``SCAN`` of ``symbols`` would make the aggregation scale with the
+    symbol table, not the answer.
+    """
+    store = EventStore(rich_store)
+    try:
+        graph = open_sql_code_graph(store)
+        assert graph is not None
+        try:
+            conn = graph._conn
+            plan = [str(row[3]) for row in conn.execute("EXPLAIN QUERY PLAN " + _EDGE_COUNT_SQL).fetchall()]
+        finally:
+            graph.close()
+    finally:
+        store.close()
+    assert any("SCAN e USING INDEX idx_graph_edges_identity" in line for line in plan)
+    assert sum("SEARCH" in line and "sqlite_autoindex_symbols_1" in line for line in plan) >= 2
+    assert not any("SCAN" in line and "symbols" in line for line in plan), plan

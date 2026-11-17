@@ -35,14 +35,32 @@ Parity contract (pinned byte-for-byte by ``tests/test_codeintel_sql_graph.py``):
 * counts: ``node_count``/``edge_count``/``dropped_edges`` are computed with
   the builder's validity and dedupe rules, so the ``node_count``/
   ``edge_count`` fields in op payloads are identical to the in-memory path.
+  Aggregate values (counts and the non-ASCII name set) are pure content
+  functions, so they are memoized across instances *per snapshot*: the key
+  is an exact content fingerprint read inside the instance's own read
+  transaction (symbol count, edge count, ``MAX(edge_id)``, the v6
+  ``symbols_watch`` sequence — which moves on ANY symbols write — plus
+  db/wal stat tokens), so a write landing between instances moves the key
+  and forces recomputation, while N instances of one immutable snapshot pay
+  the full edge-stream aggregation once. Measured why (SUB-188S, L3 store,
+  59 911 symbols / 125 599 edges): the aggregation is ~500 ms of a ~1 s
+  ``callers-of``; every op payload carries the counts, so a one-shot CLI
+  query paid it every time. The edge-count statement itself is shaped so
+  endpoint validity runs as ``EXISTS`` point probes of the ``symbols``
+  PRIMARY KEY per candidate group, never as a ``SCAN`` of the symbol table.
 
 One instance = one snapshot: the connection holds a single read transaction
-(WAL), so a writer landing mid-op cannot change what an op sees.
+(WAL), so a writer landing mid-op cannot change what an op sees. The memo
+serves exactly that snapshot to later instances — never a newer or older
+one (a replaced/in-place store file with identical cardinalities AND the
+same watch sequence is not detected; the store is append-only by design).
 """
 
 from __future__ import annotations
 
+import os
 import sqlite3
+import threading
 from pathlib import Path
 from typing import Literal
 from urllib.parse import quote
@@ -64,11 +82,13 @@ _NODE_COUNT_SQL = "SELECT COUNT(*) FROM symbols WHERE node_id <> ''"
 _NONASCII_SQL = "SELECT node_id, name, kind, path, line, col FROM symbols WHERE name GLOB '*[^ -~]*' AND node_id <> ''"
 _EDGE_COUNT_SQL = (
     "SELECT COUNT(*) FROM ("
-    "SELECT e.source, e.target, e.kind, IFNULL(e.line, 0) AS ln FROM graph_edges e "
-    "JOIN symbols s ON s.node_id = e.source AND s.node_id <> '' "
-    "JOIN symbols t ON t.node_id = e.target AND t.node_id <> '' "
-    "WHERE e.source <> '' AND e.target <> '' AND e.kind <> '' AND e.source <> e.target "
-    "GROUP BY e.source, e.target, e.kind, ln)"
+    "SELECT DISTINCT e.source, e.target, e.kind, IFNULL(e.line, 0)"
+    " FROM graph_edges e"
+    " JOIN symbols s ON s.node_id = e.source"
+    " JOIN symbols t ON t.node_id = e.target"
+    " WHERE e.source <> '' AND e.target <> '' AND e.kind <> ''"
+    "   AND e.source <> e.target"
+    ")"
 )
 _RAW_EDGE_ROWS_SQL = "SELECT COUNT(*) FROM graph_edges"
 _NEIGHBOURS_SQL = (
@@ -88,6 +108,26 @@ _NEIGHBOURS_MANY_SQL = (
 
 #: Bound for one ``IN (...)`` chunk (SQLite's variable limit is >= 999).
 _CHUNK = 500
+
+# ------------------------------------------------------------ aggregate memo
+#: Content fingerprint of one snapshot -> lazily computed aggregates, shared
+#: across :class:`SqlCodeGraph` instances of the SAME snapshot (docstring).
+#: ``raw_edges`` is derivable from the fingerprint itself (COUNT(*) of
+#: ``graph_edges`` is part of the key), so it is stored but never computed
+#: twice. ``nonascii`` is only memoized when the store carries the v6
+#: ``symbols_watch`` counter — without it, name-content changes between
+#: instances could not be detected, so the per-instance scan stays.
+_STORE_MEMO: dict[tuple[object, ...], dict[str, object]] = {}
+_MEMO_LOCK = threading.Lock()
+_MEMO_MAX_ENTRIES = 64
+_FINGERPRINT_SQL = (
+    "SELECT "
+    "(SELECT COUNT(*) FROM symbols WHERE node_id <> ''), "
+    "(SELECT COUNT(*) FROM graph_edges), "
+    "(SELECT COALESCE(MAX(edge_id), 0) FROM graph_edges), "
+    "EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'symbols_watch')"
+)
+_WATCH_SEQ_SQL = "SELECT seq FROM symbols_watch WHERE id = 1"
 
 
 def _node_from_row(row: tuple[object, ...]) -> CodeNode:
@@ -134,10 +174,67 @@ class SqlCodeGraph:
             self._stats["queries"] = self._stats.get("queries", 0) + 1
         return rows
 
+    def _memo_entry(self) -> tuple[dict[str, object], int, int, bool]:
+        """The shared memo entry for this instance's snapshot, plus the
+        fingerprint's symbol count and raw edge count (both reused as
+        answers), and whether the v6 ``symbols_watch`` counter exists.
+
+        The fingerprint queries are this instance's FIRST reads, so they pin
+        the read snapshot; every aggregate served from the memo was computed
+        in a transaction that saw the identical snapshot.
+        """
+        conn = self._conn
+        row = conn.execute(_FINGERPRINT_SQL).fetchone()
+        watch_seq: int | None = None
+        has_watch = bool(row[3])
+        if has_watch:
+            watch = conn.execute(_WATCH_SEQ_SQL).fetchone()
+            watch_seq = int(watch[0]) if watch is not None else None
+        db_path = str(conn.execute("PRAGMA database_list").fetchone()[2])
+        db_stat = os.stat(db_path)
+        wal_path = db_path + "-wal"
+        try:
+            wal_stat = os.stat(wal_path)
+        except OSError:
+            wal_stat = None
+        key: tuple[object, ...] = (
+            db_path,
+            int(row[0]),
+            int(row[1]),
+            int(row[2]),
+            watch_seq,
+            db_stat.st_size,
+            db_stat.st_mtime_ns,
+            wal_stat.st_size if wal_stat is not None else 0,
+            wal_stat.st_mtime_ns if wal_stat is not None else 0,
+        )
+        with _MEMO_LOCK:
+            entry = _STORE_MEMO.get(key)
+            if entry is None:
+                if len(_STORE_MEMO) >= _MEMO_MAX_ENTRIES:
+                    _STORE_MEMO.clear()
+                entry = {"node_count": None, "edge_count": None, "raw_edges": None, "nonascii": None}
+                _STORE_MEMO[key] = entry  # type: ignore[arg-type]
+        return entry, int(row[0]), int(row[1]), has_watch  # type: ignore[return-value]
+
     def _count(self, key: str, sql: str) -> int:
-        if sql not in self._counts:
-            self._counts[sql] = int(self._rows(sql, (), "node_rows")[0][0])  # type: ignore[arg-type]
-        return self._counts[sql]
+        if key in self._counts:
+            return self._counts[key]
+        entry, fingerprint_syms, fingerprint_edges, _has_watch = self._memo_entry()
+        with _MEMO_LOCK:
+            edge_count = entry["edge_count"]
+        if edge_count is None:
+            # Cold: fingerprint reads already carried the symbol count and the
+            # raw edge count; only the valid-edge aggregation is expensive.
+            edge_count = int(self._rows(_EDGE_COUNT_SQL, (), "node_rows")[0][0])  # type: ignore[arg-type]
+            with _MEMO_LOCK:
+                if entry["edge_count"] is None:
+                    entry["node_count"] = fingerprint_syms
+                    entry["edge_count"] = edge_count
+                    entry["raw_edges"] = fingerprint_edges
+        value = {"nodes": fingerprint_syms, "edges": edge_count, "raw_edges": fingerprint_edges}[key]
+        self._counts[key] = value
+        return value
 
     # ------------------------------------------------------------ CodeGraph surface
 
@@ -200,8 +297,21 @@ class SqlCodeGraph:
         (measured: a handful in a 163k-row real corpus), not to the store.
         """
         if self._nonascii is None:
-            rows = self._rows(_NONASCII_SQL, (), "node_rows")
-            self._nonascii = tuple(_node_from_row(row) for row in rows)
+            entry, _syms, _edges, has_watch = self._memo_entry()
+            cached: object = None
+            if has_watch:
+                with _MEMO_LOCK:
+                    cached = entry["nonascii"]
+            if cached is None:
+                rows = self._rows(_NONASCII_SQL, (), "node_rows")
+                self._nonascii = tuple(_node_from_row(row) for row in rows)
+                if has_watch:
+                    with _MEMO_LOCK:
+                        if entry["nonascii"] is None:
+                            entry["nonascii"] = self._nonascii
+            else:
+                self._nonascii = cached  # type: ignore[assignment]
+        assert self._nonascii is not None
         return self._nonascii
 
     def named(self, name: str) -> tuple[CodeNode, ...]:

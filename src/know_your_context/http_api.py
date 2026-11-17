@@ -43,18 +43,21 @@ import asyncio
 import errno
 import hashlib
 import hmac
+import importlib
 import json
 import logging
 import os
 import platform
 import socket
 import stat
+import sys
 import threading
 import time
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
-from contextlib import asynccontextmanager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from dataclasses import asdict, dataclass, is_dataclass
 from datetime import UTC, datetime
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
@@ -102,20 +105,6 @@ from know_your_context.source_registry import SourceKind
 from know_your_context.source_watcher import SourceChange, SourceWatcher
 from know_your_context.store import EventStore, StoreError
 from know_your_context.update_pipeline import SourceWatchLoop, UpdatePipelineError
-
-# Module-level bindings kept for the test/monkeypatch seam (SUB-179): handlers
-# below still import lazily for the CLI fast path, but the module attribute must
-# exist so a patch on ``http_api.backup_store`` / ``http_api.uvicorn`` is seen.
-try:  # pragma: no cover - import-only
-    from know_your_context.backup import backup_store, restore_store  # noqa: F401
-except Exception:  # pragma: no cover - backup is a core module; guard is defensive
-    backup_store = None  # type: ignore[assignment]
-    restore_store = None  # type: ignore[assignment]
-
-try:  # pragma: no cover - serve-only dependency
-    import uvicorn  # noqa: F401
-except Exception:  # pragma: no cover - serve extra missing
-    uvicorn = None  # type: ignore[assignment]
 
 if TYPE_CHECKING:
     # Annotation-only names. At runtime these import inside the functions
@@ -510,9 +499,7 @@ def _recheck_ops_path(stack: LocalStack, candidate: str, pre_op: Path) -> None:
 
 def _call_backup(stack: LocalStack, request: _BackupPayload, actor: str, idem: str | None) -> Any:
     dest = _resolve_ops_path(stack, request.dest_path)
-    if backup_store is None:  # pragma: no cover - import guard
-        raise KnowledgeError("backup module unavailable")
-    receipt = backup_store(stack.store, dest)
+    receipt = _lazy_attr("backup_store")(stack.store, dest)
     _recheck_ops_path(stack, request.dest_path, dest)
     return receipt
 
@@ -520,9 +507,7 @@ def _call_backup(stack: LocalStack, request: _BackupPayload, actor: str, idem: s
 def _call_restore(stack: LocalStack, request: _RestorePayload, actor: str, idem: str | None) -> Any:
     backup_path = _resolve_ops_path(stack, request.backup_path)
     dest = _resolve_ops_path(stack, request.dest_path)
-    if restore_store is None:  # pragma: no cover - import guard
-        raise KnowledgeError("backup module unavailable")
-    receipt = restore_store(backup_path, dest, overwrite=request.overwrite)
+    receipt = _lazy_attr("restore_store")(backup_path, dest, overwrite=request.overwrite)
     _recheck_ops_path(stack, request.backup_path, backup_path)
     _recheck_ops_path(stack, request.dest_path, dest)
     return receipt
@@ -706,16 +691,38 @@ def run_ingest_verb(
     started = time.monotonic()
     # The pipeline is a write-verb dependency: a read-only ``query`` process
     # must never pay its import (SUB-178 lazy-import fix), so it lands here.
-    from know_your_context.ingest.pipeline import (
-        IngestionBudget,
-        IngestionPipeline,
-        PathNotFoundError,
-        PathNotReadableError,
-        PathOutsideRootError,
-    )
+    from know_your_context.ingest.pipeline import IngestionBudget, IngestionPipeline
 
     if verb not in INGEST_VERBS:
         raise ValueError(f"unknown ingestion verb {verb!r}")  # adapter-internal misuse, never wired
+    path, token_budget, recursive, max_files = _ingest_verb_options(
+        verb, arguments, max_token_budget=max_token_budget, audit=audit, actor=actor, started=started
+    )
+    resolved = _resolve_ingest_path(verb, path, arguments, ingestion_root, audit=audit, actor=actor, started=started)
+    pipeline = IngestionPipeline(store, budget=IngestionBudget(max_files=max_files), actor=actor)
+    report = pipeline.ingest_path(resolved, incremental=True, recursive=recursive, resolve=True)
+    payload = _reanchor_ingest_envelope(report.to_dict(), resolved, ingestion_root)
+    if verb == "ingest_file":
+        # The file proposal is atomic: it never truncates (contract v3).
+        if estimated_tokens_of_payload(payload) > token_budget:
+            raise MetadataExceedsBudget(
+                f"the ingest_file proposal exceeds the {token_budget}-token budget",
+                audit_event_id=report.audit_event_id,
+            )
+        return payload
+    return _truncate_ingest_directory_payload(payload, token_budget)
+
+
+def _ingest_verb_options(
+    verb: str,
+    arguments: Mapping[str, Any],
+    *,
+    max_token_budget: int,
+    audit: AuditLog,
+    actor: str,
+    started: float,
+) -> tuple[str, int, bool, int]:
+    """Decode and validate one ingest verb's payload; rejections journal once."""
     if not isinstance(arguments, Mapping):
         _ingest_reject(
             AdapterValidationError("payload must be a JSON object"),
@@ -745,6 +752,23 @@ def run_ingest_verb(
             actor=actor,
             started=started,
         )
+    token_budget = _ingest_token_budget(
+        arguments, max_token_budget, verb=verb, audit=audit, actor=actor, started=started
+    )
+    recursive, max_files = _ingest_directory_options(verb, arguments, audit=audit, actor=actor, started=started)
+    return path, token_budget, recursive, max_files
+
+
+def _ingest_token_budget(
+    arguments: Mapping[str, Any],
+    max_token_budget: int,
+    *,
+    verb: str,
+    audit: AuditLog,
+    actor: str,
+    started: float,
+) -> int:
+    """The frozen token-budget semantics (contract v3, shared guarantees)."""
     token_budget = arguments.get("token_budget", 1024)
     if isinstance(token_budget, bool) or not isinstance(token_budget, int):
         _ingest_reject(
@@ -755,7 +779,6 @@ def run_ingest_verb(
             actor=actor,
             started=started,
         )
-    # The frozen token-budget semantics (contract v3, shared guarantees).
     if token_budget < MINIMUM_TOKEN_BUDGET:
         _ingest_reject(
             BudgetTooSmall(f"token_budget {token_budget} is below the {MINIMUM_TOKEN_BUDGET}-token minimum"),
@@ -774,6 +797,18 @@ def run_ingest_verb(
             actor=actor,
             started=started,
         )
+    return token_budget
+
+
+def _ingest_directory_options(
+    verb: str,
+    arguments: Mapping[str, Any],
+    *,
+    audit: AuditLog,
+    actor: str,
+    started: float,
+) -> tuple[bool, int]:
+    """``ingest_directory`` extras; file verbs keep their fixed defaults."""
     recursive = True
     max_files = 1024
     if verb == "ingest_directory":
@@ -797,8 +832,24 @@ def run_ingest_verb(
                 actor=actor,
                 started=started,
             )
+    return recursive, max_files
+
+
+def _resolve_ingest_path(
+    verb: str,
+    path: str,
+    arguments: Mapping[str, Any],
+    ingestion_root: str | Path,
+    *,
+    audit: AuditLog,
+    actor: str,
+    started: float,
+) -> Path:
+    """Resolve the input against the startup-fixed root; escape/missing/unreadable are typed."""
     # Path discipline (contract v3): resolve against the startup-fixed
     # ingestion root; escapes, missing paths and unreadable paths are typed.
+    from know_your_context.ingest.pipeline import PathNotReadableError, PathOutsideRootError
+
     try:
         resolved = resolve_within_root(ingestion_root, path)
     except PathEscapeError:
@@ -810,6 +861,32 @@ def run_ingest_verb(
             actor=actor,
             started=started,
         )
+    _assert_ingest_path_shape(verb, path, resolved, arguments, audit=audit, actor=actor, started=started)
+    if not os.access(resolved, os.R_OK):
+        _reject_ingest_pipeline_style(
+            PathNotReadableError(f"input path {path!r} is not readable"),
+            audit=audit,
+            verb=verb,
+            arguments=arguments,
+            actor=actor,
+            started=started,
+        )
+    return resolved
+
+
+def _assert_ingest_path_shape(
+    verb: str,
+    path: str,
+    resolved: Path,
+    arguments: Mapping[str, Any],
+    *,
+    audit: AuditLog,
+    actor: str,
+    started: float,
+) -> None:
+    """The typed existence and file/directory-kind checks on the resolved path."""
+    from know_your_context.ingest.pipeline import PathNotFoundError
+
     if not resolved.exists():
         _reject_ingest_pipeline_style(
             PathNotFoundError(f"input path {path!r} does not exist"),
@@ -837,41 +914,34 @@ def run_ingest_verb(
             actor=actor,
             started=started,
         )
-    if not os.access(resolved, os.R_OK):
-        _reject_ingest_pipeline_style(
-            PathNotReadableError(f"input path {path!r} is not readable"),
-            audit=audit,
-            verb=verb,
-            arguments=arguments,
-            actor=actor,
-            started=started,
-        )
-    pipeline = IngestionPipeline(store, budget=IngestionBudget(max_files=max_files), actor=actor)
-    report = pipeline.ingest_path(resolved, incremental=True, recursive=recursive, resolve=True)
-    payload = report.to_dict()
-    # The contract's ``input.path`` is relative to the startup-fixed ingestion
-    # root; the pipeline reports against its own derived root (the parent of
-    # a file input). Re-anchor the envelope — never the per-file entries,
-    # which the contract defines relative to the walked directory.
+
+
+def _reanchor_ingest_envelope(payload: dict[str, Any], resolved: Path, ingestion_root: str | Path) -> dict[str, Any]:
+    """Re-anchor the envelope to the startup-fixed root; never the per-file entries.
+
+    The contract's ``input.path`` is relative to the startup-fixed ingestion
+    root; the pipeline reports against its own derived root (the parent of
+    a file input). Re-anchor the envelope — never the per-file entries,
+    which the contract defines relative to the walked directory.
+    """
     root_path = Path(ingestion_root).resolve()
     payload["root"] = str(root_path)
     payload["input"] = {**payload["input"], "path": resolved.relative_to(root_path).as_posix()}
-    if verb == "ingest_file":
-        # The file proposal is atomic: it never truncates (contract v3).
-        if estimated_tokens_of_payload(payload) > token_budget:
-            raise MetadataExceedsBudget(
-                f"the ingest_file proposal exceeds the {token_budget}-token budget",
-                audit_event_id=report.audit_event_id,
-            )
-        return payload
-    # The directory payload truncates the ``files`` list tail-first under
-    # budget pressure; the envelope (input/stats/guards_hit) never truncates.
-    # The ``truncated`` flag is part of the returned payload, so the budget
-    # check must measure with the flag's space reserved (``false`` is one
-    # byte longer than ``true`` — conservative): adding the key only after
-    # the loop converged let the final payload overshoot the budget by the
-    # flag's own ~19 bytes (surfaced on macOS CI, where tmp roots are longer
-    # and the numbers land exactly on the boundary).
+    return payload
+
+
+def _truncate_ingest_directory_payload(payload: dict[str, Any], token_budget: int) -> dict[str, Any]:
+    """Truncate the ``files`` list tail-first under budget pressure; envelope never truncates.
+
+    The directory payload truncates the ``files`` list tail-first under
+    budget pressure; the envelope (input/stats/guards_hit) never truncates.
+    The ``truncated`` flag is part of the returned payload, so the budget
+    check must measure with the flag's space reserved (``false`` is one
+    byte longer than ``true`` — conservative): adding the key only after
+    the loop converged let the final payload overshoot the budget by the
+    flag's own ~19 bytes (surfaced on macOS CI, where tmp roots are longer
+    and the numbers land exactly on the boundary).
+    """
     files = list(payload["files"])
     truncated = False
     probed = {**payload, "truncated": False}
@@ -1562,12 +1632,10 @@ def create_app(
     at shutdown; a detected corpus change publishes the gated relearn offer
     (``RELEARN_PENDING``) with no auto-apply — see :func:`_build_watch_loop`.
     """
-    watch_loop: SourceWatchLoop | None = None
     # Serve-only dependencies (SUB-178): local verbs must never import them.
     from starlette.applications import Starlette
-    from starlette.concurrency import run_in_threadpool
-    from starlette.routing import Route
 
+    watch_loop: SourceWatchLoop | None = None
     if watch_root is not None:
         watch_loop = _build_watch_loop(
             stack,
@@ -1576,6 +1644,24 @@ def create_app(
             cooldown_seconds=watch_cooldown_seconds,
             state_path=watch_state_path,
         )
+    app = Starlette(
+        routes=_app_routes(stack, max_body_bytes),
+        lifespan=_watch_lifespan(watch_loop) if watch_loop is not None else None,
+    )
+    return _wrap_boundary_middleware(
+        app,
+        stack=stack,
+        api_key=api_key,
+        host_allowlist=host_allowlist,
+        max_body_bytes=max_body_bytes,
+        body_timeout_seconds=body_timeout_seconds,
+    )
+
+
+def _watch_lifespan(
+    watch_loop: SourceWatchLoop | None,
+) -> Callable[[Starlette], AbstractAsyncContextManager[None]]:
+    """The lifespan callable: start/stop the doc-change watcher around the app."""
 
     @asynccontextmanager
     async def _lifespan(app: Starlette) -> AsyncIterator[None]:
@@ -1587,45 +1673,49 @@ def create_app(
             if watch_loop is not None:
                 watch_loop.stop()
 
-    async def health(request: Request) -> Response:
-        report = await run_in_threadpool(_call_health, stack, _EmptyPayload(), "operator", None)
-        return _json_response(to_jsonable(report), status=200 if report.ok else 503)
+    return _lifespan
 
-    async def knowledge(request: Request) -> Response:
-        operation = request.path_params["operation"]
-        if operation not in KNOWLEDGE_OPERATIONS:
-            return _json_response(error_envelope(UnknownOperation(f"unknown operation {operation!r}")), status=404)
-        return await _handle(stack, operation, request, max_body_bytes)
 
-    async def ops(request: Request) -> Response:
-        operation = request.path_params["operation"]
-        if operation not in OPS_OPERATIONS:
-            return _json_response(error_envelope(UnknownOperation(f"unknown operation {operation!r}")), status=404)
-        return await _handle(stack, operation, request, max_body_bytes)
+def _app_routes(stack: LocalStack, max_body_bytes: int) -> list[Any]:
+    """The fixed versioned route table; handler partials close over the stack."""
+    from starlette.routing import Route
 
-    # Contract v3 ingestion verbs (addendum ingestion-contract-v3.md; audit
-    # F2): two fixed routes, the same boundary middleware and JSON/CSRF
-    # discipline as every other POST route.
-    async def ingest_file(request: Request) -> Response:
-        return await _handle_ingest(stack, "ingest_file", request, max_body_bytes)
-
-    async def ingest_directory(request: Request) -> Response:
-        return await _handle_ingest(stack, "ingest_directory", request, max_body_bytes)
-
-    # Contract v4 extraction verb (addendum extraction-contract-v4.md): one
-    # fixed route, the same boundary discipline as the v3 ingestion routes.
-    async def submit_extraction(request: Request) -> Response:
-        return await _handle_extraction(stack, "submit_extraction", request, max_body_bytes)
-
-    routes = [
-        Route("/v1/health", health, methods=["GET"]),
-        Route("/v1/knowledge/ingest/file", ingest_file, methods=["POST"]),
-        Route("/v1/knowledge/ingest/directory", ingest_directory, methods=["POST"]),
-        Route("/v1/knowledge/extraction", submit_extraction, methods=["POST"]),
-        Route("/v1/knowledge/{operation}", knowledge, methods=["POST"]),
-        Route("/v1/ops/{operation}", ops, methods=["POST"]),
+    return [
+        Route("/v1/health", partial(_health_route, stack), methods=["GET"]),
+        Route(
+            "/v1/knowledge/ingest/file",
+            partial(_handle_ingest, stack, "ingest_file", max_body_bytes=max_body_bytes),
+            methods=["POST"],
+        ),
+        Route(
+            "/v1/knowledge/ingest/directory",
+            partial(_handle_ingest, stack, "ingest_directory", max_body_bytes=max_body_bytes),
+            methods=["POST"],
+        ),
+        Route(
+            "/v1/knowledge/extraction",
+            partial(_handle_extraction, stack, "submit_extraction", max_body_bytes=max_body_bytes),
+            methods=["POST"],
+        ),
+        Route(
+            "/v1/knowledge/{operation}",
+            partial(_knowledge_route, stack, max_body_bytes=max_body_bytes),
+            methods=["POST"],
+        ),
+        Route("/v1/ops/{operation}", partial(_ops_route, stack, max_body_bytes=max_body_bytes), methods=["POST"]),
     ]
-    app = Starlette(routes=routes, lifespan=_lifespan if watch_loop is not None else None)
+
+
+def _wrap_boundary_middleware(
+    app: Any,
+    *,
+    stack: LocalStack,
+    api_key: str | None,
+    host_allowlist: Sequence[str],
+    max_body_bytes: int,
+    body_timeout_seconds: float,
+) -> Any:
+    """Wrap *app* in the boundary middleware with its denial recorder."""
     denial_recorder = BoundaryDenialRecorder(stack.store)
     return BoundaryMiddleware(
         app,
@@ -1635,6 +1725,27 @@ def create_app(
         body_timeout_seconds=body_timeout_seconds,
         denial_recorder=denial_recorder.record,
     )
+
+
+async def _health_route(stack: LocalStack, request: Request) -> Response:
+    from starlette.concurrency import run_in_threadpool
+
+    report = await run_in_threadpool(_call_health, stack, _EmptyPayload(), "operator", None)
+    return _json_response(to_jsonable(report), status=200 if report.ok else 503)
+
+
+async def _knowledge_route(stack: LocalStack, request: Request, max_body_bytes: int) -> Response:
+    operation = request.path_params["operation"]
+    if operation not in KNOWLEDGE_OPERATIONS:
+        return _json_response(error_envelope(UnknownOperation(f"unknown operation {operation!r}")), status=404)
+    return await _handle(stack, operation, request, max_body_bytes)
+
+
+async def _ops_route(stack: LocalStack, request: Request, max_body_bytes: int) -> Response:
+    operation = request.path_params["operation"]
+    if operation not in OPS_OPERATIONS:
+        return _json_response(error_envelope(UnknownOperation(f"unknown operation {operation!r}")), status=404)
+    return await _handle(stack, operation, request, max_body_bytes)
 
 
 async def _handle(stack: LocalStack, operation: str, request: Request, max_body_bytes: int) -> Response:
@@ -1891,25 +2002,80 @@ def serve(
         watch_state_path=watch_state_path,
     )
     listener: socket.socket | None = None
-    import uvicorn  # serve-only dependency: local verbs must never pay it
+    uvicorn = _lazy_attr("uvicorn")  # serve-only dependency: local verbs must never pay it
 
     if socket_path is not None:
         listener = _bind_unix_socket(socket_path)
-        config = uvicorn.Config(app, fd=listener.fileno(), timeout_keep_alive=timeout_keep_alive)
-    else:
-        host, _, port_text = str(http).rpartition(":")
-        config = uvicorn.Config(app, host=host, port=int(port_text), timeout_keep_alive=timeout_keep_alive)
+    config = _uvicorn_config(
+        uvicorn,
+        app,
+        listener=listener,
+        socket_path=socket_path,
+        http=http,
+        timeout_keep_alive=timeout_keep_alive,
+    )
     try:
         uvicorn.Server(config).run()
     finally:
-        if listener is not None and socket_path is not None:
-            listener.close()
-            # S-3: a clean shutdown removes the socket file so the next start
-            # never meets it; _bind_unix_socket covers the crash case anyway.
-            # If the path no longer names a stale socket (swapped, replaced
-            # by a live listener) the unlink refuses — cleanup never raises.
-            try:
-                _unlink_stale_socket(Path(socket_path))
-            except BindPolicyError:
-                logger.warning("leaving socket path %r in place: it no longer names our stale socket", socket_path)
+        _cleanup_serve_socket(listener, socket_path)
 
+
+def _uvicorn_config(
+    uvicorn: Any,
+    app: Any,
+    *,
+    listener: socket.socket | None,
+    socket_path: str | Path | None,
+    http: str | None,
+    timeout_keep_alive: int,
+) -> Any:
+    """The uvicorn Config for the bound listener, or the parsed loopback bind."""
+    if socket_path is not None:
+        assert listener is not None  # a socket bind always yields a listener
+        return uvicorn.Config(app, fd=listener.fileno(), timeout_keep_alive=timeout_keep_alive)
+    host, _, port_text = str(http).rpartition(":")
+    return uvicorn.Config(app, host=host, port=int(port_text), timeout_keep_alive=timeout_keep_alive)
+
+
+def _cleanup_serve_socket(listener: socket.socket | None, socket_path: str | Path | None) -> None:
+    """Close the bound listener and remove its socket file on clean shutdown."""
+    if listener is not None and socket_path is not None:
+        listener.close()
+        # S-3: a clean shutdown removes the socket file so the next start
+        # never meets it; _bind_unix_socket covers the crash case anyway.
+        # If the path no longer names a stale socket (swapped, replaced
+        # by a live listener) the unlink refuses — cleanup never raises.
+        try:
+            _unlink_stale_socket(Path(socket_path))
+        except BindPolicyError:
+            logger.warning("leaving socket path %r in place: it no longer names our stale socket", socket_path)
+
+
+_LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
+    "uvicorn": ("uvicorn", None),
+    "backup_store": ("know_your_context.backup", "backup_store"),
+    "restore_store": ("know_your_context.backup", "restore_store"),
+}
+
+
+def _lazy_attr(name: str) -> Any:
+    """Resolve a module attribute, honouring a monkeypatched override.
+
+    Handlers must not import serve-only/write-path modules at module scope (the
+    query verb would pay their cost), but a test that patches
+    ``http_api.backup_store`` still has to be seen. Reading the attribute off
+    the module object satisfies both: patched names hit the module dict, plain
+    reads fall through to ``__getattr__`` which imports once and caches.
+    """
+    return getattr(sys.modules[__name__], name)
+
+
+def __getattr__(name: str) -> Any:
+    target = _LAZY_IMPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    module_name, attr = target
+    module_value = importlib.import_module(module_name)
+    resolved = module_value if attr is None else getattr(module_value, attr)
+    globals()[name] = resolved
+    return resolved

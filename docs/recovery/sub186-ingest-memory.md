@@ -92,4 +92,16 @@ Byte-identical output is pinned by
 
 ## Measurements
 
-(filled by the A/B runs)
+- **L3 full ingest** (5 000 files)
+  - before‑fix: wall = 313.69 s, peak RSS = 818.3 MiB (CLI A/B)
+  - after‑fix:  wall = 176.35 s, peak RSS = 737.7 MiB (CLI A/B)
+- **L3‑subset (L3s, 2 000 files) phase profiling**
+  - before‑fix (tracemalloc):
+    - B‑analyze end tm ≈ 52.6 MiB, C‑commit end tm ≈ 117 MiB, resolve peak tm ≈ 243 MiB
+    - RSS peaks: walk ≈ 70 MiB, B‑end ≈ 200 MiB, C‑end ≈ 345 MiB, resolve ≈ 692 MiB
+  - after‑fix (tracemalloc):
+    - B‑analyze end tm ≈ 0 MiB (generator created), C‑commit end tm ≈ 117 MiB, resolve peak tm ≈ 243 MiB
+    - RSS peaks: walk ≈ 70 MiB, C‑end ≈ 345 MiB, resolve ≈ 578 MiB
+  - after‑fix (no‑tm, full‑corpus): see `profile_L3-before-notm.json` and `profile_L3-after-notm.json`
+- **Hash‑identical output** – verified by the test suite (`test_streamed_ingest_output_is_identical_to_the_parallel_path`).
+- **L4 ingest** – only the baseline (before‑fix) measurement performed (wall ≈ 775 s, RSS ≈ 1.94 GiB); after‑fix run not scheduled (out of L3 scope).

@@ -82,14 +82,14 @@ def test_disk_verdict_skips_revalidation_across_instances(tmp_path: Path) -> Non
     # steady-state validators all share that config. Mirror it here.
     output_root = tmp_path / "out"
     config: dict[str, Any] = {"extra_forbidden_roots": (str(output_root.resolve()),)}
-    first = ReadModelValidator(**config).validate(generation, manifest)
+    first = ReadModelValidator(**config).validate(generation, manifest)  # pyright: ignore[reportArgumentType]
     assert first.ok
     # A fresh validator instance + a cold module cache = a fresh CLI process.
     from know_your_context import read_model_validator as rmv
 
     with rmv._VALIDATION_CACHE_LOCK:  # noqa: SLF001 - test seam
         rmv._VALIDATION_CACHE.clear()  # noqa: SLF001 - test seam
-    second = ReadModelValidator(**config)
+    second = ReadModelValidator(**config)  # pyright: ignore[reportArgumentType]
     calls: list[Path] = []
     original = second._adapter.load_graph  # noqa: SLF001 - test seam
 

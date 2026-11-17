@@ -1,7 +1,14 @@
 # Final Head-to-Head — pasca-fix (SUB-178)
 
-Status: **SELESAI SEBAGIAN** — tabel final L1–L2 lengkap; **KYC L3 & L4
+Status: **SELESAI SEBAGIAN** — tabel final L1–L3 lengkap; **KYC L4
 BELUM TERUKUR** di ledger kanonik (lihat §"Status ledger").
+
+> Pembaruan SUB-187S (2026-11-17, ~12:00 UTC): baris **KYC L3** akhirnya
+> masuk ledger kanonik `results_final.jsonl` lewat remeasure kedua (window
+> 10:49 UTC, lihat §"Sumber data & status ledger"). **KYC L4 tetap BELUM
+> TERUKUR** — dua percobaan remeasure (09:42 & 10:54 UTC) keduanya
+> `Terminated` ketika ingest L4 belum usai. Hanya `docs/research/` yang
+> diubah; TIDAK commit.
 
 Konteks: stress test 4 level × 3 produk (know-your-context vs graphify vs
 codegraph) pertama dijalankan SUB-172 (`docs/research/stress-3-products.md`,
@@ -71,13 +78,17 @@ head-to-head dengan harness **sama persis** (`harness2.py`).
 
 - **Pre-fix**: `scratch/stress3/results2.jsonl` (SUB-172) — 12 baris lengkap
   (4 level × 3 produk), HEAD pra-`7a59770`.
-- **Post-fix (kanonik)**: `scratch/stress3/results_final.jsonl` — **10 baris;
-  baris KYC L3 dan KYC L4 TIDAK ADA**. Artinya semua metrik KYC di L3/L4
-  **BELUM TERUKUR** secara kanonik. `results_final_prefix.jsonl` /
-  `results_final_window1.jsonl` (08:05 UTC) memang memuat baris KYC L3/L4
-  (keduanya error 100%, sigkill 100) tetapi baris itu tidak masuk ledger
-  kanonik; percobaan remeasure L3–L4 KYC (`run_l34_remeasure.log`, 09:35 UTC)
-  berhenti di `### L3 kyc ingest...` → `Terminated`, tanpa baris baru.
+- **Post-fix (kanonik)**: `scratch/stress3/results_final.jsonl` — **12 baris;
+  baris KYC L4 TIDAK ADA**. KYC L3 ada **dua baris remeasure** (append
+  `tail -1` menang): baris 11 (window 09:42 UTC, `run_l34_remeasure.log`):
+  err 100 %, sigkill 100, w2 0/50; baris 12 (window 10:49 UTC,
+  `run_l34_remeasure2.log`): err 91 %, sigkill 50, w2 9/50 — **ini baris
+  kanonik KYC L3** yang dipakai tabel L3. Percobaan remeasure L4 KYC
+  (`run_l34_remeasure.log` & `run_l34_remeasure2.log`) berhenti di
+  `### L4 kyc ingest...` → `Terminated` dua kali, tanpa baris baru.
+  `results_final_prefix.jsonl` / `results_final_window1.jsonl` (08:05 UTC)
+  memang memuat baris KYC L3/L4 (keduanya error 100 %, sigkill 100) tetapi
+  itu referensi tak-kanonik, bukan verdict.
 - **Harness identik**: `harness_final.py` vs `harness2.py` ber-diff hanya di
   satu baris path output (`results2.jsonl` → `results_final.jsonl`);
   verifikasi: `diff harness2.py harness_final.py` → 1 baris.
@@ -113,6 +124,14 @@ Reproduksi satu baris ledger (contoh KYC L1 final):
 ```bash
 grep '"level": "L1"' /root/.hermes/cache/scratch/stress3/results_final.jsonl \
   | grep '"product": "kyc"' | python3 -m json.tool
+```
+
+Reproduksi baris kanonik KYC L3 (append `tail -1` menang — baris remeasure
+terakhir, window 10:49 UTC):
+
+```bash
+grep '"level": "L3"' /root/.hermes/cache/scratch/stress3/results_final.jsonl \
+  | grep '"product": "kyc"' | tail -1 | python3 -m json.tool
 ```
 
 Reproduksi pengukuran ulang (append ke ledger kanonik; harness identik):
@@ -162,27 +181,36 @@ jadi defisitnya di konkurensi, bukan di jalur query.
 
 Skor L2: **2 MENANG / 9 SETARA / 0 KALAH**.
 
-### L3 — 5000 file, 50 agen, 100 query (post-fix)
+### L3 — 5000 file, 50 agen, 100 query (post-fix, kyc = remeasure baris kanonik)
 
-| metrik          | graphify | codegraph | kyc | verdict            |
-|-----------------|---------:|----------:|----:|--------------------|
-| ingest_wall_s   |   3235.7 |     191.3 |   – | **BELUM TERUKUR**  |
-| ingest_rss_mb   |      451 |       553 |   – | **BELUM TERUKUR**  |
-| artifact_mb     |    107.1 |     118.7 |   – | **BELUM TERUKUR**  |
-| q_p50_ms        |   124062 |    127640 |   – | **BELUM TERUKUR**  |
-| q_wall_s        |    251.3 |     257.3 |   – | **BELUM TERUKUR**  |
-| w1_hit          |     0/50 |      0/50 |   – | **BELUM TERUKUR**  |
-| w2_hit          |     0/50 |      0/50 |   – | **BELUM TERUKUR**  |
-| err_rate        |    100 % |     100 % |   – | **BELUM TERUKUR**  |
-| sigkill         |      100 |       100 |   – | **BELUM TERUKUR**  |
-| storm_rss_mb    |     2436 |      3962 |   – | **BELUM TERUKUR**  |
-| solo_w1_ms      |    27409 |      4310 |   – | **BELUM TERUKUR**  |
+| metrik          | graphify | codegraph | kyc    | verdict   |
+|-----------------|---------:|----------:|-------:|-----------|
+| ingest_wall_s   |   3235.7 |     191.3 |  127.3 | MENANG    |
+| ingest_rss_mb   |      451 |       553 |  828.2 | KALAH     |
+| artifact_mb     |    107.1 |     118.7 |   98.9 | MENANG    |
+| q_p50_ms        |   124062 |    127640 | 115620 | MENANG \* |
+| q_wall_s        |    251.3 |     257.3 |  232.6 | MENANG \* |
+| w1_hit          |     0/50 |      0/50 |   0/50 | SETARA    |
+| w2_hit          |     0/50 |      0/50 |   9/50 | MENANG    |
+| err_rate        |    100 % |     100 % |   91 % | MENANG    |
+| sigkill         |      100 |       100 |     50 | MENANG    |
+| storm_rss_mb    |     2436 |      3962 |   2720 | SETARA    |
+| solo_w1_ms      |    27409 |      4310 |   1821 | MENANG    |
 
-Catatan: kedua kompetitor kolaps total di storm L3 (error 100%, 100 sigkill,
-hit 0/50) — bukti batas host 2 vCPU/3,9 GB berlaku untuk semua produk.
-Referensi tak-kanonik (`results_final_prefix.jsonl`, 08:05 UTC): KYC L3
-ingest 180,2 s / 941 MB, error 100 %, sigkill 100 — belum sah sampai
-remeasure masuk `results_final.jsonl`.
+Skor L3: **8 MENANG / 2 SETARA / 1 KALAH** (2 MENANG ber-`*` di atas
+langit-langit timeout, lihat catatan).
+
+Catatan kejujuran (\*): semua produk **kolaps total** di storm L3 — hit
+0/50 (w1, kyc 0/50; w2 gf/cg 0/50 vs kyc 9/50), sigkill 50–100, latensi
+menempel di langit-langit timeout ~120 s (p95 124,4 s). Perbedaan
+`q_p50_ms`/`q_wall_s` antar produk berada **di dalam ceiling timeout** dan
+harus dibaca sebagai noise beban-host, bukan keunggulan nyata. Yang beda
+nyata pada run yang sama: kyc lebih sedikit sigkill (50 vs 100), err_rate
+lebih rendah (91 % vs 100 %), dan satu-satunya yang menjawab 9/50 W2; serta
+ingest_wall jauh lebih cepat (127 s vs 3236/191 s) sambil makan RSS ingest
+lebih tinggi (828 MB vs 451/553 — satu-satunya metrik KALAH). Solo probe
+kyc (1,8 s) jauh lebih baik dari graphify (27,4 s) dan lebih baik dari
+codegraph (4,3 s) — defisit hanya muncul saat 50 agen serentak.
 
 ### L4 — 5137 file / 2,12 jt LOC (korpus nyata), 50 agen, 100 query (post-fix)
 
@@ -203,8 +231,12 @@ remeasure masuk `results_final.jsonl`.
 Catatan: codegraph satu-satunya yang menjawab di storm L4 (65 % hit,
 35 % error); graphify kolaps 100 %. Referensi tak-kanonik (prefix 08:05
 UTC): KYC L4 ingest 610,0 s / 1947 MB, error 100 %, sigkill 100 — belum
-sah. Dua defisit header dokumen ini (simbol ambigu `parse_args` L4, store
-non-ASCII) **belum tervalidasi di level L3/L4** karena baris KYC belum ada.
+sah. **Dua percobaan remeasure KYC L4 (09:42 & 10:54 UTC) keduanya
+`Terminated` selama ingest** (lihat `run_l34_remeasure.log` &
+`run_l34_remeasure2.log`), jadi semua metrik KYC L4 **BELUM TERUKUR**.
+Defisit header dokumen ini (simbol ambigu `parse_args` L4, store
+non-ASCII) terkonfirmasi ada di L3 (kyc w1 0/50 + err/sigkill non-nol)
+tetapi belum tervalidasi di L4.
 
 ### Delta KYC pre-fix → post-fix (indikasi, beda jendela host)
 
@@ -216,20 +248,30 @@ non-ASCII) **belum tervalidasi di level L3/L4** karena baris KYC belum ada.
 | L2    | w2_hit   |                0/20  |                      20/20 |
 | L2    | err_rate |               1,7 %  |                        0 % |
 | L2    | ingest   |               57,1 s |                     42,8 s |
-| L3    | err_rate |                92 %  |           BELUM TERUKUR    |
-| L4    | err_rate |                87 %  |           BELUM TERUKUR    |
+| L3    | w2_hit   |                0/50  |                      9/50  |
+| L3    | err_rate |                92 %  |                      91 %  |
+| L3    | sigkill  |                  50 |                        50  |
+| L3    | ingest   |              801,8 s |                   127,3 s |
+| L3    | solo_w1  |             4.271 ms |                  1.821 ms |
+| L4    | err_rate |                87 %  |                  BELUM TERUKUR |
 
 Fix SUB-177 (code-index fallback untuk w2) terbukti menutup defisit hit-rate
-w2 di L1/L2 (0 → 100 %). Latensi storm absolut naik di semua produk pada
-jendela final (noise host); perbandingan lintas-ledger tidak sah.
+w2 di L1/L2 (0 → 100 %) dan memperbaiki L3 (0/50 → 9/50); ingest L3
+turun 6,3× (802 → 127 s, indikasi — jendela host berbeda). Latensi storm
+absolut naik di semua produk pada jendela final (noise host); perbandingan
+lintas-ledger tidak sah.
 
 ### Sisa pekerjaan (agar tabel hijau penuh)
 
-1. Jalankan ulang KYC L3 + L4 sampai barisnya masuk `results_final.jsonl`:
-   `python3 /root/.hermes/cache/scratch/stress3/harness_final.py L3,L4 kyc`
-   (ingest timeout default 5400 s; terakhir terminated sebelum ingest usai).
+1. Jalankan ulang KYC L4 sampai barisnya masuk `results_final.jsonl`:
+   `python3 /root/.hermes/cache/scratch/stress3/harness_final.py L4 kyc`
+   (ingest timeout default 5400 s; dua percobaan sebelumnya terminated
+   sebelum ingest usai).
 2. Setelah baris ada, regen verdict:
-   `python3 /root/.hermes/cache/scratch/stress3/compare_final.py`.
+   `python3 /root/.hermes/cache/scratch/stress3/compare_final.py` — label
+   mekanisnya `WIN`/`AVG+`/`KALAH`/`DNF`; peta ke aturan dokumen:
+   `WIN`→MENANG, `AVG+`→SETARA, `DNF`→BELUM TERUKUR (hit-rate dapat
+   `WIN` walau seri penuh — jaga konsistensi dengan aturan §atas).
 3. Khusus L4: validasi defisit (a) `callers-of parse_args` (ambigu) dan
    (b) store non-ASCII — keduanya punya fix di HEAD `803866e` tetapi belum
    punya angka stress pasca-fix.

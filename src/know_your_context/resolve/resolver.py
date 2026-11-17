@@ -12,20 +12,23 @@ c. **import_path** — module-based languages only: Python dotted/relative
    directory with the extension/index-name search order. Bare JS/TS
    specifiers fail as ``external_module``.
 d. **module_helper** — per-language candidate paths (W12).
-e. **exact_scoped** (SUB-181/SUB-185) — only for refs that would otherwise
-   fail with an ambiguity reason: 2+ symbols share ``target_name``, so pick
-   by lexical scope. *File scope* first — exactly one same-name definition
-   in the referring file is the bound definition (module-level shadowing).
-   *Import scope* second — exactly one same-name definition in a module the
-   referring file imports (its ``imports`` refs resolved with the tier-(c)
-   rules). Only ``symbols.kind <> 'import'`` rows count: the extractor's
+e. **exact_scoped** (SUB-181/SUB-185/SUB-185S) — only for refs that would
+   otherwise fail with an ambiguity reason: 2+ symbols share ``target_name``,
+   so pick by lexical scope. *File scope* first — exactly one same-name
+   definition in the referring file is the bound definition (module-level
+   shadowing). *Import scope* second — exactly one same-name definition in a
+   module the referring file imports (its ``imports`` refs resolved with the
+   tier-(c) rules). *Global scope* third (SUB-185S) — exactly one same-name
+   definition in the whole corpus: every other symbol named ``target_name``
+   is the extractor's ``import:`` bookkeeping, so a unique definition is not
+   a guess. Only ``symbols.kind <> 'import'`` rows count: the extractor's
    ``import:`` nodes are bookkeeping, not bindings (counting them minted
    19,632 edges to non-definitions on L4), and ``imports`` refs themselves
    are module bindings owned by tiers (c)/(d) — the scope tier skips them.
-   Still 2+ candidates after both scopes → the ref keeps failing with the
-   original ``ambiguous_exact:N`` reason. The tier runs *after* (a)–(d) so it
-   can only convert failures into edges, never retarget a ref that already
-   resolved.
+   Still 2+ candidates after all three scopes → the ref keeps failing with
+   the original ``ambiguous_exact:N`` reason. The tier runs *after* (a)–(d)
+   so it can only convert failures into edges, never retarget a ref that
+   already resolved.
 
 Ambiguity never guesses: a tier with 2+ candidates defers to the next tier
 (import-path can disambiguate via the module path, e.g. ``pkg.mod.func``);
@@ -247,10 +250,11 @@ class _PassCache:
     symbols_in_file: dict[tuple[str, str], tuple[str, SymbolRow | int | None]]
     #: SUB-181: scope tier memos — (name, sorted paths) → same-name lookup
     #: verdict, source path → the module paths it imports, source path → its
-    #: raw import target names.
+    #: raw import target names. SUB-185S: name → corpus-wide definition count.
     same_name_in_paths: dict[tuple[str, tuple[str, ...]], tuple[str, SymbolRow | int | None]]
     imported_paths: dict[str, frozenset[str]]
     import_targets: dict[str, tuple[str, ...]]
+    global_defs: dict[str, tuple[str, SymbolRow | int | None]]
 
     @classmethod
     def fresh(cls) -> _PassCache:
@@ -263,6 +267,7 @@ class _PassCache:
             same_name_in_paths={},
             imported_paths={},
             import_targets={},
+            global_defs={},
         )
 
 
@@ -588,9 +593,10 @@ class ReferenceResolver:
     def _resolve_scoped(
         self, store: EventStore, ref: UnresolvedRefRow, source_path: str, language: str, *, cache: _PassCache
     ) -> _Decision | None:
-        """File scope, then import scope; ``None`` keeps the ambiguity verdict.
+        """File scope, then import scope, then global scope; ``None`` keeps
+        the ambiguity verdict.
 
-        Both scopes ask one question — "is there exactly ONE same-name
+        Every scope asks one question — "is there exactly ONE same-name
         *definition* in this scope?" — with a count-first lookup, so a name
         with 300 definitions still materialises at most one candidate row
         (the B7 cost model). Two or more candidates in a scope is *not* a
@@ -614,6 +620,16 @@ class ReferenceResolver:
             if status == "hit":
                 assert isinstance(payload, SymbolRow)
                 return _hit("exact_scoped", payload.node_id)
+        # Global scope (SUB-185S): still ambiguous lexically, so count the
+        # *definitions* corpus-wide. Exactly one real definition is not a
+        # guess — every other symbol named ``target_name`` is the extractor's
+        # ``import:`` bookkeeping (which inflates ``ambiguous_exact:N``), so
+        # there is no second target to choose between. Two or more real
+        # definitions keep the original ambiguity verdict.
+        status, payload = self._same_name_global(store, ref.target_name, cache=cache)
+        if status == "hit":
+            assert isinstance(payload, SymbolRow)
+            return _hit("exact_scoped", payload.node_id)
         return None
 
     def _same_name_in_paths(
@@ -673,6 +689,38 @@ class ReferenceResolver:
         if total == 0 or first is None:
             return ("miss", None)
         return ("hit", first)
+
+    def _same_name_global(
+        self, store: EventStore, name: str, *, cache: _PassCache | None = None
+    ) -> tuple[str, SymbolRow | int | None]:
+        """Corpus-wide count of same-name *definitions* (SUB-185S tier (c)).
+
+        Same count-first discipline as the path-scoped lookup, with the same
+        ``kind <> 'import'`` predicate, over the whole ``symbols`` table. Both
+        queries hit ``idx_symbols_name``; the decisive row is fetched only
+        when the count is exactly one.
+        """
+        if cache is not None and name in cache.global_defs:
+            return cache.global_defs[name]
+        with store.read() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS n FROM symbols WHERE name = ? AND kind <> 'import'", (name,)
+            ).fetchone()
+            total = 0 if row is None else int(row["n"])
+            if total == 0:
+                result: tuple[str, SymbolRow | int | None] = ("miss", None)
+            elif total > 1:
+                result = ("ambiguous", total)
+            else:
+                hit = conn.execute(
+                    "SELECT * FROM symbols WHERE name = ? AND kind <> 'import' "
+                    "ORDER BY path, line, col, node_id LIMIT 1",
+                    (name,),
+                ).fetchone()
+                result = ("hit", _symbol_row(hit)) if hit is not None else ("miss", None)
+        if cache is not None:
+            cache.global_defs[name] = result
+        return result
 
     def _import_targets(self, store: EventStore, source_path: str, *, cache: _PassCache) -> tuple[str, ...]:
         """Module specifiers named by the referring file's ``imports`` refs.

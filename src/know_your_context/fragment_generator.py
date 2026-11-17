@@ -131,79 +131,12 @@ class FragmentGenerator:
         ``source_file`` is the corpus-relative path; it scopes every id the
         fragment emits and is what later per-file re-extraction replaces on.
         """
-        partial = len(content) > self._max_source_bytes
-        raw = content[: self._max_source_bytes] if partial else content
-        try:
-            text = raw.decode("utf-8")
-        except UnicodeDecodeError as error:
-            raise FragmentError(f"{source_file!r} is not UTF-8: {error}") from error
-        text = unicodedata.normalize("NFC", text.replace("\r\n", "\n").replace("\r", "\n"))
-
+        partial, text = _normalize_source(content, self._max_source_bytes, source_file)
         file_id = file_scoped_id(source_file)
-        headings: list[tuple[int, str]] = [
-            (len(match.group(1)), match.group(2)) for line in text.split("\n") if (match := _HEADING_RE.match(line))
-        ]
-        title = headings[0][1] if headings and headings[0][0] == 1 else None
-        sections = headings[1:] if title is not None else headings
-
-        file_node: dict[str, Any] = {
-            "id": file_id,
-            "label": title or PurePosixPath(source_file).stem,
-            "file_type": "document",
-            "source_file": source_file,
-            "heading_level": 0,
-        }
-        nodes: list[dict[str, Any]] = [file_node]
-        edges: list[dict[str, Any]] = []
-
-        stack: list[tuple[int, str]] = []
-        used: dict[str, int] = {}
-        from graphify.ids import make_id  # deferred: heading-walk path only
-
-        for level, heading in sections:
-            base = slugify(heading)
-            occurrence = used.get(base, 0) + 1
-            used[base] = occurrence
-            section_id = make_id(file_id, base if occurrence == 1 else f"{base}_{occurrence}")
-            while stack and stack[-1][0] >= level:
-                stack.pop()
-            parent_id = stack[-1][1] if stack else file_id
-            stack.append((level, section_id))
-            nodes.append(
-                {
-                    "id": section_id,
-                    "label": heading,
-                    "file_type": "document",
-                    "source_file": source_file,
-                    "heading_level": level,
-                }
-            )
-            edges.append(
-                {
-                    "source": parent_id,
-                    "target": section_id,
-                    "relation": "contains",
-                    "confidence": "EXTRACTED",
-                    "source_file": source_file,
-                }
-            )
-
-        seen_links: set[str] = set()
-        for match in _WIKILINK_RE.finditer(text):
-            target_text = match.group(1).strip()
-            if not target_text or target_text in seen_links:
-                continue
-            seen_links.add(target_text)
-            target_path = target_text if PurePosixPath(target_text).suffix else f"{target_text}.md"
-            edges.append(
-                {
-                    "source": file_id,
-                    "target": file_scoped_id(target_path),
-                    "relation": "references",
-                    "confidence": "EXTRACTED",
-                    "source_file": source_file,
-                }
-            )
+        title, sections = _extract_structure(text)
+        section_nodes, edges = _heading_graph(source_file, file_id, sections)
+        nodes = [_file_node(source_file, file_id, title), *section_nodes]
+        edges.extend(_link_edges(source_file, file_id, text))
 
         return GeneratedFragment(
             source_file=source_file,
@@ -213,3 +146,95 @@ class FragmentGenerator:
             nodes=tuple(nodes),
             edges=tuple(edges),
         )
+
+
+def _normalize_source(content: bytes, max_source_bytes: int, source_file: str) -> tuple[bool, str]:
+    """Decode *content* as UTF-8, truncating oversized sources; (partial, text)."""
+    partial = len(content) > max_source_bytes
+    raw = content[:max_source_bytes] if partial else content
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise FragmentError(f"{source_file!r} is not UTF-8: {error}") from error
+    return partial, unicodedata.normalize("NFC", text.replace("\r\n", "\n").replace("\r", "\n"))
+
+
+def _extract_structure(text: str) -> tuple[str | None, list[tuple[int, str]]]:
+    """Headings in document order; the H1 (if any) is the title, the rest sections."""
+    headings: list[tuple[int, str]] = [
+        (len(match.group(1)), match.group(2)) for line in text.split("\n") if (match := _HEADING_RE.match(line))
+    ]
+    title = headings[0][1] if headings and headings[0][0] == 1 else None
+    return title, headings[1:] if title is not None else headings
+
+
+def _file_node(source_file: str, file_id: str, title: str | None) -> dict[str, Any]:
+    return {
+        "id": file_id,
+        "label": title or PurePosixPath(source_file).stem,
+        "file_type": "document",
+        "source_file": source_file,
+        "heading_level": 0,
+    }
+
+
+def _heading_graph(
+    source_file: str, file_id: str, sections: list[tuple[int, str]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Section nodes + parent/child 'contains' edges from the heading walk."""
+    nodes: list[dict[str, Any]] = []
+    edges: list[dict[str, Any]] = []
+    stack: list[tuple[int, str]] = []
+    used: dict[str, int] = {}
+    from graphify.ids import make_id  # deferred: heading-walk path only
+
+    for level, heading in sections:
+        base = slugify(heading)
+        occurrence = used.get(base, 0) + 1
+        used[base] = occurrence
+        section_id = make_id(file_id, base if occurrence == 1 else f"{base}_{occurrence}")
+        while stack and stack[-1][0] >= level:
+            stack.pop()
+        parent_id = stack[-1][1] if stack else file_id
+        stack.append((level, section_id))
+        nodes.append(
+            {
+                "id": section_id,
+                "label": heading,
+                "file_type": "document",
+                "source_file": source_file,
+                "heading_level": level,
+            }
+        )
+        edges.append(
+            {
+                "source": parent_id,
+                "target": section_id,
+                "relation": "contains",
+                "confidence": "EXTRACTED",
+                "source_file": source_file,
+            }
+        )
+    return nodes, edges
+
+
+def _link_edges(source_file: str, file_id: str, text: str) -> list[dict[str, Any]]:
+    """Deduplicated 'references' edges for every wikilink target."""
+    edges: list[dict[str, Any]] = []
+    seen_links: set[str] = set()
+    for match in _WIKILINK_RE.finditer(text):
+        target_text = match.group(1).strip()
+        if not target_text or target_text in seen_links:
+            continue
+        seen_links.add(target_text)
+        target_path = target_text if PurePosixPath(target_text).suffix else f"{target_text}.md"
+        edges.append(
+            {
+                "source": file_id,
+                "target": file_scoped_id(target_path),
+                "relation": "references",
+                "confidence": "EXTRACTED",
+                "source_file": source_file,
+            }
+        )
+    return edges
