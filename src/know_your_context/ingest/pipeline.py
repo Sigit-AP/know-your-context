@@ -109,6 +109,14 @@ __all__ = [
 #: test double drives extraction — the real version is SUB-87's constant.
 EXTRACTION_VERSION_FALLBACK = 0
 
+#: SUB-185: the resolve pass runs in bounded batches. A single unbounded call
+#: materialises the whole pending queue plus decisions/edge payloads/recorded
+#: rows (+119 MiB traced at 60k pending refs) on top of whatever the commit
+#: phase left alive; chunking caps the transient at ~batch-size rows while
+#: the aggregated report and every store row stay byte-identical (the pass is
+#: oldest-first and each chunk commits before the next one is fetched).
+RESOLVE_BATCH = 4096
+
 #: Phase-1 languages (master plan W2) plus the W3 document formats; a file
 #: with no registered language fails typed ``UNSUPPORTED_MEDIA_TYPE``. When
 #: the SUB-87 language registry is importable it wins; this table is the
@@ -705,7 +713,16 @@ class IngestionPipeline:
         return replace(report, audit_event_id=receipt.audit_event_id, duration_ms=outcome.duration_ms)
 
     def resolve_pending(self) -> Mapping[str, int]:
-        """Run the SUB-88 resolve pass; typed fallback when it has not landed."""
+        """Run the SUB-88 resolve pass in bounded batches; typed fallback.
+
+        The resolver's ``limit`` default is ``None`` = the whole pending
+        queue, which would materialise decisions + edge payloads + recorded
+        rows for every ref at once (SUB-185: +119 MiB traced at 60k refs).
+        The pass is oldest-first and commits each chunk before the next fetch,
+        so chunked calls aggregate to the exact same report mapping and store
+        rows as one unbounded call (pinned by
+        ``test_resolve_chunked_output_is_batch_size_independent``).
+        """
         resolver = self._resolver if self._resolver is not None else _default_resolver()
         if resolver is None:
             raise ResolverUnavailableError(
@@ -714,8 +731,15 @@ class IngestionPipeline:
             )
         if hasattr(resolver, "ReferenceResolver"):
             resolver = resolver.ReferenceResolver()
-        result = resolver.resolve_pending(self._store)
-        return _normalize_resolution(result)
+        total: dict[str, int] = {"resolved": 0, "failed": 0, "pending": 0}
+        while True:
+            batch = _normalize_resolution(resolver.resolve_pending(self._store, limit=RESOLVE_BATCH))
+            total["resolved"] += batch["resolved"]
+            total["failed"] += batch["failed"]
+            total["pending"] = batch["pending"]
+            if batch["resolved"] + batch["failed"] == 0:
+                break
+        return total
 
     # --------------------------------------------------------------- walking
 

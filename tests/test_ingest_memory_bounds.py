@@ -13,6 +13,7 @@ import tracemalloc
 
 import pytest
 
+from know_your_context.ingest import pipeline as _pipeline_module
 from know_your_context.ingest.pipeline import IngestionPipeline, canonical_ingestion_dump
 from know_your_context.store import EventStore
 
@@ -119,3 +120,96 @@ def test_small_corpora_and_documents_keep_the_bound(tmp_path, monkeypatch, count
 
     assert report.stats["proposed"] == count
     assert peak < max(total_bytes, 1024 * 1024)
+
+
+# ---------------------------------------------------------------------------
+# SUB-185: the resolve pass must run in bounded batches.
+#
+# ``ReferenceResolver.resolve_pending`` pulls the whole pending queue (its
+# ``limit`` default is ``None`` = everything), then materialises decisions +
+# edge payloads + recorded rows + a read-back report for every ref in the
+# queue — O(pending) transient memory on top of whatever the commit phase
+# left alive (measured +119 MiB traced at 60k pending refs). The pipeline
+# owns the pass invocation, so the bound lives here: chunked calls with a
+# pinned batch cap, aggregated into the exact same report mapping.
+# ---------------------------------------------------------------------------
+
+
+def _refs_module_text(index: int, count: int = 120) -> str:
+    """One tiny module with cross-file refs — imports + a call to a sibling's
+    function (all real ``unresolved_refs`` kinds for the synthetic resolver
+    surface: one module-level import, one named import, one call)."""
+    other = (index + 1) % count
+    third = (index + 7) % count
+    return (
+        f'"""Module {index} ref-rich corpus (deterministic)."""\n'
+        f"import mod{other:04d}\n"
+        f"from mod{third:04d} import fn_target\n"
+        f"def fn_{index}(value):\n"
+        f"    return fn_target(value) + mod{other:04d}.helper(value)\n"
+    )
+
+
+def _write_refs_corpus(root, count: int = 120) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    for index in range(count):
+        (root / f"mod{index:04d}.py").write_text(_refs_module_text(index, count), encoding="utf-8")
+
+
+def test_resolve_pass_chunks_the_pending_queue(tmp_path, monkeypatch):
+    """Every resolve read is bounded by the batch cap; at least two chunks run."""
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_DISABLE_HW_AUTOSCALER", "1")
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_DISABLE_HW_TUNING", "1")
+    monkeypatch.setattr(_pipeline_module, "RESOLVE_BATCH", 64)
+    corpus = tmp_path / "corpus"
+    _write_refs_corpus(corpus, count=120)
+
+    store = EventStore(":memory:")
+    store.migrate()
+    real_fetch = store.pending_unresolved_refs
+    requested: list[int] = []
+    seen_limits_none: list[bool] = []
+
+    def recording_fetch(*, limit=None):
+        if limit is None:
+            seen_limits_none.append(True)
+        else:
+            requested.append(int(limit))
+        return real_fetch(limit=limit)
+
+    monkeypatch.setattr(store, "pending_unresolved_refs", recording_fetch)
+
+    report = IngestionPipeline(store).ingest_path(corpus, incremental=True, recursive=True, resolve=True)
+
+    assert report.stats["proposed"] == 120
+    assert report.resolution is not None
+    assert report.resolution["pending"] == 0
+    # The pass must actually fan out: more refs than one batch, and never a
+    # single unbounded pull.
+    assert not seen_limits_none, "resolve pass called the pending queue without a limit cap"
+    assert len(requested) >= 2, f"expected >=2 chunked calls, got {len(requested)}"
+    assert max(requested) <= 64, f"chunk {max(requested)} exceeds the RESOLVE_BATCH cap"
+
+
+def test_resolve_chunked_output_is_batch_size_independent(tmp_path, monkeypatch):
+    """Aggregation must not depend on the batch size: 17-ref chunks and one
+    big batch produce the same report, the same store rows (rowids included)
+    and the same canonical dump."""
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_DISABLE_HW_AUTOSCALER", "1")
+    monkeypatch.setenv("KNOW_YOUR_CONTEXT_DISABLE_HW_TUNING", "1")
+    corpus = tmp_path / "corpus"
+    _write_refs_corpus(corpus, count=150)
+
+    dumps: list[str] = []
+    reports: list[dict] = []
+    for batch in (17, 4096):
+        monkeypatch.setattr(_pipeline_module, "RESOLVE_BATCH", batch)
+        store = EventStore(":memory:")
+        store.migrate()
+        report = IngestionPipeline(store).ingest_path(corpus, incremental=True, recursive=True, resolve=True)
+        assert report.resolution["pending"] == 0
+        reports.append(_stable_report(report))
+        dumps.append(canonical_ingestion_dump(store))
+
+    assert reports[0] == reports[1]
+    assert dumps[0] == dumps[1], "chunked resolve aggregation is not batch-size independent"

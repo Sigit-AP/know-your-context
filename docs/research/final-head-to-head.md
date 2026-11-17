@@ -216,17 +216,17 @@ codegraph (4,3 s) — defisit hanya muncul saat 50 agen serentak.
 
 | metrik          | graphify | codegraph | kyc | verdict            |
 |-----------------|---------:|----------:|----:|--------------------|
-| ingest_wall_s   |   1729.7 |    1480.6 |   – | **BELUM TERUKUR**  |
-| ingest_rss_mb   |      860 |      1645 |   – | **BELUM TERUKUR**  |
-| artifact_mb     |    380.5 |     450.6 |   – | **BELUM TERUKUR**  |
-| q_p50_ms        |   127720 |    119536 |   – | **BELUM TERUKUR**  |
-| q_wall_s        |    257.3 |     242.4 |   – | **BELUM TERUKUR**  |
-| w1_hit          |     0/50 |     33/50 |   – | **BELUM TERUKUR**  |
-| w2_hit          |     0/50 |     32/50 |   – | **BELUM TERUKUR**  |
-| err_rate        |    100 % |      35 % |   – | **BELUM TERUKUR**  |
-| sigkill         |      100 |        34 |   – | **BELUM TERUKUR**  |
-| storm_rss_mb    |     2413 |      5811 |   – | **BELUM TERUKUR**  |
-| solo_w1_ms      |    58849 |      1678 |   – | **BELUM TERUKUR**  |
+|| ingest_wall_s   |   1729.7 |    1480.6 |   770.4 | MENANG |
+|| ingest_rss_mb   |      860 |      1645 |   1938 | KALAH |
+|| artifact_mb     |    380.5 |     450.6 |   310.0 | MENANG |
+|| q_p50_ms        |   127720 |    119536 |   82653 | MENANG |
+|| q_wall_s        |    257.3 |     242.4 |   166.2 | MENANG |
+|| w1_hit          |     0/50 |     33/50 |   0/50 | KALAH |
+|| w2_hit          |     0/50 |     32/50 |   1/50 | KALAH |
+|| err_rate        |    100 % |      35 % |   99 % | KALAH |
+|| sigkill         |      100 |        34 |    50 | SETARA |
+|| storm_rss_mb    |     2413 |      5811 |   3052 | SETARA |
+|| solo_w1_ms      |    58849 |      1678 |   3512 | SETARA |
 
 Catatan: codegraph satu-satunya yang menjawab di storm L4 (65 % hit,
 35 % error); graphify kolaps 100 %. Referensi tak-kanonik (prefix 08:05

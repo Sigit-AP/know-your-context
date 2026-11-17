@@ -142,13 +142,15 @@ class ToyResolver:
     """Deterministic resolver implementing the SUB-88 protocol.
 
     Resolves a pending ref when exactly one live symbol matches the ref's
-    ``name_tail`` (last dot segment); otherwise marks it failed.
+    ``name_tail`` (last dot segment); otherwise marks it failed. The
+    ``limit`` kwarg (documented in ``interfaces.ResolverProtocol``) bounds
+    the queue read; ``None`` keeps the historical whole-queue behaviour.
     """
 
-    def resolve_pending(self, store: EventStore) -> dict[str, int]:
+    def resolve_pending(self, store: EventStore, *, limit: int | None = None) -> dict[str, int]:
         resolved = 0
         failed = 0
-        for ref in store.pending_unresolved_refs():
+        for ref in store.pending_unresolved_refs(limit=limit):
             matches = store.symbols_named(ref.name_tail)
             if len(matches) == 1:
                 store.add_graph_edge(ref.source_node_id, matches[0].node_id, ref.kind)
