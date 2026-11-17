@@ -12,23 +12,36 @@ c. **import_path** — module-based languages only: Python dotted/relative
    directory with the extension/index-name search order. Bare JS/TS
    specifiers fail as ``external_module``.
 d. **module_helper** — per-language candidate paths (W12).
-e. **exact_scoped** (SUB-181/SUB-185/SUB-185S) — only for refs that would
-   otherwise fail with an ambiguity reason: 2+ symbols share ``target_name``,
-   so pick by lexical scope. *File scope* first — exactly one same-name
-   definition in the referring file is the bound definition (module-level
-   shadowing). *Import scope* second — exactly one same-name definition in a
-   module the referring file imports (its ``imports`` refs resolved with the
-   tier-(c) rules). *Global scope* third (SUB-185S) — exactly one same-name
-   definition in the whole corpus: every other symbol named ``target_name``
-   is the extractor's ``import:`` bookkeeping, so a unique definition is not
-   a guess. Only ``symbols.kind <> 'import'`` rows count: the extractor's
-   ``import:`` nodes are bookkeeping, not bindings (counting them minted
-   19,632 edges to non-definitions on L4), and ``imports`` refs themselves
-   are module bindings owned by tiers (c)/(d) — the scope tier skips them.
-   Still 2+ candidates after all three scopes → the ref keeps failing with
+e. **exact_scoped** (SUB-181/SUB-185/SUB-185S/SUB-184) — only for refs that
+   would otherwise fail with an ambiguity reason (or whose sole same-name
+   row is the extractor's ``import:`` bookkeeping): 2+ symbols share
+   ``target_name``, so pick by lexical scope. *File scope* first — exactly
+   one same-name definition in the referring file is the bound definition
+   (module-level shadowing). *Import scope* second — exactly one same-name
+   definition in a module the referring file imports (its ``imports`` refs
+   resolved with the tier-(c) rules). *Modul-lokal scope* third (SUB-184) —
+   the file's own ``kind='import'`` bookkeeping symbol named ``target_name``
+   binds the bare name: ``from mod import X`` / ``import X`` is a real
+   Python binding, resolved through the tier-(c) rules to exactly one node
+   (strategy ``import_binding``). *Global scope* fourth (SUB-185S) — exactly
+   one same-name definition in the whole corpus: every other symbol named
+   ``target_name`` is the extractor's ``import:`` bookkeeping, so a unique
+   definition is not a guess. Only ``symbols.kind <> 'import'`` rows count:
+   the extractor's ``import:`` nodes are bookkeeping, not bindings (counting
+   them minted 19,632 edges to non-definitions on L4), and ``imports`` refs
+   themselves are module bindings owned by tiers (c)/(d) — the scope tier
+   skips them and reports their ambiguity over *definitions* only (SUB-184).
+   Still 2+ candidates after all four scopes → the ref keeps failing with
    the original ``ambiguous_exact:N`` reason. The tier runs *after* (a)–(d)
    so it can only convert failures into edges, never retarget a ref that
    already resolved.
+
+Also SUB-184: a flat ``NNNNN_name.py`` corpus (L4 union layout) defeats the
+tier-(c) module lookup — the reversed-path probe anchors on ``'/rel'`` while
+the ``NNNNN_`` prefix sits between basename and slash. When both the exact
+match and the reversed-path probe miss, ``_module_file`` probes the reversed
+*basename*: unique basenames resolve, two or more stay ``ambiguous``
+(fail-safe; strictly additive — real-path corpora never reach it).
 
 Ambiguity never guesses: a tier with 2+ candidates defers to the next tier
 (import-path can disambiguate via the module path, e.g. ``pkg.mod.func``);
@@ -154,7 +167,9 @@ class RefOutcome:
 
     ref_id: int
     status: Literal["resolved", "failed"]
-    strategy: Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped"] | None
+    strategy: (
+        Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped", "import_binding"] | None
+    )
     target_node_id: str | None
     reason: str | None
 
@@ -173,13 +188,17 @@ class BatchReport:
 
 @dataclass(frozen=True)
 class _Decision:
-    strategy: Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped"] | None
+    strategy: (
+        Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped", "import_binding"] | None
+    )
     target_node_id: str | None
     reason: str | None
 
 
 def _hit(
-    strategy: Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped"],
+    strategy: (
+        Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped", "import_binding"]
+    ),
     target_node_id: str,
 ) -> _Decision:
     return _Decision(strategy, target_node_id, None)
@@ -255,6 +274,10 @@ class _PassCache:
     imported_paths: dict[str, frozenset[str]]
     import_targets: dict[str, tuple[str, ...]]
     global_defs: dict[str, tuple[str, SymbolRow | int | None]]
+    #: SUB-184: per-(source path, name) modul-lokal binding resolution —
+    #: ``(has_refs, resolved_nodes)`` per same-name import symbol of the file.
+    name_def_counts: dict[str, int]
+    binding_state: dict[tuple[str, str], tuple[tuple[bool, frozenset[str]], ...]]
 
     @classmethod
     def fresh(cls) -> _PassCache:
@@ -268,6 +291,8 @@ class _PassCache:
             imported_paths={},
             import_targets={},
             global_defs={},
+            name_def_counts={},
+            binding_state={},
         )
 
 
@@ -402,9 +427,18 @@ class ReferenceResolver:
         if exact_count is None:
             exact_count = store.symbols_named_count(ref.target_name)
             pass_cache.name_counts[ref.target_name] = exact_count
+        exact_single_import = False
         if exact_count == 1:
             exact = store.symbols_named(ref.target_name)
-            return _hit("exact", exact[0].node_id)
+            if exact[0].kind != "import":
+                return _hit("exact", exact[0].node_id)
+            # SUB-184: the only same-name row is the extractor's ``import:``
+            # bookkeeping — minting an edge to it repeats the SUB-185
+            # non-definition-edge bug. Defer to the scope tier (modul-lokal
+            # binding may know the real module); the ref keeps failing
+            # otherwise, exactly as if no symbol matched.
+            exact_single_import = True
+            exact_count = 0
         if exact_count > 1:
             deferred_reason = f"ambiguous_exact:{exact_count}"
         # (b) name_tail match (skip when the tail adds no information)
@@ -434,15 +468,51 @@ class ReferenceResolver:
                 decision = self._resolve_module_helper(store, helper, source_path, ref.target_name)
                 if decision is not None:
                     return decision
-        if deferred_reason is not None:
-            # (e) SUB-181 scope tier: the name is defined 2+ times, so try the
-            # lexical scopes before declaring ambiguity. Runs last, so it can
-            # only rescue a ref that would have failed — never retarget one.
+        if deferred_reason is not None or exact_single_import:
+            # (e) SUB-181 scope tier: the name is defined 2+ times (or its
+            # only row is import bookkeeping), so try the lexical scopes
+            # before declaring ambiguity. Runs last, so it can only rescue
+            # a ref that would have failed — never retarget one.
             scoped = self._resolve_scoped(store, ref, source_path, language, cache=pass_cache)
             if scoped is not None:
                 return scoped
-            return _fail(deferred_reason)
+            if deferred_reason is not None:
+                if deferred_reason.startswith("ambiguous_exact:"):
+                    deferred_reason = self._refined_reason(
+                        store, source_path, language, ref.target_name, exact_count, cache=pass_cache
+                    )
+            return _fail(deferred_reason if deferred_reason is not None else "no_resolution")
         return _fail("no_resolution")
+
+    def _refined_reason(
+        self,
+        store: EventStore,
+        source_path: str,
+        language: str,
+        name: str,
+        exact_count: int,
+        *,
+        cache: _PassCache,
+    ) -> str:
+        """The persisted ambiguity count, minus the referring file's dead
+        bindings (SUB-184).
+
+        The file's own same-name ``import:`` bookkeeping is a candidate for a
+        ref in that file only when it is a real binding — an ``import X`` in F
+        that resolves to nothing cannot be what a call/import in F means —
+        so dead bindings of F are subtracted from the count. Corpus-wide
+        bookkeeping keeps the original inflated count (SUB-185S accepts that
+        inflation; it only stops the unique-definition resolution). With
+        fewer than two candidates left the raw count is preserved instead of
+        reporting a meaningless ``ambiguous_exact:1``. Runs lazily, only for
+        refs that actually park, so a scope-resolved ref never pays the
+        binding query.
+        """
+        states = self._binding_state(store, source_path, language, name, cache=cache)
+        dead = sum(1 for has_refs, nodes in states if has_refs and not nodes)
+        if dead and exact_count - dead >= 2:
+            return f"ambiguous_exact:{exact_count - dead}"
+        return f"ambiguous_exact:{exact_count}"
 
     def _source_context(
         self, store: EventStore, source_node_id: str, *, cache: _PassCache | None = None
@@ -548,8 +618,23 @@ class ReferenceResolver:
         # with ``reverse('/' + rel)``; the reversed prefix is a GLOB prefix
         # against ``lower(path_rev)`` (SQLite lower() folds ASCII only — LIKE's
         # exact case semantics), which seeks ``idx_files_path_rev``.
-        pattern = _escape_glob(_ascii_lower(("/" + rel)[::-1])) + "*"
+        pattern = _escape_glob(_ascii_lower((("/" + rel)[::-1]))) + "*"
         with store.read() as conn:
+            rows = conn.execute(
+                "SELECT * FROM files WHERE lower(path_rev) GLOB ? ORDER BY path",
+                (pattern,),
+            ).fetchall()
+        if not rows:
+            # SUB-184 (A): flat-corpus fallback. A flat ``NNNNN_name.py``
+            # layout reverses to ``ema_n_NNNNN``, which the ``'/rel'``-anchored
+            # pattern above can never match (the ``NNNNN_`` prefix sits between
+            # the basename and the required slash). Probe the reversed
+            # *basename* instead: files whose path ends with ``name.py``.
+            # Unique basenames (the sha-dedup'd flat corpus) resolve; two or
+            # more stay ambiguous — the same fail-safe discipline as the
+            # full-path probe. Strictly additive: a corpus the full probe can
+            # resolve never reaches it.
+            pattern = _escape_glob(_ascii_lower(PurePosixPath(rel).name[::-1])) + "*"
             rows = conn.execute(
                 "SELECT * FROM files WHERE lower(path_rev) GLOB ? ORDER BY path",
                 (pattern,),
@@ -620,6 +705,17 @@ class ReferenceResolver:
             if status == "hit":
                 assert isinstance(payload, SymbolRow)
                 return _hit("exact_scoped", payload.node_id)
+        # Modul-lokal scope (SUB-184): the file's own ``kind='import'``
+        # bookkeeping symbols bind bare names — ``from mod import X`` /
+        # ``import X`` is a real Python binding, so the import statement
+        # disambiguates even when several imported modules define X. Exactly
+        # one same-name binding resolving through the tier-(c) rules to one
+        # node wins; two bindings, an unresolvable binding, or an ambiguous
+        # module keep the original ambiguity verdict.
+        status, payload = self._import_binding(store, source_path, language, ref.target_name, cache=cache)
+        if status == "hit":
+            assert isinstance(payload, str)
+            return _hit("import_binding", payload)
         # Global scope (SUB-185S): still ambiguous lexically, so count the
         # *definitions* corpus-wide. Exactly one real definition is not a
         # guess — every other symbol named ``target_name`` is the extractor's
@@ -631,6 +727,108 @@ class ReferenceResolver:
             assert isinstance(payload, SymbolRow)
             return _hit("exact_scoped", payload.node_id)
         return None
+
+    def _import_binding(
+        self, store: EventStore, source_path: str, language: str, name: str, *, cache: _PassCache
+    ) -> tuple[str, str | int | None]:
+        """Modul-lokal verdict: ``(\"hit\", node_id)`` / ``(\"ambiguous\", n)`` / ``(\"miss\", None)``.
+
+        The file's own ``kind='import'`` bookkeeping symbols named ``name``
+        are real Python bindings (``from mod import X`` / ``import X``). A
+        pure ``import X`` (binding ref tail == target) binds the module
+        *file*; ``from mod import X`` binds the ``X`` definition inside the
+        resolved module (the ref's tail is the imported name). Exactly one
+        binding resolving to exactly one node wins; anything else keeps the
+        ambiguity verdict.
+        """
+        states = self._binding_state(store, source_path, language, name, cache=cache)
+        if len(states) > 1:
+            return ("ambiguous", len(states))
+        if len(states) == 1:
+            _has_refs, nodes = states[0]
+            if len(nodes) == 1:
+                return ("hit", next(iter(nodes)))
+            if len(nodes) > 1:
+                return ("ambiguous", len(nodes))
+        return ("miss", None)
+
+    def _binding_state(
+        self, store: EventStore, source_path: str, language: str, name: str, *, cache: _PassCache
+    ) -> tuple[tuple[bool, frozenset[str]], ...]:
+        """Per same-name import symbol of ``source_path``: whether it carries
+        an ``imports`` ref and the node set its refs resolve to (empty when
+        unresolvable/ambiguous). Memoised per pass — both the binding verdict
+        and the deferral reason read it.
+        """
+        key = (source_path, name)
+        cached = cache.binding_state.get(key)
+        if cached is not None:
+            return cached
+        # Count-first (B7): only same-name ``import`` rows of the file are
+        # bindings — never materialise the file's whole symbol list.
+        with store.read() as conn:
+            rows = conn.execute(
+                "SELECT * FROM symbols WHERE path = ? AND kind = 'import' AND name = ? "
+                "ORDER BY line, col, node_id",
+                (source_path, name),
+            ).fetchall()
+        bindings = [_symbol_row(row) for row in rows]
+        states: list[tuple[bool, frozenset[str]]] = []
+        for symbol in bindings:
+            with store.read() as conn:
+                rows = conn.execute(
+                    "SELECT target_name, name_tail FROM unresolved_refs "
+                    "WHERE kind = 'imports' AND source_node_id = ? ORDER BY target_name",
+                    (symbol.node_id,),
+                ).fetchall()
+            nodes: set[str] = set()
+            for row in rows:
+                target = str(row["target_name"])
+                tail = str(row["name_tail"] or "")
+                if language == "python":
+                    decision = self._resolve_python_import(store, source_path, target, "imports", cache=cache)
+                else:
+                    decision = self._resolve_js_import(store, source_path, target, cache=cache)
+                if decision is None or decision.reason is not None or decision.target_node_id is None:
+                    continue
+                node = decision.target_node_id
+                if tail and tail != target and is_file_node_id(node):
+                    module_path = self._node_path(store, node)
+                    if module_path is None:
+                        continue
+                    status, payload = self._symbol_in_file(store, module_path, tail, cache=cache)
+                    if status == "ambiguous":
+                        # The bound module defines ``tail`` 2+ times — a real
+                        # tie, this binding contributes no decisive candidate.
+                        continue
+                    if status == "hit":
+                        assert isinstance(payload, SymbolRow)
+                        node = payload.node_id
+                nodes.add(node)
+            states.append((bool(rows), frozenset(nodes)))
+        result = tuple(states)
+        cache.binding_state[key] = result
+        return result
+
+    def _name_def_count(self, store: EventStore, name: str, *, cache: _PassCache | None = None) -> int:
+        """Corpus-wide count of same-name *definitions* (``kind <> 'import'``).
+
+        SUB-184: the ``imports`` deferral reason counts real candidates, not
+        the extractor's ``import:`` bookkeeping rows, so a module ref reports
+        ambiguity over actual bindings.
+        """
+        if cache is not None and name in cache.name_def_counts:
+            return cache.name_def_counts[name]
+        with store.read() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS n FROM symbols WHERE name = ? AND kind <> 'import'", (name,)
+            ).fetchone()
+        total = 0 if row is None else int(row["n"])
+        if cache is not None:
+            cache.name_def_counts[name] = total
+        return total
+
+
 
     def _same_name_in_paths(
         self, store: EventStore, name: str, paths: tuple[str, ...], *, cache: _PassCache | None = None

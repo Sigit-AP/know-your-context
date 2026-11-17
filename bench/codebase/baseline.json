@@ -1,11 +1,11 @@
 {
-  "created": "20261117T124933Z",
+  "created": "20261117T182024Z",
   "note": "counts are a STRICT gate (truth), timings a LOOSE gate (10.0x + 250.0ms slack, machine jitter); refresh with: uv run python bench/codebase/run.py run --update-baseline",
   "targets": {
     "chalk": {
-      "edges": 322,
-      "extract_p50_ms": 1.9984729588031769,
-      "extract_p95_ms": 9.399684146046638,
+      "edges": 312,
+      "extract_p50_ms": 2.891870914027095,
+      "extract_p95_ms": 8.888486074283719,
       "failed_files": [
         ".editorconfig [UNSUPPORTED_MEDIA_TYPE]",
         ".gitattributes [UNSUPPORTED_MEDIA_TYPE]",
@@ -20,11 +20,11 @@
         "package.json [UNSUPPORTED_MEDIA_TYPE]"
       ],
       "nodes": 252,
-      "refs_failed": 530,
+      "refs_failed": 540,
       "refs_pending": 0,
-      "refs_resolved": 92,
+      "refs_resolved": 82,
       "refs_total": 622,
-      "resolve_ms": 123.69549507275224,
+      "resolve_ms": 88.45524583011866,
       "stats": {
         "deleted": 0,
         "failed": 11,
@@ -32,19 +32,19 @@
         "scanned": 34,
         "skipped": 0
       },
-      "walk_ms": 294.8896950110793
+      "walk_ms": 277.09116181358695
     },
     "fixture": {
       "edges": 18,
-      "extract_p50_ms": 0.9922459721565247,
-      "extract_p95_ms": 29.75312084890902,
+      "extract_p50_ms": 0.6837998516857624,
+      "extract_p95_ms": 24.519543861970305,
       "failed_files": [],
       "nodes": 10,
       "refs_failed": 2,
       "refs_pending": 0,
       "refs_resolved": 8,
       "refs_total": 10,
-      "resolve_ms": 65.5892079230398,
+      "resolve_ms": 42.37784584984183,
       "stats": {
         "deleted": 0,
         "failed": 0,
@@ -52,12 +52,12 @@
         "scanned": 5,
         "skipped": 0
       },
-      "walk_ms": 182.1116739884019
+      "walk_ms": 132.30217597447336
     },
     "requests": {
-      "edges": 2922,
-      "extract_p50_ms": 2.510160906240344,
-      "extract_p95_ms": 34.41456495784223,
+      "edges": 2894,
+      "extract_p50_ms": 4.591038916260004,
+      "extract_p95_ms": 27.02640602365136,
       "failed_files": [
         ".coveragerc [UNSUPPORTED_MEDIA_TYPE]",
         ".git-blame-ignore-revs [UNSUPPORTED_MEDIA_TYPE]",
@@ -140,11 +140,11 @@
         "tox.ini [UNSUPPORTED_MEDIA_TYPE]"
       ],
       "nodes": 1804,
-      "refs_failed": 1623,
+      "refs_failed": 1644,
       "refs_pending": 0,
-      "refs_resolved": 1264,
+      "refs_resolved": 1243,
       "refs_total": 2887,
-      "resolve_ms": 921.6717469971627,
+      "resolve_ms": 887.551087886095,
       "stats": {
         "deleted": 0,
         "failed": 79,
@@ -152,12 +152,12 @@
         "scanned": 129,
         "skipped": 0
       },
-      "walk_ms": 2053.6372759379447
+      "walk_ms": 1444.8988770600408
     },
     "tree-sitter-python": {
-      "edges": 1724,
-      "extract_p50_ms": 1.1086328886449337,
-      "extract_p95_ms": 42.0798419509083,
+      "edges": 1789,
+      "extract_p50_ms": 1.2470751535147429,
+      "extract_p95_ms": 39.79988000355661,
       "failed_files": [
         ".editorconfig [UNSUPPORTED_MEDIA_TYPE]",
         ".gitattributes [UNSUPPORTED_MEDIA_TYPE]",
@@ -191,11 +191,11 @@
         "tree-sitter.json [UNSUPPORTED_MEDIA_TYPE]"
       ],
       "nodes": 1445,
-      "refs_failed": 1820,
+      "refs_failed": 1755,
       "refs_pending": 0,
-      "refs_resolved": 858,
+      "refs_resolved": 923,
       "refs_total": 2678,
-      "resolve_ms": 703.4064249601215,
+      "resolve_ms": 576.5029189642519,
       "stats": {
         "deleted": 0,
         "failed": 30,
@@ -203,7 +203,7 @@
         "scanned": 75,
         "skipped": 0
       },
-      "walk_ms": 1531.6193820908666
+      "walk_ms": 1128.3520481083542
     }
   },
   "version": 1
