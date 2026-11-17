@@ -23,8 +23,10 @@ Every failure uses the canonical error envelope; exit codes mirror the
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import sys
+from collections.abc import Iterator
 
 from know_your_context.analytics.code_intel import (
     CodeGraph,
@@ -37,12 +39,19 @@ from know_your_context.analytics.code_intel import (
     dependency_path,
     impact_analysis,
 )
+from know_your_context.analytics.code_intel_sql import (
+    SqlCodeGraph,
+    open_readonly_connection,
+    store_has_only_ascii_names,
+)
 from know_your_context.domain import canonical_json
 from know_your_context.store import EventStore
 
 __all__ = [
     "change_sets_from_source_versions",
+    "codeintel_graph",
     "load_code_graph",
+    "open_sql_code_graph",
     "run_codeintel_command",
 ]
 
@@ -80,6 +89,49 @@ def load_code_graph(store: EventStore) -> CodeGraph:
         for row in edge_rows
     ]
     return build_code_graph(nodes, edges)
+
+
+def open_sql_code_graph(store: EventStore, *, stats: dict[str, int] | None = None) -> SqlCodeGraph | None:
+    """A :class:`SqlCodeGraph` over the store file, or ``None`` to fall back.
+
+    ``None`` means "use the in-memory build": in-memory stores (no separate
+    connection can see them), stores without the v3 graph tables (the full
+    loader then raises the historical error, unchanged), and stores holding
+    non-ASCII symbol names (SQLite ``lower()`` is ASCII-only; the in-memory
+    Python ``str.lower()`` is Unicode — see :mod:`code_intel_sql`).
+    """
+    conn = open_readonly_connection(store.db_path)
+    if conn is None:
+        return None
+    if not store_has_only_ascii_names(conn):
+        conn.close()
+        return None
+    return SqlCodeGraph(conn, stats=stats)
+
+
+@contextlib.contextmanager
+def codeintel_graph(
+    store: EventStore,
+    *symbols: str,
+) -> Iterator[CodeGraph | SqlCodeGraph]:
+    """Yield the cheapest graph backend that answers the op *exactly*.
+
+    The SQL backend serves the traversal ops (``callers-of``/``callees-of``/
+    ``dependency-path``/``impact``); the in-memory build stays for
+    ``boundary-violations`` (a whole-graph op by definition), for non-ASCII
+    symbols, and for any store the SQL backend declines. Output is
+    byte-identical either way (pinned by ``tests/test_codeintel_sql_graph.py``).
+    """
+    graph: SqlCodeGraph | None = None
+    if all(symbol.isascii() for symbol in symbols):
+        graph = open_sql_code_graph(store)
+    if graph is None:
+        yield load_code_graph(store)
+        return
+    try:
+        yield graph
+    finally:
+        graph.close()
 
 
 def change_sets_from_source_versions(store: EventStore) -> tuple[tuple[str, ...], ...]:
@@ -175,34 +227,57 @@ def run_codeintel_command(args: argparse.Namespace) -> int:
     action = str(args.codeintel_action)
     store = EventStore(args.store)
     try:
-        graph = load_code_graph(store)
-        try:
-            if action == "callers-of":
-                result = callers_of(graph, args.symbol, max_depth=args.depth, max_results=args.limit, file=args.file)
-            elif action == "callees-of":
-                result = callees_of(graph, args.symbol, max_depth=args.depth, max_results=args.limit, file=args.file)
-            elif action == "dependency-path":
-                result = dependency_path(graph, args.source, args.target)
-            elif action == "impact":
-                result = impact_analysis(graph, args.symbol, max_depth=args.depth, max_results=args.limit)
-            elif action == "co-change":
+        if action == "co-change":
+            try:
                 result = co_change(
                     change_sets_from_source_versions(store),
                     min_support=args.min_support,
                     limit=args.limit,
                 )
-            elif action == "boundary-violations":
-                layers = _parse_layers(args.layers)
-                if isinstance(layers, str):
-                    return _usage_error(layers)
-                flows = _parse_flows(args.allow or "")
-                if isinstance(flows, str):
-                    return _usage_error(flows)
-                result = boundary_violations(graph, layers=layers, allowed_flows=flows, limit=args.limit)
-            else:
-                return _usage_error(f"unknown codeintel action {action!r}")
-        except CodeIntelError as error:
-            return _operation_error("CODEINTEL_QUERY", str(error))
+            except CodeIntelError as error:
+                return _operation_error("CODEINTEL_QUERY", str(error))
+            print(canonical_json(result))
+            return 0
+        if action in ("callers-of", "callees-of", "impact"):
+            symbols = (str(args.symbol),)
+        elif action == "dependency-path":
+            symbols = (str(args.source), str(args.target))
+        elif action == "boundary-violations":
+            symbols = ()
+        else:
+            return _usage_error(f"unknown codeintel action {action!r}")
+        if action == "boundary-violations":
+            layers = _parse_layers(args.layers)
+            if isinstance(layers, str):
+                return _usage_error(layers)
+            flows = _parse_flows(args.allow or "")
+            if isinstance(flows, str):
+                return _usage_error(flows)
+            try:
+                # Whole-graph op by definition: the in-memory build stays.
+                result = boundary_violations(
+                    load_code_graph(store), layers=layers, allowed_flows=flows, limit=args.limit
+                )
+            except CodeIntelError as error:
+                return _operation_error("CODEINTEL_QUERY", str(error))
+            print(canonical_json(result))
+            return 0
+        with codeintel_graph(store, *symbols) as graph:
+            try:
+                if action == "callers-of":
+                    result = callers_of(
+                        graph, args.symbol, max_depth=args.depth, max_results=args.limit, file=args.file
+                    )
+                elif action == "callees-of":
+                    result = callees_of(
+                        graph, args.symbol, max_depth=args.depth, max_results=args.limit, file=args.file
+                    )
+                elif action == "dependency-path":
+                    result = dependency_path(graph, args.source, args.target)
+                else:
+                    result = impact_analysis(graph, args.symbol, max_depth=args.depth, max_results=args.limit)
+            except CodeIntelError as error:
+                return _operation_error("CODEINTEL_QUERY", str(error))
         print(canonical_json(result))
         return 0
     finally:

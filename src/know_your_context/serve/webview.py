@@ -1991,7 +1991,6 @@ class WebviewApp:
         from know_your_context.analytics.code_intel import (
             CodeIntelError,
             UnknownSymbolError,
-            boundary_violations,
             callees_of,
             callers_of,
             co_change,
@@ -1999,47 +1998,62 @@ class WebviewApp:
             impact_analysis,
         )
         from know_your_context.ops.codeintel_cli import (
-            _parse_flows,
-            _parse_layers,
             change_sets_from_source_versions,
-            load_code_graph,
+            codeintel_graph,
         )
 
-        graph = load_code_graph(self._store)
+        if op == "co-change":
+            return co_change(change_sets_from_source_versions(self._store), min_support=min_support, limit=limit)
+        if op == "boundary":
+            return self._codeintel_boundary(layers=layers, allow=allow, limit=limit)
+        symbols: tuple[str, ...] = ()
+        if op in ("callers", "callees", "impact"):
+            symbols = (symbol or "",)
+        elif op == "path":
+            symbols = (source or "", target or "")
+        with codeintel_graph(self._store, *symbols) as graph:
+            try:
+                if op == "callers":
+                    if not symbol:
+                        raise _BadRequest("symbol is required for op=callers")
+                    return callers_of(graph, symbol, max_depth=depth, max_results=limit)
+                if op == "callees":
+                    if not symbol:
+                        raise _BadRequest("symbol is required for op=callees")
+                    return callees_of(graph, symbol, max_depth=depth, max_results=limit)
+                if op == "path":
+                    if not source or not target:
+                        raise _BadRequest("source and target are required for op=path")
+                    return dependency_path(graph, source, target)
+                if op == "impact":
+                    if not symbol:
+                        raise _BadRequest("symbol is required for op=impact")
+                    return impact_analysis(graph, symbol, max_depth=depth, max_results=limit)
+            except UnknownSymbolError as error:
+                raise _NodeNotFound(str(error)) from error
+            except CodeIntelError as error:
+                raise _BadRequest(str(error)) from error
+        raise _BadRequest(f"unknown codeintel op {op!r}")
+
+    def _codeintel_boundary(self, *, layers: str | None, allow: str | None, limit: int) -> dict[str, Any]:
+        """``op=boundary``: a whole-graph op — the in-memory build stays."""
+        from know_your_context.analytics.code_intel import CodeIntelError, boundary_violations
+        from know_your_context.ops.codeintel_cli import _parse_flows, _parse_layers, load_code_graph
+
+        if not layers:
+            raise _BadRequest("layers is required for op=boundary (name:prefix[,prefix];...)")
+        parsed_layers = _parse_layers(layers)
+        if isinstance(parsed_layers, str):
+            raise _BadRequest(parsed_layers)
+        parsed_flows = _parse_flows(allow or "")
+        if isinstance(parsed_flows, str):
+            raise _BadRequest(parsed_flows)
         try:
-            if op == "callers":
-                if not symbol:
-                    raise _BadRequest("symbol is required for op=callers")
-                return callers_of(graph, symbol, max_depth=depth, max_results=limit)
-            if op == "callees":
-                if not symbol:
-                    raise _BadRequest("symbol is required for op=callees")
-                return callees_of(graph, symbol, max_depth=depth, max_results=limit)
-            if op == "path":
-                if not source or not target:
-                    raise _BadRequest("source and target are required for op=path")
-                return dependency_path(graph, source, target)
-            if op == "impact":
-                if not symbol:
-                    raise _BadRequest("symbol is required for op=impact")
-                return impact_analysis(graph, symbol, max_depth=depth, max_results=limit)
-            if op == "co-change":
-                return co_change(change_sets_from_source_versions(self._store), min_support=min_support, limit=limit)
-            if op == "boundary":
-                if not layers:
-                    raise _BadRequest("layers is required for op=boundary (name:prefix[,prefix];...)")
-                parsed_layers = _parse_layers(layers)
-                if isinstance(parsed_layers, str):
-                    raise _BadRequest(parsed_layers)
-                parsed_flows = _parse_flows(allow or "")
-                if isinstance(parsed_flows, str):
-                    raise _BadRequest(parsed_flows)
-                return boundary_violations(graph, layers=parsed_layers, allowed_flows=parsed_flows, limit=limit)
-        except UnknownSymbolError as error:
-            raise _NodeNotFound(str(error)) from error
+            return boundary_violations(
+                load_code_graph(self._store), layers=parsed_layers, allowed_flows=parsed_flows, limit=limit
+            )
         except CodeIntelError as error:
             raise _BadRequest(str(error)) from error
-        raise _BadRequest(f"unknown codeintel op {op!r}")
 
     # ------------------------------------------------------- W15 REST surface
 

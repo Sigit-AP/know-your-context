@@ -44,7 +44,7 @@ import heapq
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Literal
+from typing import Any, Literal, Protocol
 
 from know_your_context.analytics.algorithms import SCHEMA_VERSION, AlgorithmError
 
@@ -58,6 +58,7 @@ __all__ = [
     "AmbiguousSymbolError",
     "CodeEdge",
     "CodeGraph",
+    "CodeGraphView",
     "CodeIntelError",
     "CodeNode",
     "InvalidPolicyError",
@@ -161,6 +162,16 @@ class CodeGraph:
     def node(self, node_id: str) -> CodeNode | None:
         return self._by_id.get(node_id)
 
+    @property
+    def node_count(self) -> int:
+        """Number of valid unique nodes — the ``node_count`` payload field."""
+        return len(self.nodes)
+
+    @property
+    def edge_count(self) -> int:
+        """Number of valid deduped edges — the ``edge_count`` payload field."""
+        return len(self.edges)
+
     def named(self, name: str) -> tuple[CodeNode, ...]:
         return self._by_name.get(name.lower(), ())
 
@@ -174,9 +185,41 @@ class CodeGraph:
         table = self._forward if direction == "forward" else self._reverse
         return tuple(entry for entry in table.get(node_id, ()) if entry[1] in kinds)
 
+    def neighbours_many(
+        self,
+        node_ids: tuple[str, ...],
+        direction: Literal["forward", "reverse"],
+        kinds: frozenset[str],
+    ) -> dict[str, tuple[tuple[str, str, int], ...]]:
+        """Batched :meth:`neighbours`; per-id lists keep single-call order."""
+        return {node_id: self.neighbours(node_id, direction, kinds) for node_id in node_ids}
+
 
 def _node_sort_key(node: CodeNode) -> tuple[str, int, int, str]:
     return (node.path, node.line, node.col, node.node_id)
+
+
+class CodeGraphView(Protocol):
+    """The read surface the traversal ops need (``CodeGraph`` in memory,
+    ``SqlCodeGraph`` lazily from the store — byte-identical either way)."""
+
+    @property
+    def node_count(self) -> int: ...
+
+    @property
+    def edge_count(self) -> int: ...
+
+    def node(self, node_id: str) -> CodeNode | None: ...
+
+    def named(self, name: str) -> tuple[CodeNode, ...]: ...
+
+    def neighbours(
+        self, node_id: str, direction: Literal["forward", "reverse"], kinds: frozenset[str]
+    ) -> tuple[tuple[str, str, int], ...]: ...
+
+    def neighbours_many(
+        self, node_ids: tuple[str, ...], direction: Literal["forward", "reverse"], kinds: frozenset[str]
+    ) -> dict[str, tuple[tuple[str, str, int], ...]]: ...
 
 
 def build_code_graph(
@@ -270,7 +313,7 @@ def _validate_knobs(max_depth: int, max_results: int) -> None:
         )
 
 
-def resolve_symbol(graph: CodeGraph, symbol: str, *, file: str | None = None) -> CodeNode:
+def resolve_symbol(graph: CodeGraphView, symbol: str, *, file: str | None = None) -> CodeNode:
     """Resolve a node id or (case-insensitive) name to exactly one node.
 
     Node-id match wins; otherwise the name must match exactly one node
@@ -294,7 +337,9 @@ def resolve_symbol(graph: CodeGraph, symbol: str, *, file: str | None = None) ->
     return next(iter(candidates))
 
 
-def _entry(graph: CodeGraph, node_id: str, depth: int, via_kind: str, via_line: int, from_id: str) -> dict[str, Any]:
+def _entry(
+    graph: CodeGraphView, node_id: str, depth: int, via_kind: str, via_line: int, from_id: str
+) -> dict[str, Any]:
     node = graph.node(node_id)
     assert node is not None  # adjacency only contains known endpoints
     return {
@@ -312,7 +357,7 @@ def _entry(graph: CodeGraph, node_id: str, depth: int, via_kind: str, via_line: 
 
 
 def _transitive(
-    graph: CodeGraph,
+    graph: CodeGraphView,
     root: CodeNode,
     direction: Literal["forward", "reverse"],
     kinds: frozenset[str],
@@ -326,8 +371,9 @@ def _transitive(
     entries: list[dict[str, Any]] = []
     for depth in range(1, max_depth + 1):
         next_frontier: list[str] = []
+        batch = graph.neighbours_many(tuple(frontier), direction, kinds)
         for node_id in frontier:
-            for other, kind, line in graph.neighbours(node_id, direction, kinds):
+            for other, kind, line in batch.get(node_id, ()):
                 if other in visited:
                     continue
                 visited.add(other)
@@ -353,7 +399,7 @@ def _root_payload(node: CodeNode) -> dict[str, Any]:
 
 
 def callers_of(
-    graph: CodeGraph,
+    graph: CodeGraphView,
     symbol: str,
     *,
     kinds: Iterable[str] = DEFAULT_TRAVERSAL_KINDS,
@@ -368,7 +414,7 @@ def callers_of(
 
 
 def callees_of(
-    graph: CodeGraph,
+    graph: CodeGraphView,
     symbol: str,
     *,
     kinds: Iterable[str] = DEFAULT_TRAVERSAL_KINDS,
@@ -383,7 +429,7 @@ def callees_of(
 
 
 def _directional(
-    graph: CodeGraph,
+    graph: CodeGraphView,
     symbol: str,
     direction: Literal["forward", "reverse"],
     kinds: Iterable[str],
@@ -411,8 +457,8 @@ def _directional(
             "max_results": max_results,
             "file": file,
         },
-        "node_count": len(graph.nodes),
-        "edge_count": len(graph.edges),
+        "node_count": graph.node_count,
+        "edge_count": graph.edge_count,
         "root": _root_payload(root),
         "entry_count": len(entries),
         "total": total,
@@ -426,7 +472,7 @@ _transitive_op = _directional
 
 
 def dependency_path(
-    graph: CodeGraph,
+    graph: CodeGraphView,
     source: str,
     target: str,
     *,
@@ -489,8 +535,8 @@ def dependency_path(
             "kinds": sorted(kind_set),
             "max_expansions": max_expansions,
         },
-        "node_count": len(graph.nodes),
-        "edge_count": len(graph.edges),
+        "node_count": graph.node_count,
+        "edge_count": graph.edge_count,
         "source": _root_payload(origin),
         "target": _root_payload(destination),
         "path_count": len(paths),
@@ -500,7 +546,7 @@ def dependency_path(
 
 
 def impact_analysis(
-    graph: CodeGraph,
+    graph: CodeGraphView,
     symbol: str,
     *,
     max_depth: int = DEFAULT_DEPTH,
@@ -532,8 +578,8 @@ def impact_analysis(
         "schema_version": SCHEMA_VERSION,
         "kind": "analytics.code_intel.impact_analysis",
         "parameters": {"symbol": symbol, "max_depth": max_depth, "max_results": max_results, "file": file},
-        "node_count": len(graph.nodes),
-        "edge_count": len(graph.edges),
+        "node_count": graph.node_count,
+        "edge_count": graph.edge_count,
         "root": _root_payload(root),
         "direct_dependents": depth_buckets.get(1, 0),
         "total_impacted": total,
@@ -740,8 +786,8 @@ def boundary_violations(
             "edge_kinds": None if kind_filter is None else sorted(kind_filter),
             "limit": limit,
         },
-        "node_count": len(graph.nodes),
-        "edge_count": len(graph.edges),
+        "node_count": graph.node_count,
+        "edge_count": graph.edge_count,
         "unlayered_nodes": unlayered_nodes,
         "skipped_unlayered_edges": skipped_unlayered,
         "violation_count": len(emitted),
