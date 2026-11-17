@@ -42,7 +42,6 @@ from know_your_context.analytics.code_intel import (
 from know_your_context.analytics.code_intel_sql import (
     SqlCodeGraph,
     open_readonly_connection,
-    store_has_only_ascii_names,
 )
 from know_your_context.domain import canonical_json
 from know_your_context.store import EventStore
@@ -95,16 +94,15 @@ def open_sql_code_graph(store: EventStore, *, stats: dict[str, int] | None = Non
     """A :class:`SqlCodeGraph` over the store file, or ``None`` to fall back.
 
     ``None`` means "use the in-memory build": in-memory stores (no separate
-    connection can see them), stores without the v3 graph tables (the full
-    loader then raises the historical error, unchanged), and stores holding
-    non-ASCII symbol names (SQLite ``lower()`` is ASCII-only; the in-memory
-    Python ``str.lower()`` is Unicode — see :mod:`code_intel_sql`).
+    connection can see them) and stores without the v3 graph tables (the
+    full loader then raises the historical error, unchanged). Non-ASCII
+    symbol *names* no longer refuse the backend — :meth:`SqlCodeGraph.named`
+    restores Unicode case-folds with a bounded Python pass over the (tiny)
+    non-ASCII name set, byte-identical to the in-memory answer (SUB-177;
+    the refusal cost 19.5 s/~2 GB per query on a real corpus).
     """
     conn = open_readonly_connection(store.db_path)
     if conn is None:
-        return None
-    if not store_has_only_ascii_names(conn):
-        conn.close()
         return None
     return SqlCodeGraph(conn, stats=stats)
 

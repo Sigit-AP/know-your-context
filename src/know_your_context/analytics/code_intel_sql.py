@@ -16,9 +16,16 @@ Parity contract (pinned byte-for-byte by ``tests/test_codeintel_sql_graph.py``):
 * name lookup: ``lower(name) = lower(?)`` uses ``idx_symbols_lower_name``;
   ordering ``(path, line, col, node_id)`` mirrors the in-memory grouping.
   SQLite ``lower()`` folds ASCII only while Python ``str.lower()`` also folds
-  Unicode (e.g. U+212A KELVIN SIGN → ``k``), so the factory refuses to serve
-  a store containing any non-ASCII name and the dispatch refuses non-ASCII
-  query symbols — both fall back to the in-memory build (correctness first).
+  Unicode (e.g. U+212A KELVIN SIGN → ``k``), so ``named()`` answers with the
+  SQL ASCII-CI pass **plus** a Python CI pass over the store's non-ASCII
+  names — a set fetched once per instance (one bounded scan, then cached).
+  Measured why this matters (stress3 L4, SUB-177): one symbol named
+  ``cassé`` in a 163k-row store made the old factory refuse the SQL backend,
+  so *every* traversal op fell back to the in-memory build — 19.5 s and
+  ~2 GB per query, collapsing the 50-agent storm. Same answer, bounded cost.
+  The dispatch still routes non-ASCII *query* symbols to the in-memory
+  build (the reference implementation), so the SQL path only ever folds
+  ASCII query text against the cached non-ASCII name set.
 * neighbours: ``DISTINCT (other, kind, IFNULL(line, 0))`` reproduces the
   builder's dedupe key ``(source, target, kind, line)`` with ``line`` already
   normalised (NULL → 0, mirroring ``_as_int``); self-loops, empty endpoints,
@@ -48,11 +55,13 @@ _DIRECTION_COLUMN = {"forward": "target", "reverse": "source"}
 _PIVOT_COLUMN = {"forward": "source", "reverse": "target"}
 
 _NODE_SQL = "SELECT node_id, name, kind, path, line, col FROM symbols WHERE node_id = ? AND node_id <> ''"
+_NODES_MANY_SQL = "SELECT node_id, name, kind, path, line, col FROM symbols WHERE node_id IN ({ids}) AND node_id <> ''"
 _NAMED_SQL = (
     "SELECT node_id, name, kind, path, line, col FROM symbols "
     "WHERE lower(name) = lower(?) AND node_id <> '' ORDER BY path, line, col, node_id"
 )
 _NODE_COUNT_SQL = "SELECT COUNT(*) FROM symbols WHERE node_id <> ''"
+_NONASCII_SQL = "SELECT node_id, name, kind, path, line, col FROM symbols WHERE name GLOB '*[^ -~]*' AND node_id <> ''"
 _EDGE_COUNT_SQL = (
     "SELECT COUNT(*) FROM ("
     "SELECT e.source, e.target, e.kind, IFNULL(e.line, 0) AS ln FROM graph_edges e "
@@ -101,12 +110,13 @@ class SqlCodeGraph:
     by the answer, not by the store.
     """
 
-    __slots__ = ("_conn", "_counts", "_node_cache", "_stats")
+    __slots__ = ("_conn", "_counts", "_node_cache", "_nonascii", "_stats")
 
     def __init__(self, conn: sqlite3.Connection, *, stats: dict[str, int] | None = None) -> None:
         self._conn = conn
         self._stats = stats
         self._node_cache: dict[str, CodeNode | None] = {}
+        self._nonascii: tuple[CodeNode, ...] | None = None
         self._counts: dict[str, int] = {}
         self._conn.execute("BEGIN")
 
@@ -149,9 +159,66 @@ class SqlCodeGraph:
             self._node_cache[node_id] = _node_from_row(rows[0]) if rows else None
         return self._node_cache[node_id]
 
+    def nodes_many(self, node_ids: tuple[str, ...]) -> dict[str, CodeNode]:
+        """Batched :meth:`node` — one indexed ``IN (...)`` query per ``_CHUNK`` ids.
+
+        Measured why (SUB-178): a 14 916-caller hub query otherwise issued
+        one point lookup per entry — 64% of the op's CPU. Warm cache entries
+        are served without touching the database; misses are cached as
+        ``None`` exactly like :meth:`node`.
+        """
+        out: dict[str, CodeNode] = {}
+        missing: list[str] = []
+        for node_id in dict.fromkeys(node_ids):
+            if node_id in self._node_cache:
+                cached = self._node_cache[node_id]
+                if cached is not None:
+                    out[node_id] = cached
+            else:
+                missing.append(node_id)
+        for start in range(0, len(missing), _CHUNK):
+            chunk = missing[start : start + _CHUNK]
+            placeholders = ", ".join("?" for _ in chunk)
+            rows = self._rows(_NODES_MANY_SQL.format(ids=placeholders), tuple(chunk), "node_rows")
+            found: set[str] = set()
+            for row in rows:
+                node = _node_from_row(row)
+                self._node_cache[node.node_id] = node
+                out[node.node_id] = node
+                found.add(node.node_id)
+            for node_id in chunk:
+                if node_id not in found:
+                    self._node_cache[node_id] = None
+        return out
+
+    def _nonascii_nodes(self) -> tuple[CodeNode, ...]:
+        """The store's non-ASCII-named symbols, fetched once per instance.
+
+        One bounded ``GLOB '*[^ -~]*'`` scan (no index can serve it), then
+        cached — the parity pass in :meth:`named` iterates this set, so the
+        per-query cost is proportional to the store's non-ASCII names
+        (measured: a handful in a 163k-row real corpus), not to the store.
+        """
+        if self._nonascii is None:
+            rows = self._rows(_NONASCII_SQL, (), "node_rows")
+            self._nonascii = tuple(_node_from_row(row) for row in rows)
+        return self._nonascii
+
     def named(self, name: str) -> tuple[CodeNode, ...]:
+        """Case-insensitive name lookup, byte-identical to ``CodeGraph.named``.
+
+        SQL ``lower()`` folds ASCII only; the Python pass over the cached
+        non-ASCII set restores Unicode folds (KELVIN SIGN → ``k``, ``É`` →
+        ``é``). Results merge by ``node_id`` and keep the canonical
+        ``(path, line, col, node_id)`` order.
+        """
         rows = self._rows(_NAMED_SQL, (name,), "node_rows")
-        return tuple(_node_from_row(row) for row in rows)
+        found: dict[str, CodeNode] = {str(row[0]): _node_from_row(row) for row in rows}
+        lowered = name.lower()
+        for node in self._nonascii_nodes():
+            if node.name.lower() == lowered:
+                found.setdefault(node.node_id, node)
+        return tuple(sorted(found.values(), key=lambda node: (node.path, node.line, node.col, node.node_id)))
 
     def neighbours(
         self,

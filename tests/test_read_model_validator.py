@@ -65,6 +65,69 @@ def test_a_fresh_generation_passes(tmp_path: Path) -> None:
     assert report.node_count > 0
 
 
+def test_disk_verdict_skips_revalidation_across_instances(tmp_path: Path) -> None:
+    """SUB-178: a CLI query process must not re-pay the deep validation.
+
+    Measured: ``repair_if_stale`` validates the active generation on every
+    query, and validation loads ``graph.json`` through the pinned Graphify
+    loader — importing networkx (~0.4 s) plus the full graph per process.
+    The W16 in-memory cache cannot help across CLI processes, so a passing
+    verdict is persisted next to the generation, keyed by the same sha256
+    over every input byte. Any byte change misses and revalidates — fail
+    closed, identical report.
+    """
+    _, generation, manifest = _generation(tmp_path)
+    # The verdict key covers the validator config, and the projector builds
+    # its validator with the output root as a forbidden root — so the CLI's
+    # steady-state validators all share that config. Mirror it here.
+    output_root = tmp_path / "out"
+    config: dict[str, Any] = {"extra_forbidden_roots": (str(output_root.resolve()),)}
+    first = ReadModelValidator(**config).validate(generation, manifest)
+    assert first.ok
+    # A fresh validator instance + a cold module cache = a fresh CLI process.
+    from know_your_context import read_model_validator as rmv
+
+    with rmv._VALIDATION_CACHE_LOCK:  # noqa: SLF001 - test seam
+        rmv._VALIDATION_CACHE.clear()  # noqa: SLF001 - test seam
+    second = ReadModelValidator(**config)
+    calls: list[Path] = []
+    original = second._adapter.load_graph  # noqa: SLF001 - test seam
+
+    def spy(path: Path) -> Any:
+        calls.append(path)
+        return original(path)
+
+    second._adapter.load_graph = spy  # noqa: SLF001 - test seam  # type: ignore[method-assign]
+    report = second.validate(generation, manifest)
+    assert report == first, "the disk verdict must reproduce the identical report"
+    assert calls == [], f"the pinned loader ran despite a matching disk verdict: {calls}"
+
+
+def test_disk_verdict_fails_closed_on_any_byte_change(tmp_path: Path) -> None:
+    """A tampered artifact must bypass the persisted verdict and revalidate."""
+    _, generation, manifest = _generation(tmp_path)
+    assert ReadModelValidator().validate(generation, manifest).ok
+    graph_path = generation / "graph.json"
+    graph_path.write_bytes(graph_path.read_bytes() + b"\n")  # one byte, no manifest fix-up
+    verdict = ReadModelValidator().validate(generation, manifest)
+    assert not verdict.ok, "a changed graph.json must revalidate and fail the hash check"
+    # And once the tamper is reverted the original verdict is valid again.
+    graph_path.write_bytes(graph_path.read_bytes()[:-1])
+    assert ReadModelValidator().validate(generation, manifest).ok
+
+
+def test_disk_verdict_never_caches_a_failure(tmp_path: Path) -> None:
+    """A failing verdict is never persisted: failures revalidate every time."""
+    _, generation, manifest = _generation(tmp_path)
+    graph_path = generation / "graph.json"
+    graph_path.write_bytes(b"{}")  # empty graph, manifest now lies
+    assert not ReadModelValidator().validate(generation, manifest).ok
+    # The only verdict on disk is the publish-time one (keyed by the untampered
+    # bytes); the tampered content must validate — and FAIL — again, proving no
+    # "ok" verdict was ever persisted for it.
+    assert not ReadModelValidator().validate(generation, manifest).ok
+
+
 def test_rejects_bad_endpoints_and_unknown_keys(tmp_path: Path) -> None:
     _, generation, manifest = _generation(tmp_path)
     validator = ReadModelValidator()

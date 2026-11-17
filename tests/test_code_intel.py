@@ -592,3 +592,60 @@ class TestBoundaryViolations:
         result = boundary_violations(graph, layers={"ui": ("ui",)})
         assert result["total_violations"] == 0
         assert result["skipped_unlayered_edges"] == 1
+
+
+class TestAmbiguousUnion:
+    """SUB-177: traversal ops answer an ambiguous name with the union.
+
+    Measured (stress3 L4): ``codeintel callers-of parse_args`` on the stdlib
+    corpus hits 14 candidates and the op failed closed with
+    ``AMBIGUOUS_SYMBOL``, so a plain "who calls parse_args?" query — the one
+    every competitor answers — produced an error. The union is the honest
+    answer: callers of *any* node carrying that name, with the candidates
+    named explicitly in the payload. ``resolve_symbol`` keeps its strict
+    single-node contract (pinned above).
+    """
+
+    def _dup_graph(self):
+        return build_code_graph(
+            [
+                _node("n:1", "dup", path="a.py", line=1),
+                _node("n:2", "dup", path="b.py", line=1),
+                _node("n:c1", "caller_one", path="c.py"),
+                _node("n:c2", "caller_two", path="d.py"),
+            ],
+            [_edge("n:c1", "n:1"), _edge("n:c2", "n:2")],
+        )
+
+    def test_callers_of_unions_every_candidate(self):
+        result = callers_of(self._dup_graph(), "dup", max_depth=1)
+        assert result["ambiguous"] is True
+        assert [c["node_id"] for c in result["candidates"]] == ["n:1", "n:2"]
+        assert result["root"]["node_id"] == "n:1", "the first candidate is the displayed root"
+        assert {entry["node_id"] for entry in result["entries"]} == {"n:c1", "n:c2"}
+        assert result["total"] == 2
+
+    def test_callees_of_unions_every_candidate(self):
+        graph = build_code_graph(
+            [
+                _node("n:1", "dup", path="a.py", line=1),
+                _node("n:2", "dup", path="b.py", line=1),
+                _node("n:t1", "target_one", path="e.py"),
+                _node("n:t2", "target_two", path="f.py"),
+            ],
+            [_edge("n:1", "n:t1"), _edge("n:2", "n:t2")],
+        )
+        result = callees_of(graph, "dup", max_depth=1)
+        assert result["ambiguous"] is True
+        assert {entry["node_id"] for entry in result["entries"]} == {"n:t1", "n:t2"}
+
+    def test_impact_analysis_unions_every_candidate(self):
+        result = impact_analysis(self._dup_graph(), "dup", max_depth=1)
+        assert result["ambiguous"] is True
+        assert {entry["node_id"] for entry in result["entries"]} == {"n:c1", "n:c2"}
+
+    def test_single_match_payload_has_no_ambiguity_keys(self):
+        graph = build_code_graph([_node("n:1", "solo")], [])
+        result = callers_of(graph, "solo", max_depth=1)
+        assert "ambiguous" not in result
+        assert "candidates" not in result

@@ -19,7 +19,7 @@ Each is a CLI subcommand taking one JSON payload, and an MCP tool
 
 | Command | MCP tool | What it does |
 |---|---|---|
-| `query` | `knowledge_query` | Token-budgeted traversal for a purpose; honors `access_only`, depth, mode, relation allowlist |
+| `query` | `knowledge_query` | Token-budgeted traversal for a purpose; honors `access_only`, depth, mode, relation allowlist. When the projection has no match but a code index was ingested (`ingest` without `--apply`), the answer comes from that index with `routing: "code_index_fallback"` |
 | `get-node` | `knowledge_get_node` | Fetch one node with provenance and scores |
 | `get-subtree` | `knowledge_get_subtree` | Fetch a bounded subtree |
 | `log-event` | `knowledge_log_event` | Append an audited learning event |
@@ -79,7 +79,7 @@ Contract v3/v4 additions (same three surfaces):
 | `apply-ingest` | `--domain`, `--max-nodes`, `--no-rebuild` | Apply the ingested code index to the knowledge graph (the official ingest → apply → query path; one transaction, idempotent, projection rebuilt at the end) |
 | `extraction` | `review` (`--status`, `--receipt`), `approve`, `reject` | Operator-only contract-v4 review queue |
 | `debt` | `list`, `report` (`--format json\|markdown`, `--record`, `--ledger`), `propose` NODE_ID | Knowledge debt queue: budgeted prioritized list, burn-down metrics over a hash-chained ledger, proposal-gated actions (improve/merge/retire); kill switch `KYS_DEBT_QUEUE` |
-| `codeintel` | `callers-of` SYMBOL, `callees-of` SYMBOL, `dependency-path` SOURCE TARGET, `impact` SYMBOL, `co-change`, `boundary-violations` (`--layers name:prefix;...`, `--allow from:to,...`) | Deep code-intelligence graph ops over the universal code graph: transitive callers/callees, shortest dependency path, impact analysis (reverse closure + owner chain), co-change pairs from source-version history, and cross-layer boundary violations; canonical JSON, typed errors, read-only |
+| `codeintel` | `callers-of` SYMBOL, `callees-of` SYMBOL, `dependency-path` SOURCE TARGET, `impact` SYMBOL, `co-change`, `boundary-violations` (`--layers name:prefix;...`, `--allow from:to,...`) | Deep code-intelligence graph ops over the universal code graph: transitive callers/callees, shortest dependency path, impact analysis (reverse closure + owner chain), co-change pairs from source-version history, and cross-layer boundary violations; canonical JSON, typed errors, read-only. An ambiguous symbol name (several definitions) is answered by `callers-of`/`callees-of`/`impact` as the union over every candidate with `ambiguous: true` + a `candidates` list; `dependency-path` endpoints stay strict (typed `AmbiguousSymbolError`) |
 | `provenance` | `verify` (`--json`, `--root`) | Re-derive the 5-link extraction provenance chain of one node (read-only; exit 0 verified, 1 failed, 3 unverified) |
 | `watch` | `path`, `--interval`, `--once`, `--max-cycles`, `--debounce` | Polling watcher driving incremental re-ingestion |
 

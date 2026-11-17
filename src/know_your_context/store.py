@@ -1923,6 +1923,28 @@ class EventStore:
             rows = conn.execute("SELECT * FROM symbols WHERE path = ? ORDER BY line, col, node_id", (path,)).fetchall()
         return [self._symbol_row(row) for row in rows]
 
+    def symbols_containing(self, fragment: str, *, limit: int = 64) -> list[SymbolRow]:
+        """Case-insensitive substring lookup over symbol names, deterministically ranked.
+
+        SUB-177: the query code-index fallback needs "symbols whose name
+        contains the purpose term" — an index-seeking exact lookup cannot
+        answer it, and a leading-wildcard ``LIKE`` never uses one, so this is
+        an honest bounded scan: shortest names first (the most specific
+        hits), ties broken by name/location so two runs return the same list.
+        ``%``/``_`` in the fragment are literal (``ESCAPE``), never pattern
+        characters.
+        """
+        if not fragment:
+            return []
+        escaped = fragment.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        with self.read() as conn:
+            rows = conn.execute(
+                "SELECT * FROM symbols WHERE lower(name) LIKE '%' || lower(?) || '%' ESCAPE '\\' "
+                "ORDER BY length(name), name, path, line, col, node_id LIMIT ?",
+                (escaped, limit),
+            ).fetchall()
+        return [self._symbol_row(row) for row in rows]
+
     # ------------------------------------------------------ v3: graph edges
 
     def add_graph_edge(

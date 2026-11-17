@@ -29,8 +29,6 @@ from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 from typing import Any
 
-from graphify.ids import make_id
-
 from know_your_context.domain import canonical_json
 
 __all__ = [
@@ -93,6 +91,8 @@ def file_scoped_id(rel_path: str) -> str:
     while ".." in normalized:
         normalized = normalized.replace("..", "")
     stem = PurePosixPath(normalized).with_suffix("").as_posix()
+    from graphify.ids import make_id  # deferred: light (re+unicodedata), but a read verb needn't load it
+
     return make_id(stem.replace("/", "_")) or "doc"
 
 
@@ -158,6 +158,8 @@ class FragmentGenerator:
 
         stack: list[tuple[int, str]] = []
         used: dict[str, int] = {}
+        from graphify.ids import make_id  # deferred: heading-walk path only
+
         for level, heading in sections:
             base = slugify(heading)
             occurrence = used.get(base, 0) + 1

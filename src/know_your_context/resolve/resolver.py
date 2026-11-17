@@ -11,6 +11,16 @@ c. **import_path** — module-based languages only: Python dotted/relative
    ``/__init__.py``), JS/TS relative specifiers resolved against the source
    directory with the extension/index-name search order. Bare JS/TS
    specifiers fail as ``external_module``.
+d. **module_helper** — per-language candidate paths (W12).
+e. **exact_scoped** (SUB-181) — only for refs that would otherwise fail with
+   an ambiguity reason: 2+ symbols share ``target_name``, so pick by lexical
+   scope. *File scope* first — exactly one same-name symbol in the referring
+   file is the bound definition (module-level shadowing). *Import scope*
+   second — exactly one same-name symbol in a module the referring file
+   imports (its ``imports`` refs resolved with the tier-(c) rules). Still 2+
+   candidates after both scopes → the ref keeps failing with the original
+   ``ambiguous_exact:N`` reason. The tier runs *after* (a)–(d) so it can only
+   convert failures into edges, never retarget a ref that already resolved.
 
 Ambiguity never guesses: a tier with 2+ candidates defers to the next tier
 (import-path can disambiguate via the module path, e.g. ``pkg.mod.func``);
@@ -136,7 +146,7 @@ class RefOutcome:
 
     ref_id: int
     status: Literal["resolved", "failed"]
-    strategy: Literal["exact", "name_tail", "import_path", "module_helper"] | None
+    strategy: Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped"] | None
     target_node_id: str | None
     reason: str | None
 
@@ -155,12 +165,15 @@ class BatchReport:
 
 @dataclass(frozen=True)
 class _Decision:
-    strategy: Literal["exact", "name_tail", "import_path", "module_helper"] | None
+    strategy: Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped"] | None
     target_node_id: str | None
     reason: str | None
 
 
-def _hit(strategy: Literal["exact", "name_tail", "import_path", "module_helper"], target_node_id: str) -> _Decision:
+def _hit(
+    strategy: Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped"],
+    target_node_id: str,
+) -> _Decision:
     return _Decision(strategy, target_node_id, None)
 
 
@@ -227,10 +240,25 @@ class _PassCache:
     tail_counts: dict[str, int]
     module_files: dict[str, tuple[str, FileRow | int | None]]
     symbols_in_file: dict[tuple[str, str], tuple[str, SymbolRow | int | None]]
+    #: SUB-181: scope tier memos — (name, sorted paths) → same-name lookup
+    #: verdict, source path → the module paths it imports, source path → its
+    #: raw import target names.
+    same_name_in_paths: dict[tuple[str, tuple[str, ...]], tuple[str, SymbolRow | int | None]]
+    imported_paths: dict[str, frozenset[str]]
+    import_targets: dict[str, tuple[str, ...]]
 
     @classmethod
     def fresh(cls) -> _PassCache:
-        return cls(source_context={}, name_counts={}, tail_counts={}, module_files={}, symbols_in_file={})
+        return cls(
+            source_context={},
+            name_counts={},
+            tail_counts={},
+            module_files={},
+            symbols_in_file={},
+            same_name_in_paths={},
+            imported_paths={},
+            import_targets={},
+        )
 
 
 class ReferenceResolver:
@@ -397,6 +425,12 @@ class ReferenceResolver:
                 if decision is not None:
                     return decision
         if deferred_reason is not None:
+            # (e) SUB-181 scope tier: the name is defined 2+ times, so try the
+            # lexical scopes before declaring ambiguity. Runs last, so it can
+            # only rescue a ref that would have failed — never retarget one.
+            scoped = self._resolve_scoped(store, ref, source_path, language, cache=pass_cache)
+            if scoped is not None:
+                return scoped
             return _fail(deferred_reason)
         return _fail("no_resolution")
 
@@ -539,6 +573,137 @@ class ReferenceResolver:
         if not matches:
             return ("miss", None)
         return ("ambiguous", len(matches))
+
+    # ------------------------------------------------- scope tier (SUB-181)
+
+    #: Bound-variable ceiling per ``IN (...)`` probe (SQLite caps the count;
+    #: a file importing a thousand modules must not trip it).
+    _SCOPE_PATH_CHUNK: int = 400
+
+    def _resolve_scoped(
+        self, store: EventStore, ref: UnresolvedRefRow, source_path: str, language: str, *, cache: _PassCache
+    ) -> _Decision | None:
+        """File scope, then import scope; ``None`` keeps the ambiguity verdict.
+
+        Both scopes ask one question — "is there exactly ONE same-name symbol
+        in this scope?" — with a count-first lookup, so a name with 300
+        definitions still materialises at most one candidate row (the B7
+        cost model). Two or more candidates in a scope is *not* a guess: the
+        next scope runs, and if none is decisive the ref keeps failing with
+        its original ambiguity reason.
+        """
+        status, payload = self._same_name_in_paths(store, ref.target_name, (source_path,), cache=cache)
+        if status == "hit":
+            assert isinstance(payload, SymbolRow)
+            return _hit("exact_scoped", payload.node_id)
+        imported = self._imported_paths(store, source_path, language, cache=cache)
+        if imported:
+            status, payload = self._same_name_in_paths(store, ref.target_name, tuple(sorted(imported)), cache=cache)
+            if status == "hit":
+                assert isinstance(payload, SymbolRow)
+                return _hit("exact_scoped", payload.node_id)
+        return None
+
+    def _same_name_in_paths(
+        self, store: EventStore, name: str, paths: tuple[str, ...], *, cache: _PassCache | None = None
+    ) -> tuple[str, SymbolRow | int | None]:
+        """``("hit", row)`` only when the path set holds exactly one *name*.
+
+        ``("ambiguous", n)`` / ``("miss", None)`` otherwise — the same
+        verdict triple the module lookups use.
+        """
+        ordered = tuple(sorted({path for path in paths if path}))
+        if not ordered:
+            return ("miss", None)
+        key = (name, ordered)
+        if cache is not None and key in cache.same_name_in_paths:
+            return cache.same_name_in_paths[key]
+        result = self._same_name_in_paths_uncached(store, name, ordered)
+        if cache is not None:
+            cache.same_name_in_paths[key] = result
+        return result
+
+    @classmethod
+    def _same_name_in_paths_uncached(
+        cls, store: EventStore, name: str, ordered: tuple[str, ...]
+    ) -> tuple[str, SymbolRow | int | None]:
+        total = 0
+        first: SymbolRow | None = None
+        for start in range(0, len(ordered), cls._SCOPE_PATH_CHUNK):
+            chunk = ordered[start : start + cls._SCOPE_PATH_CHUNK]
+            placeholders = ", ".join("?" for _ in chunk)
+            with store.read() as conn:
+                row = conn.execute(
+                    f"SELECT COUNT(*) AS n FROM symbols WHERE name = ? AND path IN ({placeholders})",
+                    (name, *chunk),
+                ).fetchone()
+                total += 0 if row is None else int(row["n"])
+                if total > 1:
+                    return ("ambiguous", total)
+                if total == 1 and first is None:
+                    # Fetch only the single decisive row (never the candidate set).
+                    hit = conn.execute(
+                        f"SELECT * FROM symbols WHERE name = ? AND path IN ({placeholders}) "
+                        "ORDER BY path, line, col, node_id LIMIT 1",
+                        (name, *chunk),
+                    ).fetchone()
+                    if hit is not None:
+                        first = _symbol_row(hit)
+        if total == 0 or first is None:
+            return ("miss", None)
+        return ("hit", first)
+
+    def _import_targets(self, store: EventStore, source_path: str, *, cache: _PassCache) -> tuple[str, ...]:
+        """Module specifiers named by the referring file's ``imports`` refs.
+
+        Read from ``unresolved_refs`` (rows persist after resolution), so the
+        scope verdict is a pure function of the store — batch order and earlier
+        passes cannot change it.
+        """
+        cached = cache.import_targets.get(source_path)
+        if cached is not None:
+            return cached
+        with store.read() as conn:
+            rows = conn.execute(
+                "SELECT DISTINCT target_name FROM unresolved_refs "
+                "WHERE kind = 'imports' AND (source_node_id = ? OR source_node_id IN "
+                "(SELECT node_id FROM symbols WHERE path = ?)) ORDER BY target_name",
+                (f"file:{source_path}", source_path),
+            ).fetchall()
+        targets = tuple(str(row["target_name"]) for row in rows)
+        cache.import_targets[source_path] = targets
+        return targets
+
+    def _imported_paths(
+        self, store: EventStore, source_path: str, language: str, *, cache: _PassCache
+    ) -> frozenset[str]:
+        """The store files the referring file imports (tier-(c) rules, memoised)."""
+        cached = cache.imported_paths.get(source_path)
+        if cached is not None:
+            return cached
+        paths: set[str] = set()
+        if language in self._config.module_languages:
+            for target in self._import_targets(store, source_path, cache=cache):
+                if language == "python":
+                    decision = self._resolve_python_import(store, source_path, target, "imports", cache=cache)
+                else:
+                    decision = self._resolve_js_import(store, source_path, target, cache=cache)
+                if decision is None or decision.reason is not None or decision.target_node_id is None:
+                    continue
+                path = self._node_path(store, decision.target_node_id)
+                if path is not None:
+                    paths.add(path)
+        result = frozenset(paths)
+        cache.imported_paths[source_path] = result
+        return result
+
+    @staticmethod
+    def _node_path(store: EventStore, node_id: str) -> str | None:
+        """The file path a node id lives in (``file:`` nodes or symbols)."""
+        if is_file_node_id(node_id):
+            return node_id[len("file:") :]
+        symbol = store.symbol_by_node(node_id)
+        return None if symbol is None else symbol.path
 
     @staticmethod
     def _relative_import_prefix(source_path: str, dots: int) -> str:

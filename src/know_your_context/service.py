@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import threading
 import time
 from collections.abc import Mapping
@@ -96,7 +97,16 @@ from know_your_context.contracts import (
     estimated_tokens_of_payload,
     score_text,
 )
-from know_your_context.domain import Event, EventKind, Evidence, Node, canonical_json, quantize_score, storage_payload
+from know_your_context.domain import (
+    Event,
+    EventKind,
+    Evidence,
+    Node,
+    PrimaryDomain,
+    canonical_json,
+    quantize_score,
+    storage_payload,
+)
 from know_your_context.events import Invocation, InvocationOutcome, WriteReceipt
 from know_your_context.importer import DEFAULT_PARSER_VERSIONS
 from know_your_context.improvement import (
@@ -171,6 +181,19 @@ _PROJECTION_WAIT_POLL_SECONDS = 0.01
 _MAX_PROVENANCE_ENTRIES = 32
 _MAX_PROVENANCE_LENGTH = 256
 _MAX_SUMMARY_LENGTH = 256
+
+# SUB-177: the ``code_index_fallback`` lane. When the router reports
+# ``no_match``/``ambiguous`` but the store holds an ingested code index
+# (``ingest`` without ``--apply``), ``query`` answers from that index instead
+# of returning nothing — the plain ingest → query flow then works exactly
+# like ``codegraph init`` → ``query`` / ``graphify extract`` → ``query``
+# (measured gap: 0/4, 0/20, 0/50, 0/50 W2 hits vs 100% for both competitors
+# in stress3/results2.jsonl). The knowledge projection always wins when it
+# has its own match; the fallback never fires without a code index.
+_CODE_INDEX_FALLBACK_MAX_RESULTS = 16
+_CODE_INDEX_FALLBACK_MAX_TOKENS = 8
+_CODE_INDEX_FALLBACK_CONFIDENCE = "0.500000000000"  # lexical hit, not learning-scored
+_PURPOSE_TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _RECOMMENDATION_LIST_CAP = 3
 _RECOMMENDATION_EXPIRY_DAYS = 30
 
@@ -681,6 +704,107 @@ class KnowledgeService:
         total = sum((Decimal(result.confidence) for result in results), Decimal(0))
         return score_text(total / Decimal(len(results)))
 
+    # ------------------------------------------- code-index fallback (SUB-177)
+
+    def _code_index_results(self, request: QueryRequest) -> list[tuple[ResultNode, str]]:
+        """Lexical symbol hits from the ingested code index, ranked deterministically.
+
+        Only consulted after the router reports ``no_match``/``ambiguous``:
+        the knowledge projection always wins its own matches. Exact name hits
+        rank before case-insensitive exact hits, which rank before substring
+        hits; every stage dedupes by node id, so the output order is a pure
+        function of the store's contents. Each result carries a fixed
+        mid-confidence (a lexical hit, not a learning-scored one) and a
+        ``code://path#L<line>`` provenance string.
+        """
+        _files, symbols = self._store.code_index_size()
+        if symbols == 0:
+            return []
+        tokens = _PURPOSE_TOKEN_RE.findall(request.purpose)[:_CODE_INDEX_FALLBACK_MAX_TOKENS]
+        if not tokens:
+            return []
+        seen: set[str] = set()
+        ranked: list[Any] = []
+
+        def absorb(rows: list[Any]) -> None:
+            for row in rows:
+                if row.node_id not in seen:
+                    seen.add(row.node_id)
+                    ranked.append(row)
+
+        for token in tokens:
+            absorb(self._store.symbols_named(token))
+        for token in tokens:
+            absorb(self._store.symbols_named(token, case_insensitive=True))
+        # The substring stage is a table scan per token — a recall net only,
+        # never a rank booster on the exact-hit path (measured: 46/50 storm
+        # queries timed out at 120 s when it ran unconditionally, L3/SUB-177).
+        if not ranked:
+            for token in tokens:
+                if len(ranked) >= _CODE_INDEX_FALLBACK_MAX_RESULTS:
+                    break
+                absorb(self._store.symbols_containing(token, limit=_CODE_INDEX_FALLBACK_MAX_RESULTS))
+        out: list[tuple[ResultNode, str]] = []
+        for row in ranked[:_CODE_INDEX_FALLBACK_MAX_RESULTS]:
+            summary = _redacted_content(
+                f"{row.name} — {row.kind} in {row.path}:{row.line}", max_length=_MAX_SUMMARY_LENGTH
+            )
+            node = ResultNode(
+                node_id=row.node_id,
+                summary=summary,
+                domain=str(PrimaryDomain.P1.value),
+                kind=str(row.kind),
+                version=1,
+                confidence=_CODE_INDEX_FALLBACK_CONFIDENCE,
+                p="0.000000000000",
+            )
+            out.append((node, f"code://{row.path}#L{row.line}"))
+        return out
+
+    def _finalize_code_index_query(
+        self,
+        meta: dict[str, Any],
+        pairs: list[tuple[ResultNode, str]],
+        request: QueryRequest,
+    ) -> QueryResponse:
+        """Budget-fit the fallback response exactly like the ranked path does."""
+        truncated = False
+        while True:
+            results = [node for node, _prov in pairs]
+            confidence = self._aggregate_confidence(results)
+            node_versions = {node.node_id: node.version for node in results}
+            provenance = tuple(sorted({prov for _node, prov in pairs}))[:_MAX_PROVENANCE_ENTRIES]
+            response = self._finalize_query(
+                {
+                    **meta,
+                    "truncated": truncated,
+                    "routing": "code_index_fallback",
+                    "candidates": (),
+                    "confidence": confidence,
+                    "node_versions": node_versions,
+                    "provenance": provenance,
+                    "results": tuple(results),
+                    "recommendations": RecommendationBlock.empty(),
+                    "access_only": False,
+                    "knowledge_payload_tokens": self._knowledge_payload_tokens(
+                        results,
+                        confidence=confidence,
+                        node_versions=node_versions,
+                        provenance=provenance,
+                        recommendations=RecommendationBlock.empty(),
+                    ),
+                }
+            )
+            if response.estimated_tokens <= request.token_budget:
+                return response
+            if not results:
+                raise MetadataExceedsBudget(
+                    f"mandatory metadata alone needs {response.estimated_tokens} tokens "
+                    f"over the {request.token_budget}-token budget"
+                )
+            pairs = pairs[:-1]
+            truncated = True
+
     # --------------------------------------------------------------------- query
 
     @staticmethod
@@ -798,6 +922,9 @@ class KnowledgeService:
                 "active projection; there is no keyword fallback"
             )
         if outcome.status in {"ambiguous", "no_match"}:
+            fallback_results = self._code_index_results(request)
+            if fallback_results:
+                return self._finalize_code_index_query(meta, fallback_results, request)
             return self._finalize_query(
                 {
                     **meta,

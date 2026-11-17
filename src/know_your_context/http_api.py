@@ -56,18 +56,11 @@ from contextlib import asynccontextmanager
 from dataclasses import asdict, dataclass, is_dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal, NoReturn
+from typing import TYPE_CHECKING, Any, Literal, NoReturn
 
-import uvicorn
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
-from starlette.applications import Starlette
-from starlette.concurrency import run_in_threadpool
-from starlette.requests import ClientDisconnect, Request
-from starlette.responses import Response
-from starlette.routing import Route
 
 from know_your_context.audit import AuditLog
-from know_your_context.backup import BackupError, backup_store, restore_store
 from know_your_context.contracts import (
     DEFAULT_MAX_TOKEN_BUDGET,
     MINIMUM_TOKEN_BUDGET,
@@ -86,17 +79,6 @@ from know_your_context.contracts import (
 )
 from know_your_context.domain import Evidence, Node, RelationKind, canonical_json, new_id
 from know_your_context.events import Invocation, InvocationOutcome
-from know_your_context.extraction import ExtractionError
-from know_your_context.ingest.pipeline import (
-    ExtractorUnavailableError,
-    IngestionBudget,
-    IngestionError,
-    IngestionPipeline,
-    PathNotFoundError,
-    PathNotReadableError,
-    PathOutsideRootError,
-)
-from know_your_context.observability import HealthReport, check_readiness
 from know_your_context.operations import DEFAULT_HOST_ALLOWLIST as _DEFAULT_HOST_ALLOWLIST
 from know_your_context.operations import KNOWLEDGE_OPERATIONS as _KNOWLEDGE_OPERATIONS
 from know_your_context.operations import OPS_OPERATIONS as _OPS_OPERATIONS
@@ -120,6 +102,34 @@ from know_your_context.source_registry import SourceKind
 from know_your_context.source_watcher import SourceChange, SourceWatcher
 from know_your_context.store import EventStore, StoreError
 from know_your_context.update_pipeline import SourceWatchLoop, UpdatePipelineError
+
+# Module-level bindings kept for the test/monkeypatch seam (SUB-179): handlers
+# below still import lazily for the CLI fast path, but the module attribute must
+# exist so a patch on ``http_api.backup_store`` / ``http_api.uvicorn`` is seen.
+try:  # pragma: no cover - import-only
+    from know_your_context.backup import backup_store, restore_store  # noqa: F401
+except Exception:  # pragma: no cover - backup is a core module; guard is defensive
+    backup_store = None  # type: ignore[assignment]
+    restore_store = None  # type: ignore[assignment]
+
+try:  # pragma: no cover - serve-only dependency
+    import uvicorn  # noqa: F401
+except Exception:  # pragma: no cover - serve extra missing
+    uvicorn = None  # type: ignore[assignment]
+
+if TYPE_CHECKING:
+    # Annotation-only names. At runtime these import inside the functions
+    # that use them (SUB-178): a local ``query``/``codeintel`` verb pays for
+    # the service chain only — never uvicorn/starlette (serve), the ingest
+    # pipeline/extraction engine (write verbs), backup, or observability.
+    # Measured: 2.83 s of the 3.1 s ``query`` CLI wall was this import tax,
+    # and in the 50-agent storm it decided the collapse.
+    from starlette.applications import Starlette
+    from starlette.requests import Request
+    from starlette.responses import Response
+
+    from know_your_context.extraction import ExtractionError
+    from know_your_context.ingest.pipeline import ExtractorUnavailableError, IngestionError
 
 __all__ = [
     "API_VERSION",
@@ -500,6 +510,8 @@ def _recheck_ops_path(stack: LocalStack, candidate: str, pre_op: Path) -> None:
 
 def _call_backup(stack: LocalStack, request: _BackupPayload, actor: str, idem: str | None) -> Any:
     dest = _resolve_ops_path(stack, request.dest_path)
+    if backup_store is None:  # pragma: no cover - import guard
+        raise KnowledgeError("backup module unavailable")
     receipt = backup_store(stack.store, dest)
     _recheck_ops_path(stack, request.dest_path, dest)
     return receipt
@@ -508,6 +520,8 @@ def _call_backup(stack: LocalStack, request: _BackupPayload, actor: str, idem: s
 def _call_restore(stack: LocalStack, request: _RestorePayload, actor: str, idem: str | None) -> Any:
     backup_path = _resolve_ops_path(stack, request.backup_path)
     dest = _resolve_ops_path(stack, request.dest_path)
+    if restore_store is None:  # pragma: no cover - import guard
+        raise KnowledgeError("backup module unavailable")
     receipt = restore_store(backup_path, dest, overwrite=request.overwrite)
     _recheck_ops_path(stack, request.backup_path, backup_path)
     _recheck_ops_path(stack, request.dest_path, dest)
@@ -515,6 +529,8 @@ def _call_restore(stack: LocalStack, request: _RestorePayload, actor: str, idem:
 
 
 def _call_health(stack: LocalStack, request: _EmptyPayload, actor: str, idem: str | None) -> Any:
+    from know_your_context.observability import check_readiness
+
     return check_readiness(stack.store, projector=stack.projector)
 
 
@@ -688,6 +704,16 @@ def run_ingest_verb(
     itself (everything after).
     """
     started = time.monotonic()
+    # The pipeline is a write-verb dependency: a read-only ``query`` process
+    # must never pay its import (SUB-178 lazy-import fix), so it lands here.
+    from know_your_context.ingest.pipeline import (
+        IngestionBudget,
+        IngestionPipeline,
+        PathNotFoundError,
+        PathNotReadableError,
+        PathOutsideRootError,
+    )
+
     if verb not in INGEST_VERBS:
         raise ValueError(f"unknown ingestion verb {verb!r}")  # adapter-internal misuse, never wired
     if not isinstance(arguments, Mapping):
@@ -1150,6 +1176,8 @@ _OPS_ERROR_MAP: dict[str, tuple[str, int, bool]] = {
 
 
 def _ops_error_mapping(error: BaseException) -> tuple[str, int, bool] | None:
+    from know_your_context.backup import BackupError
+
     if not isinstance(error, (BackupError, ProjectionError)):
         return None
     return _OPS_ERROR_MAP.get(type(error).__name__)
@@ -1206,7 +1234,9 @@ def error_envelope(error: BaseException) -> dict[str, Any]:
 
 
 def _json_response(payload: Any, *, status: int = 200) -> Response:
-    return Response(content=canonical_json(payload), status_code=status, media_type="application/json")
+    from starlette.responses import Response as _Response
+
+    return _Response(content=canonical_json(payload), status_code=status, media_type="application/json")
 
 
 # --------------------------------------------------------------- http surface
@@ -1533,6 +1563,11 @@ def create_app(
     (``RELEARN_PENDING``) with no auto-apply — see :func:`_build_watch_loop`.
     """
     watch_loop: SourceWatchLoop | None = None
+    # Serve-only dependencies (SUB-178): local verbs must never import them.
+    from starlette.applications import Starlette
+    from starlette.concurrency import run_in_threadpool
+    from starlette.routing import Route
+
     if watch_root is not None:
         watch_loop = _build_watch_loop(
             stack,
@@ -1603,6 +1638,11 @@ def create_app(
 
 
 async def _handle(stack: LocalStack, operation: str, request: Request, max_body_bytes: int) -> Response:
+    from starlette.concurrency import run_in_threadpool
+    from starlette.requests import ClientDisconnect
+
+    from know_your_context.observability import HealthReport
+
     # CSRF guard (wave-2 F1): cross-origin forms cannot set application/json,
     # so requiring it fails browser drive-bys closed before any dispatch.
     content_type = request.headers.get("content-type")
@@ -1648,6 +1688,11 @@ async def _handle(stack: LocalStack, operation: str, request: Request, max_body_
 
 async def _handle_extraction(stack: LocalStack, verb: str, request: Request, max_body_bytes: int) -> Response:
     """The contract-v4 extraction route: same body/CSRF discipline as _handle_ingest."""
+    from starlette.concurrency import run_in_threadpool
+    from starlette.requests import ClientDisconnect
+
+    from know_your_context.extraction import ExtractionError
+
     content_type = request.headers.get("content-type")
     media_type = content_type.split(";", 1)[0].strip().lower() if content_type else ""
     if media_type != "application/json":
@@ -1682,6 +1727,11 @@ async def _handle_extraction(stack: LocalStack, verb: str, request: Request, max
 
 async def _handle_ingest(stack: LocalStack, verb: str, request: Request, max_body_bytes: int) -> Response:
     """The contract-v3 ingestion routes: same body/CSRF discipline as _handle."""
+    from starlette.concurrency import run_in_threadpool
+    from starlette.requests import ClientDisconnect
+
+    from know_your_context.ingest.pipeline import ExtractorUnavailableError, IngestionError
+
     content_type = request.headers.get("content-type")
     media_type = content_type.split(";", 1)[0].strip().lower() if content_type else ""
     if media_type != "application/json":
@@ -1841,6 +1891,8 @@ def serve(
         watch_state_path=watch_state_path,
     )
     listener: socket.socket | None = None
+    import uvicorn  # serve-only dependency: local verbs must never pay it
+
     if socket_path is not None:
         listener = _bind_unix_socket(socket_path)
         config = uvicorn.Config(app, fd=listener.fileno(), timeout_keep_alive=timeout_keep_alive)
@@ -1860,3 +1912,4 @@ def serve(
                 _unlink_stale_socket(Path(socket_path))
             except BindPolicyError:
                 logger.warning("leaving socket path %r in place: it no longer names our stale socket", socket_path)
+

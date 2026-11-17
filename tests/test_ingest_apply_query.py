@@ -98,9 +98,15 @@ def test_query_is_blind_before_apply_and_sees_the_corpus_after(tmp_path: Path) -
 
     before = _counts(store_path)
     assert before["symbols"] > 0, "the ingest must have written the code index"
-    assert before["node_revision"] == 0, "the documented B1 gap: no knowledge nodes yet"
+    assert before["node_revision"] == 0, "no knowledge nodes yet — the projection is empty"
     blind = service.query(QueryRequest(purpose="Widget", token_budget=1024))
-    assert blind.results == (), "pre-apply query cannot see the ingested corpus (the bug)"
+    # SUB-177: pre-apply the query is no longer blind — the code-index
+    # fallback answers from the ingested symbols (routing tells the caller
+    # which lane answered). The apply lane below remains the step that
+    # materialises the corpus as scored knowledge nodes.
+    assert blind.routing == "code_index_fallback"
+    assert blind.results, "the code index must answer pre-apply"
+    assert blind.required_knowledge_watermark == 0
 
     receipt = apply_ingested_corpus(store, corpus_root=corpus, projector=projector)
     assert receipt.files_applied == len(CORPUS)

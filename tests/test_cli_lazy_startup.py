@@ -79,3 +79,62 @@ def test_version_and_help_do_not_open_a_store(tmp_path: Path) -> None:
     result = _run(["-m", "know_your_context", "--store", str(store), "--version"])
     assert result.returncode == 0
     assert not store.exists(), "a --version invocation must not create the store"
+
+
+#: Subsystems a read-only local verb never needs. Measured (SUB-178, stress3
+#: profile of ``query`` at L3 scale): importing ``http_api`` cost 2.83 s of the
+#: 3.1 s CLI wall because its module level pulled uvicorn/starlette (serve
+#: only), ``ingest.pipeline`` + ``extraction`` (write/HTTP verbs), ``backup``,
+#: ``relearn`` and ``observability`` (ops verbs). In the 50-agent storm that
+#: import tax is paid by every query process and decided the collapse.
+#: ``backup``/``relearn`` are NOT on this list: ``service`` imports ``relearn``
+#: (which imports ``backup``) at module level, so they ride the service chain
+#: every verb pays anyway — measured marginal cost on top of it: 0.000 s.
+QUERY_FORBIDDEN_MODULES = (
+    "uvicorn",
+    "starlette",
+    "networkx",  # graphify_adapter's graph algorithms — rebuild path only
+    "graphify",  # the vendored graph builder — rebuild path only
+    "know_your_context.ingest.pipeline",
+    "know_your_context.extraction",
+    "know_your_context.observability",
+)
+
+
+def test_query_verb_loads_no_serve_or_write_subsystems(tmp_path: Path) -> None:
+    """``query`` pays for the service chain only, never the HTTP/ingest stack.
+
+    Two processes: the first publishes the projection (a fresh output root
+    legitimately runs one rebuild — networkx/graphify are rebuild-path
+    dependencies); the asserted second process then reads a current
+    projection, which is the storm's steady state.
+    """
+    forbidden = sorted(set(QUERY_FORBIDDEN_MODULES))
+    store_path = str(tmp_path / "q.sqlite3")
+    proj_root = str(tmp_path / "proj")
+    seed = (
+        "import io, json, sys\n"
+        "from know_your_context.store import EventStore\n"
+        f"store = EventStore({store_path!r})\n"
+        "store.upsert_symbol(node_id='n:1', name='Widget', kind='class', path='w.py', line=1, col=0)\n"
+        "store.close()\n"
+        "from know_your_context.cli import main\n"
+        "sys.stdin = io.StringIO(json.dumps({'purpose': 'Widget', 'token_budget': 512}))\n"
+        f"rc = main(['--store', {store_path!r}, '--output-root', {proj_root!r}, 'query', '-'])\n"
+        "assert rc == 0, rc\n"
+    )
+    first = _run(["-c", seed])
+    assert first.returncode == 0, first.stderr
+    probe = (
+        "import io, json, sys\n"
+        "from know_your_context.cli import main\n"
+        "sys.stdin = io.StringIO(json.dumps({'purpose': 'Widget', 'token_budget': 512}))\n"
+        f"rc = main(['--store', {store_path!r}, '--output-root', {proj_root!r}, 'query', '-'])\n"
+        "assert rc == 0, rc\n"
+        f"loaded = sorted(m for p in {forbidden!r} for m in sys.modules if m == p or m.startswith(p + '.'))\n"
+        "print('FORBIDDEN:' + ','.join(loaded))\n"
+    )
+    result = _run(["-c", probe])
+    assert result.returncode == 0, result.stderr
+    marker = [line for line in result.stdout.splitlines() if line.startswith("FORBIDDEN:")]
+    assert marker and marker[0] == "FORBIDDEN:", f"query loaded serve/write subsystems: {marker}"

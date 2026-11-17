@@ -25,7 +25,9 @@ from know_your_context.analytics.code_intel import (
     callers_of,
     dependency_path,
     impact_analysis,
+    resolve_symbol,
 )
+from know_your_context.analytics.code_intel_sql import SqlCodeGraph
 from know_your_context.cli import main
 from know_your_context.domain import canonical_json
 from know_your_context.ops.codeintel_cli import (
@@ -177,11 +179,18 @@ def test_error_parity_unknown_ambiguous(rich_store: Path) -> None:
         for symbol in ("nope", "dup", "CAFÉ", "café", "ALPHA"):
             memory, sql = _both(callers_of, memory_graph, sql_graph, symbol)
             assert sql == memory
-        # sanity: the fixture really exercises both error classes
+        # sanity: the fixture really exercises the unknown-symbol error class
         with pytest.raises(UnknownSymbolError):
             callers_of(memory_graph, "nope")
+        # SUB-177: traversal ops answer an ambiguous name with the union
+        # (measured gap: 14 ``parse_args`` definitions in the L4 stdlib
+        # corpus errored AMBIGUOUS_SYMBOL while both competitors answered);
+        # the strict single-node contract survives in ``resolve_symbol``.
+        union = callers_of(memory_graph, "dup")
+        assert union["ambiguous"] is True
+        assert {c["node_id"] for c in union["candidates"]} == {"n:dup1", "n:dup2"}
         with pytest.raises(AmbiguousSymbolError):
-            callers_of(memory_graph, "dup")
+            resolve_symbol(memory_graph, "dup")
     finally:
         sql_graph.close()
 
@@ -238,6 +247,47 @@ def test_reads_are_bounded_by_answer_not_by_store(rich_store: Path) -> None:
         sql_graph.close()
 
 
+def test_high_fanout_queries_are_batched_not_per_entry(tmp_path: Path) -> None:
+    """A hub node with N callers must not cost N point queries (SUB-178).
+
+    Measured at L3 scale (t3_L3b.sqlite, 59 910 symbols): ``callers-of
+    fn_0_0 --depth 1`` visits 14 916 callers and issued 14 917 single-row
+    ``node()`` lookups — 64% of the op's CPU (0.58 s of 0.90 s), and the
+    difference between surviving and collapsing in the 50-agent storm. Node
+    payloads for the entry list must be fetched in bounded ``IN (...)``
+    chunks, so the query count stays ~constant while the row count scales
+    with the answer. Byte-parity with the in-memory build is pinned by the
+    existing corpus-parity suite.
+    """
+    path = tmp_path / "hub.sqlite3"
+    store = EventStore(path)
+    fan = 1200
+    store.upsert_symbol(node_id="n:hub", name="hub", kind="function", path="hub.py", line=1, col=0)
+    for i in range(fan):
+        store.upsert_symbol(node_id=f"n:c{i}", name=f"caller_{i}", kind="function", path=f"m{i % 40}.py", line=i, col=0)
+        store.add_graph_edge(f"n:c{i}", "n:hub", "calls", line=1)
+    try:
+        memory_graph = load_code_graph(store)
+        stats: dict[str, int] = {"node_rows": 0, "edge_rows": 0, "queries": 0}
+        sql_graph = open_sql_code_graph(store, stats=stats)
+        assert sql_graph is not None
+        try:
+            expected = callers_of(memory_graph, "hub", max_depth=1, max_results=200)
+            result = callers_of(sql_graph, "hub", max_depth=1, max_results=200)
+            assert result["total"] == fan == expected["total"]
+            assert result["entries"] == expected["entries"], "byte-parity with the in-memory build"
+            # Batched: counts (2) + named (1) + non-ASCII scan (1) + neighbour
+            # rounds (1 batched) + ceil(fan / chunk) node fetches — never one
+            # query per entry. 1200 callers must stay under 20 queries.
+            assert stats["queries"] <= 20, (
+                f"per-entry point queries are back: {stats['queries']} queries for {fan} callers"
+            )
+        finally:
+            sql_graph.close()
+    finally:
+        store.close()
+
+
 def test_snapshot_isolated_within_one_graph_instance(rich_store: Path) -> None:
     """One SqlCodeGraph = one snapshot, even if a writer lands mid-op."""
     store = EventStore(rich_store)
@@ -267,24 +317,40 @@ def test_factory_falls_back_for_memory_store() -> None:
 
 
 def test_factory_falls_back_when_store_has_non_ascii_names(tmp_path: Path) -> None:
-    """SQLite lower() folds ASCII only; Python str.lower() folds Unicode.
+    """A non-ASCII NAME in the store must not disable the SQL backend.
 
-    A store holding e.g. ``café`` (or U+212A KELVIN SIGN, which Python folds
-    to ASCII ``k``) must keep the in-memory path — never a silent divergence.
+    Baseline (stress3 L4, SUB-177): one symbol named ``cassé`` in a 163k-row
+    store made ``open_sql_code_graph`` refuse, so *every* ``codeintel
+    callers-of`` fell back to the in-memory build — 19.5 s and ~2 GB per
+    query, the whole 50-agent storm collapsing. SQLite ``lower()`` folds
+    ASCII only while Python folds Unicode (U+212A KELVIN → ``k``), so the
+    backend now answers ``named()`` as SQL-ASCII-CI **plus** a Python CI
+    pass over the (tiny) non-ASCII name set — same answer, bounded cost.
     """
     path = tmp_path / "unicode.sqlite3"
     store = EventStore(path)
     store.upsert_symbol(node_id="n:cafe", name="café", kind="function", path="b/y.py", line=7, col=0)
+    store.upsert_symbol(node_id="n:cafe_up", name="CAFÉ", kind="function", path="b/z.py", line=2, col=0)
     store.upsert_symbol(node_id="n:plain", name="plain", kind="function", path="b/y.py", line=9, col=0)
+    store.upsert_symbol(node_id="n:kelvin", name="\u212aelvin", kind="function", path="b/k.py", line=3, col=0)
     store.add_graph_edge("n:plain", "n:cafe", "calls", line=1)
     try:
-        assert open_sql_code_graph(store) is None
+        sql_graph = open_sql_code_graph(store)
+        assert sql_graph is not None, "a non-ASCII name must not disable the SQL backend"
         memory_graph = load_code_graph(store)
+        try:
+            for name in ("café", "CAFÉ", "cafe", "plain", "kelvin", "KELVIN", "absent"):
+                assert sql_graph.named(name) == memory_graph.named(name), name
+            assert callers_of(sql_graph, "café") == callers_of(memory_graph, "café")
+            assert callers_of(sql_graph, "plain") == callers_of(memory_graph, "plain")
+        finally:
+            sql_graph.close()
+        # A non-ASCII *query* symbol keeps the in-memory path (dispatch guard).
         with codeintel_graph(store, "café") as graph:
             assert type(graph) is CodeGraph
             assert callers_of(graph, "café") == callers_of(memory_graph, "café")
         with codeintel_graph(store, "plain") as graph:
-            assert type(graph) is CodeGraph  # store-level fallback, not per-symbol
+            assert type(graph) is SqlCodeGraph
             assert callers_of(graph, "plain") == callers_of(memory_graph, "plain")
     finally:
         store.close()

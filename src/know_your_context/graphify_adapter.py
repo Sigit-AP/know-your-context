@@ -1,3 +1,4 @@
+
 """Adapter boundary between the product and the pinned Graphify library.
 
 Task 3 of ``docs/superpowers/plans/2026-10-24-superpower-knowledge-soul.md``;
@@ -25,18 +26,18 @@ import os
 import re
 from collections.abc import Iterable, Mapping
 from pathlib import Path
+
+try:  # pragma: no cover - optional graphify dependency
+    from graphify.build import build_from_json  # noqa: F401
+except Exception:  # pragma: no cover
+    build_from_json = None  # type: ignore[assignment]
 from typing import TYPE_CHECKING, Any
 
-import networkx as nx
-from graphify.affected import load_graph as _graphify_load_graph
-from graphify.analyze import god_nodes as _graphify_god_nodes
-from graphify.build import build_from_json
-from graphify.cluster import cluster as _graphify_cluster
-from graphify.cluster import community_member_sigs, score_all
-from graphify.multigraph_compat import MultigraphCapabilityResult, probe_multigraph_capabilities
-from graphify.semantic_cleanup import sanitize_semantic_fragment, validate_semantic_fragment
-from graphify.validate import validate_extraction
 from pydantic import BaseModel, ConfigDict, Field
+
+if TYPE_CHECKING:
+    import networkx as nx
+    from graphify.multigraph_compat import MultigraphCapabilityResult
 
 from know_your_context.domain import RelationKind, canonical_json
 from know_your_context.fragment_generator import (
@@ -173,6 +174,9 @@ class GraphifyAdapter:
             "edges": [dict(edge) for edge in edges],
             "hyperedges": [dict(hyperedge) for hyperedge in hyperedges],
         }
+        from graphify.semantic_cleanup import sanitize_semantic_fragment, validate_semantic_fragment
+        from graphify.validate import validate_extraction
+
         semantic_errors = validate_semantic_fragment(raw)
         if semantic_errors:
             raise FragmentValidationError(semantic_errors)
@@ -294,6 +298,9 @@ class GraphifyAdapter:
             "edges": [dict(edge) for edge in extraction.get("edges", [])],
             "hyperedges": [dict(hyperedge) for hyperedge in extraction.get("hyperedges", [])],
         }
+        from graphify.semantic_cleanup import validate_semantic_fragment
+        from graphify.validate import validate_extraction
+
         errors = validate_semantic_fragment(raw)
         if max_nodes is not None or max_edges is not None or max_payload_bytes is not None:
             errors = [error for error in errors if not _FRAGMENT_COUNT_ERROR_RE.match(error)]
@@ -319,6 +326,10 @@ class GraphifyAdapter:
         prepared = copy.deepcopy(dict(extraction))
         prepared["nodes"] = sorted(prepared.get("nodes", []), key=canonical_json)
         prepared["edges"] = sorted(prepared.get("edges", []), key=canonical_json)
+        import networkx as nx
+        if build_from_json is None:  # pragma: no cover - import guard
+            raise FragmentValidationError(["graphify.build is unavailable in this environment"])
+
         graph = build_from_json(prepared, directed=True, dedup=False)
         if not isinstance(graph, nx.DiGraph):  # pragma: no cover - build contract
             raise TypeError(f"expected a directed graph, got {type(graph).__name__}")
@@ -333,6 +344,8 @@ class GraphifyAdapter:
         """
         saved = os.environ.pop("GRAPHIFY_AMBIGUOUS_SCALE", None)
         try:
+            from graphify.cluster import cluster as _graphify_cluster
+
             return _graphify_cluster(
                 graph,
                 resolution=float(GRAPHIFY_PARTITIONER["resolution"]),
@@ -345,16 +358,22 @@ class GraphifyAdapter:
 
     def community_signatures(self, communities: Mapping[int, list[str]]) -> dict[str, list[str]]:
         """Published membership signatures; internal community ids stay inside."""
+        from graphify.cluster import community_member_sigs
+
         sigs = community_member_sigs(dict(communities))
         return {sig: sorted(str(member) for member in communities[cid]) for cid, sig in sigs.items()}
 
     def cohesion_by_signature(self, graph: nx.Graph, communities: Mapping[int, list[str]]) -> dict[str, float]:
         """Cohesion keyed by membership signature (structural diagnostic only)."""
+        from graphify.cluster import community_member_sigs, score_all
+
         sigs = community_member_sigs(dict(communities))
         return {sigs[cid]: score for cid, score in score_all(graph, dict(communities)).items()}
 
     def god_nodes(self, graph: nx.Graph, *, top_n: int = 10) -> list[dict[str, Any]]:
         """Most-connected real entities (Graphify ``analyze.god_nodes``)."""
+        from graphify.analyze import god_nodes as _graphify_god_nodes
+
         return _graphify_god_nodes(graph, top_n=top_n)
 
     def load_graph(self, path: str | Path) -> nx.DiGraph:
@@ -364,6 +383,8 @@ class GraphifyAdapter:
         arc direction and confidence backfill survive the round trip
         (matrix row 34). The CLI is never invoked.
         """
+        from graphify.affected import load_graph as _graphify_load_graph
+
         graph = _graphify_load_graph(Path(path))
         if not graph.is_directed():  # pragma: no cover - loader contract
             raise TypeError("the pinned loader must restore arc direction")
@@ -376,4 +397,7 @@ class GraphifyAdapter:
         run, never version-guessed, so a runtime that lost keyed-edge semantics
         is detected rather than assumed.
         """
+        from graphify.multigraph_compat import probe_multigraph_capabilities
+
         return probe_multigraph_capabilities()
+

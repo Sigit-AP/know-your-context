@@ -162,6 +162,10 @@ class CodeGraph:
     def node(self, node_id: str) -> CodeNode | None:
         return self._by_id.get(node_id)
 
+    def nodes_many(self, node_ids: tuple[str, ...]) -> dict[str, CodeNode]:
+        """Batched :meth:`node`; in-memory this is just the dict lookups."""
+        return {node_id: self._by_id[node_id] for node_id in dict.fromkeys(node_ids) if node_id in self._by_id}
+
     @property
     def node_count(self) -> int:
         """Number of valid unique nodes — the ``node_count`` payload field."""
@@ -210,6 +214,10 @@ class CodeGraphView(Protocol):
     def edge_count(self) -> int: ...
 
     def node(self, node_id: str) -> CodeNode | None: ...
+
+    def nodes_many(self, node_ids: tuple[str, ...]) -> dict[str, CodeNode]:
+        """Batched :meth:`node` — one round-trip per chunk, not per id."""
+        ...
 
     def named(self, name: str) -> tuple[CodeNode, ...]: ...
 
@@ -337,38 +345,46 @@ def resolve_symbol(graph: CodeGraphView, symbol: str, *, file: str | None = None
     return next(iter(candidates))
 
 
-def _entry(
-    graph: CodeGraphView, node_id: str, depth: int, via_kind: str, via_line: int, from_id: str
-) -> dict[str, Any]:
-    node = graph.node(node_id)
-    assert node is not None  # adjacency only contains known endpoints
-    return {
-        "node_id": node.node_id,
-        "name": node.name,
-        "kind": node.kind,
-        "path": node.path,
-        "line": node.line,
-        "col": node.col,
-        "depth": depth,
-        "via_edge_kind": via_kind,
-        "via_line": via_line,
-        "from_node_id": from_id,
-    }
+def _resolve_traversal_root(
+    graph: CodeGraphView, symbol: str, *, file: str | None = None
+) -> tuple[CodeNode, tuple[CodeNode, ...] | None]:
+    """Resolve a traversal root; an ambiguous name unions over every candidate.
+
+    ``resolve_symbol`` keeps its strict single-node contract (pinned by
+    ``TestResolveSymbol``) — ``dependency_path`` endpoints still raise
+    :class:`AmbiguousSymbolError`. Traversal closures instead answer the
+    honest union over *every* node carrying the name: on a real corpus the
+    same short name legitimately defines many symbols (measured: 14
+    ``parse_args`` definitions in the stdlib corpus, stress3 L4), and both
+    reference products answer such queries rather than erroring. Returns the
+    displayed root (first candidate in canonical order) plus the candidate
+    tuple when ambiguous, else ``None``.
+    """
+    try:
+        return resolve_symbol(graph, symbol, file=file), None
+    except AmbiguousSymbolError as error:
+        candidates = tuple(error.candidates)
+        return candidates[0], candidates
 
 
 def _transitive(
     graph: CodeGraphView,
-    root: CodeNode,
+    roots: tuple[CodeNode, ...],
     direction: Literal["forward", "reverse"],
     kinds: frozenset[str],
     *,
     max_depth: int,
     max_results: int,
 ) -> tuple[list[dict[str, Any]], int, bool]:
-    """BFS closure; entries sorted by (depth, path, line, col, node_id)."""
-    visited = {root.node_id}
-    frontier = (root.node_id,)
-    entries: list[dict[str, Any]] = []
+    """BFS closure from one or more roots; entries sorted by (depth, path, line, col, node_id).
+
+    Multi-root is the union closure (a node reachable from two roots takes
+    the shallower depth); the single-root case is byte-identical to the
+    pre-union behaviour.
+    """
+    visited = {root.node_id for root in roots}
+    frontier = tuple(root.node_id for root in roots)
+    raw: list[tuple[str, int, str, int, str]] = []  # (node_id, depth, via_kind, via_line, from_id)
     for depth in range(1, max_depth + 1):
         next_frontier: list[str] = []
         batch = graph.neighbours_many(tuple(frontier), direction, kinds)
@@ -377,11 +393,34 @@ def _transitive(
                 if other in visited:
                     continue
                 visited.add(other)
-                entries.append(_entry(graph, other, depth, kind, line, node_id))
+                raw.append((other, depth, kind, line, node_id))
                 next_frontier.append(other)
         frontier = tuple(next_frontier)
         if not frontier:
             break
+    # One batched fetch for every visited node — never a point query per
+    # entry (measured: 14 917 lookups = 64% of op CPU on a 14 916-caller hub,
+    # SUB-178). Adjacency only references known endpoints, so every id
+    # resolves; the assert pins that invariant on both backends.
+    nodes = graph.nodes_many(tuple(entry[0] for entry in raw))
+    entries: list[dict[str, Any]] = []
+    for node_id, depth, kind, line, from_id in raw:
+        node = nodes.get(node_id)
+        assert node is not None  # adjacency only contains known endpoints
+        entries.append(
+            {
+                "node_id": node.node_id,
+                "name": node.name,
+                "kind": node.kind,
+                "path": node.path,
+                "line": node.line,
+                "col": node.col,
+                "depth": depth,
+                "via_edge_kind": kind,
+                "via_line": line,
+                "from_node_id": from_id,
+            }
+        )
     entries.sort(key=lambda item: (item["depth"], item["path"], item["line"], item["col"], item["node_id"]))
     total = len(entries)
     return entries[:max_results], total, total > max_results
@@ -441,12 +480,13 @@ def _directional(
 ) -> dict[str, Any]:
     _validate_knobs(max_depth, max_results)
     kind_set = _validate_kinds(kinds)
-    root = resolve_symbol(graph, symbol, file=file)
+    root, candidates = _resolve_traversal_root(graph, symbol, file=file)
+    roots = candidates if candidates is not None else (root,)
     entries, total, truncated = _transitive(
-        graph, root, direction, kind_set, max_depth=max_depth, max_results=max_results
+        graph, roots, direction, kind_set, max_depth=max_depth, max_results=max_results
     )
     guards = ["max_results_reached"] if truncated else []
-    return {
+    payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "kind": f"analytics.code_intel.{op}",
         "parameters": {
@@ -465,6 +505,10 @@ def _directional(
         "entries": entries,
         "guards": guards,
     }
+    if candidates is not None:
+        payload["ambiguous"] = True
+        payload["candidates"] = [_root_payload(candidate) for candidate in candidates]
+    return payload
 
 
 # Backwards-compatible internal alias (kept explicit to aid grepping).
@@ -561,10 +605,11 @@ def impact_analysis(
     depth-1 count.
     """
     _validate_knobs(max_depth, max_results)
-    root = resolve_symbol(graph, symbol, file=file)
+    root, candidates = _resolve_traversal_root(graph, symbol, file=file)
+    roots = candidates if candidates is not None else (root,)
     kind_set = frozenset(_IMPACT_KINDS)
     entries, total, truncated = _transitive(
-        graph, root, "reverse", kind_set, max_depth=max_depth, max_results=max_results
+        graph, roots, "reverse", kind_set, max_depth=max_depth, max_results=max_results
     )
     depth_buckets: dict[int, int] = {}
     for entry in entries:
@@ -574,7 +619,7 @@ def impact_analysis(
         by_kind[entry["via_edge_kind"]] = by_kind.get(entry["via_edge_kind"], 0) + 1
     impacted_files = sorted({entry["path"] for entry in entries})
     guards = ["max_results_reached"] if truncated else []
-    return {
+    payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "kind": "analytics.code_intel.impact_analysis",
         "parameters": {"symbol": symbol, "max_depth": max_depth, "max_results": max_results, "file": file},
@@ -591,6 +636,10 @@ def impact_analysis(
         "entries": entries,
         "guards": guards,
     }
+    if candidates is not None:
+        payload["ambiguous"] = True
+        payload["candidates"] = [_root_payload(candidate) for candidate in candidates]
+    return payload
 
 
 def co_change(

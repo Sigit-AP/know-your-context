@@ -18,13 +18,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import threading
 from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from graphify.validate import VALID_CONFIDENCES, VALID_FILE_TYPES, validate_extraction
 from pydantic import BaseModel, ConfigDict, Field
 
 from know_your_context.domain import canonical_json
@@ -110,6 +110,69 @@ VALIDATION_CACHE_MAXSIZE = 64
 _VALIDATION_CACHE: dict[str, ValidationReport] = {}
 _VALIDATION_CACHE_LOCK = threading.Lock()
 
+#: Sidecar file inside a generation dir carrying the persisted passing
+#: verdict (SUB-178). The W16 in-memory cache cannot span CLI processes, so
+#: every ``query`` process re-ran the deep validation — including the pinned
+#: Graphify loader round trip that imports networkx (~0.4 s) — even though
+#: the verdict is a pure function of the content digest. The disk verdict is
+#: keyed by that same digest: any byte change misses and revalidates, and a
+#: failing verdict is never persisted (fail closed both ways).
+_VERDICT_FILENAME = "validation-verdict.json"
+_VERDICT_VERSION = 1
+
+
+def _read_disk_verdict(generation_dir: Path, key: str) -> ValidationReport | None:
+    """The persisted passing verdict for *key*, or ``None`` to revalidate.
+
+    Every malformed/mismatched shape returns ``None`` — the caller then runs
+    the full fail-closed validation. Caching must never break validation.
+    """
+    try:
+        raw = json.loads((generation_dir / _VERDICT_FILENAME).read_text(encoding="utf-8"))
+    except OSError, json.JSONDecodeError:
+        return None
+    if not isinstance(raw, Mapping) or raw.get("verdict_version") != _VERDICT_VERSION or raw.get("key") != key:
+        return None
+    try:
+        collapsed = tuple(
+            CollapsedLink(
+                source=str(entry["source"]),
+                target=str(entry["target"]),
+                relations=tuple(str(relation) for relation in entry["relations"]),
+            )
+            for entry in raw.get("collapsed_links", [])
+        )
+        return ValidationReport(
+            ok=True,
+            errors=(),
+            node_count=int(raw["node_count"]),
+            edge_count=int(raw["edge_count"]),
+            collapsed_links=collapsed,
+        )
+    except KeyError, TypeError, ValueError:
+        return None
+
+
+def _write_disk_verdict(generation_dir: Path, key: str, report: ValidationReport) -> None:
+    """Persist a passing verdict atomically; write failure only loses the cache."""
+    payload = {
+        "verdict_version": _VERDICT_VERSION,
+        "key": key,
+        "node_count": report.node_count,
+        "edge_count": report.edge_count,
+        "collapsed_links": [
+            {"source": link.source, "target": link.target, "relations": list(link.relations)}
+            for link in report.collapsed_links
+        ],
+    }
+    target = generation_dir / _VERDICT_FILENAME
+    tmp = generation_dir / f".{_VERDICT_FILENAME}.{os.getpid()}.tmp"
+    try:
+        tmp.write_text(canonical_json(payload) + "\n", encoding="utf-8")
+        os.replace(tmp, target)
+    except OSError:
+        tmp.unlink(missing_ok=True)
+
 
 def clear_validation_cache() -> None:
     """Drop every cached verdict (tests, and operators after a rules change)."""
@@ -187,7 +250,10 @@ class ReadModelValidator:
         W16: verdicts are memoized by the sha256 of every input byte (see
         ``VALIDATION_CACHE_MAXSIZE``); identical content yields the identical
         report without re-running the scans, and changed content misses by
-        construction.
+        construction. SUB-178: the same digest also keys a persisted
+        sidecar verdict so CLI *processes* (cold in-memory cache) skip the
+        deep validation too — a passing verdict is a pure function of the
+        hashed bytes; failures are never persisted.
         """
         generation_dir = Path(generation_dir)
         if not generation_dir.is_dir():
@@ -198,12 +264,21 @@ class ReadModelValidator:
                 cached = _VALIDATION_CACHE.get(key)
             if cached is not None:
                 return cached
+            disk = _read_disk_verdict(generation_dir, key)
+            if disk is not None:
+                with _VALIDATION_CACHE_LOCK:
+                    if len(_VALIDATION_CACHE) >= VALIDATION_CACHE_MAXSIZE:
+                        _VALIDATION_CACHE.clear()  # bounded reset: exact, never grows past the cap
+                    _VALIDATION_CACHE[key] = disk
+                return disk
         report = self._validate_uncached(generation_dir, manifest)
         if key is not None:
             with _VALIDATION_CACHE_LOCK:
                 if len(_VALIDATION_CACHE) >= VALIDATION_CACHE_MAXSIZE:
                     _VALIDATION_CACHE.clear()  # bounded reset: exact, never grows past the cap
                 _VALIDATION_CACHE[key] = report
+            if report.ok:
+                _write_disk_verdict(generation_dir, key, report)
         return report
 
     def _cache_key(self, generation_dir: Path, manifest: Mapping[str, Any]) -> str | None:
@@ -327,6 +402,8 @@ class ReadModelValidator:
             nodes: list[Any] = raw_nodes if isinstance(raw_nodes, list) else []
             links: list[Any] = raw_links if isinstance(raw_links, list) else []
             node_count, edge_count = len(nodes), len(links)
+
+            from graphify.validate import VALID_CONFIDENCES, validate_extraction
 
             for error in validate_extraction(graph):
                 errors.append(f"extraction schema: {error}")
@@ -498,6 +575,8 @@ class ReadModelValidator:
         label = node.get("label")
         if not isinstance(label, str) or not label.strip():
             reasons.append(f"junk node {node_id!r}: blank label")
+        from graphify.validate import VALID_FILE_TYPES
+
         file_type = node.get("file_type")
         if file_type not in VALID_FILE_TYPES:
             reasons.append(f"junk node {node_id!r}: invalid file_type {file_type!r}")
