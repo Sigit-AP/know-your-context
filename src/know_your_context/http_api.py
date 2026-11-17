@@ -225,13 +225,22 @@ class LocalStack:
         self.store.close()
 
 
-def build_stack(store_path: str | Path, output_root: str | Path, *, ops_root: str | Path | None = None) -> LocalStack:
+def build_stack(
+    store_path: str | Path,
+    output_root: str | Path,
+    *,
+    ops_root: str | Path | None = None,
+    projection_wait_seconds: float | None = None,
+) -> LocalStack:
     """Open (or create) a local store and bind the service to it.
 
     Crash recovery runs before the stack accepts traffic: journals left
     ``in_progress`` by a dead process are reconciled exactly once (spec 7.8).
     *ops_root* confines backup/restore paths; it defaults to the store's
     directory and must be an existing directory (fail closed).
+    *projection_wait_seconds* overrides how long a reader waits for a peer's
+    projection publish after losing the rebuild lock (default 5 s); wired from
+    the CLI ``--projection-wait-seconds`` flag (query + serve surfaces).
     """
     store = EventStore(store_path)
     projector = GraphProjector(store, output_root=output_root)
@@ -246,7 +255,7 @@ def build_stack(store_path: str | Path, output_root: str | Path, *, ops_root: st
     return LocalStack(
         store=store,
         projector=projector,
-        service=KnowledgeService(store, projector),
+        service=KnowledgeService(store, projector, projection_wait_seconds=projection_wait_seconds),
         audit=audit,
         ops_root=resolved_ops_root,
     )

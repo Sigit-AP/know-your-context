@@ -13,6 +13,7 @@ import io
 import json
 import os
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -501,3 +502,160 @@ def test_cli_version_flag(capsys: pytest.CaptureFixture[str]) -> None:
         parser.parse_args(["--version"])
     assert excinfo.value.code == 0
     assert f"know-your-context {__version__}" in capsys.readouterr().out
+
+
+# ------------------------------ SUB-194: projection-wait knob wiring
+
+
+def test_cli_query_accepts_projection_wait_flag() -> None:
+    """The ``query`` subparser exposes ``--projection-wait-seconds``; other ops do not carry it."""
+    parser = build_parser()
+    args = parser.parse_args(["query", "--projection-wait-seconds", "120", "{}"])
+    assert args.projection_wait_seconds == 120.0
+    other = parser.parse_args(["get-node", "{}"])
+    assert not hasattr(other, "projection_wait_seconds")
+
+
+def test_cli_serve_accepts_projection_wait_flag() -> None:
+    parser = build_parser()
+    args = parser.parse_args(["serve", "--socket", "/tmp/kyc.sock", "--projection-wait-seconds", "120"])
+    assert args.projection_wait_seconds == 120.0
+
+
+def test_cli_query_default_projection_wait_is_none() -> None:
+    parser = build_parser()
+    args = parser.parse_args(["query", "{}"])
+    assert args.projection_wait_seconds is None
+
+
+def test_cli_query_projection_wait_reaches_service(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The query flag flows through build_stack into the KnowledgeService construction."""
+    db_path, out_path = _seeded_paths(tmp_path)
+    captured: dict[str, object] = {}
+
+    def recording_build_stack(
+        store_path: str | Path,
+        output_root: str | Path,
+        *,
+        ops_root: str | Path | None = None,
+        projection_wait_seconds: float | None = None,
+    ) -> object:
+        captured.update({"ops_root": ops_root, "projection_wait_seconds": projection_wait_seconds})
+        from know_your_context.http_api import build_stack as real_build_stack
+
+        return real_build_stack(
+            store_path,
+            output_root,
+            ops_root=ops_root,
+            projection_wait_seconds=projection_wait_seconds,
+        )
+
+    monkeypatch.setattr("know_your_context.cli.build_stack", recording_build_stack)
+    code, out, err = _invoke(
+        _base(db_path, out_path)
+        + ["query", "--projection-wait-seconds", "120", json.dumps({"purpose": "gates", "token_budget": 500})],
+        capsys,
+    )
+    assert code == 0, err
+    assert captured.get("projection_wait_seconds") == 120.0
+    assert out is not None and "results" in out  # the query really ran
+
+
+def test_cli_query_without_flag_passes_none(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    db_path, out_path = _seeded_paths(tmp_path)
+    captured: dict[str, object] = {}
+
+    def recording_build_stack(
+        store_path: str | Path,
+        output_root: str | Path,
+        *,
+        ops_root: str | Path | None = None,
+        projection_wait_seconds: float | None = None,
+    ) -> object:
+        captured.update({"ops_root": ops_root, "projection_wait_seconds": projection_wait_seconds})
+        from know_your_context.http_api import build_stack as real_build_stack
+
+        return real_build_stack(
+            store_path,
+            output_root,
+            ops_root=ops_root,
+            projection_wait_seconds=projection_wait_seconds,
+        )
+
+    monkeypatch.setattr("know_your_context.cli.build_stack", recording_build_stack)
+    code, out, err = _invoke(
+        _base(db_path, out_path) + ["query", json.dumps({"purpose": "gates", "token_budget": 500})], capsys
+    )
+    assert code == 0, err
+    assert captured.get("projection_wait_seconds") is None
+
+
+def test_cli_serve_projection_wait_reaches_build_stack(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``serve --projection-wait-seconds`` reaches build_stack (the non-daemon serve path)."""
+    db_path, out_path = _seeded_paths(tmp_path)
+    captured: dict[str, object] = {}
+
+    def recording_build_stack(
+        store_path: str | Path,
+        output_root: str | Path,
+        *,
+        ops_root: str | Path | None = None,
+        projection_wait_seconds: float | None = None,
+    ) -> object:
+        captured.update({"ops_root": ops_root, "projection_wait_seconds": projection_wait_seconds})
+        from know_your_context.http_api import build_stack as real_build_stack
+
+        return real_build_stack(
+            store_path,
+            output_root,
+            ops_root=ops_root,
+            projection_wait_seconds=projection_wait_seconds,
+        )
+
+    def fake_serve(stack: object, **kwargs: object) -> None:
+        return None
+
+    monkeypatch.setattr("know_your_context.cli.build_stack", recording_build_stack)
+    monkeypatch.setattr("know_your_context.cli.serve", fake_serve)
+    argv = _base(db_path, out_path) + ["serve", "--socket", str(tmp_path / "s.sock"), "--projection-wait-seconds", "42"]
+    code = main(argv)
+    assert code == 0
+    assert captured.get("projection_wait_seconds") == 42.0
+
+
+def test_cli_serve_projection_wait_flows_to_daemon_config(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``serve --daemon --projection-wait-seconds`` reaches the DaemonConfig the daemon is spawned with."""
+    db_path, out_path = _seeded_paths(tmp_path)
+    captured: dict[str, object] = {}
+
+    def fake_spawn(config: object) -> object:
+        captured["config"] = config
+        from know_your_context.serve.superpower import SpawnResult
+
+        return SpawnResult(already_running=False, pid=1234, socket_path=tmp_path / "d.sock")
+
+    monkeypatch.setattr("know_your_context.serve.superpower.spawn_daemon", fake_spawn)
+    argv = [
+        "--store",
+        str(db_path),
+        "--output-root",
+        str(out_path),
+        "serve",
+        "--daemon",
+        "--projection-wait-seconds",
+        "120",
+    ]
+    code = main(argv)
+    assert code == 0
+    from know_your_context.serve.daemon_config import DaemonConfig
+
+    config = cast(DaemonConfig, captured["config"])
+    assert config.projection_wait_seconds == 120.0

@@ -181,6 +181,11 @@ class DaemonConfig:
     liveness_stall_seconds: float = DEFAULT_LIVENESS_STALL_SECONDS
     ppid_poll_seconds: float = DEFAULT_PPID_POLL_SECONDS
     read_publish_wait_seconds: float = DEFAULT_READ_PUBLISH_WAIT_SECONDS
+    # SUB-194: how long a reader waits for a concurrent projection publish after
+    # losing the rebuild lock (B2 storm resilience). None = the service default
+    # (5 s). Raising this lets readers ride out an expensive/large peer rebuild
+    # instead of failing typed a few seconds early.
+    projection_wait_seconds: float | None = None
     max_frame_bytes: int = MAX_FRAME_BYTES
     max_token_budget: int = DEFAULT_MAX_TOKEN_BUDGET
     retry_after_ms: int = DEFAULT_RETRY_AFTER_MS
@@ -383,6 +388,8 @@ class DaemonConfig:
             raise ConfigError("ppid_poll_seconds must be positive")
         if float(self.read_publish_wait_seconds) <= 0:
             raise ConfigError("read_publish_wait_seconds must be positive")
+        if self.projection_wait_seconds is not None and float(self.projection_wait_seconds) <= 0:
+            raise ConfigError(f"projection_wait_seconds must be positive, got {self.projection_wait_seconds}")
         if int(self.max_frame_bytes) < MIN_FRAME_BYTES:
             raise ConfigError(f"max_frame_bytes must be >= {MIN_FRAME_BYTES}, got {self.max_frame_bytes}")
         if int(self.retry_after_ms) < 0:

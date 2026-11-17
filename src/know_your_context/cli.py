@@ -211,6 +211,22 @@ def build_parser() -> argparse.ArgumentParser:
             help="JSON payload object; '-' reads it from stdin; omitted means {}",
         )
 
+    # SUB-194: the projection-wait knob reaches the query surface. `query` is a
+    # knowledge operation (built by the loop above); the reader-side wait for a
+    # peer's projection publish is only meaningful there, so the flag rides the
+    # query subparser rather than every operation.
+    query_parser = subparsers.choices["query"]
+    query_parser.add_argument(
+        "--projection-wait-seconds",
+        type=float,
+        default=None,
+        metavar="SECONDS",
+        help=(
+            "how long to wait for a concurrent projection publish after losing the "
+            "rebuild lock, in seconds (default 5; raise for expensive/large rebuilds)"
+        ),
+    )
+
     serve_parser = subparsers.add_parser("serve", help="run the persistent local API server")
     bind = serve_parser.add_mutually_exclusive_group()
     bind.add_argument("--socket", default=None, help=f"unix socket path (default {DEFAULT_SOCKET_PATH})")
@@ -233,6 +249,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="comma-separated Host allowlist (default: localhost,127.0.0.1,::1)",
     )
     serve_parser.add_argument("--max-body-bytes", type=int, default=None, help="request body size cap")
+    serve_parser.add_argument(
+        "--projection-wait-seconds",
+        type=float,
+        default=None,
+        metavar="SECONDS",
+        help=(
+            "how long a reader waits for a concurrent projection publish after losing the "
+            "rebuild lock, in seconds (default 5; raise for expensive/large rebuilds)"
+        ),
+    )
     serve_parser.add_argument(
         "--watch",
         default=None,
@@ -1325,6 +1351,8 @@ def _serve_superpower_command(args: argparse.Namespace) -> int:
             "capability_mode": args.capability_mode,
             "node_leases_enabled": bool(args.node_leases),
         }
+        if args.projection_wait_seconds is not None:
+            kwargs["projection_wait_seconds"] = float(args.projection_wait_seconds)
         if args.node_lease_ttl is not None:
             kwargs["node_lease_ttl_seconds"] = float(args.node_lease_ttl)
         # None = the operator did not ask; the hardware plan derives it
@@ -1462,7 +1490,12 @@ def _serve_command(args: argparse.Namespace) -> int:
         if args.host_allowlist
         else DEFAULT_HOST_ALLOWLIST
     )
-    stack = build_stack(args.store, args.output_root, ops_root=args.ops_root)
+    stack = build_stack(
+        args.store,
+        args.output_root,
+        ops_root=args.ops_root,
+        projection_wait_seconds=args.projection_wait_seconds,
+    )
     from know_your_context.security import BindPolicyError
     from know_your_context.update_pipeline import UpdatePipelineError
 
@@ -1734,7 +1767,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if payload_text == "-":
         payload_text = sys.stdin.read()
 
-    stack = build_stack(args.store, args.output_root, ops_root=args.ops_root)
+    stack = build_stack(
+        args.store,
+        args.output_root,
+        ops_root=args.ops_root,
+        projection_wait_seconds=getattr(args, "projection_wait_seconds", None),
+    )
     from know_your_context.http_api import AdapterValidationError, dispatch_text
 
     try:

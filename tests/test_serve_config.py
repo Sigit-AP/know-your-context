@@ -142,3 +142,18 @@ class TestValidation:
             _config(tmp_path, per_actor_read_cap=0)
         with pytest.raises(ConfigError):
             _config(tmp_path, per_actor_read_cap=config.read_queue_size + 1)
+
+    # ---------------------------------------------- SUB-194: projection wait
+
+    def test_projection_wait_defaults_to_none(self, tmp_path: Path) -> None:
+        assert _config(tmp_path).projection_wait_seconds is None
+
+    def test_projection_wait_accepts_positive(self, tmp_path: Path) -> None:
+        config = _config(tmp_path, projection_wait_seconds=120.0)
+        assert config.projection_wait_seconds == 120.0
+
+    def test_projection_wait_rejects_non_positive(self, tmp_path: Path) -> None:
+        with pytest.raises(ConfigError):
+            _config(tmp_path, projection_wait_seconds=0.0)
+        with pytest.raises(ConfigError):
+            _config(tmp_path, projection_wait_seconds=-5.0)

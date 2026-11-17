@@ -1403,6 +1403,7 @@ class _ReadPool:
             projector,  # type: ignore[arg-type]
             audit_log=forwarding,  # type: ignore[arg-type]
             max_token_budget=self._config.max_token_budget,
+            projection_wait_seconds=self._config.projection_wait_seconds,
         )
         adapters: dict[str, _Adapter] = {}
         heartbeat = self._heartbeats[index]
@@ -1907,7 +1908,12 @@ class SuperpowerDaemon:
         store = EventStore(config.db_path)
         self._store = store
         projector = GraphProjector(store, output_root=graph_root)
-        service = KnowledgeService(store, projector, max_token_budget=config.max_token_budget)
+        service = KnowledgeService(
+            store,
+            projector,
+            max_token_budget=config.max_token_budget,
+            projection_wait_seconds=config.projection_wait_seconds,
+        )
         writer_audit = AuditLog(store)
         self._writer_audit = writer_audit
         # Crash recovery first (journal reconciliation closes crashed

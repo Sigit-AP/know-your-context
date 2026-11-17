@@ -113,6 +113,29 @@ Run readiness before accepting traffic; run
 `recover_projection(..., audit_log=...)`) at startup to close crashed
 invocations exactly once.
 
+## Projection publish wait (SUB-194)
+
+When several processes race to read a store whose projection does not yet
+cover the knowledge watermark, exactly one of them wins the projector build
+lock; the others see the peer's rebuild and — instead of failing typed
+`STALE_PROJECTION` a few seconds early — poll for the peer's publication for
+a bounded budget (jittered, so dozens of readers never wake on the same
+tick). That budget is the **projection wait**, default 5 s
+(`_PROJECTION_WAIT_SECONDS` in `service.py`), and it is tunable per surface:
+
+- **CLI query** — `know-your-context --store … query --projection-wait-seconds 120 -`
+- **CLI serve** (persistent local API) — `serve --projection-wait-seconds 120`
+- **Superpower daemon** — `serve --daemon --projection-wait-seconds 120`, stored
+  on the `DaemonConfig` as `projection_wait_seconds` (validated positive) and
+  applied to every read-pool worker and the writer lane's service.
+
+The knob is a *reader-side* patience budget: raising it lets a reader ride out
+an expensive/large peer rebuild instead of failing a read that would have
+succeeded a few seconds later; it does not change projection behavior. A query
+that loses the lock and exhausts the budget still fails typed
+`STALE_PROJECTION`, retryable. `None`/omitted = the historical 5 s default
+everywhere, so existing invocations are byte-identical.
+
 ## Retrieval v2 trigram index (TASK1-PUSH200-R2)
 
 The retrieval v2 LIKE fallback channel (`name/path LIKE '%term%'`) is
