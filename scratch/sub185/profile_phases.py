@@ -14,7 +14,6 @@ Usage:
 from __future__ import annotations
 
 import hashlib
-import os
 import sys
 import time
 import tracemalloc
@@ -39,7 +38,7 @@ def _rss_kb() -> int:
 class _ProfiledPipeline(IngestionPipeline):
     """Snapshot tracemalloc+RSS around each phase boundary."""
 
-    def __init__(self, *args, profiler: "_Profiler", **kwargs):
+    def __init__(self, *args, profiler: _Profiler, **kwargs):
         super().__init__(*args, **kwargs)
         self._profiler = profiler
 

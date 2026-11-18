@@ -30,7 +30,7 @@ def module_text(index: int, count: int, rng: random.Random) -> str:
     neighbours = sorted(rng.sample([j for j in range(count) if j != i], k=2))
     for j in neighbours[:1]:
         lines.append(f"import mod{j:04d}")
-    lines.append(f"from mod0000 import fn_0_0")
+    lines.append("from mod0000 import fn_0_0")
     if len(neighbours) > 1:
         lines.append(f"from mod{neighbours[1]:04d} import fn_{neighbours[1]:04d}_1")
     lines.append("")

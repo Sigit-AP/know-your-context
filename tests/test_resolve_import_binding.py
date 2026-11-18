@@ -39,7 +39,6 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Literal
 
 import pytest
 
@@ -315,7 +314,7 @@ class TestImportBinding:
 
     def test_binding_edge_carries_strategy_metadata(self, store: EventStore) -> None:
         """Edge metadata keeps attribution: strategy == import_binding."""
-        ref_id = self._seed_binding(store, second_compress_def=False)
+        self._seed_binding(store, second_compress_def=False)
         # binding import ref + 'other' import ref + the call = 3 refs.
         assert resolve(store).processed == 3
         edges = edges_of(store)
