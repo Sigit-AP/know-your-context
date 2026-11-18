@@ -159,17 +159,17 @@ python3 /root/.hermes/cache/scratch/stress3/harness_final.py
 
 | metrik          | graphify | codegraph | kyc   | verdict |
 |-----------------|---------:|----------:|------:|---------|
-| ingest_wall_s   |     19.6 |      11.4 |   7.7 | MENANG  |
-| ingest_rss_mb   |       73 |       230 |    90 | SETARA  |
-| artifact_mb     |      2.0 |       2.6 |   2.1 | SETARA  |
-| q_p50_ms        |     1892 |      1999 |  3117 | KALAH   |
-| q_wall_s        |     19.4 |      20.9 |  38.0 | KALAH   |
-| w1_hit          |      6/6 |       6/6 |   6/6 | SETARA  |
-| w2_hit          |      4/4 |       4/4 |   4/4 | SETARA  |
-| err_rate        |      0 % |       0 % |   0 % | SETARA  |
-| sigkill         |        0 |         0 |     0 | SETARA  |
-| storm_rss_mb    |       65 |       117 |    82 | SETARA  |
-| solo_w1_ms      |     1746 |      1824 |  1583 | MENANG  |
+| ingest_wall_s   |     7.23 |     4.11 |   2.61 | MENANG  |
+| ingest_rss_mb   |    169.9 |     312.8 |   75.4 | MENANG  |
+| artifact_mb     |      2.0 |       2.7 |    2.1 | SETARA  |
+| q_p50_ms        |      630 |       949 |    746 | SETARA  |
+| q_wall_s        |     7.0  |       8.6 |    6.4 | MENANG  |
+| w1_hit          |      6/6 |       6/6 |    6/6 | SETARA  |
+| w2_hit          |      4/4 |       4/4 |    4/4 | SETARA  |
+| err_rate        |      0 % |       0 % |    0 % | SETARA  |
+| sigkill         |        0 |         0 |      0 | SETARA  |
+| storm_rss_mb    |     72.4 |     175.5 |   80.4 | SETARA  |
+| solo_w1_ms      |      632 |       842 |    531 | MENANG  |
 
 Skor L1: **2 MENANG / 7 SETARA / 2 KALAH**. KALAH di latensi+wall storm —
 semua query sukses tetapi lebih lambat; solo-probe KYC justru tercepat,
@@ -179,19 +179,20 @@ jadi defisitnya di konkurensi, bukan di jalur query.
 
 | metrik          | graphify | codegraph | kyc    | verdict |
 |-----------------|---------:|----------:|-------:|---------|
-| ingest_wall_s   |    326.9 |      36.0 |   42.8 | SETARA  |
-| ingest_rss_mb   |      214 |       310 |    242 | SETARA  |
-| artifact_mb     |     20.9 |      25.0 |   19.4 | MENANG  |
-| q_p50_ms        |    46770 |     19129 |  20992 | SETARA  |
-| q_wall_s        |    287.0 |     116.9 |  166.6 | SETARA  |
+| ingest_wall_s   |   112.35 |     16.69 |  15.72 | MENANG  |
+| ingest_rss_mb   |    358.0 |     350.5 |  148.5 | MENANG  |
+| artifact_mb     |     20.2 |      25.4 |   18.8 | MENANG  |
+| q_p50_ms        |    11733 |      9503 |   5578 | MENANG  |
+| q_wall_s        |    106.2 |      66.9 |   45.9 | MENANG  |
 | w1_hit          |    40/40 |     40/40 |  40/40 | SETARA  |
 | w2_hit          |    20/20 |     20/20 |  20/20 | SETARA  |
 | err_rate        |      0 % |       0 % |    0 % | SETARA  |
 | sigkill         |        0 |         0 |      0 | SETARA  |
-| storm_rss_mb    |      684 |      1220 |    788 | SETARA  |
-| solo_w1_ms      |     5686 |      2327 |   1969 | MENANG  |
+| storm_rss_mb    |   1021.9 |    1838.5 |  477.3 | MENANG  |
+| solo_w1_ms      |     1488 |      1064 |    645 | MENANG  |
 
-Skor L2: **2 MENANG / 9 SETARA / 0 KALAH**.
+Skor L2: **7 MENANG / 4 SETARA / 0 KALAH** (remeasure 2026-11-18, HEAD 6650ef4,
+harness identik, ketiga produk dijalankan di jendela host yang sama).
 
 ### L3 — 5000 file, 50 agen, 100 query (post-fix, kyc = remeasure baris kanonik)
 
