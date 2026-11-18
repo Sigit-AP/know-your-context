@@ -143,3 +143,51 @@ def test_the_wait_does_not_mask_a_real_repair_failure(tmp_path: Path, monkeypatc
         service.query(QueryRequest(purpose="gates", domain="P1", token_budget=512))
     assert time.monotonic() - started < 1.0, "no busy peer: the read must fail fast, not wait"
     store.close()
+
+
+def test_reader_rides_out_a_peer_rebuild_that_outlasts_the_wait_budget(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """SUB-198: a reader must not fail while a peer is demonstrably still building.
+
+    The L4 storm baseline measured err=49/50 on the ``query`` lane (and 27s
+    p50 on the codeintel lane) because the fixed ``_PROJECTION_WAIT_SECONDS``
+    budget expired while the peer's rebuild — slowed by 50-way store-open and
+    audit-write contention — was still in flight. The rebuild lock is flock(2),
+    so a held lock is a *liveness* signal: the peer is alive and building. The
+    reader should ride out the peer's publish instead of failing typed with a
+    read that would have succeeded seconds later. This test holds the real
+    rebuild flock for longer than a tiny budget and publishes under the lock,
+    exactly like the storm's winning builder; the reader must wait and succeed
+    (elapsed >= the hold), not raise STALE_PROJECTION at the budget.
+    """
+    store, projector, service = _store_with_unbuilt_projection(tmp_path)
+    monkeypatch.setattr("know_your_context.service._PROJECTION_WAIT_SECONDS", 0.05)
+    monkeypatch.setattr("know_your_context.service._PROJECTION_WAIT_POLL_SECONDS", 0.005)
+
+    peer_locked = threading.Event()
+
+    def peer_builder() -> None:
+        # The competing builder: wins the flock, builds for 0.4 s (past the
+        # 0.05 s budget), publishes while still holding the lock (rebuild()
+        # holds flock(2) through _publish), then releases on context exit.
+        with projector.hold_lock():
+            peer_locked.set()
+            time.sleep(0.4)
+            watermark = store.knowledge_high_watermark()
+            state, _ = projector._replay_upto(watermark)  # noqa: SLF001 - race-mechanism test
+            extraction, quarantined = projector._extraction(state)
+            projector._publish(extraction, quarantined, watermark, allow_shrink=False, activate=True)
+
+    thread = threading.Thread(target=peer_builder, daemon=True)
+    thread.start()
+    assert peer_locked.wait(timeout=2.0), "peer must win the rebuild lock before the read"
+
+    started = time.monotonic()
+    response = service.query(QueryRequest(purpose="gates", domain="P1", token_budget=1024))
+    elapsed = time.monotonic() - started
+    thread.join(timeout=2.0)
+    assert response.stale is False
+    assert elapsed >= 0.3, f"reader must ride out the peer build, got {elapsed:.2f}s"
+    assert "n-race" in {node.node_id for node in response.results}
+    store.close()

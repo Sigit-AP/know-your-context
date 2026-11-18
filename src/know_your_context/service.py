@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 import re
 import threading
@@ -37,6 +38,11 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Literal
+
+try:  # POSIX rebuild flock; absent on non-POSIX hosts (projection.py precedent)
+    import fcntl
+except ImportError:  # pragma: no cover - non-POSIX
+    fcntl = None  # type: ignore[assignment]
 
 from pydantic import ValidationError
 
@@ -175,10 +181,20 @@ _MAX_SNAPSHOT_CACHE = 8
 # reports the projection as unavailable. The projector's rebuild lock is
 # non-blocking, so losing the race to the first builder used to surface as
 # STALE_PROJECTION ("does not cover watermark 0") in 22.5% of post-ingest
-# reads. A build is seconds, not minutes: 5 s covers it with room to spare and
-# still bounds a crashed builder.
+# reads. SUB-198: the fixed budget alone was still not enough under a 50-way
+# storm — the winner's rebuild, slowed by store-open/audit contention,
+# outlasted even 5 s, and 49/50 reads failed while the peer demonstrably
+# still held the rebuild flock. The wait is now liveness-based (see
+# ``_await_concurrent_builder``): the flock is released on process death, so
+# a held flock is proof the peer is alive and building — the reader rides
+# out the publish with a jittered exponential backoff (dozens of waiters
+# polling at the base tick would themselves add store contention), bounded
+# by a hard cap that only a wedged peer can hit.
 _PROJECTION_WAIT_SECONDS = 5.0
+_PROJECTION_WAIT_HARD_CAP_SECONDS = 120.0
 _PROJECTION_WAIT_POLL_SECONDS = 0.01
+_PROJECTION_WAIT_BACKOFF_FACTOR = 2.0
+_PROJECTION_WAIT_MAX_BACKOFF_SECONDS = 0.25
 _MAX_PROVENANCE_ENTRIES = 32
 _MAX_PROVENANCE_LENGTH = 256
 _MAX_SUMMARY_LENGTH = 256
@@ -298,12 +314,16 @@ def _current_projection_wait(override: float | None) -> float:
 
 
 def _resolve_projection_wait(seconds: float | None) -> float:
-    """How long a reader waits for a peer's publish before failing typed.
+    """The courtesy minimum wait for a peer's publish before failing typed.
 
-    The default preserves the historical 5 s budget. A caller that knows its
-    rebuilds are expensive (large stores, contended hosts) can raise it so the
-    reader rides out the peer's publish instead of failing a read that would
-    have succeeded a few seconds later (B-L4).
+    The resolved value preserves the historical 5 s budget as the *floor*; a
+    caller that knows its rebuilds are expensive can still raise it. Under
+    SUB-198 the read no longer fails the moment the budget expires when a
+    peer is demonstrably still building — ``_await_concurrent_builder`` keeps
+    riding out the publish while the rebuild lock is held (flock releases on
+    process death, so a held lock is liveness), bounded by
+    ``_PROJECTION_WAIT_HARD_CAP_SECONDS``. The budget now sizes the courtesy
+    poll window, not the hard failure cliff.
     """
     resolved = _PROJECTION_WAIT_SECONDS if seconds is None else float(seconds)
     if resolved <= 0:
@@ -526,20 +546,71 @@ class KnowledgeService:
         holds the rebuild lock. Returns the covering snapshot the moment the
         peer activates it, or ``None`` once the wait budget is exhausted (the
         peer crashed, or is building a generation that still does not cover).
-        Called while holding ``_repair_lock``, so a single process never runs a
-        wait per reader thread — the first reader waits, the rest queue behind
-        it and then find the snapshot.
+
+        SUB-198: the historical wait was a fixed wall-clock budget that failed
+        the read even while the peer was demonstrably still building — a
+        50-process L4 storm measured 49/50 ``STALE_PROJECTION`` because the
+        winner's rebuild, slowed by the same store-open/audit contention every
+        reader pays, outlasted the 5 s budget. The rebuild lock is ``flock(2)``
+        (auto-released on process death), so a *held* lock is a liveness
+        signal, not a guess: after the courtesy budget, the reader keeps
+        polling only while the peer provably holds the lock, with an
+        exponentially backing-off, jittered poll so dozens of waiting readers
+        do not add store contention to the build they are waiting on. The
+        fixed budget is retained as the courtesy minimum (bounded-wait tests
+        and the wedged-peer case rely on it); the hard cap bounds only a peer
+        so wedged it never releases. Called while holding ``_repair_lock``.
         """
         wait = _current_projection_wait(self._projection_wait_override)
-        deadline = time.monotonic() + wait
-        while time.monotonic() < deadline:
-            # Jitter the poll: dozens of readers waking on the same tick hammer
-            # the reader-writer lock even when they are only checking a pointer.
-            time.sleep(_PROJECTION_WAIT_POLL_SECONDS * (1.0 + random.random()))
+        budget_deadline = time.monotonic() + wait
+        hard_cap = time.monotonic() + _PROJECTION_WAIT_HARD_CAP_SECONDS
+        backoff = _PROJECTION_WAIT_POLL_SECONDS
+        while True:
+            # Jitter the poll: dozens of readers waking on the same tick
+            # hammer the reader-writer lock even when they are only checking
+            # a pointer; the backoff below keeps them from hammering the
+            # store the builder is reading.
+            time.sleep(backoff * (1.0 + random.random()))
             snapshot = self._try_snapshot(required_watermark)
             if snapshot is not None:
                 return snapshot
-        return None
+            now = time.monotonic()
+            if now >= hard_cap:
+                return None
+            if now >= budget_deadline and not self._peer_still_building():
+                # Budget spent and the lock is free: the peer either published
+                # (covered above), crashed (flock auto-released), or gave up.
+                # Stop so the read fails typed and retryable instead of
+                # spinning against a dead builder.
+                return None
+            backoff = min(backoff * _PROJECTION_WAIT_BACKOFF_FACTOR, _PROJECTION_WAIT_MAX_BACKOFF_SECONDS)
+
+    def _peer_still_building(self) -> bool:
+        """True while another process holds the projector's rebuild flock.
+
+        A non-destructive probe: tries ``flock(LOCK_EX | LOCK_NB)`` on the
+        rebuild lock file and immediately releases if it succeeds. ``flock``
+        blocks a second descriptor (even in the same process) while a peer
+        holds the lock, and is auto-released on process death, so a lock that
+        cannot be acquired is *proof* a live peer is mid-rebuild — not a stale
+        artifact. A missing lock file means nobody has started a build.
+        """
+        lock_path = self._projector._output_root / "projector.lock"  # noqa: SLF001 - same-package wiring (mcp_server precedent)
+        if fcntl is None:
+            return False
+        try:
+            fd = os.open(lock_path, os.O_RDONLY)
+        except OSError:
+            return False
+        try:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError:
+                return True  # held by a live peer
+            fcntl.flock(fd, fcntl.LOCK_UN)
+            return False
+        finally:
+            os.close(fd)
 
     def _snapshot(self, required_watermark: int) -> _Snapshot:
         snapshot = self._try_snapshot(required_watermark)
@@ -571,8 +642,10 @@ class KnowledgeService:
             if busy_peer:
                 raise StaleProjectionUnavailable(
                     f"the active projection does not cover knowledge watermark {required_watermark}: "
-                    f"another process is rebuilding it and did not publish within "
-                    f"{_current_projection_wait(self._projection_wait_override):g}s"
+                    f"another process was rebuilding it but did not publish before releasing the "
+                    f"rebuild lock (the reader rides out a held lock past the "
+                    f"{_current_projection_wait(self._projection_wait_override):g}s courtesy "
+                    f"budget and gave up only once the peer was gone)"
                 )
             raise StaleProjectionUnavailable(
                 f"the active projection does not cover knowledge watermark {required_watermark}"

@@ -222,8 +222,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         metavar="SECONDS",
         help=(
-            "how long to wait for a concurrent projection publish after losing the "
-            "rebuild lock, in seconds (default 5; raise for expensive/large rebuilds)"
+            "minimum seconds a reader waits for a concurrent projection publish after "
+            "losing the rebuild lock (default 5). While a peer demonstrably still holds "
+            "the rebuild lock the reader keeps waiting past this budget (SUB-198), so "
+            "expensive rebuilds under a reader storm do not fail reads that are about to "
+            "succeed; the budget only bounds the courtesy poll window and the no-live-peer "
+            "case. Raise for pathological wedged builders, not for slow rebuilds."
         ),
     )
 
@@ -255,8 +259,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         metavar="SECONDS",
         help=(
-            "how long a reader waits for a concurrent projection publish after losing the "
-            "rebuild lock, in seconds (default 5; raise for expensive/large rebuilds)"
+            "minimum seconds a reader waits for a concurrent projection publish after "
+            "losing the rebuild lock (default 5). While a peer demonstrably still holds "
+            "the rebuild lock the reader keeps waiting past this budget (SUB-198), so "
+            "expensive rebuilds under a reader storm do not fail reads that are about to "
+            "succeed; the budget only bounds the courtesy poll window and the no-live-peer "
+            "case. Raise for pathological wedged builders, not for slow rebuilds."
         ),
     )
     serve_parser.add_argument(
