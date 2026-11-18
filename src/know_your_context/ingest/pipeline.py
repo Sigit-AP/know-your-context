@@ -762,6 +762,9 @@ class IngestionPipeline:
         # every store read, digest token, report entry and write — only the
         # pure content work fans out; kill switches restore history.
         workers, commit_batch = _hardware_ingest_params(self._store)
+        # Env override to force minimal hardware tuning (disable large mmap/cache) for RSS reduction
+        if os.getenv("INGEST_DISABLE_HW_TUNING") == "1":
+            workers, commit_batch = 1, 1
         serial_extraction = self._extraction_needs_serial(extractor)
 
         selected = entries[: self._budget.max_files]

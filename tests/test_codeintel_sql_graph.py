@@ -482,3 +482,211 @@ def test_edge_count_plan_probes_symbols_pk(rich_store: Path) -> None:
     assert any("SCAN e USING INDEX idx_graph_edges_identity" in line for line in plan)
     assert sum("SEARCH" in line and "sqlite_autoindex_symbols_1" in line for line in plan) >= 2
     assert not any("SCAN" in line and "symbols" in line for line in plan), plan
+
+
+# --------------------------------------------------- cross-process cache (SUB-193)
+#
+# RED/GREEN: the aggregate memo is process-local, so the 50-agent storm paid
+# the valid-edge aggregation (full edge stream: filter + group + endpoint
+# validity) once PER PROCESS — measured on the L4 store (2 cores, SUB-193):
+# ~78 s of an ~82 s instrumented ``callers-of`` sat in the aggregation, and
+# the CLI's p50 hit 115 s, right at the 120 s timeout the real storm trips.
+# The sidecar file (``<store>.codeintel-cache.json``, atomic replace,
+# flock-guarded) publishes the snapshot's pure content functions once; every
+# other process reads them with zero SQL, and a stale file is never served
+# (the exact fingerprint is part of the key — a moved key forces recompute).
+import threading  # noqa: E402
+
+from know_your_context.analytics.code_intel_sql import (  # noqa: E402
+    _MEMO_LOCK,
+    _STORE_MEMO,
+    _sidecar_path,
+)
+
+
+def _clear_process_memo() -> None:
+    """Simulate a fresh OS process: drop the in-process aggregate memo."""
+    with _MEMO_LOCK:
+        _STORE_MEMO.clear()
+
+
+def test_shared_cache_serves_counts_with_zero_sql(rich_store: Path) -> None:
+    """Process A computes the aggregates and publishes the sidecar; a fresh
+    process B reads them with zero SQL and identical answers."""
+    store = EventStore(rich_store)
+    try:
+        memory_graph = load_code_graph(store)
+        stats_a: dict[str, int] = {"node_rows": 0, "edge_rows": 0, "queries": 0}
+        graph_a = open_sql_code_graph(store, stats=stats_a)
+        assert graph_a is not None
+        try:
+            counts_a = (graph_a.node_count, graph_a.edge_count, graph_a.dropped_edges)
+            graph_a.named("alpha")  # force the non-ASCII set into the sidecar too
+        finally:
+            graph_a.close()
+    finally:
+        store.close()
+    assert counts_a == (len(memory_graph.nodes), len(memory_graph.edges), memory_graph.dropped_edges)
+    assert _sidecar_path(str(rich_store)).is_file(), "process A must publish the cross-process cache"
+    _clear_process_memo()
+    graph_b, stats_b = _fresh_graph(rich_store)
+    try:
+        counts_b = (graph_b.node_count, graph_b.edge_count, graph_b.dropped_edges)
+    finally:
+        graph_b.close()
+    assert counts_b == counts_a
+    assert stats_b["queries"] == 0, "sidecar-warm aggregates must not run SQL"
+
+
+def test_shared_cache_ignored_after_store_write(rich_store: Path) -> None:
+    """A store write moves the fingerprint: the stale sidecar is never served."""
+    before, _ = _memo_snapshot(rich_store)  # publishes sidecar for the old snapshot
+    store = EventStore(rich_store)
+    try:
+        store.upsert_symbol(node_id="n:late", name="late", kind="function", path="z.py", line=1, col=0)
+        store.add_graph_edge("n:late", "n:a", "calls", line=1)
+    finally:
+        store.close()
+    _clear_process_memo()
+    after, stats = _memo_snapshot(rich_store)
+    assert after != before[:2], "new rows must change node_count/edge_count"
+    assert stats["queries"] > 0, "a moved fingerprint must force recomputation, not a stale sidecar"
+    healed = json.loads(_sidecar_path(str(rich_store)).read_text(encoding="utf-8"))
+    assert healed["node_count"] == after[0], "the sidecar must self-heal to the new snapshot"
+
+
+def test_shared_cache_callers_of_byte_identical(rich_store: Path) -> None:
+    """A sidecar-warm process answers callers-of byte-identically to the
+    compute path and to the in-memory build."""
+    store = EventStore(rich_store)
+    try:
+        memory_graph = load_code_graph(store)
+        expected = callers_of(memory_graph, "gamma", max_depth=2, max_results=200)
+        graph_a = open_sql_code_graph(store)
+        assert graph_a is not None
+        try:
+            cold = callers_of(graph_a, "gamma", max_depth=2, max_results=200)
+        finally:
+            graph_a.close()
+    finally:
+        store.close()
+    assert cold == expected  # the compute path stays byte-identical
+    _clear_process_memo()
+    graph_b, _ = _fresh_graph(rich_store)
+    try:
+        warm = callers_of(graph_b, "gamma", max_depth=2, max_results=200)
+    finally:
+        graph_b.close()
+    assert warm == cold == expected, "the sidecar-warm path must be byte-identical too"
+
+
+def test_shared_cache_concurrent_writers(rich_store: Path) -> None:
+    """N simultaneous readers with one cold cache: every answer is identical
+    and the published sidecar serves a fresh process with zero SQL."""
+    store = EventStore(rich_store)
+    try:
+        memory_graph = load_code_graph(store)
+    finally:
+        store.close()
+    expected = json.loads(canonical_json(callers_of(memory_graph, "beta", max_depth=2, max_results=50)))
+    _clear_process_memo()
+    results: list[str] = []
+    lock = threading.Lock()
+
+    def worker() -> None:
+        store = EventStore(rich_store)
+        try:
+            graph = open_sql_code_graph(store)
+            assert graph is not None
+            try:
+                payload = callers_of(graph, "beta", max_depth=2, max_results=50)
+            finally:
+                graph.close()
+        finally:
+            store.close()
+        with lock:
+            results.append(json.loads(canonical_json(payload)))
+
+    threads = [threading.Thread(target=worker) for _ in range(8)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert len(results) == 8
+    assert all(result == expected for result in results), "every concurrent reader must answer identically"
+    _clear_process_memo()
+    graph, stats = _fresh_graph(rich_store)
+    try:
+        counts = (graph.node_count, graph.edge_count, graph.dropped_edges)
+    finally:
+        graph.close()
+    assert counts == (len(memory_graph.nodes), len(memory_graph.edges), memory_graph.dropped_edges)
+    assert stats["queries"] == 0, "the published sidecar must survive the concurrent storm"
+
+
+def test_shared_cache_fail_open_when_write_blocked(
+    rich_store: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An unwritable sidecar must never break the answer: fall back to the
+    per-process compute path (today's cost)."""
+    import know_your_context.analytics.code_intel_sql as cis
+
+    def _boom(*args: object, **kwargs: object) -> None:
+        raise OSError("read-only filesystem")
+
+    monkeypatch.setattr(cis, "_sidecar_write", _boom)
+    store = EventStore(rich_store)
+    try:
+        memory_graph = load_code_graph(store)
+        stats: dict[str, int] = {"node_rows": 0, "edge_rows": 0, "queries": 0}
+        graph = open_sql_code_graph(store, stats=stats)
+        assert graph is not None
+        try:
+            assert graph.edge_count == len(memory_graph.edges)
+            assert stats["queries"] > 0, "fail-open must compute in-process"
+        finally:
+            graph.close()
+    finally:
+        store.close()
+
+
+def test_shared_cache_fail_open_when_lock_unavailable(
+    rich_store: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """No flock (or lock wait expiry) must not break the answer either."""
+    import know_your_context.analytics.code_intel_sql as cis
+
+    monkeypatch.setattr(cis, "_acquire_shared_cache_lock", lambda db_path: None)
+    store = EventStore(rich_store)
+    try:
+        memory_graph = load_code_graph(store)
+        graph = open_sql_code_graph(store)
+        assert graph is not None
+        try:
+            assert (graph.node_count, graph.edge_count, graph.dropped_edges) == (
+                len(memory_graph.nodes),
+                len(memory_graph.edges),
+                memory_graph.dropped_edges,
+            )
+        finally:
+            graph.close()
+    finally:
+        store.close()
+
+
+def test_shared_cache_ignores_corrupt_file(rich_store: Path) -> None:
+    """A corrupt sidecar is ignored (never trusted) and then healed."""
+    _sidecar_path(str(rich_store)).write_text("{not json\0", encoding="utf-8")
+    store = EventStore(rich_store)
+    try:
+        memory_graph = load_code_graph(store)
+        graph = open_sql_code_graph(store)
+        assert graph is not None
+        try:
+            assert graph.edge_count == len(memory_graph.edges)
+        finally:
+            graph.close()
+    finally:
+        store.close()
+    healed = json.loads(_sidecar_path(str(rich_store)).read_text(encoding="utf-8"))
+    assert healed["edge_count"] == len(memory_graph.edges), "the corrupt file must be healed"
