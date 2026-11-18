@@ -563,6 +563,35 @@ class _ReplayState:
     watermark: int = 0
 
 
+def _code_index_counts(store: Any) -> tuple[int, int]:
+    """``(files, symbols)`` code-index counts, without a table-scan ``COUNT(*)``.
+
+    SUB-210: ``COUNT(*)`` over the ingested ``symbols`` table walks every
+    table page — on the 181k-symbol L4 store that maps ~60 MB of sqlite pages
+    into the caller's RSS just to count (measured per query process at stack
+    build; the pages are OS-shared but count in every process's RSS). The
+    rows are ingested append-only under the implicit rowid, so ``MAX(rowid)``
+    reads a single btree leaf: equal to the live count for any store without
+    deletions, O(1) pages either way. Deterministic per store — every process
+    reaches the same number, which is all :func:`resolve_artifact_cap`'
+    contract requires. If the schema ever loses rowid, fall back to the
+    store's own exact count (the historical ``COUNT(*)`` path).
+    """
+    counter = getattr(store, "code_index_size", None)
+    if counter is None:
+        return (0, 0)
+    try:
+        with store.read() as conn:
+            files = conn.execute("SELECT MAX(rowid) AS n FROM files").fetchone()
+            symbols = conn.execute("SELECT MAX(rowid) AS n FROM symbols").fetchone()
+    except Exception:  # noqa: BLE001 - fail back to the store's exact count
+        return counter()
+    return (
+        0 if files is None or files["n"] is None else int(files["n"]),
+        0 if symbols is None or symbols["n"] is None else int(symbols["n"]),
+    )
+
+
 def resolve_artifact_cap(store: Any) -> int:
     """The per-artifact publish cap this store's projection has to honour.
 
@@ -577,10 +606,7 @@ def resolve_artifact_cap(store: Any) -> int:
     ``store`` is anything exposing ``code_index_size()``; a store without a
     code index answers ``(0, 0)`` and keeps :data:`ARTIFACT_MAX_BYTES`.
     """
-    counter = getattr(store, "code_index_size", None)
-    if counter is None:
-        return ARTIFACT_MAX_BYTES
-    files, symbols = counter()
+    files, symbols = _code_index_counts(store)
     projected = int(files) + int(symbols)
     if projected <= 0:
         return ARTIFACT_MAX_BYTES
@@ -620,7 +646,7 @@ def resolve_fragment_bounds(store: Any) -> tuple[int, int, int]:
     )
 
     counter = getattr(store, "code_index_size", None)
-    files, symbols = counter() if counter is not None else (0, 0)
+    files, symbols = _code_index_counts(store) if counter is not None else (0, 0)
     projected = int(files) + int(symbols)
     if projected <= 0:
         return (MAX_SEMANTIC_FRAGMENT_NODES, MAX_SEMANTIC_FRAGMENT_EDGES, MAX_SEMANTIC_FRAGMENT_BYTES)

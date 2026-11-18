@@ -199,6 +199,7 @@ def _resolve_storage_tuning(db_path: str) -> StorageTuning:
         return StorageTuning.legacy()
     try:
         from know_your_context.hardware.profile import hardware_plan
+        from know_your_context.hardware.tuning import INGEST_DISABLE_HW_TUNING_ENV, plan_for_ingest_rss
         from know_your_context.ops.switches import load_switches
     except ImportError as exc:  # pragma: no cover - defensive; package layout is fixed
         return StorageTuning(0, None, False, "legacy", (f"hardware layer unavailable: {exc}",))
@@ -206,6 +207,14 @@ def _resolve_storage_tuning(db_path: str) -> StorageTuning:
     plan = hardware_plan(db_path).storage
     hw_tuning_disabled = load_switches().hw_tuning_disabled()
     source = "legacy" if hw_tuning_disabled else "probe"
+    # SUB-209: INGEST_DISABLE_HW_TUNING must reach the pragmas, not just the
+    # pipeline fan-out (ingest/pipeline.py reads it for workers=1). When the
+    # operator opts into ingest mode, cap the two db-size-proportional
+    # pragmas (mmap, page cache) that cost ~db-sized RSS on scan-heavy
+    # writes; an explicit storage_tuning pin always wins (set in the
+    # constructor, never patched here).
+    if os.environ.get(INGEST_DISABLE_HW_TUNING_ENV) == "1":
+        plan = plan_for_ingest_rss(plan)
     return StorageTuning(plan.mmap_bytes, plan.page_size, plan.synchronous_normal, source, plan.notes, plan.cache_kib)
 
 

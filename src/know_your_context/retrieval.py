@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from array import array
 from collections import deque
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
@@ -426,13 +427,51 @@ def resolve_domain_input(text: str) -> PrimaryDomain:
 # ------------------------------------------------------------ lexical ranking
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class RankedHit:
     """One positive lexical hit plus the field rank that breaks coverage ties."""
 
     node_id: str
     score: Decimal
     field_rank: Decimal = Decimal(0)
+
+
+# SUB-210: field-bit mapping for the compact postings. ``SEARCHABLE_FIELDS``
+# order is the bit order, so ``1 << index`` maps a field to its bit.
+_FIELD_BIT: dict[str, int] = {field: 1 << index for index, field in enumerate(SEARCHABLE_FIELDS)}
+#: Per field-bit-mask boost (strongest field) and weight tables — 256 entries
+#: cover every combination of the four searchable fields. Precomputed once
+#: from the exact ``1 + (weight - 1) * FIELD_BOOST_STEP`` rule.
+_BOOST_BY_BITS: tuple[Decimal, ...] = tuple(
+    Decimal(0)
+    if (mask & 0xF) == 0
+    else max(
+        (Decimal(1) + (FIELD_WEIGHTS[field] - 1) * FIELD_BOOST_STEP) for field, bit in _FIELD_BIT.items() if mask & bit
+    )
+    for mask in range(256)
+)
+_WEIGHT_BY_BITS: tuple[Decimal, ...] = tuple(
+    Decimal(0) if (mask & 0xF) == 0 else max(FIELD_WEIGHTS[field] for field, bit in _FIELD_BIT.items() if mask & bit)
+    for mask in range(256)
+)
+
+
+class _TermPostings:
+    """One term's postings: ``(node_pos << 4 | field_bits)`` packed ints.
+
+    A single compact ``array('I')`` per term (4 B per occurrence) replaces the
+    per-node frozenset-of-terms retention (SUB-210): at 100k code-style nodes
+    the old design retained ~236 MB of frozensets and duplicate term strings;
+    the packed postings retain ~40 MB including the vocabulary table. The
+    field bits still answer the strongest-field boost/weight exactly, and the
+    df is field-complete (counts a term once per node across any field).
+    """
+
+    __slots__ = ("positions", "df")
+
+    def __init__(self, positions: array, df: int) -> None:
+        self.positions = positions
+        self.df = df
 
 
 class LexicalIndex:
@@ -442,27 +481,45 @@ class LexicalIndex:
     searchable field (node id, aliases, summary, context tags), so the IDF is
     field-complete. Ranking is a pure function of the indexed content: ties
     break on the ascending node id, never on graph order.
+
+    Retained memory is inverted postings (SUB-210): per node the index keeps
+    only its id, and each term's occurrences are stored as packed
+    ``array('I')`` positions with field bits, replacing the old per-node
+    frozenset-of-term-strings retention (~236 MB at 100k code-style nodes).
+    ``rank`` answers are byte-identical to that formulation: the same terms,
+    the same field-complete df, the same Decimal arithmetic in the same order.
     """
 
-    def __init__(self, entries: Iterable[tuple[str, Mapping[str, frozenset[str]]]]) -> None:
-        prepared: list[tuple[str, dict[str, frozenset[str]]]] = []
-        frequency: dict[str, int] = {}
-        for node_id, fields in entries:
-            cleaned = {
-                field: frozenset(normalize_term(term) for term in terms)
-                for field, terms in fields.items()
-                if field in SEARCHABLE_FIELDS
-            }
-            prepared.append((node_id, cleaned))
-            present: set[str] = set()
-            for terms in cleaned.values():
-                present |= set(terms)
-            for term in present:
-                frequency[term] = frequency.get(term, 0) + 1
-        prepared.sort(key=lambda item: item[0])
-        self._entries = tuple(prepared)
-        self._frequency = frequency
-        self._size = len(prepared)
+    def __init__(self, entries: Iterable[tuple[str, Mapping[str, Iterable[str]]]]) -> None:
+        node_ids: list[str] = []
+        vocab: dict[str, _TermPostings] = {}
+        for pos, (node_id, fields) in enumerate(entries):
+            node_ids.append(node_id)
+            seen: set[str] = set()
+            for field in SEARCHABLE_FIELDS:
+                bit = _FIELD_BIT[field]
+                for term in fields.get(field, ()):
+                    key = normalize_term(term)
+                    postings = vocab.get(key)
+                    if postings is None:
+                        postings = _TermPostings(array("I"), 0)
+                        vocab[key] = postings
+                    # A term that hits several fields of the same node must
+                    # contribute ONE boost (the strongest field), exactly like
+                    # the per-node ``_term_boost`` — merge its field bits into
+                    # the node's packed entry instead of appending twice (the
+                    # rank loop walks per-term postings in node order, so the
+                    # same node's occurrences are always adjacent).
+                    if postings.positions and (postings.positions[-1] >> 4) == pos:
+                        postings.positions[-1] |= bit
+                    else:
+                        postings.positions.append((pos << 4) | bit)
+                    if key not in seen:
+                        seen.add(key)
+                        postings.df += 1
+        self._node_ids = node_ids
+        self._vocab = vocab
+        self._size = len(node_ids)
 
     @classmethod
     def from_entries(cls, entries: Iterable[Mapping[str, Any]]) -> LexicalIndex:
@@ -483,39 +540,47 @@ class LexicalIndex:
         are indexed. ``provenance`` and ``source_file`` are deliberately never
         read: source paths and provenance contribute zero relevance (spec
         13.1).
+
+        Entry materialization is lazy (SUB-210): each node's term frozensets
+        are built one at a time inside ``_entries`` and released after
+        posting, so construction peak stays near the retained size instead
+        of holding a second full copy of the node field sets.
         """
-        entries: list[tuple[str, dict[str, frozenset[str]]]] = []
-        for node in nodes:
-            node_id = str(node.get("id"))
-            aliases: set[str] = set()
-            domain = node.get("domain")
-            if node.get("kind") == "primary" and domain in {member.value for member in PrimaryDomain}:
-                member = PrimaryDomain(str(domain))
-                aliases = {alias.casefold() for alias in DOMAIN_ALIASES[member]} | {
-                    part.casefold() for alias in DOMAIN_ALIASES[member] for part in tokenize(alias)
+
+        def _entries() -> Iterable[tuple[str, dict[str, frozenset[str]]]]:
+            for node in nodes:
+                node_id = str(node.get("id"))
+                aliases: set[str] = set()
+                domain = node.get("domain")
+                if node.get("kind") == "primary" and domain in {member.value for member in PrimaryDomain}:
+                    member = PrimaryDomain(str(domain))
+                    aliases = {alias.casefold() for alias in DOMAIN_ALIASES[member]} | {
+                        part.casefold() for alias in DOMAIN_ALIASES[member] for part in tokenize(alias)
+                    }
+                label = str(node.get("label") or node_id)
+                tags = [str(tag) for tag in node.get("context_tags", []) if isinstance(tag, str)]
+                fields = {
+                    # ``tokenize`` keeps underscores inside \w+, so a raw slug like
+                    # "07_calibration_bayes" would index as a single token and the
+                    # node_id field — the contract's strongest field — would never
+                    # fire for any real corpus id. Stable ids are slugs; their
+                    # underscore-separated segments are the indexable terms.
+                    "node_id": frozenset(tokenize(node_id.replace("_", " "))),
+                    "aliases": frozenset(aliases),
+                    "summary": frozenset(tokenize(label)),
+                    "context_tags": frozenset(term for tag in tags for term in tokenize(tag)),
                 }
-            label = str(node.get("label") or node_id)
-            tags = [str(tag) for tag in node.get("context_tags", []) if isinstance(tag, str)]
-            fields = {
-                # ``tokenize`` keeps underscores inside \w+, so a raw slug like
-                # "07_calibration_bayes" would index as a single token and the
-                # node_id field — the contract's strongest field — would never
-                # fire for any real corpus id. Stable ids are slugs; their
-                # underscore-separated segments are the indexable terms.
-                "node_id": frozenset(tokenize(node_id.replace("_", " "))),
-                "aliases": frozenset(aliases),
-                "summary": frozenset(tokenize(label)),
-                "context_tags": frozenset(term for tag in tags for term in tokenize(tag)),
-            }
-            entries.append((node_id, fields))
-        return cls(entries)
+                yield node_id, fields
+
+        return cls(_entries())
 
     @property
     def size(self) -> int:
         return self._size
 
     def document_frequency(self, term: str) -> int:
-        return self._frequency.get(term, 0)
+        postings = self._vocab.get(term)
+        return 0 if postings is None else postings.df
 
     def idf(self, term: str) -> Decimal:
         """``ln((N+1)/(df+1)) + 1`` in Decimal precision 34 — no binary floats."""
@@ -568,25 +633,50 @@ class LexicalIndex:
         return best
 
     def rank(self, query_terms: Iterable[str]) -> tuple[RankedHit, ...]:
-        """Positive-score hits ordered by ``(-score, -field_rank, node_id)``."""
+        """Positive-score hits ordered by ``(-score, -field_rank, node_id)``.
+
+        Scores come from the packed postings (SUB-210): each query term's
+        posting list is walked in query-term order, accumulating into the same
+        per-node ``idf(term) * boost`` Decimal sums the per-node formulation
+        produced — identical intermediate precision (34), identical results.
+        """
         terms = tuple(dict.fromkeys(normalize_term(item) for item in query_terms))
+        active: list[tuple[str, _TermPostings]] = []
+        for term in terms:
+            postings = self._vocab.get(term)
+            if postings is not None:
+                active.append((term, postings))
+        if not active:
+            return ()
+        node_ids = self._node_ids
+        totals: dict[int, Decimal] = {}
+        ranks: dict[int, Decimal] = {}
+        with localcontext() as context:
+            context.prec = 34
+            zero = Decimal(0)
+            for term, postings in active:
+                idf = self.idf(term)
+                for packed in postings.positions:
+                    bits = packed & 0xF
+                    boost = _BOOST_BY_BITS[bits]
+                    weight = _WEIGHT_BY_BITS[bits]
+                    node_pos = packed >> 4
+                    totals[node_pos] = totals.get(node_pos, zero) + idf * boost
+                    if weight > ranks.get(node_pos, zero):
+                        ranks[node_pos] = weight
         hits = [
-            RankedHit(
-                node_id=node_id,
-                score=self.score(fields, terms),
-                field_rank=self.field_rank(fields, terms),
-            )
-            for node_id, fields in self._entries
+            RankedHit(node_id=node_ids[node_pos], score=score, field_rank=ranks.get(node_pos, Decimal(0)))
+            for node_pos, score in totals.items()
+            if score > 0
         ]
-        positive = [hit for hit in hits if hit.score > 0]
-        positive.sort(key=lambda hit: (-hit.score, -hit.field_rank, hit.node_id))
-        return tuple(positive)
+        hits.sort(key=lambda hit: (-hit.score, -hit.field_rank, hit.node_id))
+        return tuple(hits)
 
 
 # --------------------------------------------------------------- primary route
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class RouteOutcome:
     """The typed routing verdict; never a guessed root."""
 
@@ -705,7 +795,7 @@ class PrimaryRouter:
 # ------------------------------------------------------------ bounded traversal
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class GraphLink:
     """One typed directed link from the ``graph.json`` links list."""
 
@@ -714,7 +804,7 @@ class GraphLink:
     relation: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class TraversalReport:
     nodes: tuple[str, ...]
     edges: tuple[GraphLink, ...]
@@ -850,7 +940,7 @@ class BudgetedTraversal:
 # ``(-degree, node_id)``. No model, no randomness, no wall-clock input.
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class PathOutcome:
     """The typed shortest-path verdict; ``no_path`` is a result, not an error.
 
@@ -864,7 +954,7 @@ class PathOutcome:
     edges: tuple[GraphLink, ...] = ()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class NeighborhoodExplanation:
     """One node's relational neighborhood: incident links plus per-relation counts."""
 
@@ -873,7 +963,7 @@ class NeighborhoodExplanation:
     relation_counts: tuple[tuple[str, int], ...]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class AffectedHit:
     """One reverse-dependency hit: ``node_id`` depends on the seed via ``via``."""
 
@@ -883,7 +973,7 @@ class AffectedHit:
     via: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class AffectedReport:
     hits: tuple[AffectedHit, ...]
     guards_hit: tuple[str, ...]

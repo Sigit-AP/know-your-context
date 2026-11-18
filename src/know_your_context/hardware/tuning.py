@@ -20,12 +20,21 @@ from know_your_context.ops.switches import KnobBoard
 __all__ = [
     "DISK_PROFILES",
     "DiskProfile",
+    "INGEST_DISABLE_HW_TUNING_ENV",
     "TuningError",
     "TuningPlan",
+    "plan_for_ingest_rss",
     "plan_storage_tuning",
     "recommended_mmap_size",
     "validate_page_size",
 ]
+
+#: SUB-209: the ingest/write-path kill switch. ``ingest/pipeline.py`` reads
+#: it to force workers=1 (fan-out off); the store reads it too so the two
+#: pragmas that grow RSS with db size (mmap, page cache) are capped on the
+#: write path. The read webview/serve path is a separate process and keeps
+#: the full probe recipe unless the operator sets this explicitly.
+INGEST_DISABLE_HW_TUNING_ENV = "INGEST_DISABLE_HW_TUNING"
 
 
 class TuningError(ValueError):
@@ -170,3 +179,23 @@ def plan_storage_tuning(
             notes.append("synchronous stays FULL: disk type unknown (fail-open to durability)")
 
     return TuningPlan(mmap_bytes, page_size, synchronous_normal, profile, tuple(notes), cache_kib)
+
+
+def plan_for_ingest_rss(plan: TuningPlan) -> TuningPlan:
+    """Cap the two RSS-growing pragmas for the ingest/write path (SUB-209).
+
+    ``mmap_size`` maps db pages into the process address space — every
+    touched page counts in RSS — and the aggressive page cache bounds the
+    live SQLite pages; both scale with db size and together cost ~db-sized
+    RSS on the first scan query (measured +59 MiB for one ``COUNT(*)`` on
+    the 313 MB L4 store vs +3 MiB with the legacy recipe, SUB-206 baseline
+    repro). The write path needs neither: WAL writes page out either way and
+    the engine's default ~2 MiB page cache is enough at workers=1.
+    ``page_size`` / ``synchronous`` are access mechanics, not memory, so the
+    plan keeps them. Pure: returns a new plan, never mutates the input;
+    an already-capped plan passes through unchanged.
+    """
+    if plan.mmap_bytes == 0 and plan.cache_kib == 0:
+        return plan
+    notes = plan.notes + (f"{INGEST_DISABLE_HW_TUNING_ENV}=1: mmap 0 + engine-default page cache (ingest RSS cap)",)
+    return TuningPlan(0, plan.page_size, plan.synchronous_normal, plan.profile, notes, 0)

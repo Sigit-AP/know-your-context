@@ -120,6 +120,10 @@ _VALIDATION_CACHE_LOCK = threading.Lock()
 _VERDICT_FILENAME = "validation-verdict.json"
 _VERDICT_VERSION = 1
 
+#: SUB-210: verdict-key hashing reads artifacts in fixed chunks so a warm
+#: query process never materializes a multi-MB graph.json to re-verify it.
+_KEY_CHUNK_BYTES = 64 * 1024
+
 
 def _read_disk_verdict(generation_dir: Path, key: str) -> ValidationReport | None:
     """The persisted passing verdict for *key*, or ``None`` to revalidate.
@@ -253,11 +257,18 @@ class ReadModelValidator:
         construction. SUB-178: the same digest also keys a persisted
         sidecar verdict so CLI *processes* (cold in-memory cache) skip the
         deep validation too — a passing verdict is a pure function of the
-        hashed bytes; failures are never persisted.
+        hashed bytes; failures are never persisted. SUB-210: the digest now
+        streams artifact bytes in 64 KiB chunks, so warm query processes
+        re-verify without materializing a multi-MB ``graph.json`` — every
+        byte is still hashed and a tampered artifact still fails closed.
         """
         generation_dir = Path(generation_dir)
         if not generation_dir.is_dir():
             raise FileNotFoundError(f"generation directory {generation_dir} does not exist")
+        # SUB-210: the verdict key streams hashes (see ``_cache_key``) so a
+        # warm query process never materializes the multi-MB artifact bytes —
+        # every byte is still hashed (a tampered artifact fails closed exactly
+        # as before), only the in-memory copy is gone.
         key = self._cache_key(generation_dir, manifest)
         if key is not None:
             with _VALIDATION_CACHE_LOCK:
@@ -281,6 +292,18 @@ class ReadModelValidator:
                 _write_disk_verdict(generation_dir, key, report)
         return report
 
+    def _config_repr(self) -> str:
+        """The validator-configuration half of every cache key."""
+        return repr(
+            (
+                sorted(self._accepted_schema_versions),
+                self._forbidden_roots,
+                sorted(self._export_schemas),
+                type(self._adapter).__qualname__,
+                ADAPTER_VERSION,
+            )
+        )
+
     def _cache_key(self, generation_dir: Path, manifest: Mapping[str, Any]) -> str | None:
         """sha256 over every byte the verdict depends on; None = do not cache.
 
@@ -290,6 +313,13 @@ class ReadModelValidator:
         artifact's current bytes (or a MISSING marker). Unsafe export names
         are recorded as markers — never read — so key-building cannot escape
         the generation directory.
+
+        SUB-210: artifact bytes are fed through the digest in fixed 64 KiB
+        chunks, never materialized as one multi-MB ``bytes`` object — a query
+        process that re-verifies a warm generation no longer maps the whole
+        ``graph.json`` into RSS just to re-hash it. The digest itself is
+        byte-for-byte identical to a single ``read_bytes()`` (same sha256),
+        so existing persisted verdicts keep matching.
         """
 
         def _feed(digest: Any, payload: bytes | None) -> None:
@@ -299,21 +329,19 @@ class ReadModelValidator:
             digest.update(len(payload).to_bytes(8, "big"))
             digest.update(payload)
 
+        def _feed_chunks(digest: Any, path: Path) -> None:
+            size = path.stat().st_size
+            digest.update(size.to_bytes(8, "big"))
+            with open(path, "rb", buffering=0) as handle:
+                while chunk := handle.read(_KEY_CHUNK_BYTES):
+                    digest.update(chunk)
+
         try:
             digest = hashlib.sha256()
-            config = repr(
-                (
-                    sorted(self._accepted_schema_versions),
-                    self._forbidden_roots,
-                    sorted(self._export_schemas),
-                    type(self._adapter).__qualname__,
-                    ADAPTER_VERSION,
-                )
-            ).encode("utf-8")
-            _feed(digest, config)
+            _feed(digest, self._config_repr().encode("utf-8"))
             _feed(digest, (canonical_json(dict(manifest)) + "\n").encode("utf-8"))
             try:
-                _feed(digest, (generation_dir / "manifest.json").read_bytes())
+                _feed_chunks(digest, generation_dir / "manifest.json")
             except OSError:
                 _feed(digest, None)
             names: list[str] = list(HASHED_ARTIFACTS)
@@ -325,7 +353,7 @@ class ReadModelValidator:
                     _feed(digest, f"UNSAFE:{name}".encode())
                     continue
                 try:
-                    _feed(digest, (generation_dir / name).read_bytes())
+                    _feed_chunks(digest, generation_dir / name)
                 except OSError:
                     _feed(digest, None)
             return digest.hexdigest()
