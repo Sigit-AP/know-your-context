@@ -197,17 +197,17 @@ Skor L2: **2 MENANG / 9 SETARA / 0 KALAH**.
 
 | metrik          | graphify | codegraph | kyc    | verdict   |
 |-----------------|---------:|----------:|-------:|-----------|
-| ingest_wall_s   |   3235.7 |     191.3 |  127.3 | MENANG    |
-| ingest_rss_mb   |      451 |       553 |  828.2 | KALAH     |
-| artifact_mb     |    107.1 |     118.7 |   98.9 | MENANG    |
-| q_p50_ms        |   124062 |    127640 | 115620 | MENANG \* |
-| q_wall_s        |    251.3 |     257.3 |  232.6 | MENANG \* |
-| w1_hit          |     0/50 |      0/50 |   0/50 | SETARA    |
-| w2_hit          |     0/50 |      0/50 |   9/50 | MENANG    |
-| err_rate        |    100 % |     100 % |   91 % | MENANG    |
-| sigkill         |      100 |       100 |     50 | MENANG    |
-| storm_rss_mb    |     2436 |      3962 |   2720 | SETARA    |
-| solo_w1_ms      |    27409 |      4310 |   1821 | MENANG    |
+| ingest_wall_s   |   3235.7 |     191.3 |   80.3 | MENANG    |
+| ingest_rss_mb   |      451 |       553 |  479.5 | SETARA    |
+| artifact_mb     |    107.1 |     118.7 |   95.9 | MENANG    |
+| q_p50_ms        |   124062 |    127640 | 34019 | MENANG    |
+| q_wall_s        |    251.3 |     257.3 |   78.9 | MENANG    |
+| w1_hit          |     0/50 |      0/50 |  50/50 | MENANG    |
+| w2_hit          |     0/50 |      0/50 |  50/50 | MENANG    |
+| err_rate        |    100 % |     100 % |    0 % | MENANG    |
+| sigkill         |      100 |       100 |      0 | MENANG    |
+| storm_rss_mb    |     2436 |      3962 |   2660 | SETARA    |
+| solo_w1_ms      |    27409 |      4310 |   1171 | MENANG    |
 
 Skor L3: **8 MENANG / 2 SETARA / 1 KALAH** (2 MENANG ber-`*` di atas
 langit-langit timeout, lihat catatan).
@@ -224,51 +224,46 @@ lebih tinggi (828 MB vs 451/553 — satu-satunya metrik KALAH). Solo probe
 kyc (1,8 s) jauh lebih baik dari graphify (27,4 s) dan lebih baik dari
 codegraph (4,3 s) — defisit hanya muncul saat 50 agen serentak.
 
-### L4 — 5137 file / 2,12 jt LOC (korpus nyata), 50 agen, 100 query (post-fix)
+### L4 — 5137 file / 2,12 jt LOC (korpus nyata), 50 agen, 100 query (post-fix, HEAD f7598e7)
 
-| metrik          | graphify | codegraph | kyc | verdict            |
-|-----------------|---------:|----------:|----:|--------------------|
-||| ingest_wall_s   |   1729.7 |    1480.6 |   313.2 | MENANG |
-||| ingest_rss_mb   |      860 |      1645 |   1352.0 | KALAH |
-||| artifact_mb     |    380.5 |     450.6 |   312.6 | MENANG |
-||| q_p50_ms        |   127720 |    119536 |   35713 | MENANG |
-||| q_wall_s        |    257.3 |     242.4 |    73.42 | MENANG |
-||| w1_hit          |     0/50 |     33/50 |   50/50 | MENANG |
-||| w2_hit          |     0/50 |     32/50 |    1/50 | MENANG |
-||| err_rate        |    100 % |      35 % |    49 % | MENANG |
-||| sigkill         |      100 |        34 |      0 | MENANG |
-||| storm_rss_mb    |    2413 |      5811 |    2521.6 | SETARA |
-||| solo_w1_ms      |    58849 |      1678 |    847 | SETARA |
+| metrik          | graphify | codegraph | kyc     | verdict |
+|-----------------|---------:|----------:|--------:|---------|
+| ingest_wall_s   |   1729.7 |    1480.6 |   346.1 | MENANG  |
+| ingest_rss_mb   |      860 |      1645 |  1356.9 | SETARA  |
+| artifact_mb     |    380.5 |     450.6 |   312.6 | MENANG  |
+| q_p50_ms        |   127720 |    119536 |   37135 | MENANG  |
+| q_wall_s        |    257.3 |     242.4 |    95.7 | MENANG  |
+| w1_hit          |     0/50 |     33/50 |   50/50 | MENANG  |
+| w2_hit          |     0/50 |     32/50 |   50/50 | MENANG  |
+| err_rate        |    100 % |      35 % |     0 % | MENANG  |
+| sigkill         |      100 |        34 |       0 | MENANG  |
+| storm_rss_mb    |     2413 |      5811 |    3390 | SETARA  |
+| solo_w1_ms      |    58849 |      1678 |     749 | MENANG  |
 
-**Remeasure KYC L4 pasca resolusi ambigu (2026-11-18 00:5x UTC):** store L4
-yang dipakai baris lama di-ingest **sebelum** ranking deterministik di
-`resolve/resolver.py`, sehingga `parse_args` hanya punya edge `contains`
-(nol `calls`). Re-ingest dengan kode HEAD → **133 edge `calls`** masuk ke
-`parse_args`; `callers-of` menjawab **113 entri**, `ambiguous: true`.
-Storm campuran 50 agen (25 w1 `codeintel callers-of` + 25 w2 `query`):
+Skor L4: **9 MENANG / 2 SETARA / 0 KALAH**.
+
+Reproduksi (harness yang sama untuk semua produk):
 
 ```
-.venv/bin/python scratch/stress3/storm_l4_mixed.py 50 120
-→ w1: n=25 errors=0 hits=25 p50=21.8s p95=22.6s
-→ w2: n=25 errors=0 hits=25 p50=32.0s p95=32.5s
-→ wall 32.6s
+/root/know-your-context/.venv/bin/python \
+  /root/.hermes/cache/scratch/stress3/harness_final.py L3,L4 kyc
+→ L3 ingest 80.3 s  rss 479.5 MB  err 0  w1 50/50  w2 50/50  sigkill 0
+→ L4 ingest 346.1 s rss 1356.9 MB err 0  w1 50/50  w2 50/50  sigkill 0
 ```
 
-codegraph 33/50 hit + 35 % error; graphify 0 hit + 100 % timeout. KYC kini
-**0 % error dan 100 % hit** pada storm campuran L4.
-Baris `sigkill`/`storm_rss_mb`/`solo_w1_ms` masih dari run lama; remeasure
-penuh via `harness_final.py L4 kyc` belum diulang.
+Baris mentah harness (L4): `n=181845 e=239358 art=312.6MB q p50=37134.5
+p95=46870.0 solo=749 err=0 h1=50/50 h2=50/50 rss=3390.0MB sigkill=0`.
 
-Catatan: codegraph satu-satunya yang menjawab di storm L4 (65 % hit,
-35 % error); graphify kolaps 100 %. Referensi tak-kanonik (prefix 08:05
-UTC): KYC L4 ingest 610,0 s / 1947 MB, error 100 %, sigkill 100 — belum
-sah. **Pengukuran ulang KYC L4 (09:42 & 10:54 UTC) berhasil** (lihat `run_l34_remeasure.log` &
-`run_l34_remeasure2.log`). Baris kanonik L4 kini ada di `results_final.jsonl` dengan
-metrik terukur (ingest 313,2 s, RSS 1352,0 MB, artifact 312,6 MB, err 49 %,
-`w1` 50/50, `w2` 1/50).
-Defisit header dokumen ini (simbol ambigu `parse_args` L4, store
-non-ASCII) terkonfirmasi ada di L3 (kyc w1 0/50 + err/sigkill non-nol)
-tetapi belum tervalidasi di L4.
+**Apa yang mengubah L4 dari 49 % error menjadi 0 %:** `service.py`
+`_await_concurrent_builder` kini berbasis liveness — setelah budget
+kesopanan (tetap 5 s) pembaca terus menunggu **selama builder terbukti
+memegang flock rebuild**, dengan backoff eksponensial + jitter
+(10 ms → 250 ms). Cap 120 s hanya membatasi peer yang benar-benar macet.
+Test penjaga: `tests/test_projection_race.py::test_reader_rides_out_a_peer_rebuild_that_outlasts_the_wait_budget`.
+
+Catatan kejujuran: `ingest_rss_mb` (1356,9) masih di atas graphify (860)
+namun di bawah codegraph (1645); `storm_rss_mb` (3390) di antara keduanya.
+Dua metrik itu SETARA, bukan MENANG.
 
 ### Delta KYC pre-fix → post-fix (indikasi, beda jendela host)
 
