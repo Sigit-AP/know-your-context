@@ -39,6 +39,8 @@ def main() -> int:
     mode, db_path = sys.argv[1], sys.argv[2]
     if mode == "capped":
         os.environ["INGEST_DISABLE_HW_TUNING"] = "1"
+    elif mode == "full":
+        os.environ["KNOW_YOUR_CONTEXT_FULL_HW_TUNING"] = "1"
     elif mode != "default":
         print(json.dumps({"error": f"unknown mode {mode!r}"}))
         return 2

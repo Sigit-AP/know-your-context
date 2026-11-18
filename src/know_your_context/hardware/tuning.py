@@ -20,6 +20,7 @@ from know_your_context.ops.switches import KnobBoard
 __all__ = [
     "DISK_PROFILES",
     "DiskProfile",
+    "FULL_HW_TUNING_ENV",
     "INGEST_DISABLE_HW_TUNING_ENV",
     "TuningError",
     "TuningPlan",
@@ -35,6 +36,13 @@ __all__ = [
 #: write path. The read webview/serve path is a separate process and keeps
 #: the full probe recipe unless the operator sets this explicitly.
 INGEST_DISABLE_HW_TUNING_ENV = "INGEST_DISABLE_HW_TUNING"
+
+#: Opt-OUT of the default ingest RSS cap (:func:`plan_for_ingest_rss`).
+#: The cap is the default because DB-sized ``mmap_size``/page-cache costs
+#: RSS on every scanned page (measured +59 MiB for one ``COUNT(*)`` on the
+#: 313 MB L4 store); an operator who prefers read locality over RSS sets
+#: this to ``1`` to restore the full probe recipe.
+FULL_HW_TUNING_ENV = "KNOW_YOUR_CONTEXT_FULL_HW_TUNING"
 
 
 class TuningError(ValueError):

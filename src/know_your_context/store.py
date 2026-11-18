@@ -199,7 +199,7 @@ def _resolve_storage_tuning(db_path: str) -> StorageTuning:
         return StorageTuning.legacy()
     try:
         from know_your_context.hardware.profile import hardware_plan
-        from know_your_context.hardware.tuning import INGEST_DISABLE_HW_TUNING_ENV, plan_for_ingest_rss
+        from know_your_context.hardware.tuning import FULL_HW_TUNING_ENV, plan_for_ingest_rss
         from know_your_context.ops.switches import load_switches
     except ImportError as exc:  # pragma: no cover - defensive; package layout is fixed
         return StorageTuning(0, None, False, "legacy", (f"hardware layer unavailable: {exc}",))
@@ -213,7 +213,12 @@ def _resolve_storage_tuning(db_path: str) -> StorageTuning:
     # pragmas (mmap, page cache) that cost ~db-sized RSS on scan-heavy
     # writes; an explicit storage_tuning pin always wins (set in the
     # constructor, never patched here).
-    if os.environ.get(INGEST_DISABLE_HW_TUNING_ENV) == "1":
+    # Default: cap the DB-size-proportional pragmas. The store's own
+    # connection is the write path (ingest commits through it) and every
+    # scanned page of a db-sized mmap counts against RSS (measured +59 MiB
+    # for one COUNT(*) on the 313 MB L4 store). Read-heavy operators can
+    # restore the full probe recipe with KNOW_YOUR_CONTEXT_FULL_HW_TUNING=1.
+    if os.environ.get(FULL_HW_TUNING_ENV) != "1":
         plan = plan_for_ingest_rss(plan)
     return StorageTuning(plan.mmap_bytes, plan.page_size, plan.synchronous_normal, source, plan.notes, plan.cache_kib)
 

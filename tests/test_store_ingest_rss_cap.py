@@ -30,6 +30,7 @@ import pytest
 from know_your_context.hardware.probe import DiskKind, DiskProbe, MemoryProbe
 from know_your_context.hardware.tuning import (
     DISK_PROFILES,
+    FULL_HW_TUNING_ENV,
     INGEST_DISABLE_HW_TUNING_ENV,
     TuningPlan,
     plan_for_ingest_rss,
@@ -123,10 +124,21 @@ def test_ingest_rss_mode_caps_mmap_and_cache_pragmas(big_store) -> None:
     assert payload["cache_size"] >= -2000, f"page cache not capped: {payload}"
 
 
-def test_default_read_path_keeps_probe_recipe(big_store) -> None:
-    """Env unset: the read path keeps the probe recipe (mmap sized to db)."""
+def test_default_path_caps_db_sized_pragmas(big_store) -> None:
+    """Default (no env): the store connection is already RSS-capped.
+
+    The cap became the default because a db-sized mmap/page cache costs RSS
+    on every scanned page — the write path needs neither.
+    """
     payload = _run_child("default", big_store)
-    assert payload["mmap_size"] > 0, f"probe mmap missing on the default path: {payload}"
+    assert payload["mmap_size"] == 0, f"default path left mmap on: {payload}"
+    assert payload["cache_size"] >= -2000, f"default page cache not capped: {payload}"
+
+
+def test_full_hw_tuning_env_restores_probe_recipe(big_store) -> None:
+    """Opt-out env restores the full probe recipe (mmap sized to db)."""
+    payload = _run_child("full", big_store)
+    assert payload["mmap_size"] > 0, f"probe mmap missing under opt-out: {payload}"
     assert payload["mmap_size"] <= payload["db_bytes"], (
         f"mmap {payload['mmap_size']} exceeds db size {payload['db_bytes']}: {payload}"
     )
@@ -165,12 +177,22 @@ def test_ingest_env_reaches_resolved_store_tuning(tmp_path, monkeypatch) -> None
         capped.close()
 
     monkeypatch.delenv(INGEST_DISABLE_HW_TUNING_ENV, raising=False)
+    # Default is now the capped recipe; the opt-out env restores the probe one.
     default = EventStore(str(db))
     try:
-        assert default.applied_tuning.mmap_bytes > 0
-        assert default.applied_tuning.cache_kib > 0
+        assert default.applied_tuning.mmap_bytes == 0
+        assert default.applied_tuning.cache_kib == 0
     finally:
         default.close()
+
+    monkeypatch.setenv(FULL_HW_TUNING_ENV, "1")
+    full = EventStore(str(db))
+    try:
+        assert full.applied_tuning.mmap_bytes > 0
+        assert full.applied_tuning.cache_kib > 0
+    finally:
+        full.close()
+    monkeypatch.delenv(FULL_HW_TUNING_ENV, raising=False)
 
 
 def test_explicit_storage_tuning_pin_wins_over_env(tmp_path, monkeypatch) -> None:
