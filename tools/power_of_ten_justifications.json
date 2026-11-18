@@ -1088,6 +1088,21 @@
    "scope": "apply_ingested_corpus",
    "reason": "B1 (task-3): one outer transaction materialises file branches + symbol leaves; the loop body is the idempotent-write seam and splitting it would scatter the transaction boundary. Recorded at its measured length, may shrink but never grow.",
    "lines": 138
+  },
+  {
+   "rule": "POT2",
+   "file": "projection.py",
+   "scope": "GraphProjector._build_empty_generation",
+   "reason": "SUB-215 empty-extraction fast path: the full byte-identical artifact assembler (graph/report/analysis/labels/signatures/html/manifest + fsync durability sequence) mirroring _build_generation's layout \u2014 flat breadth, not nesting.",
+   "lines": 191
+  },
+  {
+   "rule": "POT5",
+   "file": "projection.py",
+   "scope": "GraphProjector._build_empty_generation",
+   "detail": "_write_if_changed",
+   "reason": "Artifact durability is guaranteed by the fsync sequence below; the changed-or-not bool is informational only.",
+   "count": 2
   }
  ]
 }

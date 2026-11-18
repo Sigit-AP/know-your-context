@@ -106,6 +106,177 @@ def _default_store_path() -> str:
     return os.environ.get(STORE_ENV_VAR) or DEFAULT_STORE_PATH
 
 
+# SUB-216: the L1 latency gap was process-startup, not the query (profiled on
+# the L1 store: interpreter 34 ms + cli import 29 ms + full parser build
+# 89-125 ms + http_api import 447 ms + stack 30 ms vs dispatch ~12 ms; every
+# one of the 10 harness queries re-paid the whole parser tree). The real
+# parser stays the single source of truth: this fast path accepts only a
+# strict subset of well-formed ``query``/``codeintel`` invocations and returns
+# None for anything else, so the caller falls back to ``build_parser()`` and
+# behavior is byte-identical. It never accepts a shape argparse rejects (the
+# argparse order rule is honored: root options precede the verb; verb options
+# follow it) and may be *more* conservative — every conservative miss falls
+# back to the identical full-parser result.
+_FAST_ROOT_FLAGS: frozenset[str] = frozenset({"--store", "--output-root", "--actor", "--idempotency-key", "--ops-root"})
+_FAST_CODEINTEL_ACTIONS: frozenset[str] = frozenset(
+    {
+        "callers-of",
+        "callees-of",
+        "dependency-path",
+        "impact",
+        "co-change",
+        "boundary-violations",
+    }
+)
+
+
+def _fast_root_values(argv: list[str], i: int) -> tuple[dict[str, Any], int] | None:
+    """Consume the root options that may precede the verb (argparse order)."""
+    values: dict[str, Any] = {}
+    n = len(argv)
+    while i < n and argv[i] in _FAST_ROOT_FLAGS:
+        if i + 1 >= n or argv[i + 1].startswith("-"):
+            return None
+        values[argv[i][2:].replace("-", "_")] = argv[i + 1]
+        i += 2
+    return values, i
+
+
+def _try_fast_args(argv: list[str]) -> argparse.Namespace | None:
+    """Parse ``query``/``codeintel`` invocations without the full parser tree."""
+    if not argv:
+        return None
+    parsed = _fast_root_values(argv, 0)
+    if parsed is None:
+        return None
+    values, i = parsed
+    if i >= len(argv):
+        return None
+    verb = argv[i]
+    i += 1
+    if verb == "query":
+        return _fast_query_tail(values, argv, i)
+    if verb == "codeintel":
+        return _fast_codeintel_tail(values, argv, i)
+    return None
+
+
+def _fast_query_tail(values: dict[str, Any], argv: list[str], i: int) -> argparse.Namespace | None:
+    """``query`` verb: verb-level flags, then at most one payload."""
+    n = len(argv)
+    while i < n and argv[i] == "--projection-wait-seconds":
+        if i + 1 >= n:
+            return None
+        try:
+            values["projection_wait_seconds"] = float(argv[i + 1])
+        except ValueError:
+            return None
+        i += 2
+    payload: str | None = None
+    if i < n:
+        if argv[i].startswith("-") and argv[i] != "-":
+            return None
+        payload = argv[i]
+        i += 1
+    if i != n:
+        return None
+    ns = argparse.Namespace()
+    ns.command = "query"
+    ns.payload = payload
+    ns.store = values.get("store") or _default_store_path()
+    ns.output_root = values.get("output_root") or DEFAULT_OUTPUT_ROOT
+    ns.actor = values.get("actor") or "operator"
+    ns.idempotency_key = values.get("idempotency_key")
+    ns.ops_root = values.get("ops_root")
+    ns.projection_wait_seconds = values.get("projection_wait_seconds")
+    return ns
+
+
+def _fast_codeintel_tail(values: dict[str, Any], argv: list[str], i: int) -> argparse.Namespace | None:
+    """``codeintel`` verb: action then per-action options (parser defaults)."""
+    n = len(argv)
+    if i >= n or argv[i] not in _FAST_CODEINTEL_ACTIONS:
+        return None
+    action = argv[i]
+    i += 1
+    ns = argparse.Namespace()
+    ns.command = "codeintel"
+    ns.codeintel_action = action
+    ns.store = values.get("store") or _default_store_path()
+    ns.output_root = values.get("output_root") or DEFAULT_OUTPUT_ROOT
+    ns.actor = values.get("actor") or "operator"
+    ns.idempotency_key = values.get("idempotency_key")
+    ns.ops_root = values.get("ops_root")
+    if action == "dependency-path":
+        if i + 2 > n:
+            return None
+        source, target = argv[i], argv[i + 1]
+        if source.startswith("-") or target.startswith("-"):
+            return None
+        ns.source = source
+        ns.target = target
+        if i + 2 != n:
+            return None
+        return ns
+
+    def take_int(flag: str, dest: str) -> bool:
+        nonlocal i
+        if argv[i] != flag or i + 1 >= n:
+            return False
+        try:
+            setattr(ns, dest, int(argv[i + 1]))
+        except ValueError:
+            return False
+        i += 2
+        return True
+
+    if action == "co-change":
+        ns.min_support = 2
+        ns.limit = 100
+        while i < n:
+            if not (take_int("--min-support", "min_support") or take_int("--limit", "limit")):
+                return None
+        return ns
+    if action == "boundary-violations":
+        ns.allow = ""
+        ns.limit = 500
+        saw_layers = False
+        while i < n:
+            if take_int("--limit", "limit"):
+                continue
+            flag = argv[i]
+            if flag not in ("--layers", "--allow") or i + 1 >= n or argv[i + 1].startswith("-"):
+                return None
+            if flag == "--layers":
+                saw_layers = True
+                ns.layers = argv[i + 1]
+            else:
+                ns.allow = argv[i + 1]
+            i += 2
+        if not saw_layers:
+            return None
+        return ns
+    # callers-of / callees-of / impact
+    if i >= n or argv[i].startswith("-"):
+        return None
+    ns.symbol = argv[i]
+    i += 1
+    ns.file = None
+    ns.depth = 8
+    ns.limit = 200 if action != "impact" else 500
+    while i < n:
+        if take_int("--depth", "depth") or take_int("--limit", "limit"):
+            continue
+        if argv[i] == "--file":
+            if i + 1 >= n or argv[i + 1].startswith("-"):
+                return None
+            ns.file = argv[i + 1]
+            i += 2
+            continue
+        return None
+    return ns
+
+
 def _add_webview_parsers(subparsers: Any) -> None:
     """The ``webview`` lifecycle + ``setup`` install flow (W7 SUB-101, W17 SUB-138)."""
     webview_parser = subparsers.add_parser(
@@ -1708,7 +1879,13 @@ def _setup_command(args: argparse.Namespace) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    raw = list(sys.argv[1:]) if argv is None else list(argv)
+    # SUB-216 fast path: well-formed `query`/`codeintel` invocations skip the
+    # full parser build (89-125 ms per process); anything else falls back to
+    # the real parser, so CLI behavior and error messages are byte-identical.
+    args = _try_fast_args(raw)
+    if args is None:
+        args = build_parser().parse_args(raw)
     command = str(args.command).replace("-", "_")
     if command == "serve":
         return _serve_command(args)

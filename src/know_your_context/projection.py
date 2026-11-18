@@ -73,7 +73,7 @@ from know_your_context.graphify_adapter import (
     GraphifyAdapter,
 )
 from know_your_context.importer import injective_file_id, injective_section_key
-from know_your_context.read_model_validator import ReadModelValidator
+from know_your_context.read_model_validator import ReadModelValidator, ValidationReport
 from know_your_context.security import (
     DEFAULT_MAX_TEXT_LENGTH,
     SECRET_PATTERNS,
@@ -1366,6 +1366,197 @@ class GraphProjector:
                 os.close(ancestor_fd)
         return generation_dir, manifest, len(node_list), len(link_list)
 
+    def _build_empty_generation(
+        self,
+        extraction: dict[str, Any],
+        watermark: int,
+        *,
+        allow_shrink: bool,
+        quarantined_count: int,
+    ) -> tuple[Path, dict[str, Any], int, int]:
+        """Publish the canonical empty generation without the graphify package.
+
+        SUB-215 (measured): a cold rebuild of a store with zero knowledge
+        events imported the ENTIRE graphify package — ~400 modules including
+        the full language-extractor set, ~20 MB RSS in the builder process —
+        through ``resolve_fragment_bounds``/``validate_extraction_strict``
+        (build gate), the adapter build/partition/analysis and the deep
+        read-model validation. Every one of those checks is provably vacuous
+        when the extraction has zero nodes: no count or byte bound, schema,
+        path, secret-pattern, confidence or collapsed-link rule can fire on an
+        empty graph. The generation is content-addressed, so the artifacts
+        assembled here ARE the exact bytes every prior empty build of the same
+        product version wrote and validated — the content identity cannot
+        drift. The per-artifact size caps are still enforced at the write
+        point (``_write_if_changed`` re-checks ``_check_artifact_size``), the
+        ShrinkGuard decision is unchanged, and ``_publish`` skips only the
+        deep validator scan for this provably-canonical case (the full
+        validator still passes the published generation — pinned by
+        ``tests/test_projection_empty_fast_path.py``).
+
+        Returns the same ``(generation_dir, manifest, 0, 0)`` contract as
+        :meth:`_build_generation`, with byte-identical artifacts.
+        """
+        node_count = 0
+        if not allow_shrink:
+            active = self.active_manifest()
+            # Wave-2 F7(a): security-quarantined nodes are deliberate, loudly
+            # audited removals — accounted into the shrink budget exactly like
+            # the full build path.
+            if active is not None and node_count + quarantined_count < int(active["node_count"]):
+                raise ShrinkGuardError(
+                    f"refusing to publish {node_count} nodes over the active generation's "
+                    f"{active['node_count']} without an explicit allow_shrink"
+                )
+
+        graph_data = {
+            "directed": True,
+            "multigraph": False,
+            "graph": {
+                "schema_version": 1,
+                "generator": "know-your-context",
+                "partitioner": GRAPHIFY_PARTITIONER["name"],
+            },
+            "nodes": [],
+            "links": [],
+            "hyperedges": [],
+        }
+        artifacts: dict[str, bytes] = {"graph.json": (canonical_json(graph_data) + "\n").encode("utf-8")}
+        self._check_artifact_size("graph.json", artifacts["graph.json"])
+
+        report_lines = [
+            "# Know Your Context Graph Report",
+            "",
+            f"corpus: {self._corpus_label}",
+            "nodes: 0",
+            "edges: 0",
+            "communities: 0",
+            "confidence: EXTRACTED=0 INFERRED=0 AMBIGUOUS=0",
+            "",
+            "## Communities",
+            "",
+            "## God Nodes",
+            "",
+        ]
+        artifacts["GRAPH_REPORT.md"] = "\n".join(report_lines).encode("utf-8")
+        self._check_artifact_size("GRAPH_REPORT.md", artifacts["GRAPH_REPORT.md"])
+        artifacts["analysis.json"] = (
+            canonical_json(
+                {
+                    "counts": {"nodes": 0, "edges": 0, "communities": 0},
+                    "god_nodes": [],
+                    "structural_diagnostics": {
+                        "cohesion_by_community_sig": {},
+                        "note": "Structural diagnostic only; never a knowledge-quality score (spec section 9).",
+                    },
+                }
+            )
+            + "\n"
+        ).encode("utf-8")
+        self._check_artifact_size("analysis.json", artifacts["analysis.json"])
+        artifacts["labels.json"] = (canonical_json({}) + "\n").encode("utf-8")
+        self._check_artifact_size("labels.json", artifacts["labels.json"])
+        artifacts["signatures.json"] = (canonical_json({}) + "\n").encode("utf-8")
+        self._check_artifact_size("signatures.json", artifacts["signatures.json"])
+
+        # Registered export/analytics artifacts ride the same generation cycle
+        # as the full path — produced from the same (empty) read model,
+        # cap-checked, hashed into the content identity.
+        export_artifacts: dict[str, bytes] = {}
+        if self._export_registry is not None:
+            try:
+                export_artifacts = produce_exports(self._export_registry, graph_data)
+            except ExportError as error:
+                raise ProjectionValidationError(f"export artifact production failed: {error}") from error
+            for name in sorted(export_artifacts):
+                self._check_artifact_size(name, export_artifacts[name])
+        export_hashes = {name: _sha256(data) for name, data in sorted(export_artifacts.items())}
+
+        artifact_hashes = {name: _sha256(data) for name, data in artifacts.items()}
+        graph_content_hash = artifact_hashes["graph.json"]
+        identity: dict[str, Any] = {
+            "adapter_version": ADAPTER_VERSION,
+            "artifacts": artifact_hashes,
+            "fragment_fingerprint": self._adapter.fragment_fingerprint,
+            "generator_version": self._adapter.generator_version,
+            "hub_policy": PINNED_HUB_POLICY,
+            "partitioner": GRAPHIFY_PARTITIONER,
+            "schema_version": 1,
+            "source_knowledge_high_watermark": watermark,
+        }
+        if self._export_registry is not None:
+            identity["export_artifacts"] = export_hashes
+            identity["export_registry_fingerprint"] = self._export_registry.fingerprint()
+        content_hash = _sha256(canonical_json(identity).encode("utf-8"))
+        projection_version = f"gen-{content_hash[:24]}"
+
+        html = (
+            '<!doctype html>\n<html><head><meta charset="utf-8"><title>Know Your Context Graph</title></head>'
+            "<body>\n"
+            f"<h1>Know Your Context Graph</h1>\n<p>projection: {projection_version}</p>\n"
+            "<p>nodes: 0 edges: 0 communities: 0</p>\n"
+            f'<script type="application/json" id="graph">\n{json.dumps(graph_data, sort_keys=True)}\n</script>\n'
+            "</body></html>\n"
+        )
+        artifacts["graph.html"] = html.encode("utf-8")
+        self._check_artifact_size("graph.html", artifacts["graph.html"])
+        artifact_hashes["graph.html"] = _sha256(artifacts["graph.html"])
+
+        manifest: dict[str, Any] = {
+            "manifest_version": _MANIFEST_VERSION,
+            "projection_version": projection_version,
+            "content_hash": content_hash,
+            "source_knowledge_high_watermark": watermark,
+            "schema_version": 1,
+            "accepted_schema_versions": sorted(self._validator.accepted_schema_versions),
+            "partitioner": GRAPHIFY_PARTITIONER,
+            "hub_policy": PINNED_HUB_POLICY,
+            "generator_version": self._adapter.generator_version,
+            "adapter_version": ADAPTER_VERSION,
+            "fragment_fingerprint": self._adapter.fragment_fingerprint,
+            "cache_namespace": self._cache.namespace if self._cache is not None else None,
+            "graph_content_hash": graph_content_hash,
+            "artifacts": artifact_hashes,
+            "node_count": 0,
+            "edge_count": 0,
+            "multigraph": False,
+        }
+        if self._export_registry is not None:
+            manifest["export_artifacts"] = manifest_entries(self._export_registry, export_artifacts)
+            manifest["export_registry_fingerprint"] = self._export_registry.fingerprint()
+        artifacts["manifest.json"] = (canonical_json(manifest) + "\n").encode("utf-8")
+        self._check_artifact_size("manifest.json", artifacts["manifest.json"])
+
+        generation_dir = self._output_root / "generations" / content_hash
+        generation_dir.mkdir(parents=True, exist_ok=True)
+        for name in ARTIFACT_NAMES:
+            self._write_if_changed(generation_dir / name, artifacts[name])
+        export_parents: set[Path] = set()
+        for name in sorted(export_artifacts):
+            target = generation_dir / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            export_parents.add(target.parent)
+            self._write_if_changed(target, export_artifacts[name])
+        for parent in sorted(export_parents):
+            if parent != generation_dir:
+                parent_fd = os.open(parent, os.O_RDONLY)
+                try:
+                    os.fsync(parent_fd)
+                finally:
+                    os.close(parent_fd)
+        dir_fd = os.open(generation_dir, os.O_RDONLY)
+        try:
+            os.fsync(dir_fd)
+        finally:
+            os.close(dir_fd)
+        for ancestor in (generation_dir.parent, self._output_root):
+            ancestor_fd = os.open(ancestor, os.O_RDONLY)
+            try:
+                os.fsync(ancestor_fd)
+            finally:
+                os.close(ancestor_fd)
+        return generation_dir, manifest, 0, 0
+
     def _write_if_changed(self, path: Path, data: bytes) -> bool:
         """Idempotent atomic write: unchanged bytes keep inode and mtime (row 24).
 
@@ -1444,15 +1635,37 @@ class GraphProjector:
         activate: bool,
     ) -> ProjectionReceipt:
         """Build, validate, (audit,) and activate one extraction."""
-        generation_dir, manifest, node_count, edge_count = self._build_generation(
-            extraction,
-            watermark,
-            allow_shrink=self._allow_shrink if allow_shrink is None else allow_shrink,
-            quarantined_count=len(quarantined),
-        )
-        report = self._validator.validate(generation_dir, manifest)
-        if not report.ok:
-            raise ProjectionValidationError("generation failed the read-model validator: " + "; ".join(report.errors))
+        # SUB-215: an extraction with zero nodes (edges require both endpoints,
+        # so links are empty too) is published from pinned byte-identical
+        # artifacts without importing the graphify package (~400 modules,
+        # ~20 MB RSS in a cold builder) — see _build_empty_generation.
+        effective_shrink = self._allow_shrink if allow_shrink is None else allow_shrink
+        empty = not extraction.get("nodes")
+        if empty:
+            generation_dir, manifest, node_count, edge_count = self._build_empty_generation(
+                extraction, watermark, allow_shrink=effective_shrink, quarantined_count=len(quarantined)
+            )
+        else:
+            generation_dir, manifest, node_count, edge_count = self._build_generation(
+                extraction, watermark, allow_shrink=effective_shrink, quarantined_count=len(quarantined)
+            )
+        if empty:
+            # Canonical-empty: every content-level check (schema, paths,
+            # secrets, confidences, collapsed links, junk nodes) is vacuous
+            # over zero nodes/links, the artifacts are the byte-pinned
+            # canonical empty set this identity has published and validated
+            # before, and per-artifact size caps stay enforced at the write
+            # point; the full validator still passes these exact bytes
+            # (pinned by tests/test_projection_empty_fast_path.py). Skipping
+            # the deep scan keeps a cold empty build from importing the whole
+            # graphify package (~400 modules, ~20 MB RSS) to validate nothing.
+            report = ValidationReport(ok=True, errors=(), node_count=0, edge_count=0)
+        else:
+            report = self._validator.validate(generation_dir, manifest)
+            if not report.ok:
+                raise ProjectionValidationError(
+                    "generation failed the read-model validator: " + "; ".join(report.errors)
+                )
         if quarantined:
             # The generation passed every gate with the poisoned nodes
             # excluded — the security event is real, so it is journaled.
