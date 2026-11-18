@@ -405,8 +405,14 @@ class SqlCodeGraph:
             if entry is None:
                 if len(_STORE_MEMO) >= _MEMO_MAX_ENTRIES:
                     _STORE_MEMO.clear()
-                entry = {"node_count": None, "edge_count": None, "raw_edges": None, "nonascii": None}
-                _STORE_MEMO[key] = entry  # type: ignore[arg-type]
+                fresh: dict[str, object] = {
+                    "node_count": None,
+                    "edge_count": None,
+                    "raw_edges": None,
+                    "nonascii": None,
+                }
+                entry = fresh
+                _STORE_MEMO[key] = fresh
         self._ensure_shared_aggregates(entry, key, fingerprint_syms, fingerprint_edges, has_watch)
         return entry, fingerprint_syms, fingerprint_edges, has_watch  # type: ignore[return-value]
 

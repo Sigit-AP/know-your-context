@@ -207,6 +207,7 @@ def test_resolve_chunked_output_is_batch_size_independent(tmp_path, monkeypatch)
         store = EventStore(":memory:")
         store.migrate()
         report = IngestionPipeline(store).ingest_path(corpus, incremental=True, recursive=True, resolve=True)
+        assert report.resolution is not None
         assert report.resolution["pending"] == 0
         reports.append(_stable_report(report))
         dumps.append(canonical_ingestion_dump(store))

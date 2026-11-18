@@ -337,15 +337,15 @@
    "rule": "POT2",
    "file": "cli.py",
    "scope": "build_parser",
-   "reason": "Argument-parser table: one branch per CLI verb; breadth, not nesting depth. Ratchet baseline, may shrink only. Task-3 (B1/B3) added the apply-ingest verb and the ingest --apply/--max-files flags.",
-   "lines": 697
+   "reason": "Argument-parser table: one branch per CLI verb; breadth, not nesting depth. Ratchet baseline, may shrink only. Task-3 (B1/B3) added the apply-ingest verb and the ingest --apply/--max-files flags. W19: projection-wait flag wiring (query/serve/daemon) added flags.",
+   "lines": 723
   },
   {
    "rule": "POT2",
    "file": "cli.py",
    "scope": "main",
-   "reason": "W16 ratchet: legacy dispatch above the 60-line page ceiling; recorded at its measured length, may shrink but never grow. Task-3 (B1) added the apply-ingest dispatch branch.",
-   "lines": 86
+   "reason": "W16 ratchet: legacy dispatch above the 60-line page ceiling; recorded at its measured length, may shrink but never grow. Task-3 (B1) added the apply-ingest dispatch branch. W19: projection-wait dispatch branch.",
+   "lines": 91
   },
   {
    "rule": "POT3",
@@ -883,8 +883,8 @@
    "rule": "POT2",
    "file": "serve/daemon_config.py",
    "scope": "DaemonConfig._validate",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 109
+   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow. W19: projection-wait knob validation.",
+   "lines": 111
   },
   {
    "rule": "POT3",

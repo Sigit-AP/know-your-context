@@ -441,33 +441,17 @@ class ReferenceResolver:
             exact_count = 0
         if exact_count > 1:
             deferred_reason = f"ambiguous_exact:{exact_count}"
-        # (b) name_tail match (skip when the tail adds no information)
-        tail = ref.name_tail
-        if tail and tail != ref.target_name:
-            tail_count = pass_cache.tail_counts.get(tail)
-            if tail_count is None:
-                tail_count = self._tail_candidate_count(store, tail)
-                pass_cache.tail_counts[tail] = tail_count
-            if tail_count == 1:
-                candidates = self._tail_candidates(store, tail)
-                return _hit("name_tail", candidates[0].node_id)
-            if tail_count > 1 and deferred_reason is None:
-                deferred_reason = f"ambiguous_tail:{tail_count}"
-        # (c) import-path resolution (module-based languages)
-        if language in self._config.module_languages and self._import_path_applies(ref.kind, ref.target_name, language):
-            if language == "python":
-                decision = self._resolve_python_import(store, source_path, ref.target_name, edge_kind, cache=pass_cache)
-            else:
-                decision = self._resolve_js_import(store, source_path, ref.target_name, cache=pass_cache)
-            if decision is not None:
-                return decision
-        # (d) per-language helper tier (W12): imports refs only, after (c).
-        if edge_kind == "imports" and self._helper_tier_active:
-            helper = get_helper(language)
-            if helper is not None:
-                decision = self._resolve_module_helper(store, helper, source_path, ref.target_name)
-                if decision is not None:
-                    return decision
+        decision, deferred_reason = self._resolve_secondary_tiers(
+            store,
+            ref,
+            source_path,
+            language,
+            edge_kind,
+            deferred_reason,
+            cache=pass_cache,
+        )
+        if decision is not None:
+            return decision
         if deferred_reason is not None or exact_single_import:
             # (e) SUB-181 scope tier: the name is defined 2+ times (or its
             # only row is import bookkeeping), so try the lexical scopes
@@ -483,6 +467,53 @@ class ReferenceResolver:
                     )
             return _fail(deferred_reason if deferred_reason is not None else "no_resolution")
         return _fail("no_resolution")
+
+    def _resolve_secondary_tiers(
+        self,
+        store: EventStore,
+        ref: UnresolvedRefRow,
+        source_path: str,
+        language: str,
+        edge_kind: str,
+        deferred_reason: str | None,
+        *,
+        cache: _PassCache,
+    ) -> tuple[_Decision | None, str | None]:
+        """Tiers (b) name-tail, (c) import-path, (d) language helper.
+
+        Extracted from :meth:`_resolve_ref` to keep that page under the
+        Power-of-Ten 60-line ceiling (POT2). Behaviour is unchanged: a tier
+        that hits returns the decision; otherwise the deferred ambiguity
+        reason is carried forward.
+        """
+        # (b) name_tail match (skip when the tail adds no information)
+        tail = ref.name_tail
+        if tail and tail != ref.target_name:
+            tail_count = cache.tail_counts.get(tail)
+            if tail_count is None:
+                tail_count = self._tail_candidate_count(store, tail)
+                cache.tail_counts[tail] = tail_count
+            if tail_count == 1:
+                candidates = self._tail_candidates(store, tail)
+                return _hit("name_tail", candidates[0].node_id), deferred_reason
+            if tail_count > 1 and deferred_reason is None:
+                deferred_reason = f"ambiguous_tail:{tail_count}"
+        # (c) import-path resolution (module-based languages)
+        if language in self._config.module_languages and self._import_path_applies(ref.kind, ref.target_name, language):
+            if language == "python":
+                decision = self._resolve_python_import(store, source_path, ref.target_name, edge_kind, cache=cache)
+            else:
+                decision = self._resolve_js_import(store, source_path, ref.target_name, cache=cache)
+            if decision is not None:
+                return decision, deferred_reason
+        # (d) per-language helper tier (W12): imports refs only, after (c).
+        if edge_kind == "imports" and self._helper_tier_active:
+            helper = get_helper(language)
+            if helper is not None:
+                decision = self._resolve_module_helper(store, helper, source_path, ref.target_name)
+                if decision is not None:
+                    return decision, deferred_reason
+        return None, deferred_reason
 
     def _refined_reason(
         self,
