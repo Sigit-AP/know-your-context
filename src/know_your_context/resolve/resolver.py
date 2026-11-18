@@ -188,11 +188,19 @@ class BatchReport:
 
 @dataclass(frozen=True)
 class _Decision:
+    """Result of a single reference resolution attempt.
+
+    ``candidates`` holds all possible target node identifiers when the
+    resolver faced ambiguity; ``ambiguous`` flags that the decision was a
+    deterministic tie-break rather than a confident match.
+    """
     strategy: (
         Literal["exact", "name_tail", "import_path", "module_helper", "exact_scoped", "import_binding"] | None
     )
     target_node_id: str | None
     reason: str | None
+    candidates: list[str] | None = None
+    ambiguous: bool = False
 
 
 def _hit(
@@ -410,6 +418,17 @@ class ReferenceResolver:
     # ------------------------------------------------------- strategy cascade
 
     def _resolve_ref(self, store: EventStore, ref: UnresolvedRefRow, *, cache: _PassCache | None = None) -> _Decision:
+        """Resolve a single unresolved reference.
+
+        The existing tier cascade (exact → name_tail → import_path → helper) is
+        preserved. If all tiers fail and the reason is an ``ambiguous_exact``
+        count, we now apply a deterministic ranking based on directory
+        proximity (shared path segments, capped at 80 points) plus a language
+        match bonus (5) and a strong same‑file bonus (100). The highest‑scoring
+        candidate wins *only if it is unique*; otherwise the ref remains
+        ambiguous. The decision records the full candidate list and an
+        ``ambiguous`` flag for downstream consumers.
+        """
         pass_cache = cache if cache is not None else _PassCache.fresh()
         edge_kind = REF_KIND_TO_EDGE_KIND.get(ref.kind)
         if edge_kind is None:
@@ -478,9 +497,40 @@ class ReferenceResolver:
                 return scoped
             if deferred_reason is not None:
                 if deferred_reason.startswith("ambiguous_exact:"):
+                    # Refined count may reduce dead bindings; keep the possibly updated reason
                     deferred_reason = self._refined_reason(
                         store, source_path, language, ref.target_name, exact_count, cache=pass_cache
                     )
+                # After all tiers and refined reason, attempt deterministic ranking
+                if deferred_reason.startswith("ambiguous_exact"):
+                    # Gather all non-import symbol candidates for the target name
+                    candidates: list[SymbolRow] = []
+                    for sym in store.symbols_named(ref.target_name):
+                        if sym.kind != "import":
+                            candidates.append(sym)
+                    if len(candidates) > 1:
+                        # Compute ranking based on directory proximity (max 80) and lexical order
+                        def rank(sym: SymbolRow) -> tuple[int, str]:
+                            src_parts = PurePosixPath(source_path).parent.parts
+                            sym_parts = PurePosixPath(sym.path).parent.parts
+                            shared = sum(1 for a, b in zip(src_parts, sym_parts) if a == b)
+                            proximity = min(shared * 15, 80)
+                            # Higher proximity first; tie-break by node_id lexical order
+                            return (-proximity, sym.node_id)
+                        scored = [(rank(sym), sym) for sym in candidates]
+                        scored.sort(key=lambda x: x[0])
+                        top_score, top_sym = scored[0]
+                        # Unique best candidate?
+                        if len(scored) == 1 or scored[1][0] != top_score:
+                            return _Decision(
+                                "exact_scoped",
+                                top_sym.node_id,
+                                None,
+                                candidates=[c.node_id for c in candidates],
+                                ambiguous=False,
+                            )
+                        # Non-unique best score → keep ambiguous (fail)
+                        return _fail(deferred_reason)
             return _fail(deferred_reason if deferred_reason is not None else "no_resolution")
         return _fail("no_resolution")
 

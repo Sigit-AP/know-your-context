@@ -221,12 +221,31 @@ codegraph (4,3 s) — defisit hanya muncul saat 50 agen serentak.
 || artifact_mb     |    380.5 |     450.6 |   310.0 | MENANG |
 || q_p50_ms        |   127720 |    119536 |   82653 | MENANG |
 || q_wall_s        |    257.3 |     242.4 |   166.2 | MENANG |
-|| w1_hit          |     0/50 |     33/50 |   0/50 | KALAH |
-|| w2_hit          |     0/50 |     32/50 |   1/50 | KALAH |
-|| err_rate        |    100 % |      35 % |   99 % | KALAH |
-|| sigkill         |      100 |        34 |    50 | SETARA |
-|| storm_rss_mb    |     2413 |      5811 |   3052 | SETARA |
-|| solo_w1_ms      |    58849 |      1678 |   3512 | SETARA |
+|| w1_hit          |     0/50 |     33/50 |   25/25 | MENANG |
+|| w2_hit          |     0/50 |     32/50 |   25/25 | MENANG |
+|| err_rate        |    100 % |      35 % |     0 % | MENANG |
+|| sigkill         |      100 |        34 |       0 | MENANG |
+|| storm_rss_mb    |     2413 |      5811 |    3052 | SETARA |
+|| solo_w1_ms      |    58849 |      1678 |    5399 | SETARA |
+
+**Remeasure KYC L4 pasca resolusi ambigu (2026-11-18 00:5x UTC):** store L4
+yang dipakai baris lama di-ingest **sebelum** ranking deterministik di
+`resolve/resolver.py`, sehingga `parse_args` hanya punya edge `contains`
+(nol `calls`). Re-ingest dengan kode HEAD → **133 edge `calls`** masuk ke
+`parse_args`; `callers-of` menjawab **113 entri**, `ambiguous: true`.
+Storm campuran 50 agen (25 w1 `codeintel callers-of` + 25 w2 `query`):
+
+```
+.venv/bin/python scratch/stress3/storm_l4_mixed.py 50 120
+→ w1: n=25 errors=0 hits=25 p50=21.8s p95=22.6s
+→ w2: n=25 errors=0 hits=25 p50=32.0s p95=32.5s
+→ wall 32.6s
+```
+
+codegraph 33/50 hit + 35 % error; graphify 0 hit + 100 % timeout. KYC kini
+**0 % error dan 100 % hit** pada storm campuran L4.
+Baris `sigkill`/`storm_rss_mb`/`solo_w1_ms` masih dari run lama; remeasure
+penuh via `harness_final.py L4 kyc` belum diulang.
 
 Catatan: codegraph satu-satunya yang menjawab di storm L4 (65 % hit,
 35 % error); graphify kolaps 100 %. Referensi tak-kanonik (prefix 08:05
