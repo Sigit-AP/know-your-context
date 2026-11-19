@@ -293,7 +293,7 @@ kedua kompetitor** — dua metrik itu naik dari SETARA ke MENANG; seluruh
 
 ### Skor total (L1–L4, baris kanonik per level)
 
-**30 MENANG / 12 SETARA / 2 KALAH** — L1 2/7/2, L2 7/4/0, L3 10/1/0,
+**29 MENANG / 12 SETARA / 3 KALAH** — L1 4/6/0, L2 7/4/0, L3 10/1/0,
 L4 11/0/0. Satu-satunya KALAH tersisa di L1 (q_p50 & q_wall saat storm,
 lihat §L1); satu-satunya SETARA di L3 adalah `storm_rss_mb` (lihat §L3).
 Skor L1/L2 berdiri pada baris yang disinkron SUB-187S/SUB-200 (L1 bukan
