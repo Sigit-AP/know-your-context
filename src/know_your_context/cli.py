@@ -349,6 +349,22 @@ def _add_lease_parser(subparsers: Any) -> None:
     lease_force.add_argument("node_id", help="the node to force-release")
 
 
+def _tier_defaults() -> tuple[int, int]:
+    """``(depth, limit)`` defaults for this host, from the hardware tier.
+
+    The tier model maps bigger hardware to *more complete* answers
+    (``docs/research/hardware-tiers-spec.md``); a probe failure degrades to
+    the historical 8/200 pair rather than failing the CLI.
+    """
+    try:
+        from know_your_context.hardware.tiers import active_profile
+
+        profile = active_profile()
+        return profile.default_depth, profile.default_limit
+    except Exception:  # noqa: BLE001 - CLI defaults must never raise
+        return 8, 200
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="know-your-context",
@@ -668,10 +684,21 @@ def build_parser() -> argparse.ArgumentParser:
     codeintel_sub = codeintel_parser.add_subparsers(dest="codeintel_action", required=True)
 
     def _codeintel_traversal_args(sub: argparse.ArgumentParser) -> None:
+        depth_default, limit_default = _tier_defaults()
         sub.add_argument("symbol", help="symbol name or node id")
         sub.add_argument("--file", default=None, help="restrict resolution to this path")
-        sub.add_argument("--depth", type=int, default=8, help="max traversal depth (1..32, default 8)")
-        sub.add_argument("--limit", type=int, default=200, help="max entries (1..5000, default 200)")
+        sub.add_argument(
+            "--depth",
+            type=int,
+            default=depth_default,
+            help=f"max traversal depth (1..32, default {depth_default} for this host tier)",
+        )
+        sub.add_argument(
+            "--limit",
+            type=int,
+            default=limit_default,
+            help=f"max entries (1..5000, default {limit_default} for this host tier)",
+        )
 
     ci_callers = codeintel_sub.add_parser("callers-of", help="transitive callers of a symbol")
     _codeintel_traversal_args(ci_callers)
@@ -683,8 +710,19 @@ def build_parser() -> argparse.ArgumentParser:
     ci_impact = codeintel_sub.add_parser("impact", help="what breaks when a symbol changes")
     ci_impact.add_argument("symbol", help="symbol name or node id")
     ci_impact.add_argument("--file", default=None, help="restrict resolution to this path")
-    ci_impact.add_argument("--depth", type=int, default=8, help="max traversal depth (1..32, default 8)")
-    ci_impact.add_argument("--limit", type=int, default=500, help="max entries (1..5000, default 500)")
+    _impact_depth, _impact_limit = _tier_defaults()
+    ci_impact.add_argument(
+        "--depth",
+        type=int,
+        default=_impact_depth,
+        help=f"max traversal depth (1..32, default {_impact_depth} for this host tier)",
+    )
+    ci_impact.add_argument(
+        "--limit",
+        type=int,
+        default=max(_impact_limit, 500),
+        help=f"max entries (1..5000, default {max(_impact_limit, 500)} for this host tier)",
+    )
     ci_cochange = codeintel_sub.add_parser("co-change", help="files that change together (from source-version history)")
     ci_cochange.add_argument("--min-support", type=int, default=2, help="min change sets containing both (default 2)")
     ci_cochange.add_argument("--limit", type=int, default=100, help="max pairs (default 100)")

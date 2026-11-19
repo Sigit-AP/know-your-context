@@ -18,14 +18,12 @@ from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from know_your_context.domain import RelationKind, canonical_json, quantize_score
-
-if TYPE_CHECKING:  # pragma: no cover - typing only; runtime stays lazy
-    from know_your_context.improvement import ApprovalRecord, DiffOperation, ImprovementProposal
+from know_your_context.improvement import ApprovalRecord, DiffOperation, ImprovementProposal
 
 __all__ = [
     "ACCESS_ONLY_TOKEN_CAP",
