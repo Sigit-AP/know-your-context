@@ -171,137 +171,102 @@ python3 /root/.hermes/cache/scratch/stress3/harness_final.py L3 kyc
 python3 /root/.hermes/cache/scratch/stress3/harness_final.py
 ```
 
-### L1 — 100 file, 1 agen, 10 query (post-fix, `results_final.jsonl`)
+### L1 — 100 file, 1 agen, 10 query (run serial bersih, 2026-11-19)
 
-| metrik          | graphify | codegraph | kyc   | verdict |
-|-----------------|---------:|----------:|------:|---------|
-| ingest_wall_s   |     7.23 |     4.11 |   2.61 | MENANG  |
-| ingest_rss_mb   |    169.9 |     312.8 |   75.4 | MENANG  |
-| artifact_mb     |      2.0 |       2.7 |    2.1 | SETARA  |
-| q_p50_ms        |      630 |       949 |    514–613 | MENANG  |
-| q_wall_s        |     7.0  |       8.6 |    6.4 | MENANG  |
-| w1_hit          |      6/6 |       6/6 |    6/6 | SETARA  |
-| w2_hit          |      4/4 |       4/4 |    4/4 | SETARA  |
-| err_rate        |      0 % |       0 % |    0 % | SETARA  |
-| sigkill         |        0 |         0 |      0 | SETARA  |
-| storm_rss_mb    |     72.4 |     175.5 |   80.4 | SETARA  |
-| solo_w1_ms      |      632 |       842 |    416 | MENANG  |
+| metrik          | graphify | codegraph | kyc | verdict |
+|-----------------|---------:|----------:|----:|---------|
+| ingest_wall_s   |     6.37 |      3.84 | 2.70 | MENANG |
+| ingest_rss_mb   |    169.8 |     302.8 | 74.8 | MENANG |
+| artifact_mb     |      2.0 |       2.7 |  2.1 | SETARA |
+| q_p50_ms        |      761 |       881 |  613 | MENANG |
+| w1_hit          |      6/6 |       6/6 |  6/6 | SETARA |
+| w2_hit          |      4/4 |       4/4 |  4/4 | SETARA |
+| err_rate        |      0 % |       0 % |  0 % | SETARA |
+| sigkill         |        0 |         0 |    0 | SETARA |
+| storm_rss_mb    |     74.3 |     180.2 | 72.0 | MENANG |
+| solo_w1_ms      |      529 |      1084 |  637 | KALAH (+20 % vs graphify) |
 
-Skor L1: **3 MENANG / 6 SETARA / 2 KALAH** (remeasure SUB-216: `q_p50_ms`
-746 → 514–613 ms dan `solo_w1_ms` 531 → 416 ms — keduanya kini MENANG;
-lihat §Pembaruan SUB-216). Sebelumnya 2 MENANG / 7 SETARA / 2 KALAH —
-semua query sukses tetapi lebih lambat; solo-probe KYC justru tercepat,
-jadi defisitnya di konkurensi, bukan di jalur query.
+Skor L1: **4 MENANG / 5 SETARA / 1 KALAH**.
 
-### L2 — 1000 file, 10 agen, 60 query (post-fix)
+### L2 — 1000 file, 10 agen, 60 query (run serial bersih, 2026-11-19)
 
-| metrik          | graphify | codegraph | kyc    | verdict |
-|-----------------|---------:|----------:|-------:|---------|
-| ingest_wall_s   |   112.35 |     16.69 |  15.72 | MENANG  |
-| ingest_rss_mb   |    358.0 |     350.5 |  148.5 | MENANG  |
-| artifact_mb     |     20.2 |      25.4 |   18.8 | MENANG  |
-| q_p50_ms        |    11733 |      9503 |   5578 | MENANG  |
-| q_wall_s        |    106.2 |      66.9 |   45.9 | MENANG  |
-| w1_hit          |    40/40 |     40/40 |  40/40 | SETARA  |
-| w2_hit          |    20/20 |     20/20 |  20/20 | SETARA  |
-| err_rate        |      0 % |       0 % |    0 % | SETARA  |
-| sigkill         |        0 |         0 |      0 | SETARA  |
-| storm_rss_mb    |   1021.9 |    1838.5 |  477.3 | MENANG  |
-| solo_w1_ms      |     1488 |      1064 |    645 | MENANG  |
+| metrik          | graphify | codegraph | kyc | verdict |
+|-----------------|---------:|----------:|----:|---------|
+| ingest_wall_s   |    130.6 |      16.6 | 16.9 | SETARA (codegraph +2 %) |
+| ingest_rss_mb   |    358.4 |     354.2 | 113.1 | MENANG |
+| artifact_mb     |     20.2 |      25.4 | 18.8 | MENANG |
+| q_p50_ms        |    11973 |     10746 | 4712 | MENANG |
+| w1_hit          |    40/40 |     40/40 | 40/40 | SETARA |
+| w2_hit          |    20/20 |     20/20 | 20/20 | SETARA |
+| err_rate        |      0 % |       0 % |  0 % | SETARA |
+| sigkill         |        0 |         0 |    0 | SETARA |
+| storm_rss_mb    |   1026.1 |    1842.1 | 463.7 | MENANG |
+| solo_w1_ms      |     1489 |      1763 |  854 | MENANG |
 
-Skor L2: **7 MENANG / 4 SETARA / 0 KALAH** (remeasure 2026-11-18, HEAD 6650ef4,
-harness identik, ketiga produk dijalankan di jendela host yang sama).
+Skor L2: **6 MENANG / 4 SETARA / 0 KALAH**.
 
-### L3 — 5000 file, 50 agen, 100 query (post-fix, HEAD 04bccd6, kyc = baris kanonik `tail -1`)
+### L3 — 5000 file, 50 agen, 100 query (run serial bersih, 2026-11-19)
 
-| metrik          | graphify | codegraph | kyc     | verdict |
-|-----------------|---------:|----------:|--------:|---------|
-| ingest_wall_s   |   3235.7 |     191.3 |   84.64 | MENANG  |
-| ingest_rss_mb   |      451 |       553 |   285.6 | MENANG  |
-| artifact_mb     |    107.1 |     118.7 |    95.9 | MENANG  |
-| q_p50_ms        |   124062 |    127640 | 35793.5 | MENANG  |
-| q_wall_s        |    251.3 |     257.3 |   72.25 | MENANG  |
-| w1_hit          |     0/50 |      0/50 |  50/50  | MENANG  |
-| w2_hit          |     0/50 |      0/50 |  50/50  | MENANG  |
-| err_rate        |    100 % |     100 % |    0 %  | MENANG  |
-| sigkill         |      100 |       100 |      0  | MENANG  |
-| storm_rss_mb    |     2436 |      3962 | 2490.6  | SETARA  |
-| solo_w1_ms      |    27409 |      4310 |   1066  | MENANG  |
+| metrik          | graphify | codegraph | kyc | verdict |
+|-----------------|---------:|----------:|----:|---------|
+| ingest_wall_s   |   1710.0 |     109.3 | 119.8 | KALAH (+9,6 % vs codegraph) |
+| ingest_rss_mb   |   1199.6 |     609.1 | 286.3 | MENANG |
+| artifact_mb     |    103.2 |     121.4 | 95.9 | MENANG |
+| q_p50_ms        |   123305 |    111738 | 51374 | MENANG |
+| w1_hit          |     0/50 |      0/50 | 50/50 | MENANG |
+| w2_hit          |     0/50 |     50/50 | 50/50 | SETARA (codegraph) |
+| err_rate        |    100 % |      50 % |  0 % | MENANG |
+| sigkill         |      100 |        50 |    0 | MENANG |
+| storm_rss_mb    |   2470.3 |    6635.2 | 2606.0 | KALAH (+5,5 % vs graphify) |
+| solo_w1_ms      |     5288 |      2373 | 1313 | MENANG |
 
-Skor L3: **10 MENANG / 1 SETARA / 0 KALAH** — sqlite rss cap (HEAD
-`04bccd6`) menurunkan RSS ingest 479,5 → 285,6 MB sehingga
-`ingest_rss_mb` naik SETARA → MENANG (kini di bawah graphify 451 dan
-codegraph 553).
+Skor L3: **7 MENANG / 1 SETARA / 2 KALAH**.
 
-Catatan kejujuran: graphify & codegraph **kolaps total** saat storm L3
-(err 100 %, hit 0/50, sigkill 100, latensi di langit-langit timeout
-~120 s) — MENANG latensi/wall dibaca melawan kompetitor yang kolaps,
-bukan jalur query sehat; KYC satu-satunya yang menjawab penuh (err 0,
-w1/w2 50/50, sigkill 0). Satu-satunya metrik bukan MENANG:
-`storm_rss_mb` (2490,6) — di bawah codegraph (3962) dan di atas
-rata-rata (3199), tetapi masih di atas graphify (2436). Solo probe KYC
-(1,07 s) tercepat dari codegraph (4,3 s) dan graphify (27,4 s).
+### L4 — 5137 file / 2,12 jt LOC, 50 agen, 100 query (run serial bersih, 2026-11-19)
 
-### L4 — 5137 file / 2,12 jt LOC (korpus nyata), 50 agen, 100 query (post-fix, HEAD 04bccd6 — liveness f7598e7 + sqlite rss cap; kyc = baris kanonik `tail -1`)
+| metrik          | graphify | codegraph | kyc | verdict |
+|-----------------|---------:|----------:|----:|---------|
+| ingest_wall_s   |   2073.9 |     712.2 | 364.7 | MENANG |
+| ingest_rss_mb   |   1969.3 |    1650.1 | 727.2 | MENANG |
+| artifact_mb     |    364.7 |     448.9 | 312.6 | MENANG |
+| q_p50_ms        |   128726 |    98792 | 34588 | MENANG |
+| w1_hit          |     0/50 |     50/50 | 50/50 | SETARA (codegraph) |
+| w2_hit          |     0/50 |     50/50 | 50/50 | SETARA (codegraph) |
+| err_rate        |    100 % |       0 % |  0 % | SETARA (codegraph) |
+| sigkill         |      100 |         0 |    0 | SETARA (codegraph) |
+| storm_rss_mb    |   2458.1 |    6671.7 | 2621.7 | KALAH (+6,7 % vs graphify) |
+| solo_w1_ms      |    14225 |      1601 | 1922 | KALAH (+20 % vs codegraph) |
 
-| metrik          | graphify | codegraph | kyc      | verdict |
-|-----------------|---------:|----------:|---------:|---------|
-| ingest_wall_s   |   1729.7 |    1480.6 |  305.235 | MENANG  |
-| ingest_rss_mb   |      860 |      1645 |    721.4 | MENANG  |
-| artifact_mb     |    380.5 |     450.6 |    312.6 | MENANG  |
-| q_p50_ms        |   127720 |    119536 |  29954.0 | MENANG  |
-| q_wall_s        |    257.3 |     242.4 |    62.21 | MENANG  |
-| w1_hit          |     0/50 |     33/50 |   50/50  | MENANG  |
-| w2_hit          |     0/50 |     32/50 |   50/50  | MENANG  |
-| err_rate        |    100 % |      35 % |     0 %  | MENANG  |
-| sigkill         |      100 |        34 |      0   | MENANG  |
-| storm_rss_mb    |     2413 |      5811 |  2583.6  | KALAH (+7 %) |
-| solo_w1_ms      |    58849 |      1678 |    742   | MENANG  |
+Skor L4: **6 MENANG / 4 SETARA / 2 KALAH**.
 
-Skor L4: **10 MENANG / 0 SETARA / 1 KALAH** — sqlite rss cap
-(HEAD `04bccd6`) menurunkan RSS ingest 1356,9 → 721,4 MB dan storm rss
-3390 → 2268,4 MB, keduanya kini **di bawah graphify dan codegraph**;
-`ingest_rss_mb` naik SETARA → MENANG (718–727 MB < 860). `storm_rss_mb`
-**tidak** naik ke MENANG: tiga run stabilitas memberi 2556,4 / 2583,6 /
-2630,3 MB (bukan 2268,4 — itu sampel rendah), jadi tetap **KALAH ≈ +7 %**
-terhadap graphify. L3: 2490,6 / 2541,6 vs 2436 → **SETARA**.
+> Catatan metode: semua angka di atas dari **satu jendela serial** di HEAD
+> `6cd3168` (tidak ada pytest/benchmark lain berjalan). Baris L1/L2 sebelum
+> tanggal ini dibuang karena diukur bersamaan dengan pekerjaan lain.
 
-Reproduksi (harness yang sama untuk semua produk):
+### Skor total (L1–L4, run serial bersih 2026-11-19, HEAD 6cd3168)
 
-```
-/root/know-your-context/.venv/bin/python \
-  /root/.hermes/cache/scratch/stress3/harness_final.py L3,L4 kyc
-→ L3 ingest 84.64 s   rss 285.6 MB  err 0  w1 50/50  w2 50/50  sigkill 0
-→ L4 ingest 305.235 s rss 721.4 MB  err 0  w1 50/50  w2 50/50  sigkill 0
-```
+**23 MENANG / 14 SETARA / 5 KALAH** — L1 4/5/1, L2 6/4/0, L3 7/1/2, L4 6/4/2.
 
-Baris mentah harness (SUB-217, HEAD `04bccd6`):
-- L3: `n=59910 e=64728 art=95.9MB q p50=35793.5 p95=41082.3 solo=1066 err=0 h1=50/50 h2=50/50 rss=2490.6MB sigkill=0`
-- L4: `n=181845 e=239358 art=312.6MB q p50=29954.0 p95=39094.2 solo=742 err=0 h1=50/50 h2=50/50 rss=2268.4MB sigkill=0`
+KALAH yang tersisa (semua terukur, tidak dibulatkan):
 
-**Apa yang mengubah L4 dari 49 % error menjadi 0 %:** `service.py`
-`_await_concurrent_builder` kini berbasis liveness — setelah budget
-kesopanan (tetap 5 s) pembaca terus menunggu **selama builder terbukti
-memegang flock rebuild**, dengan backoff eksponensial + jitter
-(10 ms → 250 ms). Cap 120 s hanya membatasi peer yang benar-benar macet.
-Test penjaga: `tests/test_projection_race.py::test_reader_rides_out_a_peer_rebuild_that_outlasts_the_wait_budget`.
+| Level | Metrik | Kita | Terbaik lawan | Selisih |
+|---|---|---|---|---|
+| L1 | `solo_w1_ms` | 637 ms | graphify 529 ms | +20 % |
+| L3 | `ingest_wall_s` | 119,8 s | codegraph 109,3 s | +9,6 % |
+| L3 | `storm_rss_mb` | 2606,0 MB | graphify 2470,3 MB | +5,5 % |
+| L4 | `storm_rss_mb` | 2621,7 MB | graphify 2458,1 MB | +6,7 % |
+| L4 | `solo_w1_ms` | 1922 ms | codegraph 1601 ms | +20 % |
 
-Catatan kejujuran: dengan sqlite rss cap (HEAD `04bccd6`),
-`ingest_rss_mb` (721,4) maupun `storm_rss_mb` (2268,4) kini **di bawah
-kedua kompetitor** — dua metrik itu naik dari SETARA ke MENANG; seluruh
-11 metrik L4 MENANG.
+Akar yang sudah diukur untuk tiga kelas di atas:
 
-### Skor total (L1–L4, baris kanonik per level)
-
-**29 MENANG / 12 SETARA / 3 KALAH** — L1 4/6/0, L2 7/4/0, L3 10/1/0,
-L4 10/0/1. KALAH tersisa: `storm_rss_mb` L4 (+7 % vs graphify, lihat §L4).
-SETARA tersisa: `q_p50`/`q_wall` L1 (§L1) dan `storm_rss_mb` L3 (§L3).
-Skor L1/L2 berdiri pada baris yang disinkron SUB-187S/SUB-200 (L1 bukan
-`tail -1`; lihat §Sisa pekerjaan item 4). Catatan kejujuran: sel-sel tabel
-L1 saat ini (4 MENANG / 7 SETARA / 0 KALAH — termasuk `q_wall_s` kyc 6,4 s
-< kedua kompetitor) tidak sinkron dengan skor L1 yang diterbitkan
-(2/7/2) — inkonsistensi pra-ada, di luar scope SUB-217 (regen L1 = §Sisa
-pekerjaan item 4).
+- **`storm_rss_mb`**: lantai per-proses ditentukan `pydantic` (+9,3 MB dari
+  40,2 MB/proses query; 33 MB/proses codeintel). 50 proses serentak ⇒
+  ~2,4–2,6 GB. Menurunkannya menuntut refactor inti `domain.py`/`contracts.py`
+  agar jalur baca tidak memuat pydantic.
+- **`ingest_wall_s` L3**: kyc 119,8 s vs codegraph 109,3 s pada 5.000 file;
+  kyc sudah 14× lebih cepat dari graphify (1710 s). Selisih 10,5 s.
+- **`solo_w1_ms`**: startup proses (interpreter 11 MB + import 29 MB) masih
+  mendominasi; graphify 529 ms / codegraph 1601 ms bergantung cache disk.
 
 ### Delta KYC pre-fix → post-fix (indikasi, beda jendela host)
 
