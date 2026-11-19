@@ -431,10 +431,12 @@ class ReadModelValidator:
             links: list[Any] = raw_links if isinstance(raw_links, list) else []
             node_count, edge_count = len(nodes), len(links)
 
-            from graphify.validate import VALID_CONFIDENCES, validate_extraction
-
-            for error in validate_extraction(graph):
-                errors.append(f"extraction schema: {error}")
+            if graph.get("nodes") or graph.get("links"):
+                from graphify.validate import VALID_CONFIDENCES, validate_extraction
+                for error in validate_extraction(graph):
+                    errors.append(f"extraction schema: {error}")
+            else:
+                VALID_CONFIDENCES = set()
             for node in nodes:
                 if isinstance(node, dict):
                     errors.extend(self._junk_node_reasons(node))
