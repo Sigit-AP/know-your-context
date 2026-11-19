@@ -88,7 +88,7 @@ __all__ = [
     "count_motifs",
 ]
 
-SCHEMA_VERSION = 1
+from know_your_context.analytics.base import SCHEMA_VERSION, AlgorithmError  # noqa: E402 - re-export
 
 DEFAULT_HITS_ITERATIONS = 64
 DEFAULT_EIGENVECTOR_ITERATIONS = 128
@@ -129,8 +129,7 @@ _ONE = Decimal(1)
 # ------------------------------------------------------------------- errors
 
 
-class AlgorithmError(ValueError):
-    """Base class for typed algorithm-suite input failures."""
+
 
 
 class GraphCapExceededError(AlgorithmError):

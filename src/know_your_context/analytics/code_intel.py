@@ -46,7 +46,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any, Literal, Protocol
 
-from know_your_context.analytics.algorithms import SCHEMA_VERSION, AlgorithmError
+from know_your_context.analytics.base import SCHEMA_VERSION, AlgorithmError
 
 __all__ = [
     "DEFAULT_CONFIDENCE_PLACES",

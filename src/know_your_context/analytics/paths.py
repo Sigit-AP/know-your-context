@@ -27,7 +27,7 @@ import heapq
 from collections.abc import Mapping
 from typing import Any
 
-from know_your_context.analytics.algorithms import SCHEMA_VERSION, AlgorithmError
+from know_your_context.analytics.base import SCHEMA_VERSION, AlgorithmError
 from know_your_context.analytics.centrality import _directed_adjacency, _prepare_graph
 
 __all__ = [
