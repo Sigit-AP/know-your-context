@@ -38,16 +38,21 @@ Parity contract (pinned byte-for-byte by ``tests/test_codeintel_sql_graph.py``):
   Aggregate values (counts and the non-ASCII name set) are pure content
   functions, so they are memoized across instances *per snapshot*: the key
   is an exact content fingerprint read inside the instance's own read
-  transaction (symbol count, edge count, ``MAX(edge_id)``, the v6
+  transaction (symbol count, ``MAX(edge_id)`` — an exact content token on
+  the append-only store contract, replacing the ``graph_edges`` COUNT
+  covering-scan that SUB-218 removed from the hot path — the v6
   ``symbols_watch`` sequence — which moves on ANY symbols write — plus
   db/wal stat tokens), so a write landing between instances moves the key
   and forces recomputation, while N instances of one immutable snapshot pay
-  the full edge-stream aggregation once. Measured why (SUB-188S, L3 store,
-  59 911 symbols / 125 599 edges): the aggregation is ~500 ms of a ~1 s
-  ``callers-of``; every op payload carries the counts, so a one-shot CLI
-  query paid it every time. The edge-count statement itself is shaped so
-  endpoint validity runs as ``EXISTS`` point probes of the ``symbols``
-  PRIMARY KEY per candidate group, never as a ``SCAN`` of the symbol table.
+  the full edge-stream aggregation once. ``dropped_edges`` stays the exact
+  raw-row count: the ``COUNT(*)`` runs lazily, once per snapshot, only when
+  the property is actually asked — never on the op-payload path. Measured
+  why (SUB-188S, L3 store, 59 911 symbols / 125 599 edges): the aggregation
+  is ~500 ms of a ~1 s ``callers-of``; every op payload carries the counts,
+  so a one-shot CLI query paid it every time. The edge-count statement
+  itself is shaped so endpoint validity runs as ``EXISTS`` point probes of
+  the ``symbols`` PRIMARY KEY per candidate group, never as a ``SCAN`` of
+  the symbol table.
 
 One instance = one snapshot: the connection holds a single read transaction
 (WAL), so a writer landing mid-op cannot change what an op sees. The memo
@@ -100,7 +105,6 @@ _NAMED_SQL = (
     "SELECT node_id, name, kind, path, line, col FROM symbols "
     "WHERE lower(name) = lower(?) AND node_id <> '' ORDER BY path, line, col, node_id"
 )
-_NODE_COUNT_SQL = "SELECT COUNT(*) FROM symbols WHERE node_id <> ''"
 _NONASCII_SQL = "SELECT node_id, name, kind, path, line, col FROM symbols WHERE name GLOB '*[^ -~]*' AND node_id <> ''"
 _EDGE_COUNT_SQL = (
     "SELECT COUNT(*) FROM ("
@@ -134,18 +138,26 @@ _CHUNK = 500
 # ------------------------------------------------------------ aggregate memo
 #: Content fingerprint of one snapshot -> lazily computed aggregates, shared
 #: across :class:`SqlCodeGraph` instances of the SAME snapshot (docstring).
-#: ``raw_edges`` is derivable from the fingerprint itself (COUNT(*) of
-#: ``graph_edges`` is part of the key), so it is stored but never computed
-#: twice. ``nonascii`` is only memoized when the store carries the v6
-#: ``symbols_watch`` counter — without it, name-content changes between
-#: instances could not be detected, so the per-instance scan stays.
+#: ``raw_edges`` is no longer derivable from the fingerprint (SUB-218: the
+#: COUNT is off the hot path), so it is computed lazily on first ask and
+#: then shared via the memo and the sidecar. ``nonascii`` is only memoized
+#: when the store carries the v6 ``symbols_watch`` counter — without it,
+#: name-content changes between instances could not be detected, so the
+#: per-instance scan stays.
 _STORE_MEMO: dict[tuple[object, ...], dict[str, object]] = {}
 _MEMO_LOCK = threading.Lock()
 _MEMO_MAX_ENTRIES = 64
 _FINGERPRINT_SQL = (
     "SELECT "
     "(SELECT COUNT(*) FROM symbols WHERE node_id <> ''), "
-    "(SELECT COUNT(*) FROM graph_edges), "
+    # SUB-218: the raw-edge COUNT(*) covering-index scan is gone from the
+    # hot path — MAX(edge_id) is an exact content token for the append-only
+    # store contract (a moved MAX means new rows) and already sits in the
+    # key. The exact ``raw_edges`` COUNT(*) is still served, lazily, by
+    # ``_count("raw_edges")`` / ``dropped_edges`` (never on the w1 payload
+    # path). On stores with deleted edge rows the MAX token remains a
+    # conservative approximation: any delete also moves the file-stat tokens
+    # in the key, so a stale aggregate can never be served.
     "(SELECT COALESCE(MAX(edge_id), 0) FROM graph_edges), "
     "EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'symbols_watch')"
 )
@@ -219,6 +231,14 @@ def _fill_from_payload(entry: dict[str, object], payload: dict[str, object], has
     edge = payload.get("edge_count")
     if entry["edge_count"] is None and type(edge) is int:
         entry["edge_count"] = edge
+        filled = True
+    # SUB-218: the fingerprint no longer carries the raw-edge COUNT(*), so
+    # the sidecar (published once, exact) is the free source for
+    # ``raw_edges``; a fresh process then answers ``dropped_edges`` with
+    # zero SQL and the exact value.
+    raw = payload.get("raw_edges")
+    if entry["raw_edges"] is None and type(raw) is int:
+        entry["raw_edges"] = raw
         filled = True
     if has_watch and entry["nonascii"] is None:
         nonascii = _nonascii_rows_from_payload(payload)
@@ -352,7 +372,7 @@ class SqlCodeGraph:
         return rows
 
     def _snapshot_token(self) -> tuple[tuple[object, ...], int, int, bool]:
-        """(key, symbol count, raw edge count, has_watch) — computed once per instance.
+        """(key, symbol count, max edge id, has_watch) — computed once per instance.
 
         The first call issues this instance's FIRST reads, pinning the read
         snapshot — the key (and the two counts reused as answers) can never
@@ -360,12 +380,19 @@ class SqlCodeGraph:
         calls (node_count, edge_count and the non-ASCII lookup used to run
         the fingerprint three times per instance) serve straight from memory
         (SUB-193: those redundant full-table scans added up under the storm).
+        Since SUB-218 the fingerprint carries ``MAX(edge_id)`` instead of
+        ``COUNT(*)`` from ``graph_edges`` — an exact content token on the
+        append-only store contract — so the hot path no longer streams the
+        whole edge index through the pager of every w1 process. The key
+        keeps its historical shape (slots 2 and 3 both carry the MAX) so
+        sidecars published by earlier builds still validate on append-only
+        stores, where the two values coincide anyway.
         """
         if self._token is None:
             conn = self._conn
             row = conn.execute(_FINGERPRINT_SQL).fetchone()
             watch_seq: int | None = None
-            has_watch = bool(row[3])
+            has_watch = bool(row[2])
             if has_watch:
                 watch = conn.execute(_WATCH_SEQ_SQL).fetchone()
                 watch_seq = int(watch[0]) if watch is not None else None
@@ -376,17 +403,18 @@ class SqlCodeGraph:
                 wal_stat = os.stat(wal_path)
             except OSError:
                 wal_stat = None
+            fingerprint_edges = int(row[1])
             key: tuple[object, ...] = (
                 db_path,
                 int(row[0]),
-                int(row[1]),
-                int(row[2]),
+                fingerprint_edges,
+                fingerprint_edges,
                 watch_seq,
                 db_stat.st_size,
                 db_stat.st_mtime_ns,
                 wal_stat.st_size if wal_stat is not None else 0,
             )
-            self._token = (key, int(row[0]), int(row[1]), has_watch)  # type: ignore[assignment]
+            self._token = (key, int(row[0]), fingerprint_edges, has_watch)  # type: ignore[assignment]
         return self._token  # type: ignore[return-value]
 
     def _memo_entry(self) -> tuple[dict[str, object], int, int, bool]:
@@ -413,7 +441,7 @@ class SqlCodeGraph:
                 }
                 entry = fresh
                 _STORE_MEMO[key] = fresh
-        self._ensure_shared_aggregates(entry, key, fingerprint_syms, fingerprint_edges, has_watch)
+        self._ensure_shared_aggregates(entry, key, fingerprint_syms, has_watch)
         return entry, fingerprint_syms, fingerprint_edges, has_watch  # type: ignore[return-value]
 
     def _ensure_shared_aggregates(
@@ -421,7 +449,6 @@ class SqlCodeGraph:
         entry: dict[str, object],
         key: tuple[object, ...],
         fingerprint_syms: int,
-        fingerprint_edges: int,
         has_watch: bool,
     ) -> None:
         """Fill the entry's expensive values from the cross-process cache.
@@ -429,10 +456,13 @@ class SqlCodeGraph:
         Only the valid-edge aggregation is expensive (measured: ~78 s of an
         ~82 s instrumented ``callers-of`` under the 50-way L4 storm; the
         non-ASCII GLOB scan rides along on v6 stores). The sidecar publishes
-        both once per snapshot; every other process reads them with zero
-        SQL. Any failure — no flock, wait expiry, unwritable or corrupt
-        file, store moved on — fails open: ``_count``/``_nonascii_nodes``
-        then compute in-process, today's exact cost and answer.
+        the aggregates — including the EXACT raw-row count (SUB-218: with
+        the raw COUNT off the fingerprint, the cold winner computes it once
+        per snapshot so every warm process still answers ``dropped_edges``
+        with zero SQL) — and every other process reads them with zero SQL.
+        Any failure — no flock, wait expiry, unwritable or corrupt file,
+        store moved on — fails open: ``_count``/``_nonascii_nodes`` then
+        compute in-process, today's exact cost and answer.
         """
         if entry["edge_count"] is not None:
             return  # the expensive value is warm; non-ASCII fills on its own path
@@ -450,6 +480,8 @@ class SqlCodeGraph:
                 return
             edge_count = int(self._rows(_EDGE_COUNT_SQL, (), "node_rows")[0][0])  # type: ignore[arg-type]
             entry["edge_count"] = edge_count
+            raw_edges = int(self._rows(_RAW_EDGE_ROWS_SQL, (), "node_rows")[0][0])  # type: ignore[arg-type]
+            entry["raw_edges"] = raw_edges
             nonascii: tuple[CodeNode, ...] | None = None
             if has_watch:
                 rows = self._rows(_NONASCII_SQL, (), "node_rows")
@@ -461,28 +493,43 @@ class SqlCodeGraph:
                     key,
                     node_count=fingerprint_syms,
                     edge_count=edge_count,
-                    raw_edges=fingerprint_edges,
+                    raw_edges=raw_edges,
                     nonascii=nonascii,
                 )
         finally:
             _release_shared_cache_lock(fd)
 
-    def _count(self, key: str, sql: str) -> int:
+    def _count(self, key: str) -> int:
         if key in self._counts:
             return self._counts[key]
-        entry, fingerprint_syms, fingerprint_edges, _has_watch = self._memo_entry()
-        with _MEMO_LOCK:
-            edge_count = entry["edge_count"]
-        if edge_count is None:
-            # Cold: fingerprint reads already carried the symbol count and the
-            # raw edge count; only the valid-edge aggregation is expensive.
-            edge_count = int(self._rows(_EDGE_COUNT_SQL, (), "node_rows")[0][0])  # type: ignore[arg-type]
+        entry, fingerprint_syms, _fingerprint_edges, _has_watch = self._memo_entry()
+        if key == "raw_edges":
+            # SUB-218: the exact raw-row count is no longer part of the
+            # fingerprint (the covering-index scan is off the w1 hot path).
+            # It is computed lazily — once per snapshot, shared in the memo
+            # and published in the sidecar — and only when actually asked
+            # (``dropped_edges``, never the op payload). The sidecar-warm
+            # process answers it with zero SQL.
             with _MEMO_LOCK:
-                if entry["edge_count"] is None:
-                    entry["node_count"] = fingerprint_syms
-                    entry["edge_count"] = edge_count
-                    entry["raw_edges"] = fingerprint_edges
-        value = {"nodes": fingerprint_syms, "edges": edge_count, "raw_edges": fingerprint_edges}[key]
+                raw_edges = entry["raw_edges"]
+            if raw_edges is None:
+                raw_edges = int(self._rows(_RAW_EDGE_ROWS_SQL, (), "node_rows")[0][0])  # type: ignore[arg-type]
+                with _MEMO_LOCK:
+                    if entry["raw_edges"] is None:
+                        entry["raw_edges"] = raw_edges
+            value = int(raw_edges)  # type: ignore[arg-type]
+        else:
+            with _MEMO_LOCK:
+                edge_count = entry["edge_count"]
+            if edge_count is None:
+                # Cold: fingerprint reads already carried the symbol count;
+                # only the valid-edge aggregation is expensive.
+                edge_count = int(self._rows(_EDGE_COUNT_SQL, (), "node_rows")[0][0])  # type: ignore[arg-type]
+                with _MEMO_LOCK:
+                    if entry["edge_count"] is None:
+                        entry["node_count"] = fingerprint_syms
+                        entry["edge_count"] = edge_count
+            value = fingerprint_syms if key == "nodes" else int(edge_count)  # type: ignore[arg-type]
         self._counts[key] = value
         return value
 
@@ -490,15 +537,15 @@ class SqlCodeGraph:
 
     @property
     def node_count(self) -> int:
-        return self._count("nodes", _NODE_COUNT_SQL)
+        return self._count("nodes")
 
     @property
     def edge_count(self) -> int:
-        return self._count("edges", _EDGE_COUNT_SQL)
+        return self._count("edges")
 
     @property
     def dropped_edges(self) -> int:
-        return self._count("raw_edges", _RAW_EDGE_ROWS_SQL) - self.edge_count
+        return self._count("raw_edges") - self.edge_count
 
     def node(self, node_id: str) -> CodeNode | None:
         if node_id not in self._node_cache:
@@ -512,7 +559,9 @@ class SqlCodeGraph:
         Measured why (SUB-178): a 14 916-caller hub query otherwise issued
         one point lookup per entry — 64% of the op's CPU. Warm cache entries
         are served without touching the database; misses are cached as
-        ``None`` exactly like :meth:`node`.
+        ``None`` exactly like :meth:`node`. The cursor streams per chunk
+        (SUB-218) so the fetched rows never form a second live materialised
+        copy alongside the node objects.
         """
         out: dict[str, CodeNode] = {}
         missing: list[str] = []
@@ -526,16 +575,26 @@ class SqlCodeGraph:
         for start in range(0, len(missing), _CHUNK):
             chunk = missing[start : start + _CHUNK]
             placeholders = ", ".join("?" for _ in chunk)
-            rows = self._rows(_NODES_MANY_SQL.format(ids=placeholders), tuple(chunk), "node_rows")
+            cursor = self._conn.execute(_NODES_MANY_SQL.format(ids=placeholders), tuple(chunk))
             found: set[str] = set()
-            for row in rows:
+            fetched = 0
+            for row in cursor:
                 node = _node_from_row(row)
-                self._node_cache[node.node_id] = node
                 out[node.node_id] = node
                 found.add(node.node_id)
+                fetched += 1
+            # Missing ids are cached as ``None`` (so a later :meth:`node` on
+            # the same id does not re-hit SQL), but found nodes are served
+            # straight from ``out``: every traversal op calls ``nodes_many``
+            # exactly once per op (SUB-178), so a per-id cache would only be
+            # re-read by a later ``node()`` lookup that never comes in the
+            # single-op CLI life — SUB-218 keeps it off the w1 peak.
             for node_id in chunk:
                 if node_id not in found:
                     self._node_cache[node_id] = None
+            if self._stats is not None:
+                self._stats["node_rows"] = self._stats.get("node_rows", 0) + fetched
+                self._stats["queries"] = self._stats.get("queries", 0) + 1
         return out
 
     def _nonascii_nodes(self) -> tuple[CodeNode, ...]:
@@ -610,7 +669,11 @@ class SqlCodeGraph:
         """Batched neighbours: one indexed query per ``_CHUNK`` ids.
 
         ``ORDER BY pivot, other, kind, line`` keeps each id's list sorted
-        exactly as :meth:`neighbours` returns it.
+        exactly as :meth:`neighbours` returns it. The cursor streams into
+        ``grouped`` in one pass (SUB-218): the materialised ``rows`` list and
+        the grouped tuples were two live copies of the same hub — the
+        largest Python-side duplicate on the w1 ``callers-of`` path. Reads
+        (``edge_rows``/``queries``) and answers stay identical.
         """
         grouped: dict[str, list[tuple[str, str, int]]] = {node_id: [] for node_id in node_ids}
         if not node_ids:
@@ -622,8 +685,14 @@ class SqlCodeGraph:
             id_ph = ", ".join("?" for _ in chunk)
             sql = template.format(ids=id_ph, kinds=kind_ph)
             params: tuple[object, ...] = (*chunk, *sorted(kinds))
-            for row in self._rows(sql, params, "edge_rows"):
-                grouped[str(row[0])].append((str(row[1]), str(row[2]), int(row[3])))  # type: ignore[arg-type]
+            cursor = self._conn.execute(sql, params)
+            fetched = 0
+            for row in cursor:
+                grouped[str(row[0])].append((str(row[1]), str(row[2]), int(row[3])))
+                fetched += 1
+            if self._stats is not None:
+                self._stats["edge_rows"] = self._stats.get("edge_rows", 0) + fetched
+                self._stats["queries"] = self._stats.get("queries", 0) + 1
         return {node_id: tuple(entries) for node_id, entries in grouped.items()}
 
 
@@ -640,13 +709,23 @@ def store_has_only_ascii_names(conn: sqlite3.Connection) -> bool:
 
 
 def open_readonly_connection(db_path: str) -> sqlite3.Connection | None:
-    """Open ``db_path`` read-only; ``None`` when the graph tables are absent."""
+    """Open ``db_path`` read-only; ``None`` when the graph tables are absent.
+
+    SUB-218: the connection is deliberately pinned to a bounded pager —
+    ``mmap_size = 0`` and a 1 MiB page cache — so a w1 ``callers-of``
+    process never carries a db-sized mmap or a 2 MiB cache into its peak
+    RSS, and the 50-agent storm does not multiply it. The graph's reads are
+    indexed lookups and bounded scans; the smaller cache is latency-neutral
+    (measured +3% on the L3 hub) and changes cost, never answers.
+    """
     if db_path == ":memory:" or not Path(db_path).exists():
         return None
     uri = f"file:{quote(str(Path(db_path).resolve()))}?mode=ro"
     try:
         conn = sqlite3.connect(uri, uri=True, isolation_level=None)
         conn.execute("PRAGMA busy_timeout = 15000")
+        conn.execute("PRAGMA mmap_size = 0")
+        conn.execute("PRAGMA cache_size = -1024")
         tables = conn.execute(
             "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN ('symbols', 'graph_edges')"
         ).fetchone()

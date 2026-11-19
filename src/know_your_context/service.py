@@ -27,17 +27,19 @@ Task 5 lands the scoring engine.
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import os
 import random
 import re
+import sys
 import threading
 import time
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 try:  # POSIX rebuild flock; absent on non-POSIX hosts (projection.py precedent)
     import fcntl
@@ -47,14 +49,6 @@ except ImportError:  # pragma: no cover - non-POSIX
 from pydantic import ValidationError
 
 from know_your_context.audit import AuditLog, failure_outcome, success_outcome
-from know_your_context.autoreview import (
-    AutoReviewRejected,
-    AutoReviewVerdict,
-    compensate_node_write,
-    manual_gates_enabled,
-    review_node_write,
-    scan_value,
-)
 from know_your_context.contracts import (
     ACCESS_ONLY_TOKEN_CAP,
     DEFAULT_MAX_TOKEN_BUDGET,
@@ -115,7 +109,6 @@ from know_your_context.domain import (
     storage_payload,
 )
 from know_your_context.events import Invocation, InvocationOutcome, WriteReceipt
-from know_your_context.importer import DEFAULT_PARSER_VERSIONS
 from know_your_context.improvement import (
     ApprovalRecord,
     ApprovalRequired,
@@ -131,19 +124,6 @@ from know_your_context.improvement import (
 from know_your_context.improvement import UnknownNode as ImprovementUnknownNode
 from know_your_context.projection import GraphProjector, ProjectorBusy, resolve_artifact_cap
 from know_your_context.read_model_validator import ReadModelValidator
-from know_your_context.relearn import (
-    BackupUnavailable,
-    MixedSourceVersions,
-    NoPendingRelearn,
-    OperatorDecisionRequired,
-    RelearnApproval,
-    RelearnEngine,
-    RelearnError,
-    RelearnPreview,
-    RelearnReceipt,
-    RelearnStatus,
-    UnknownRelearn,
-)
 from know_your_context.retrieval import (
     BudgetedTraversal,
     LexicalIndex,
@@ -153,15 +133,78 @@ from know_your_context.retrieval import (
     query_terms,
     sanitize_text,
 )
-from know_your_context.review import ReviewEngine
-from know_your_context.review import UnknownNode as ReviewUnknownNode
-from know_your_context.scheduler import DueReviewScheduler
-from know_your_context.scoring import ScoreEngine, UnknownNodeError
 from know_your_context.security import redact_text
 from know_your_context.source_registry import ParserVersions, RelearnOffer, SourceKind
 from know_your_context.store import PUBLISH_CAPACITY_RATIO, EventStore, PublishCapacityExceeded, StoreError
 
+if TYPE_CHECKING:
+    # Write/ops-only names (SUB-219 import floor): the read-only ``query``
+    # path never needs the relearn/review/scoring/scheduler engines or the
+    # auto-review machinery. Only the annotation-referenced types are listed
+    # here (property return types, signatures); the runtime names resolve
+    # through ``_lazy_attr`` at call time (import once on first write/ops
+    # use, then cached in globals — the exact PEP 562 seam
+    # :mod:`know_your_context.http_api` already uses).
+    from know_your_context.relearn import (
+        RelearnApproval,
+        RelearnEngine,
+        RelearnPreview,
+        RelearnReceipt,
+        RelearnStatus,
+    )
+    from know_your_context.review import ReviewEngine
+    from know_your_context.scheduler import DueReviewScheduler
+    from know_your_context.scoring import ScoreEngine
+
 __all__ = ["InvalidPublishCapacity", "KnowledgeService"]
+
+# ------------------------------------------------------------------ lazy seam
+#
+# SUB-219: the four lifecycle engines (relearn→backup, review, scoring,
+# scheduler) and the auto-review write helpers used to be imported at module
+# scope and eagerly constructed in ``KnowledgeService.__init__``. Measured
+# (stress3 profile): the service/http_api import graph is ≈40 MB and ≈425 ms
+# per fresh ``query`` process — in the 50-agent storm every process paid it.
+# These names now import on first write/ops use and cache into ``globals()``;
+# the no-AI runtime chain (store/contracts/retrieval/projection/audit) that a
+# read verb genuinely needs is unaffected.
+_LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
+    "RelearnEngine": ("know_your_context.relearn", "RelearnEngine"),
+    "RelearnError": ("know_your_context.relearn", "RelearnError"),
+    "NoPendingRelearn": ("know_your_context.relearn", "NoPendingRelearn"),
+    "OperatorDecisionRequired": ("know_your_context.relearn", "OperatorDecisionRequired"),
+    "UnknownRelearn": ("know_your_context.relearn", "UnknownRelearn"),
+    "MixedSourceVersions": ("know_your_context.relearn", "MixedSourceVersions"),
+    "BackupUnavailable": ("know_your_context.relearn", "BackupUnavailable"),
+    "ReviewEngine": ("know_your_context.review", "ReviewEngine"),
+    "ReviewUnknownNode": ("know_your_context.review", "UnknownNode"),
+    "DueReviewScheduler": ("know_your_context.scheduler", "DueReviewScheduler"),
+    "ScoreEngine": ("know_your_context.scoring", "ScoreEngine"),
+    "UnknownNodeError": ("know_your_context.scoring", "UnknownNodeError"),
+    "AutoReviewRejected": ("know_your_context.autoreview", "AutoReviewRejected"),
+    "AutoReviewVerdict": ("know_your_context.autoreview", "AutoReviewVerdict"),
+    "compensate_node_write": ("know_your_context.autoreview", "compensate_node_write"),
+    "review_node_write": ("know_your_context.autoreview", "review_node_write"),
+    "scan_value": ("know_your_context.autoreview", "scan_value"),
+    "manual_gates_enabled": ("know_your_context.autoreview", "manual_gates_enabled"),
+    "DEFAULT_PARSER_VERSIONS": ("know_your_context.importer", "DEFAULT_PARSER_VERSIONS"),
+}
+
+
+def _lazy_attr(name: str) -> Any:
+    """Resolve a module attribute, honouring a monkeypatched override."""
+    return getattr(sys.modules[__name__], name)
+
+
+def __getattr__(name: str) -> Any:
+    target = _LAZY_IMPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    module_name, attr = target
+    module_value = importlib.import_module(module_name)
+    resolved = module_value if attr is None else getattr(module_value, attr)
+    globals()[name] = resolved
+    return resolved
 
 
 class InvalidPublishCapacity(PublishCapacityExceeded):
@@ -276,8 +319,13 @@ def _resolve_manual_gates(manual_gates: bool | None) -> bool:
     Writes land immediately and the mandatory deterministic post-write
     auto-review replaces the human approval gates;
     ``KNOW_YOUR_CONTEXT_MANUAL_GATES=1`` restores the legacy behavior.
+
+    The env read is deferred to call time (SUB-219): ``KnowledgeService``
+    stores the explicit override and resolves the default through
+    :meth:`KnowledgeService._current_manual_gates` on first write, so the
+    query path never imports :mod:`know_your_context.autoreview`.
     """
-    return manual_gates if manual_gates is not None else manual_gates_enabled()
+    return manual_gates if manual_gates is not None else _lazy_attr("manual_gates_enabled")()
 
 
 def _resolve_publish_capacity(store: EventStore, override: int | None) -> tuple[int, int]:
@@ -354,7 +402,10 @@ class KnowledgeService:
         self._validator = validator if validator is not None else ReadModelValidator()
         self._max_token_budget = max_token_budget
         self._default_actor = default_actor
-        self._manual_gates = _resolve_manual_gates(manual_gates)
+        # SUB-219: the manual-gates default is resolved on first write, not at
+        # construction — reading the env here would import autoreview into
+        # every query process. The explicit override is preserved.
+        self._manual_gates_override = manual_gates
         self._publish_capacity_bytes, self._artifact_cap_bytes = _resolve_publish_capacity(
             store, publish_capacity_bytes
         )
@@ -372,18 +423,61 @@ class KnowledgeService:
         # the projector's generation root so its verified backup covers the
         # whole protected set (SQLite + CURRENT pointer + generations/), not
         # just the database file (relearn contract "Backup and rollback").
-        self._relearn_engine = RelearnEngine(
-            store,
-            generation_dir=projector._output_root,  # noqa: SLF001 - same-package wiring (mcp_server precedent)
-        )
+        # The engines are write/ops-only: SUB-219 defers their construction to
+        # first use (``_score_engine``/``_review_engine``/``_scheduler``/
+        # ``_relearn_engine`` properties below import the module lazily), so a
+        # read-only ``query`` process pays ≈40 MB less import floor.
         self._evidence_scope = self._relearn_scope
-        self._score_engine = ScoreEngine(store, evidence_scope=self._evidence_scope)
-        self._review_engine = ReviewEngine(
-            store,
-            registry=self._relearn_engine.registry,
-            evidence_scope=self._evidence_scope,
-        )
-        self._scheduler = DueReviewScheduler(store, self._review_engine)
+
+    def _current_manual_gates(self) -> bool:
+        """The effective manual-gates flag: the explicit override, else the env default.
+
+        Resolving the default at call time (rather than caching it in
+        ``__init__``) is the documented seam for a module-level default: it
+        keeps ``monkeypatch.setattr(service, ...)`` and env-var patches
+        working, and — because the query path never writes — it keeps
+        :mod:`know_your_context.autoreview` off the read floor (SUB-219).
+        """
+        return _resolve_manual_gates(self._manual_gates_override)
+
+    @property
+    def _relearn_engine(self) -> RelearnEngine:
+        engine = self.__dict__.get("_relearn_engine")
+        if engine is None:
+            engine = _lazy_attr("RelearnEngine")(
+                self._store,
+                generation_dir=self._projector._output_root,  # noqa: SLF001 - same-package wiring (mcp_server precedent)
+            )
+            self.__dict__["_relearn_engine"] = engine
+        return engine
+
+    @property
+    def _score_engine(self) -> ScoreEngine:
+        engine = self.__dict__.get("_score_engine")
+        if engine is None:
+            engine = _lazy_attr("ScoreEngine")(self._store, evidence_scope=self._evidence_scope)
+            self.__dict__["_score_engine"] = engine
+        return engine
+
+    @property
+    def _review_engine(self) -> ReviewEngine:
+        engine = self.__dict__.get("_review_engine")
+        if engine is None:
+            engine = _lazy_attr("ReviewEngine")(
+                self._store,
+                registry=self._relearn_engine.registry,
+                evidence_scope=self._evidence_scope,
+            )
+            self.__dict__["_review_engine"] = engine
+        return engine
+
+    @property
+    def _scheduler(self) -> DueReviewScheduler:
+        scheduler = self.__dict__.get("_scheduler")
+        if scheduler is None:
+            scheduler = _lazy_attr("DueReviewScheduler")(self._store, self._review_engine)
+            self.__dict__["_scheduler"] = scheduler
+        return scheduler
 
     # ------------------------------------------------------------- introspection
 
@@ -1609,7 +1703,7 @@ class KnowledgeService:
             idempotency_key=idempotency_key,
         )
         self._assert_publish_capacity(node, invocation, started)
-        review = _auto_review and not self._manual_gates
+        review = _auto_review and not self._current_manual_gates()
         prior_version = expected_version
         if review and prior_version is None:
             existing = self._store.current_node(node.node_id)
@@ -1653,7 +1747,7 @@ class KnowledgeService:
         rejection — ``failure_outcome`` records the verdict (and the
         compensation event id) from the error's ``audit_references``.
         """
-        verdict, _ = review_node_write(
+        verdict, _ = _lazy_attr("review_node_write")(
             self._store,
             operation=operation,
             node_id=node_id,
@@ -1664,7 +1758,7 @@ class KnowledgeService:
             return {"auto_review": verdict.as_references()}
         compensation_id: str | None = None
         try:
-            compensation = compensate_node_write(
+            compensation = _lazy_attr("compensate_node_write")(
                 self._store,
                 node_id=node_id,
                 prior_version=prior_version,
@@ -1674,7 +1768,7 @@ class KnowledgeService:
             compensation_id = compensation.domain_event_id
         except StoreError:
             pass  # the failure audit names the verdict; never mask the reject
-        raise AutoReviewRejected(
+        raise _lazy_attr("AutoReviewRejected")(
             f"auto-review rejected the {operation} write of {node_id!r}: {', '.join(verdict.reasons)}",
             reasons=verdict.reasons,
             audit_references={"auto_review": {**verdict.as_references(), "compensation_event_id": compensation_id}},
@@ -1690,7 +1784,7 @@ class KnowledgeService:
     def _prescan_evidence(self, evidence: Evidence, actor: str) -> None:
         """Refuse bad evidence before it lands (the frozen event model has no
         evidence-retraction verb, so pre-write refusal is the fail-closed)."""
-        reasons = scan_value(
+        reasons = _lazy_attr("scan_value")(
             {
                 "evidence_id": evidence.evidence_id,
                 "source_uri": evidence.source_uri,
@@ -1700,14 +1794,14 @@ class KnowledgeService:
         )
         if not reasons:
             return
-        verdict = AutoReviewVerdict(
+        verdict = _lazy_attr("AutoReviewVerdict")(
             operation="knowledge.record_outcome",
             target=evidence.evidence_id,
             verdict="reject",
             reasons=reasons,
             roundtrip_ok=False,
         )
-        error = AutoReviewRejected(
+        error = _lazy_attr("AutoReviewRejected")(
             f"auto-review rejected the evidence write for {evidence.node_id!r}: {', '.join(reasons)}",
             reasons=reasons,
             audit_references={"auto_review": verdict.as_references()},
@@ -1730,7 +1824,7 @@ class KnowledgeService:
         verifies the row landed.
         """
         actor = actor or self._default_actor
-        if not self._manual_gates:
+        if not self._current_manual_gates():
             self._prescan_evidence(evidence, actor)
         event = Event(
             kind=EventKind.EVIDENCE_APPEND,
@@ -1748,10 +1842,10 @@ class KnowledgeService:
         )
 
         def _review(_receipt: Any) -> dict[str, Any] | None:
-            if self._manual_gates:
+            if self._current_manual_gates():
                 return None
             landed = self._store.get_evidence(evidence.evidence_id) is not None
-            verdict = AutoReviewVerdict(
+            verdict = _lazy_attr("AutoReviewVerdict")(
                 operation="knowledge.record_outcome",
                 target=evidence.evidence_id,
                 verdict="pass" if landed else "reject",
@@ -1760,7 +1854,7 @@ class KnowledgeService:
             )
             if landed:
                 return {"auto_review": verdict.as_references()}
-            raise AutoReviewRejected(
+            raise _lazy_attr("AutoReviewRejected")(
                 f"auto-review could not read back evidence {evidence.evidence_id!r}",
                 reasons=("roundtrip:evidence-missing",),
                 audit_references={"auto_review": verdict.as_references()},
@@ -1852,9 +1946,9 @@ class KnowledgeService:
         """Map the Task 5/6 store errors onto the knowledge error taxonomy."""
         if isinstance(error, KnowledgeError):
             return error
-        if isinstance(error, UnknownNodeError):
+        if isinstance(error, _lazy_attr("UnknownNodeError")):
             return NodeNotFound(str(error))
-        if isinstance(error, (ReviewUnknownNode, ImprovementUnknownNode)):
+        if isinstance(error, (_lazy_attr("ReviewUnknownNode"), ImprovementUnknownNode)):
             return NodeNotFound(str(error))
         if isinstance(error, ProposalValidationError):
             return InvalidProposal(str(error))
@@ -1864,13 +1958,13 @@ class KnowledgeService:
             return RegressionGateError(str(error))
         if isinstance(error, UnknownImprovement):
             return ImprovementNotFound(str(error))
-        if isinstance(error, UnknownRelearn):
+        if isinstance(error, _lazy_attr("UnknownRelearn")):
             return UnknownRelearnError(str(error))
-        if isinstance(error, OperatorDecisionRequired):
+        if isinstance(error, _lazy_attr("OperatorDecisionRequired")):
             return OperatorDecisionRequiredError(str(error))
-        if isinstance(error, MixedSourceVersions):
+        if isinstance(error, _lazy_attr("MixedSourceVersions")):
             return MixedSourceVersionsError(str(error))
-        if isinstance(error, BackupUnavailable):
+        if isinstance(error, _lazy_attr("BackupUnavailable")):
             return LifecycleError(f"backup unavailable: {error}")
         return LifecycleError(f"{type(error).__name__}: {error}")
 
@@ -1911,7 +2005,7 @@ class KnowledgeService:
         """
         node = self._store.current_node(node_id)
         if node is None:
-            raise UnknownNodeError(f"unknown node {node_id!r}")
+            raise _lazy_attr("UnknownNodeError")(f"unknown node {node_id!r}")
         current = node.scores
         updated = current.model_copy(
             update={
@@ -1975,7 +2069,7 @@ class KnowledgeService:
                 else engine.score_node(request.node_id, context=request.context_tags, at=at)
             )
             event, expected_version = self._assessment_event(request.node_id, assessment, at=at)
-        except (UnknownNodeError, StoreError) as error:
+        except (_lazy_attr("UnknownNodeError"), StoreError) as error:
             typed = self._audit_lifecycle_failure("knowledge.evaluate", payload, actor, error, started)
             raise typed from error
 
@@ -2128,7 +2222,7 @@ class KnowledgeService:
         returns ``None`` when nothing changed. Audited as
         ``knowledge.relearn_offer``.
         """
-        versions = parser_versions if parser_versions is not None else DEFAULT_PARSER_VERSIONS
+        versions = parser_versions if parser_versions is not None else _lazy_attr("DEFAULT_PARSER_VERSIONS")
         started = time.monotonic()
         invocation = self._begin("knowledge.relearn_offer", {"path": str(path), "kind": kind.value}, actor, None)
         try:
@@ -2189,12 +2283,14 @@ class KnowledgeService:
         try:
             offer = self._relearn_engine.pending_offer()
             if offer is None and idempotency_key is None:
-                raise NoPendingRelearn("no RELEARN_PENDING offer: relearn is never selected automatically")
+                raise _lazy_attr("NoPendingRelearn")(
+                    "no RELEARN_PENDING offer: relearn is never selected automatically"
+                )
             if offer is not None and (approval is None or approval.offer_id != offer.offer_id or approval.mode != mode):
-                raise OperatorDecisionRequired(
+                raise _lazy_attr("OperatorDecisionRequired")(
                     f"mode {mode} for offer {offer.offer_id!r} requires an explicit matching operator approval"
                 )
-        except RelearnError as error:
+        except _lazy_attr("RelearnError") as error:
             typed = self._audit_lifecycle_failure("knowledge.relearn_apply", payload, actor, error, started)
             raise typed from error
         try:
@@ -2204,7 +2300,7 @@ class KnowledgeService:
                 actor=actor or self._default_actor,
                 idempotency_key=idempotency_key,
             )
-        except RelearnError as error:
+        except _lazy_attr("RelearnError") as error:
             typed = self._audit_lifecycle_failure("knowledge.relearn_apply", payload, actor, error, started)
             raise typed from error
 
@@ -2212,7 +2308,7 @@ class KnowledgeService:
 
     def _prescan_proposal(self, request: Any, actor: str) -> None:
         """Refuse a proposal whose free-text is bad before the event lands."""
-        reasons = scan_value(
+        reasons = _lazy_attr("scan_value")(
             {
                 "rationale": request.rationale,
                 "diff": [operation.model_dump(mode="json") for operation in request.diff],
@@ -2220,14 +2316,14 @@ class KnowledgeService:
         )
         if not reasons:
             return
-        verdict = AutoReviewVerdict(
+        verdict = _lazy_attr("AutoReviewVerdict")(
             operation="knowledge.propose_improvement",
             target=request.node_id,
             verdict="reject",
             reasons=reasons,
             roundtrip_ok=False,
         )
-        error = AutoReviewRejected(
+        error = _lazy_attr("AutoReviewRejected")(
             f"auto-review rejected the proposal for {request.node_id!r}: {', '.join(reasons)}",
             reasons=reasons,
             audit_references={"auto_review": verdict.as_references()},
@@ -2261,7 +2357,7 @@ class KnowledgeService:
         started = time.monotonic()
         payload = request.model_dump(mode="json")
         actor = actor or self._default_actor
-        if not self._manual_gates:
+        if not self._current_manual_gates():
             # Disk-mode: the proposal event itself is a write; scan its
             # free-text (rationale + diff values) before it lands. The graph
             # mutation it describes is reviewed again at apply time.
@@ -2300,9 +2396,9 @@ class KnowledgeService:
         boundary): pass → verdict references on the success audit; reject →
         compensate (restore the exact pre-apply content) and raise, so the
         failure audit carries the verdict and the compensation event id."""
-        if self._manual_gates:
+        if self._current_manual_gates():
             return None
-        verdict, _ = review_node_write(
+        verdict, _ = _lazy_attr("review_node_write")(
             self._store,
             operation="knowledge.apply_improvement",
             node_id=applied.node_id,
@@ -2318,7 +2414,7 @@ class KnowledgeService:
             actor=actor,
             idempotency_key=f"auto-review:apply:{applied.node_id}:{from_version}",
         )
-        raise AutoReviewRejected(
+        raise _lazy_attr("AutoReviewRejected")(
             f"auto-review rejected the apply on {applied.node_id!r}: {', '.join(verdict.reasons)}",
             reasons=verdict.reasons,
             audit_references={
@@ -2355,7 +2451,7 @@ class KnowledgeService:
             if proposal is None:
                 raise UnknownImprovement(f"no proposal {request.proposal_id!r} in the event log")
             effective_approval = request.approval
-            if not self._manual_gates and effective_approval is None:
+            if not self._current_manual_gates() and effective_approval is None:
                 # Disk-mode: no human approval queue. The deterministic
                 # post-write auto-review (wired as the apply's post_write
                 # hook) is the gate; the synthesized record keeps the
@@ -2377,7 +2473,7 @@ class KnowledgeService:
                     applied, from_version, domain, actor
                 ),
             )
-        except AutoReviewRejected:
+        except _lazy_attr("AutoReviewRejected"):
             # Already audited by the apply invocation's failure audit — never
             # journal a second one.
             raise

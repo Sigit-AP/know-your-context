@@ -39,7 +39,6 @@ stack's ``ops_root`` (default: the store's directory) via
 
 from __future__ import annotations
 
-import asyncio
 import errno
 import hashlib
 import hmac
@@ -86,7 +85,6 @@ from know_your_context.operations import DEFAULT_HOST_ALLOWLIST as _DEFAULT_HOST
 from know_your_context.operations import KNOWLEDGE_OPERATIONS as _KNOWLEDGE_OPERATIONS
 from know_your_context.operations import OPS_OPERATIONS as _OPS_OPERATIONS
 from know_your_context.projection import GraphProjector, ProjectionError
-from know_your_context.relearn import RelearnApproval, RelearnOffer
 from know_your_context.security import (
     DEFAULT_MAX_PAYLOAD_BYTES,
     BindPolicyError,
@@ -102,9 +100,7 @@ from know_your_context.security import (
 )
 from know_your_context.service import KnowledgeService
 from know_your_context.source_registry import SourceKind
-from know_your_context.source_watcher import SourceChange, SourceWatcher
 from know_your_context.store import EventStore, StoreError
-from know_your_context.update_pipeline import SourceWatchLoop, UpdatePipelineError
 
 if TYPE_CHECKING:
     # Annotation-only names. At runtime these import inside the functions
@@ -119,6 +115,9 @@ if TYPE_CHECKING:
 
     from know_your_context.extraction import ExtractionError
     from know_your_context.ingest.pipeline import ExtractorUnavailableError, IngestionError
+    from know_your_context.relearn import RelearnOffer
+    from know_your_context.source_watcher import SourceChange
+    from know_your_context.update_pipeline import SourceWatchLoop
 
 __all__ = [
     "API_VERSION",
@@ -552,6 +551,8 @@ def _call_relearn_preview(stack: LocalStack, request: _RelearnPreviewPayload, ac
 
 
 def _call_relearn_apply(stack: LocalStack, request: _RelearnApplyPayload, actor: str, idem: str | None) -> Any:
+    # relearn is a write/ops verb: its module must never ride the query floor
+    RelearnApproval = _lazy_attr("RelearnApproval")  # noqa: N806 - serve/ops-only type
     approval = RelearnApproval(
         offer_id=request.approval.offer_id,
         mode=request.mode,
@@ -1528,11 +1529,12 @@ class BoundaryMiddleware:
         # (wave-2 F4 residual).
         chunks: list[bytes] = []
         total = 0
-        loop = asyncio.get_running_loop()
+        # asyncio is serve-only (SUB-219): the query CLI must never import it
+        loop = _lazy_attr("asyncio").get_running_loop()
         deadline = loop.time() + self._body_timeout_seconds
         while True:
             try:
-                message = await asyncio.wait_for(receive(), timeout=max(deadline - loop.time(), 0.0))
+                message = await _lazy_attr("asyncio").wait_for(receive(), timeout=max(deadline - loop.time(), 0.0))
             except TimeoutError:
                 response = _json_response(
                     error_envelope(
@@ -1588,6 +1590,14 @@ def _build_watch_loop(
     baseline flip (final-audit F-4 semantics); the operator's
     ``relearn_preview``/``relearn_apply`` decision stays mandatory.
     """
+    # Serve-only chain (SUB-219): the watch loop is the only consumer of the
+    # source watcher / update pipeline, so a local query process must never
+    # import them. They stay out of module scope; the annotations above are
+    # strings (``from __future__ import annotations``) resolved by pyright
+    # through the TYPE_CHECKING block.
+    from know_your_context.source_watcher import SourceWatcher
+    from know_your_context.update_pipeline import SourceWatchLoop, UpdatePipelineError
+
     root = Path(watch_root).resolve()
     if not root.is_dir():
         raise UpdatePipelineError(f"watch root {str(root)!r} is not an existing directory")
@@ -2062,6 +2072,8 @@ def _cleanup_serve_socket(listener: socket.socket | None, socket_path: str | Pat
 
 _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
     "uvicorn": ("uvicorn", None),
+    "asyncio": ("asyncio", None),  # serve-only middleware (SUB-219)
+    "RelearnApproval": ("know_your_context.relearn", "RelearnApproval"),
     "backup_store": ("know_your_context.backup", "backup_store"),
     "restore_store": ("know_your_context.backup", "restore_store"),
 }

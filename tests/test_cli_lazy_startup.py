@@ -87,17 +87,32 @@ def test_version_and_help_do_not_open_a_store(tmp_path: Path) -> None:
 #: only), ``ingest.pipeline`` + ``extraction`` (write/HTTP verbs), ``backup``,
 #: ``relearn`` and ``observability`` (ops verbs). In the 50-agent storm that
 #: import tax is paid by every query process and decided the collapse.
-#: ``backup``/``relearn`` are NOT on this list: ``service`` imports ``relearn``
-#: (which imports ``backup``) at module level, so they ride the service chain
-#: every verb pays anyway — measured marginal cost on top of it: 0.000 s.
+#: SUB-219 (import floor): the write/ops engines moved off the query path too.
+#: ``relearn``/``backup``/``review``/``scoring``/``scheduler`` are constructed
+#: lazily on first write/ops use (before: ``service`` imported ``relearn`` at
+#: module level and built all four engines in ``__init__`` — measured ≈40 MB
+#: and ≈425 ms for the service/http_api import graph per process), and
+#: ``asyncio``/``update_pipeline``/``source_watcher`` are serve-only (before:
+#: ``http_api`` imported them at module scope). ``autoreview`` rides the write
+#: path only (its manual-gates default resolves at first write, not at
+#: ``KnowledgeService`` construction).
 QUERY_FORBIDDEN_MODULES = (
     "uvicorn",
     "starlette",
+    "asyncio",  # serve-only (BoundaryMiddleware); SUB-219 made it lazy
     "networkx",  # graphify_adapter's graph algorithms — rebuild path only
     "graphify",  # the vendored graph builder — rebuild path only
     "know_your_context.ingest.pipeline",
     "know_your_context.extraction",
     "know_your_context.observability",
+    "know_your_context.relearn",
+    "know_your_context.backup",
+    "know_your_context.review",
+    "know_your_context.scoring",
+    "know_your_context.scheduler",
+    "know_your_context.autoreview",
+    "know_your_context.update_pipeline",  # serve watch-loop only
+    "know_your_context.source_watcher",  # serve watch-loop only
 )
 
 

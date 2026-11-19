@@ -690,3 +690,128 @@ def test_shared_cache_ignores_corrupt_file(rich_store: Path) -> None:
         store.close()
     healed = json.loads(_sidecar_path(str(rich_store)).read_text(encoding="utf-8"))
     assert healed["edge_count"] == len(memory_graph.edges), "the corrupt file must be healed"
+
+
+# ---------------------------------------------------------------- SUB-218: w1 RSS
+# The w1 ``callers-of`` process pays the codeintel SQL path a measured
+# ~13 MB over the query-verb floor (SUB-215), of which the fingerprint's
+# full ``graph_edges`` COUNT scan, an unbounded read-only pager, and the
+# hub row stream's duplicate materialisation are the in-scope levers
+# (SUB-218). These pins lock the memory contract; the RSS deltas themselves
+# are measured on the L3 store and the 50-agent storm (component table in
+# the SUB-218 board row).
+
+
+def test_readonly_connection_bounded_pager(tmp_path: Path) -> None:
+    """The codeintel read-only connection must not map the store and must
+    cap its pager cache (SUB-218): every w1 process would otherwise carry a
+    db-sized mmap plus a 2 MiB cache into its peak RSS, and the 50-process
+    storm multiplies that.
+    """
+    from know_your_context.analytics.code_intel_sql import open_readonly_connection
+
+    path = tmp_path / "bounded.sqlite3"
+    store = EventStore(path)
+    store.upsert_symbol(node_id="n:a", name="a", kind="function", path="a.py", line=1, col=0)
+    store.close()
+    conn = open_readonly_connection(str(path))
+    assert conn is not None
+    try:
+        assert conn.execute("PRAGMA mmap_size").fetchone()[0] == 0
+        cache_kib = conn.execute("PRAGMA cache_size").fetchone()[0]
+        assert cache_kib < 0 and -cache_kib <= 1024, (
+            f"read-only pager cache must stay bounded, got cache_size={cache_kib}"
+        )
+        # The connection still answers queries with the capped cache.
+        assert conn.execute("SELECT node_id FROM symbols WHERE node_id = 'n:a'").fetchone()[0] == "n:a"
+    finally:
+        conn.close()
+
+
+def test_fingerprint_skips_the_full_edge_count_scan() -> None:
+    """The snapshot fingerprint must not run ``COUNT(*) FROM graph_edges``
+    (SUB-218): on the L3 store that covering-index scan streams the whole
+    edge index through the pager of EVERY w1 process. ``MAX(edge_id)`` is
+    already an exact content token for the append-only store contract and
+    sits in the key, so the scan is pure waste.
+    """
+    import know_your_context.analytics.code_intel_sql as cis
+
+    assert "COUNT(*) FROM graph_edges" not in cis._FINGERPRINT_SQL
+    assert "MAX(edge_id)" in cis._FINGERPRINT_SQL
+    assert "COUNT(*) FROM symbols" in cis._FINGERPRINT_SQL  # the node_count answer stays
+
+
+def test_raw_edges_lazy_but_exact(rich_store: Path) -> None:
+    """dropped_edges must stay the exact raw-row count now that the
+    fingerprint no longer counts graph_edges (SUB-218): the cold winner
+    computes the COUNT once with the other aggregates, the sidecar carries
+    it, and a warm process answers with zero SQL — while the op-payload
+    path (node_count/edge_count) never runs an extra raw scan.
+    """
+    store = EventStore(rich_store)
+    try:
+        memory_graph = load_code_graph(store)
+    finally:
+        store.close()
+    _clear_process_memo()
+    graph, _stats = _fresh_graph(rich_store)
+    try:
+        # node_count/edge_count first (the op-payload path): the only
+        # aggregate scans are the shared ones (edge-count + raw-count +
+        # non-ASCII), once per snapshot — never per instance.
+        _ = (graph.node_count, graph.edge_count)
+        raw_warm = graph.dropped_edges
+    finally:
+        graph.close()
+    assert raw_warm == memory_graph.dropped_edges, "lazy raw count must stay byte-exact"
+    # The memo now carries it: a fresh instance answers dropped_edges with
+    # zero SQL (the sidecar published by the first instance).
+    _clear_process_memo()
+    graph_b, stats_b = _fresh_graph(rich_store)
+    try:
+        assert (graph_b.node_count, graph_b.edge_count, graph_b.dropped_edges) == (
+            len(memory_graph.nodes),
+            len(memory_graph.edges),
+            memory_graph.dropped_edges,
+        )
+    finally:
+        graph_b.close()
+    assert stats_b["queries"] == 0, "sidecar-published raw_edges must not run SQL"
+
+
+def test_hub_rows_streamed_single_pass(tmp_path: Path) -> None:
+    """neighbours_many must stream the hub rows straight into the grouped
+    result — the materialised rows list and the grouped tuples were two live
+    copies of the same ~14 916-row hub (SUB-218), which is the biggest
+    Python-side duplicate on the w1 path. Reads and answers stay identical.
+    """
+    path = tmp_path / "hub2.sqlite3"
+    store = EventStore(path)
+    fan = 500
+    store.upsert_symbol(node_id="n:hub", name="hubx", kind="function", path="hub.py", line=1, col=0)
+    for i in range(fan):
+        store.upsert_symbol(node_id=f"n:c{i}", name=f"c{i}", kind="function", path=f"m{i % 20}.py", line=i, col=0)
+        store.add_graph_edge(f"n:c{i}", "n:hub", "calls", line=1)
+    store.add_graph_edge("n:hub", "n:hub", "calls", line=1)  # self-loop: deduped by DISTINCT
+    try:
+        memory_graph = load_code_graph(store)
+        stats: dict[str, int] = {"node_rows": 0, "edge_rows": 0, "queries": 0}
+        sql_graph = open_sql_code_graph(store, stats=stats)
+        assert sql_graph is not None
+        try:
+            expected = callers_of(memory_graph, "hubx", max_depth=1, max_results=200)
+            result = callers_of(sql_graph, "hubx", max_depth=1, max_results=200)
+            assert result == expected, "byte-parity with the in-memory build"
+            assert result["total"] == fan
+            # Same counts as before the stream — resolve node-id (1) + named (1)
+            # + cold aggregates: edge-count + nonascii + raw-count (3) +
+            # neighbours (1) + nodes (1): nothing extra on the hot path.
+            assert stats["queries"] == 7
+            assert stats["edge_rows"] == fan
+            # 1 named + 1 edge-count + 1 raw-count rows, then the IN-chunk.
+            assert stats["node_rows"] == fan + 3
+        finally:
+            sql_graph.close()
+    finally:
+        store.close()
