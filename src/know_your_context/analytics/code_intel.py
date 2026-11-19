@@ -375,7 +375,7 @@ def _transitive(
     *,
     max_depth: int,
     max_results: int,
-) -> tuple[list[dict[str, Any]], int, bool]:
+) -> tuple[list[dict[str, Any]], int, bool, bool]:
     """BFS closure from one or more roots; entries sorted by (depth, path, line, col, node_id).
 
     Multi-root is the union closure (a node reachable from two roots takes
@@ -423,7 +423,8 @@ def _transitive(
         )
     entries.sort(key=lambda item: (item["depth"], item["path"], item["line"], item["col"], item["node_id"]))
     total = len(entries)
-    return entries[:max_results], total, total > max_results
+    depth_capped = bool(frontier) and depth >= max_depth
+    return entries[:max_results], total, total > max_results, depth_capped
 
 
 def _root_payload(node: CodeNode) -> dict[str, Any]:
@@ -482,10 +483,14 @@ def _directional(
     kind_set = _validate_kinds(kinds)
     root, candidates = _resolve_traversal_root(graph, symbol, file=file)
     roots = candidates if candidates is not None else (root,)
-    entries, total, truncated = _transitive(
+    entries, total, truncated, depth_capped = _transitive(
         graph, roots, direction, kind_set, max_depth=max_depth, max_results=max_results
     )
-    guards = ["max_results_reached"] if truncated else []
+    guards = []
+    if truncated:
+        guards.append("max_results_reached")
+    if depth_capped:
+        guards.append("max_depth_reached")
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "kind": f"analytics.code_intel.{op}",
@@ -504,6 +509,8 @@ def _directional(
         "total": total,
         "entries": entries,
         "guards": guards,
+        "depth_capped": depth_capped,
+        "truncated": truncated or depth_capped,
     }
     if candidates is not None:
         payload["ambiguous"] = True
@@ -608,7 +615,7 @@ def impact_analysis(
     root, candidates = _resolve_traversal_root(graph, symbol, file=file)
     roots = candidates if candidates is not None else (root,)
     kind_set = frozenset(_IMPACT_KINDS)
-    entries, total, truncated = _transitive(
+    entries, total, truncated, depth_capped = _transitive(
         graph, roots, "reverse", kind_set, max_depth=max_depth, max_results=max_results
     )
     depth_buckets: dict[int, int] = {}
@@ -618,7 +625,11 @@ def impact_analysis(
     for entry in entries:
         by_kind[entry["via_edge_kind"]] = by_kind.get(entry["via_edge_kind"], 0) + 1
     impacted_files = sorted({entry["path"] for entry in entries})
-    guards = ["max_results_reached"] if truncated else []
+    guards = []
+    if truncated:
+        guards.append("max_results_reached")
+    if depth_capped:
+        guards.append("max_depth_reached")
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "kind": "analytics.code_intel.impact_analysis",
@@ -635,6 +646,8 @@ def impact_analysis(
         "entry_count": len(entries),
         "entries": entries,
         "guards": guards,
+        "depth_capped": depth_capped,
+        "truncated": truncated or depth_capped,
     }
     if candidates is not None:
         payload["ambiguous"] = True
@@ -733,6 +746,8 @@ def co_change(
         "below_confidence_pairs": below_confidence,
         "pairs": emitted,
         "guards": guards,
+        "depth_capped": False,
+        "truncated": truncated,
     }
 
 
@@ -847,4 +862,6 @@ def boundary_violations(
         ],
         "violations": emitted,
         "guards": guards,
+        "depth_capped": False,
+        "truncated": truncated,
     }

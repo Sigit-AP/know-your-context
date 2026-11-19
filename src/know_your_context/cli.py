@@ -262,8 +262,9 @@ def _fast_codeintel_tail(values: dict[str, Any], argv: list[str], i: int) -> arg
     ns.symbol = argv[i]
     i += 1
     ns.file = None
-    ns.depth = 8
-    ns.limit = 200 if action != "impact" else 500
+    tier_depth, tier_limit = _tier_defaults()
+    ns.depth = tier_depth
+    ns.limit = max(tier_limit, 500) if action == "impact" else tier_limit
     while i < n:
         if take_int("--depth", "depth") or take_int("--limit", "limit"):
             continue

@@ -187,6 +187,21 @@ class TestCallersCallees:
         result = callees_of(chain_graph, "alpha", max_depth=1)
         assert [entry["name"] for entry in result["entries"]] == ["beta"]
 
+    def test_quality_fields_report_depth_cap(self, chain_graph):
+        result = callees_of(chain_graph, "alpha", max_depth=1)
+        assert result["depth_capped"] is True
+        assert result["truncated"] is True
+
+    def test_quality_fields_report_limit_truncation(self, chain_graph):
+        result = callees_of(chain_graph, "alpha", max_results=1)
+        assert result["depth_capped"] is False
+        assert result["truncated"] is True
+
+    def test_quality_fields_are_false_when_complete(self, chain_graph):
+        result = callees_of(chain_graph, "alpha")
+        assert result["depth_capped"] is False
+        assert result["truncated"] is False
+
     def test_max_depth_zero_rejected(self, chain_graph):
         with pytest.raises(InvalidPolicyError):
             callees_of(chain_graph, "alpha", max_depth=0)

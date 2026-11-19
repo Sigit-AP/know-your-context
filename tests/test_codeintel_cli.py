@@ -193,6 +193,24 @@ class TestCliTraversal:
         code, payload, _ = _invoke(_argv(store_path, "callers-of", "gamma", "--depth", "1"), capsys)
         assert code == 0
         assert [entry["name"] for entry in _ok(payload)["entries"]] == ["beta"]
+        assert _ok(payload)["depth_capped"] is True
+        assert _ok(payload)["truncated"] is True
+
+    def test_explicit_limit_reports_truncation(self, store_path, capsys):
+        code, payload, _ = _invoke(_argv(store_path, "callees-of", "alpha", "--limit", "1"), capsys)
+        assert code == 0
+        assert _ok(payload)["depth_capped"] is False
+        assert _ok(payload)["truncated"] is True
+
+    def test_tier_defaults_emit_quality_fields(self, store_path, capsys, monkeypatch):
+        from know_your_context.hardware.tiers import ENV_TIER, Tier
+
+        for tier in Tier:
+            monkeypatch.setenv(ENV_TIER, str(int(tier)))
+            code, payload, _ = _invoke(_argv(store_path, "callees-of", "alpha"), capsys)
+            assert code == 0
+            assert _ok(payload)["depth_capped"] is False
+            assert _ok(payload)["truncated"] is False
 
     def test_unknown_symbol_exit_1(self, store_path, capsys):
         code, payload, err = _invoke(_argv(store_path, "callers-of", "ghost"), capsys)

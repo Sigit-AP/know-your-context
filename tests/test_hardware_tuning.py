@@ -315,15 +315,25 @@ class TestStorageTuningSpec:
 
 
 class TestEventStoreTuningIntegration:
-    def test_default_store_applies_mmap_on_file_db(self, tmp_path: Path) -> None:
+    def test_default_store_applies_ingest_rss_cap_on_file_db(self, tmp_path: Path) -> None:
+        """The default recipe is the RSS cap: no db-sized mmap, engine cache."""
         db = tmp_path / "store.db"
         store = EventStore(db)
         try:
             mmap = store.execute_raw("PRAGMA mmap_size").fetchone()[0]
-            assert mmap > 0
+            assert mmap == 0
             sync = store.execute_raw("PRAGMA synchronous").fetchone()[0]
             assert sync == 2  # FULL: the knob defaults off (historical durability)
             assert store.applied_tuning.source == "probe"
+        finally:
+            store.close()
+
+    def test_opt_out_restores_mmap_on_file_db(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("KNOW_YOUR_CONTEXT_FULL_HW_TUNING", "1")
+        db = tmp_path / "full.db"
+        store = EventStore(db)
+        try:
+            assert store.execute_raw("PRAGMA mmap_size").fetchone()[0] > 0
         finally:
             store.close()
 

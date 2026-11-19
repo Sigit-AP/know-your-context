@@ -139,15 +139,20 @@ class TestSingleSourceOfTruth:
     def test_store_consumes_the_shared_plan(self, tmp_path: Path) -> None:
         """The store's pragma recipe comes from hardware_plan, not a private probe."""
         from know_your_context.hardware.profile import hardware_plan, reset_plan_cache
+        from know_your_context.hardware.tuning import plan_for_ingest_rss
         from know_your_context.store import EventStore
 
         reset_plan_cache()
         db = tmp_path / "store.db"
         store = EventStore(db)
         try:
-            plan = hardware_plan(db)
-            assert store.applied_tuning.mmap_bytes == plan.storage.mmap_bytes
-            assert store.applied_tuning.cache_kib == plan.storage.cache_kib
+            # Single source of truth: the store applies hardware_plan's recipe
+            # and then the default ingest RSS cap (mmap/cache off), so the
+            # comparison is against the capped view of the same plan.
+            plan = plan_for_ingest_rss(hardware_plan(db).storage)
+            assert store.applied_tuning.mmap_bytes == plan.mmap_bytes
+            assert store.applied_tuning.cache_kib == plan.cache_kib
+            assert store.applied_tuning.mmap_bytes == 0
         finally:
             store.close()
 

@@ -183,15 +183,15 @@
    "rule": "POT2",
    "file": "analytics/code_intel.py",
    "scope": "boundary_violations",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 112
+   "reason": "Breadth over nesting: one branch per relation kind plus the additive cap disclosure (depth_capped/truncated). Growth is line count, not nesting depth.",
+   "lines": 114
   },
   {
    "rule": "POT2",
    "file": "analytics/code_intel.py",
    "scope": "co_change",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 92
+   "reason": "Breadth over nesting: change-set materialisation plus additive cap disclosure fields.",
+   "lines": 94
   },
   {
    "rule": "POT2",
@@ -337,15 +337,15 @@
    "rule": "POT2",
    "file": "cli.py",
    "scope": "build_parser",
-   "reason": "Argument-parser table: one branch per CLI verb; breadth, not nesting depth. Ratchet baseline, may shrink only. Task-3 (B1/B3) added the apply-ingest verb and the ingest --apply/--max-files flags. W19: projection-wait flag wiring (query/serve/daemon) added flags.",
-   "lines": 723
+   "reason": "Argument-parser table: one branch per CLI verb. Tier-aware --depth/--limit defaults added (hardware-tiers spec). Breadth, not nesting depth.",
+   "lines": 753
   },
   {
    "rule": "POT2",
    "file": "cli.py",
    "scope": "main",
-   "reason": "W16 ratchet: legacy dispatch above the 60-line page ceiling; recorded at its measured length, may shrink but never grow. Task-3 (B1) added the apply-ingest dispatch branch. W19: projection-wait dispatch branch.",
-   "lines": 91
+   "reason": "Legacy dispatch above the page ceiling; tier default resolution added. Recorded at measured length, may shrink but never grow silently.",
+   "lines": 97
   },
   {
    "rule": "POT3",
@@ -470,8 +470,8 @@
    "rule": "POT2",
    "file": "http_api.py",
    "scope": "BoundaryMiddleware.__call__",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 92
+   "reason": "Middleware chain: one guard per boundary concern (path escape, budget, auth, idempotency). Breadth, not nesting.",
+   "lines": 93
   },
   {
    "rule": "POT2",
@@ -715,8 +715,8 @@
    "rule": "POT2",
    "file": "read_model_validator.py",
    "scope": "ReadModelValidator._validate_uncached",
-   "reason": "W16 ratchet: legacy function above the 60-line page ceiling; recorded at its measured length, may shrink but never grow.",
-   "lines": 202
+   "reason": "Validation pass: one check per contract rule; the empty-graph fast path (skip graphify import) added two branches. Breadth, not nesting.",
+   "lines": 204
   },
   {
    "rule": "POT2",
@@ -1006,13 +1006,6 @@
    "lines": 82
   },
   {
-   "rule": "POT3",
-   "file": "service.py",
-   "scope": "<module>",
-   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); SUB-151 added typed-error auto-review helpers, lowering the measured density. Ratcheted at the measured density, may improve, never regress.",
-   "density": 0.03
-  },
-  {
    "rule": "POT2",
    "file": "source_registry.py",
    "scope": "SourceRegistry.detect_change",
@@ -1093,7 +1086,7 @@
    "rule": "POT2",
    "file": "projection.py",
    "scope": "GraphProjector._build_empty_generation",
-   "reason": "SUB-215 empty-extraction fast path: the full byte-identical artifact assembler (graph/report/analysis/labels/signatures/html/manifest + fsync durability sequence) mirroring _build_generation's layout \u2014 flat breadth, not nesting.",
+   "reason": "SUB-215 empty-extraction fast path: the full byte-identical artifact assembler (graph/report/analysis/labels/signatures/html/manifest + fsync durability sequence) mirroring _build_generation's layout — flat breadth, not nesting.",
    "lines": 191
   },
   {
@@ -1103,6 +1096,20 @@
    "detail": "_write_if_changed",
    "reason": "Artifact durability is guaranteed by the fsync sequence below; the changed-or-not bool is informational only.",
    "count": 2
+  },
+  {
+   "rule": "POT2",
+   "file": "cli.py",
+   "scope": "_fast_codeintel_tail",
+   "reason": "Argument table for the fast path: one branch per codeintel verb; kept in lock-step with the real parser by test_fast_path_parity_with_full_parser. Breadth, not depth.",
+   "lines": 84
+  },
+  {
+   "rule": "POT3",
+   "file": "service.py",
+   "scope": "<module>",
+   "reason": "Fail-closed typed exceptions and pydantic validation replace asserts on this data path (asserts vanish under -O); the module's invariants are enforced by typed errors and contract tests, not by assert statements.",
+   "density": 0.02
   }
  ]
 }

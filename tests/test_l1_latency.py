@@ -264,7 +264,8 @@ _W2_GOLDEN = [
 
 # sha256 of the exact stdout of `codeintel callers-of fn_0_0 --depth 1` on the
 # L1 store (46931 B, deterministic — ops surface carries no audit_event_id).
-_W1_SHA256 = "d3d2e321444ef3799d28e93838c7f272ab63463650b84479a7bdcaa24377512c"
+_W1_SHA256 = "942b9845bc1b03d6b3a16f7d255d2dc43de370756cdc6e596b4d040222da97a4"
+# Refreshed 2026-11-19: codeintel now discloses depth_capped/truncated (additive).
 
 
 def _full_parse(argv: list[str]) -> dict | None:

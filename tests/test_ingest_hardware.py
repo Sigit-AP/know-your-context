@@ -161,12 +161,28 @@ class TestByteIdenticalDeterminism:
         store.close()
         assert files >= 1, "rows before the budget boundary must stay committed"
 
-    def test_mmap_recipe_reaches_the_ingest_store(self, tmp_path: Path) -> None:
-        """The store the pipeline writes through carries the plan's mmap hint (SUB-134 seam, end-to-end)."""
+    def test_mmap_recipe_reaches_the_ingest_store(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The plan's mmap hint still reaches the store when the operator opts in.
+
+        The default is now the ingest RSS cap (mmap 0), so this seam is
+        asserted through the explicit opt-out that restores the probe recipe.
+        """
+        monkeypatch.setenv("KNOW_YOUR_CONTEXT_FULL_HW_TUNING", "1")
         store = EventStore(tmp_path / "mmap.sqlite3")
         try:
             tuning = store.applied_tuning
             assert tuning.mmap_bytes > 0
+        finally:
+            store.close()
+        reset_plan_cache()
+
+    def test_default_store_is_rss_capped(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without the opt-out the write path carries no db-sized mmap."""
+        monkeypatch.delenv("KNOW_YOUR_CONTEXT_FULL_HW_TUNING", raising=False)
+        store = EventStore(tmp_path / "capped.sqlite3")
+        try:
+            assert store.applied_tuning.mmap_bytes == 0
+            assert store.applied_tuning.cache_kib == 0
         finally:
             store.close()
         reset_plan_cache()

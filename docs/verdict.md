@@ -134,3 +134,18 @@ uv run python bench/verdict/run.py run      # instrumen 7-level
 - **Sebab terukur:** setiap modul inti menarik `pydantic` (+9,3 MB/proses,
   lantai 32–33 MB/proses); menutup 7 % itu menuntut refactor inti
   `domain.py`/`contracts.py`, bukan tweak konfigurasi.
+
+## Audit Finish #1–#2 (canonical planning matrix)
+
+The complete cross-repository mapping, L1–L4 coverage matrix, per-product metrics, acceptance criteria, and unproven gaps now live in [`research/finish-1-2-audit.md`](research/finish-1-2-audit.md). This section is the short verdict; that document is the audit record.
+
+### Status without invented numbers
+
+| Finish | Proven outcome | Not proven / not finished |
+|---|---|---|
+| #1 — push-200 | Algorithm and performance targets are recorded as met in `task1-push200-verdict.md`; composite is reported as 405.88% vs CodeGraph and 1362.92% vs Graphify for the cited ledger | Professionalism L1 vs CodeGraph is 78.35%, not 200%; no volume inflation is allowed. Official ledger was not rerun in this audit |
+| #2 — audit + head-to-head | 31 wave claims audited: 27 proven, 2 partial, 2 minor not verified; L2/L3/L4 have cited measurements; final L3 is 10/1/0 and final L4 is 10/0/1 in the cited run | L1 table is not synchronized to the latest ledger tail; L4 storm RSS remains a stable-band loss vs Graphify; server-mode, retrieval relevance, dedicated non-ASCII stress, and some WS-C/name-match baselines are **BELUM TERUKUR** |
+
+**Do not read hit-rate as retrieval quality:** the stress harness has no relevance ground truth. **Do not compare absolute values across ledgers or host windows:** only same-run product comparisons are verdict evidence.
+
+**Next acceptance gates:** regenerate L1 from the current ledger; repeat L4 storm RSS serially and retain a band; then rerun the official Finish #1 instrument. Until those are done, the overall Finish #1–#2 verdict is **terukur sebagian, belum final penuh**.

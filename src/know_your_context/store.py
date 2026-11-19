@@ -216,9 +216,20 @@ def _resolve_storage_tuning(db_path: str) -> StorageTuning:
     # Default: cap the DB-size-proportional pragmas. The store's own
     # connection is the write path (ingest commits through it) and every
     # scanned page of a db-sized mmap counts against RSS (measured +59 MiB
-    # for one COUNT(*) on the 313 MB L4 store). Read-heavy operators can
-    # restore the full probe recipe with KNOW_YOUR_CONTEXT_FULL_HW_TUNING=1.
-    if os.environ.get(FULL_HW_TUNING_ENV) != "1":
+    # for one COUNT(*) on the 313 MB L4 store). An operator who pins a
+    # storage knob explicitly still wins — an explicit cap request is intent,
+    # not a default — and KNOW_YOUR_CONTEXT_FULL_HW_TUNING=1 restores the
+    # whole probe recipe.
+    pinned_storage = any(
+        os.environ.get(name)
+        for name in (
+            "KNOW_YOUR_CONTEXT_STORAGE_MMAP_ENABLED",
+            "KNOW_YOUR_CONTEXT_STORAGE_MMAP_MAX_BYTES",
+            "KNOW_YOUR_CONTEXT_STORAGE_AGGRESSIVE_CACHE",
+            "KNOW_YOUR_CONTEXT_STORAGE_CACHE_MAX_KIB",
+        )
+    )
+    if os.environ.get(FULL_HW_TUNING_ENV) != "1" and not pinned_storage:
         plan = plan_for_ingest_rss(plan)
     return StorageTuning(plan.mmap_bytes, plan.page_size, plan.synchronous_normal, source, plan.notes, plan.cache_kib)
 
