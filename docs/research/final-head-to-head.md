@@ -2,8 +2,8 @@
 
 Status: **SELESAI** — tabel final L1–L4 lengkap; **KYC L3 & L4 disinkron
 SUB-217** (HEAD `04bccd6`, sqlite rss cap = jalur tulis default): L3 **10
-MENANG / 1 SETARA / 0 KALAH**, L4 **11 MENANG / 0 SETARA / 0 KALAH**;
-total **30 MENANG / 12 SETARA / 2 KALAH** (lihat §L3, §L4, §Skor total).
+MENANG / 1 SETARA / 0 KALAH**, L4 **10 MENANG / 0 SETARA / 1 KALAH**;
+total **29 MENANG / 12 SETARA / 3 KALAH** (lihat §L3, §L4, §Skor total).
 
 > Pembaruan SUB-200 (2026-11-18, doc sync): baris **KYC L4** akhirnya
 > masuk ledger kanonik `results_final.jsonl` — full storm 50 agen /
@@ -22,7 +22,7 @@ total **30 MENANG / 12 SETARA / 2 KALAH** (lihat §L3, §L4, §Skor total).
 > kompetitor**), err 0, w1/w2 50/50, sigkill 0. Dampak verdict:
 > `ingest_rss` L3/L4 dan `storm_rss` L4 naik SETARA → MENANG → L3 = **10
 > MENANG / 1 SETARA / 0 KALAH**, L4 = **11 MENANG / 0 SETARA / 0 KALAH**,
-> total **30 MENANG / 12 SETARA / 2 KALAH**. Baris graphify/codegraph
+> total **29 MENANG / 12 SETARA / 3 KALAH**. Baris graphify/codegraph
 > tidak diukur ulang (tetap jendela final yang sama). Hanya
 > `docs/research/final-head-to-head.md` yang diubah; TIDAK commit.
 
@@ -255,13 +255,16 @@ rata-rata (3199), tetapi masih di atas graphify (2436). Solo probe KYC
 | w2_hit          |     0/50 |     32/50 |   50/50  | MENANG  |
 | err_rate        |    100 % |      35 % |     0 %  | MENANG  |
 | sigkill         |      100 |        34 |      0   | MENANG  |
-| storm_rss_mb    |     2413 |      5811 |  2268.4  | MENANG  |
+| storm_rss_mb    |     2413 |      5811 |  2583.6  | KALAH (+7 %) |
 | solo_w1_ms      |    58849 |      1678 |    742   | MENANG  |
 
-Skor L4: **11 MENANG / 0 SETARA / 0 KALAH** — sweep penuh: sqlite rss cap
+Skor L4: **10 MENANG / 0 SETARA / 1 KALAH** — sqlite rss cap
 (HEAD `04bccd6`) menurunkan RSS ingest 1356,9 → 721,4 MB dan storm rss
 3390 → 2268,4 MB, keduanya kini **di bawah graphify dan codegraph**;
-`ingest_rss_mb` & `storm_rss_mb` naik SETARA → MENANG.
+`ingest_rss_mb` naik SETARA → MENANG (718–727 MB < 860). `storm_rss_mb`
+**tidak** naik ke MENANG: tiga run stabilitas memberi 2556,4 / 2583,6 /
+2630,3 MB (bukan 2268,4 — itu sampel rendah), jadi tetap **KALAH ≈ +7 %**
+terhadap graphify. L3: 2490,6 / 2541,6 vs 2436 → **SETARA**.
 
 Reproduksi (harness yang sama untuk semua produk):
 
