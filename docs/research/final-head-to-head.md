@@ -294,8 +294,8 @@ kedua kompetitor** — dua metrik itu naik dari SETARA ke MENANG; seluruh
 ### Skor total (L1–L4, baris kanonik per level)
 
 **29 MENANG / 12 SETARA / 3 KALAH** — L1 4/6/0, L2 7/4/0, L3 10/1/0,
-L4 11/0/0. Satu-satunya KALAH tersisa di L1 (q_p50 & q_wall saat storm,
-lihat §L1); satu-satunya SETARA di L3 adalah `storm_rss_mb` (lihat §L3).
+L4 10/0/1. KALAH tersisa: `storm_rss_mb` L4 (+7 % vs graphify, lihat §L4).
+SETARA tersisa: `q_p50`/`q_wall` L1 (§L1) dan `storm_rss_mb` L3 (§L3).
 Skor L1/L2 berdiri pada baris yang disinkron SUB-187S/SUB-200 (L1 bukan
 `tail -1`; lihat §Sisa pekerjaan item 4). Catatan kejujuran: sel-sel tabel
 L1 saat ini (4 MENANG / 7 SETARA / 0 KALAH — termasuk `q_wall_s` kyc 6,4 s
